@@ -9,10 +9,10 @@ const __dirname = path.dirname(__filename)
 export default defineConfig({
   resolve: {
     alias: {
-      'block-builder/index.esm.css': path.resolve(__dirname, '../../dist/index.esm.css'),
-      'block-builder/index.css': path.resolve(__dirname, '../../dist/index.esm.css'),
-      'block-builder/core': path.resolve(__dirname, '../../dist/core.esm.js'),
-      'block-builder': path.resolve(__dirname, '../../dist/index.esm.js')
+      '@mushket-co/block-builder/index.esm.css': path.resolve(__dirname, '../../dist/index.esm.css'),
+      '@mushket-co/block-builder/index.css': path.resolve(__dirname, '../../dist/index.esm.css'),
+      '@mushket-co/block-builder/core': path.resolve(__dirname, '../../dist/core.esm.js'),
+      '@mushket-co/block-builder': path.resolve(__dirname, '../../dist/index.esm.js')
     }
   },
   publicDir: path.resolve(__dirname, '../static'),
@@ -23,7 +23,7 @@ export default defineConfig({
     open: true
   },
   optimizeDeps: {
-    exclude: ['block-builder']
+    exclude: ['@mushket-co/block-builder']
   },
   plugins: [
     {

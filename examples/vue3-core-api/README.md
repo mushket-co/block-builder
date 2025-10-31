@@ -176,7 +176,7 @@ vue3-core-api/
 ### Инициализация
 
 ```javascript
-import { BlockBuilder } from 'block-builder/core'
+import { BlockBuilder } from '@mushket-co/block-builder/core'
 import { blockConfigs } from './configs/block-config'
 
 // Создаем BlockBuilder БЕЗ UI

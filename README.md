@@ -45,73 +45,73 @@ src/
 
 ### Установка
 ```bash
-npm install block-builder
+npm install @mushket-co/block-builder@beta
 ```
 
 ### 📦 Entry Points
 
 Пакет предоставляет несколько точек входа:
 
-- **`block-builder`** - основной экспорт с UI для Pure JS
-- **`block-builder/core`** - только API без UI компонентов
-- **`block-builder/vue`** - Vue3 компоненты
+- **`@mushket-co/block-builder`** - основной экспорт с UI для Pure JS
+- **`@mushket-co/block-builder/core`** - только API без UI компонентов
+- **`@mushket-co/block-builder/vue`** - Vue3 компоненты
 
 ```javascript
 // Основной экспорт (Pure JS с автоматическим UI)
-import { BlockBuilder } from 'block-builder'
-import 'block-builder/index.esm.css' // Импортируйте стили!
+import { BlockBuilder } from '@mushket-co/block-builder'
+import '@mushket-co/block-builder/index.esm.css' // Импортируйте стили!
 
 // Только API без UI
-import { BlockBuilder } from 'block-builder/core'
+import { BlockBuilder } from '@mushket-co/block-builder/core'
 
 // Vue3 компоненты
-import { BlockBuilderComponent } from 'block-builder/vue'
-import 'block-builder/index.esm.css' // Импортируйте стили!
+import { BlockBuilderComponent } from '@mushket-co/block-builder/vue'
+import '@mushket-co/block-builder/index.esm.css' // Импортируйте стили!
 ```
 
-**💡 Разница между `block-builder` и `block-builder/core`:**
+**💡 Разница между `@mushket-co/block-builder` и `@mushket-co/block-builder/core`:**
 
-### `block-builder` (основной экспорт)
+### `@mushket-co/block-builder` (основной экспорт)
 - **Размер бандла:** ~114KB (87KB JS + 27KB CSS)
 - **Включает:** Полный API + готовый UI + стили
 - **Использование:** Когда нужен готовый UI из коробки
 
 ```javascript
-import { BlockBuilder } from 'block-builder'
-import 'block-builder/index.esm.css' // Импортируйте стили!
+import { BlockBuilder } from '@mushket-co/block-builder'
+import '@mushket-co/block-builder/index.esm.css' // Импортируйте стили!
 ```
 
-### `block-builder/core` (только API)
+### `@mushket-co/block-builder/core` (только API)
 - **Размер бандла:** ~89KB (только JS, без CSS)
 - **Включает:** Только API, без UI и стилей
 - **Использование:** Когда нужен только программный API, без готового UI
 
 ```javascript
-import { BlockBuilder } from 'block-builder/core'
+import { BlockBuilder } from '@mushket-co/block-builder/core'
 // CSS НЕ нужен!
 ```
 
-⚠️ **Важно:** Если случайно передать `containerId` в `block-builder/core`, UI отрендерится, но стили работать НЕ БУДУТ (их нет в core bundle).
+⚠️ **Важно:** Если случайно передать `containerId` в `@mushket-co/block-builder/core`, UI отрендерится, но стили работать НЕ БУДУТ (их нет в core bundle).
 
 **🔑 Логика автоматической инициализации UI:**
-- Если передаете `containerId` - UI инициализируется автоматически (только в `block-builder`)
+- Если передаете `containerId` - UI инициализируется автоматически (только в `@mushket-co/block-builder`)
 - Если НЕ передаете `containerId` - используется только API
-- Для `block-builder/core` просто не передавайте `containerId`, и UI не будет инициализирован
+- Для `@mushket-co/block-builder/core` просто не передавайте `containerId`, и UI не будет инициализирован
 
 ### 🎯 Использование без UI (только для особых случаев)
 
-**⚠️ Внимание:** Использование `block-builder/core` без готового UI **не рекомендуется** для большинства проектов!
+**⚠️ Внимание:** Использование `@mushket-co/block-builder/core` без готового UI **не рекомендуется** для большинства проектов!
 
 **Суть пакета BlockBuilder** — предоставить из коробки всё необходимое для создания и редактирования блоков: оптимизированные формы, валидацию, модалки, UI управления блоками. Используйте готовый UI — это и есть главная ценность пакета.
 
-**Используйте `block-builder/core` только в исключительных случаях:**
+**Используйте `@mushket-co/block-builder/core` только в исключительных случаях:**
 
 #### ⚙️ Случай 1: Серверная обработка (Node.js)
 Обработка и валидация блоков на бэкенде без браузера.
 
 ```javascript
 // На сервере (Node.js)
-import { BlockBuilder } from 'block-builder/core'
+import { BlockBuilder } from '@mushket-co/block-builder/core'
 
 const bb = new BlockBuilder({
   blockConfigs: {} // Не передаем containerId - UI не инициализируется
@@ -125,7 +125,7 @@ const validationResults = await validateAllBlocks(blocks)
 Когда нужен полностью уникальный UI, не совместимый с нашим дизайном.
 
 ```javascript
-import { BlockBuilder } from 'block-builder/core'
+import { BlockBuilder } from '@mushket-co/block-builder/core'
 
 const bb = new BlockBuilder({
   blockConfigs: {} // Не передаем containerId - используем только API
@@ -140,12 +140,12 @@ const blocks = await bb.getAllBlocks()
 Когда каждый килобайт важен (редкие случаи).
 
 ```javascript
-import { BlockBuilder } from 'block-builder/core' // ~50kb без UI
+import { BlockBuilder } from '@mushket-co/block-builder/core' // ~50kb без UI
 ```
 
 ### ❌ Что теряете без UI?
 
-Используя `block-builder/core`, вы теряете:
+Используя `@mushket-co/block-builder/core`, вы теряете:
 - **Формы с валидацией** — придётся создавать сами
 - **Автоматические модалки** для создания/редактирования
 - **UI управления блоками** — кнопки удаления, копирования, дублирования
@@ -157,17 +157,17 @@ import { BlockBuilder } from 'block-builder/core' // ~50kb без UI
 
 ```javascript
 // ✅ ПРАВИЛЬНО - для 99% случаев
-import { BlockBuilder } from 'block-builder'
+import { BlockBuilder } from '@mushket-co/block-builder'
 // Автоматически получаете весь UI: формы, валидацию, модалки, управление блоками
 
 // ❌ ТОЛЬКО ДЛЯ ОСОБЫХ СЛУЧАЕВ
-import { BlockBuilder } from 'block-builder/core'
+import { BlockBuilder } from '@mushket-co/block-builder/core'
 // Придётся создавать всё сами
 ```
 
 ### 🔧 API доступен в обоих вариантах
 
-Что доступно в `block-builder/core`:
+Что доступно в `@mushket-co/block-builder/core`:
 - CRUD операции (create, get, update, delete, duplicate)
 - Управление видимостью и блокировкой
 - Экспорт/импорт данных
@@ -191,7 +191,7 @@ BlockBuilder предоставляет готовые Vue3 компоненты
 </template>
 
 <script setup>
-import { BlockBuilderComponent } from 'block-builder/vue'
+import { BlockBuilderComponent } from '@mushket-co/block-builder/vue'
 import YourTextBlock from './components/YourTextBlock.vue'
 
 const config = {
@@ -256,7 +256,7 @@ console.log(UI_STRINGS.create); // 'Создать'
 Для Pure JavaScript проектов или когда нужен готовый UI из коробки:
 
 ```javascript
-import { BlockBuilder } from 'block-builder'
+import { BlockBuilder } from '@mushket-co/block-builder'
 import { blockConfigs } from './block-config.js'
 
 // Автоматически рендерит готовый UI с кнопками, формами, валидацией
@@ -289,7 +289,7 @@ import {
   ApiSelectUseCase,
   FetchHttpClient,
   CustomFieldRendererRegistry
-} from 'block-builder/vue'
+} from '@mushket-co/block-builder/vue'
 import { blockConfigs } from './block-config'
 import { WysiwygFieldRenderer } from './customFieldRenderers/WysiwygFieldRenderer'
 
@@ -385,7 +385,7 @@ const blockBuilder = new BlockBuilder({
 
 **🔑 Логика инициализации UI:**
 - Если передан `containerId` - UI инициализируется автоматически (в блок с `containerId`)
-- Если `containerId` не передан - используется только API (подходит для `block-builder/core`)
+- Если `containerId` не передан - используется только API (подходит для `@mushket-co/block-builder/core`)
 - Для полного контроля передайте `autoInit: false` и инициализируйте вручную
 
 **🎨 Кастомизация UI контролов:**
@@ -511,10 +511,10 @@ const blockConfig = {
 
 ## 🔧 Детальное описание Core API (без UI)
 
-Если вы хотите использовать только API без готового UI, импортируйте из `block-builder/core`:
+Если вы хотите использовать только API без готового UI, импортируйте из `@mushket-co/block-builder/core`:
 
 ```javascript
-import { BlockBuilder } from 'block-builder/core'
+import { BlockBuilder } from '@mushket-co/block-builder/core'
 ```
 
 ### Инициализация
@@ -533,7 +533,7 @@ console.log(blockBuilder.theme)    // 'light' | 'dark'
 console.log(blockBuilder.locale)   // 'ru' | 'en' и т.д.
 ```
 
-**💡 Важно:** При использовании `block-builder/core` просто не передавайте `containerId`, и UI не будет инициализирован. Используется только программный API.
+**💡 Важно:** При использовании `@mushket-co/block-builder/core` просто не передавайте `containerId`, и UI не будет инициализирован. Используется только программный API.
 
 ### 📦 Типы данных
 
@@ -857,7 +857,7 @@ const updated = await blockBuilder.updateVueComponent(
 ### 🎯 Пример полного использования
 
 ```javascript
-import { BlockBuilder } from 'block-builder/core'
+import { BlockBuilder } from '@mushket-co/block-builder/core'
 
 const blockConfigs = {
   text: {
@@ -939,7 +939,7 @@ BlockBuilder поддерживает систему лицензировани�
 #### 1. Через ключ лицензии
 
 ```javascript
-import { BlockBuilder } from 'block-builder'
+import { BlockBuilder } from '@mushket-co/block-builder'
 
 const blockBuilder = new BlockBuilder({
   containerId: 'my-app',
@@ -966,7 +966,7 @@ const blockBuilder = new BlockBuilder({
 
 <script setup>
 import { ref } from 'vue'
-import { BlockBuilderComponent } from 'block-builder/vue'
+import { BlockBuilderComponent } from '@mushket-co/block-builder/vue'
 
 const licenseKey = ref('your-pro-license-key')
 
@@ -980,8 +980,8 @@ const handleLicenseChange = (licenseInfo) => {
 #### 3. Программно через LicenseService
 
 ```javascript
-import { BlockBuilder } from 'block-builder/core'
-import { LicenseService } from 'block-builder'
+import { BlockBuilder } from '@mushket-co/block-builder/core'
+import { LicenseService } from '@mushket-co/block-builder'
 
 const licenseService = new LicenseService()
 const blockBuilder = new BlockBuilder({
@@ -1004,7 +1004,7 @@ licenseService.onLicenseChange((licenseInfo) => {
 BlockBuilder использует систему `LicenseFeatureChecker` для проверки доступности функций:
 
 ```javascript
-import { LicenseFeatureChecker, LicenseFeature } from 'block-builder'
+import { LicenseFeatureChecker, LicenseFeature } from '@mushket-co/block-builder'
 
 // Получить checker из LicenseService
 const featureChecker = licenseService.getFeatureChecker()
@@ -1148,7 +1148,7 @@ export class WysiwygFieldRenderer {
 
 **Vue 3:**
 ```javascript
-import { CustomFieldRendererRegistry } from 'block-builder/vue'
+import { CustomFieldRendererRegistry } from '@mushket-co/block-builder/vue'
 import { WysiwygFieldRenderer } from './customFieldRenderers/WysiwygFieldRenderer.js'
 
 // В setup()
@@ -1164,7 +1164,7 @@ customFieldRendererRegistry.register(wysiwygRenderer)
 
 **Pure JavaScript:**
 ```javascript
-import { BlockBuilder } from 'block-builder'
+import { BlockBuilder } from '@mushket-co/block-builder'
 import { WysiwygFieldRenderer } from './customFieldRenderers/WysiwygFieldRenderer.js'
 
 const blockBuilder = new BlockBuilder({

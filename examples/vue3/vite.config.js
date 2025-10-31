@@ -21,10 +21,10 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-      'block-builder/vue': path.resolve(__dirname, '../../src/vue.ts'),
-      'block-builder/index.esm.css': path.resolve(__dirname, '../../dist/index.esm.css'),
-      'block-builder/index.css': path.resolve(__dirname, '../../dist/index.esm.css'),
-      'block-builder': path.resolve(__dirname, '../../dist/index.esm.js')
+      '@mushket-co/block-builder/vue': path.resolve(__dirname, '../../src/vue.ts'),
+      '@mushket-co/block-builder/index.esm.css': path.resolve(__dirname, '../../dist/index.esm.css'),
+      '@mushket-co/block-builder/index.css': path.resolve(__dirname, '../../dist/index.esm.css'),
+      '@mushket-co/block-builder': path.resolve(__dirname, '../../dist/index.esm.js')
     }
   },
   publicDir: path.resolve(__dirname, '../static'),
@@ -35,7 +35,7 @@ export default defineConfig({
     open: true
   },
   optimizeDeps: {
-    exclude: ['block-builder']
+    exclude: ['@mushket-co/block-builder']
   }
 })
 

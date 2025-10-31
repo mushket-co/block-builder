@@ -161,7 +161,7 @@ api-usage/
 ### Инициализация
 
 ```javascript
-import { BlockBuilder } from 'block-builder/core'
+import { BlockBuilder } from '@mushket-co/block-builder/core'
 
 const blockBuilder = new BlockBuilder({
   blockConfigs: blockConfigs,  // Не передаем containerId - UI не инициализируется

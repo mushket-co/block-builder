@@ -1,5 +1,5 @@
 import './style.css'
-import { BlockBuilder } from 'block-builder/core'
+import { BlockBuilder } from '@mushket-co/block-builder/core'
 
 // Расширенная конфигурация блоков для демонстрации различных возможностей
 const blockConfigs = {

@@ -222,7 +222,7 @@ npm run preview
 Все примеры импортируют BlockBuilder из локальной сборки:
 
 ```javascript
-import { BlockBuilder } from 'block-builder'
+import { BlockBuilder } from '@mushket-co/block-builder'
 ```
 
 Vite настроен на alias к локальной сборке:
@@ -232,7 +232,7 @@ Vite настроен на alias к локальной сборке:
 {
   resolve: {
     alias: {
-      'block-builder': path.resolve(__dirname, '../../dist/index.esm.js')
+      '@mushket-co/block-builder': path.resolve(__dirname, '../../dist/index.esm.js')
     }
   }
 }

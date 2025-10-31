@@ -1,6 +1,6 @@
 {
-  "name": "block-builder",
-  "version": "1.0.0",
+  "name": "@mushket-co/block-builder",
+  "version": "1.0.0-beta.0",
   "description": "Блочный конструктор для no-code разработки",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
@@ -82,11 +82,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/fellsia2019/block-builder.git"
+    "url": "git+https://github.com/mushket-co/block-builder.git"
   },
-  "homepage": "https://github.com/fellsia2019/block-builder#readme",
+  "homepage": "https://github.com/mushket-co/block-builder#readme",
   "bugs": {
-    "url": "https://github.com/fellsia2019/block-builder/issues"
+    "url": "https://github.com/mushket-co/block-builder/issues"
   },
   "publishConfig": {
     "access": "public"

@@ -1,7 +1,7 @@
 import './style.css'
 // Импортируем CSS стили BlockBuilder
-import 'block-builder/index.esm.css'
-import { BlockBuilder } from 'block-builder'
+import '@mushket-co/block-builder/index.esm.css'
+import { BlockBuilder } from '@mushket-co/block-builder'
 import { blockConfigs } from './block-config.js'
 import { WysiwygFieldRenderer } from './customFieldRenderers/WysiwygFieldRenderer.js'
 

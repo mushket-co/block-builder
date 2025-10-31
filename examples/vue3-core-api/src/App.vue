@@ -94,7 +94,7 @@
 
 <script setup>
 import { ref, onMounted, nextTick } from 'vue'
-import { BlockBuilder } from 'block-builder/core'
+import { BlockBuilder } from '@mushket-co/block-builder/core'
 import { blockConfigs } from './configs/block-config'
 import BlockTypeModal from './components/BlockTypeModal.vue'
 import BlockFormModal from './components/BlockFormModal.vue'

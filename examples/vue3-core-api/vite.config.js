@@ -6,8 +6,8 @@ export default defineConfig({
   plugins: [vue()],
   resolve: {
     alias: {
-      'block-builder/core': path.resolve(__dirname, '../../src/core.ts'),
-      'block-builder': path.resolve(__dirname, '../../src/index.ts')
+      '@mushket-co/block-builder/core': path.resolve(__dirname, '../../src/core.ts'),
+      '@mushket-co/block-builder': path.resolve(__dirname, '../../src/index.ts')
     }
   },
   server: {

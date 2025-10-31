@@ -35,7 +35,7 @@ import {
   ApiSelectUseCase,
   FetchHttpClient,
   CustomFieldRendererRegistry
-} from 'block-builder/vue'
+} from '@mushket-co/block-builder/vue'
 import { blockConfigs } from './block-config'
 import { WysiwygFieldRenderer } from './customFieldRenderers/WysiwygFieldRenderer'
 
