@@ -1,0 +1,206 @@
+/**
+ * Стили модальных окон по БЭМ с использованием SCSS
+ */
+
+// Анимации
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Оверлей модального окна */
+.block-builder-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--bb-bg-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--bb-z-index-modal);
+  animation: fadeIn var(--bb-transition-slow);
+}
+
+/* Контент модального окна */
+.block-builder-modal-content {
+  background: white;
+  border-radius: var(--bb-radius-lg);
+  box-shadow: var(--bb-shadow-lg);
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: slideIn var(--bb-transition-slow);
+}
+
+/* Заголовок модального окна */
+.block-builder-modal-header {
+  padding: var(--bb-spacing-xl);
+  border-bottom: 1px solid var(--bb-border-color-light);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h3 {
+    margin: 0;
+    color: var(--bb-text-primary);
+    font-size: 1.25rem;
+  }
+}
+
+/* Кнопка закрытия модального окна */
+.block-builder-modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--bb-text-tertiary);
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--bb-radius-sm);
+
+  &:hover {
+    background: var(--bb-bg-secondary);
+    color: var(--bb-text-primary);
+  }
+}
+
+/* Тело модального окна */
+.block-builder-modal-body {
+  padding: var(--bb-spacing-xl);
+}
+
+/* Footer модального окна */
+.block-builder-modal-footer {
+  padding: var(--bb-spacing-xl);
+  border-top: 1px solid var(--bb-border-color-light);
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+/* Предупреждение о бесплатной версии */
+.block-builder-license-warning {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 16px 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  &__icon {
+    font-size: 20px;
+  }
+
+  &__title {
+    font-size: 15px;
+  }
+
+  &__text {
+    margin: 0;
+    line-height: 1.6;
+  }
+}
+
+/* Баннер о бесплатной версии на странице */
+.block-builder-license-banner {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 12px 20px;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  position: relative;
+  z-index: 100;
+
+  &__content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-width: 100%;
+  }
+
+  &__icon {
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  &__text {
+    flex: 1;
+    line-height: 1.5;
+  }
+}
+
+/* Плашка статуса лицензии в панели управления */
+.block-builder-license-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  user-select: none;
+  transition: all var(--bb-transition-fast);
+  margin-left: auto;
+
+  &__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    font-size: 12px;
+  }
+
+  &__text {
+    font-size: 13px;
+    letter-spacing: 0.3px;
+  }
+
+  &.block-builder-license-badge--pro {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+
+    &:hover {
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+      transform: translateY(-1px);
+    }
+  }
+
+  &.block-builder-license-badge--free {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+
+    &:hover {
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+      transform: translateY(-1px);
+    }
+  }
+}

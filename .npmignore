@@ -1,0 +1,65 @@
+# npm ignore file
+# Защита от случайной публикации примеров и разработческих файлов
+
+# Примеры (НЕ должны попадать пользователям)
+examples/
+src/examples/
+
+# Исходники (только dist попадает в публикацию)
+# ИСКЛЮЧЕНИЕ: src/vue.ts и файлы из src/ указаны в "files" поля package.json
+# и будут включены в пакет (приоритет "files" > .npmignore)
+src/
+# Но исключаем тестовые файлы и конфиги
+src/__tests__/
+src/**/*.test.ts
+src/**/*.spec.ts
+
+# Конфигурация разработки
+dev-server.js
+rollup.dev.cjs
+rollup.config.cjs
+tsconfig.json
+jest.config.js
+.editorconfig
+
+# Документация разработки
+*.md
+!README.md
+# Исключаем отчеты аудита (не нужны в пакете)
+PRE_PUBLISH_AUDIT.md
+LICENSING*.md
+ARCHITECTURE.md
+TEST_FIXES_SUMMARY.md
+
+# Правила и конфигурация
+.cursor/
+.vscode/
+.idea/
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# CI/CD
+.github/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Тесты
+__tests__/
+*.test.ts
+*.test.js
+*.spec.ts
+*.spec.js
+
+# Временные файлы
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+

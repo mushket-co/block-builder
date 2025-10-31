@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spacing Control Demo - Pure JS</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      color: white;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .demo-section {
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .demo-section h2 {
+      margin-top: 0;
+      color: #2c3e50;
+    }
+
+    #demo-block {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      
+      /* Применяем CSS переменные */
+      padding-top: var(--spacing-padding-top, 0);
+      padding-bottom: var(--spacing-padding-bottom, 0);
+      margin-top: var(--spacing-margin-top, 0);
+      margin-bottom: var(--spacing-margin-bottom, 0);
+    }
+
+    #demo-block-inner {
+      padding: 0 30px;
+    }
+
+    #demo-block h3 {
+      margin-top: 0;
+    }
+
+    /* Адаптивность */
+    @media (max-width: 1199px) {
+      #demo-block {
+        padding-top: var(--spacing-padding-top-tablet, var(--spacing-padding-top, 0));
+        padding-bottom: var(--spacing-padding-bottom-tablet, var(--spacing-padding-bottom, 0));
+        margin-top: var(--spacing-margin-top-tablet, var(--spacing-margin-top, 0));
+        margin-bottom: var(--spacing-margin-bottom-tablet, var(--spacing-margin-bottom, 0));
+      }
+    }
+
+    @media (max-width: 767px) {
+      #demo-block {
+        padding-top: var(--spacing-padding-top-mobile, var(--spacing-padding-top, 0));
+        padding-bottom: var(--spacing-padding-bottom-mobile, var(--spacing-padding-bottom, 0));
+        margin-top: var(--spacing-margin-top-mobile, var(--spacing-margin-top, 0));
+        margin-bottom: var(--spacing-margin-bottom-mobile, var(--spacing-margin-bottom, 0));
+      }
+
+      #demo-block-inner {
+        padding: 0 20px;
+      }
+    }
+
+    .info {
+      background: #e3f2fd;
+      padding: 15px;
+      border-radius: 8px;
+      border-left: 4px solid #2196f3;
+      margin-bottom: 20px;
+    }
+
+    .info p {
+      margin: 0;
+      color: #1976d2;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📐 Spacing Control - Pure JavaScript</h1>
+
+    <div class="demo-section">
+      <h2>Демонстрационный блок</h2>
+      <div class="info">
+        <p>👇 Настройте отступы ниже и посмотрите, как изменяется этот блок</p>
+        <p>📱 Попробуйте изменить размер окна, чтобы увидеть адаптивность</p>
+      </div>
+      
+      <div id="demo-block">
+        <div id="demo-block-inner">
+          <h3>Привет, мир! 👋</h3>
+          <p>Это демонстрационный блок с настраиваемыми отступами.</p>
+          <p>Измените отступы с помощью контрола ниже, чтобы увидеть изменения в реальном времени.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h2>Настройки отступов</h2>
+      <div id="spacing-demo"></div>
+    </div>
+
+    <div class="demo-section">
+      <h2>Инструкция</h2>
+      <ol>
+        <li><strong>Переключайте брекпоинты</strong> - используйте кнопки "Десктоп", "Таблет", "Моб"</li>
+        <li><strong>Настраивайте отступы</strong> - двигайте ползунки или вводите значения вручную</li>
+        <li><strong>Смотрите превью CSS</strong> - внизу отображаются сгенерированные CSS переменные</li>
+        <li><strong>Тестируйте адаптивность</strong> - измените размер окна браузера</li>
+      </ol>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initSpacingExample } from './src/spacing-example.js';
+    
+    // Инициализация при загрузке страницы
+    document.addEventListener('DOMContentLoaded', () => {
+      initSpacingExample();
+    });
+  </script>
+</body>
+</html>
+

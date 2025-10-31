@@ -1,0 +1,128 @@
+/**
+ * Стили для WYSIWYG редактора (Pure JS версия)
+ */
+
+/* Базовые стили редактора */
+.wyz-editor {
+  width: 100%;
+  min-height: 200px;
+}
+
+.wyz-editor.wyz-editor--is-error {
+  border: 2px solid #dc3545;
+  border-radius: 4px;
+}
+
+/* Режимы редактора */
+.wyz-editor--mode-default {
+  /* Полный набор инструментов */
+}
+
+.wyz-editor--mode-minimal {
+  /* Минимальный набор инструментов */
+}
+
+/* Стили для контента внутри редактора */
+.u-base-wyz-content .jodit-wysiwyg {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #333;
+}
+
+.u-base-wyz-content .jodit-wysiwyg h1,
+.u-base-wyz-content .jodit-wysiwyg h2,
+.u-base-wyz-content .jodit-wysiwyg h3 {
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  font-weight: 600;
+}
+
+.u-base-wyz-content .jodit-wysiwyg h1 {
+  font-size: 2em;
+}
+
+.u-base-wyz-content .jodit-wysiwyg h2 {
+  font-size: 1.5em;
+}
+
+.u-base-wyz-content .jodit-wysiwyg h3 {
+  font-size: 1.25em;
+}
+
+.u-base-wyz-content .jodit-wysiwyg p {
+  margin-bottom: 1em;
+}
+
+.u-base-wyz-content .jodit-wysiwyg ul,
+.u-base-wyz-content .jodit-wysiwyg ol {
+  margin-left: 1.5em;
+  margin-bottom: 1em;
+}
+
+.u-base-wyz-content .jodit-wysiwyg li {
+  margin-bottom: 0.5em;
+}
+
+.u-base-wyz-content .jodit-wysiwyg a {
+  color: #007bff;
+  text-decoration: underline;
+}
+
+.u-base-wyz-content .jodit-wysiwyg a:hover {
+  color: #0056b3;
+}
+
+.u-base-wyz-content .jodit-wysiwyg img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+
+.u-base-wyz-content .jodit-wysiwyg table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-bottom: 1em;
+}
+
+.u-base-wyz-content .jodit-wysiwyg table td,
+.u-base-wyz-content .jodit-wysiwyg table th {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+.u-base-wyz-content .jodit-wysiwyg table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+}
+
+.u-base-wyz-content .jodit-wysiwyg blockquote {
+  border-left: 4px solid #ccc;
+  margin-left: 0;
+  padding-left: 1em;
+  color: #666;
+  font-style: italic;
+}
+
+.u-base-wyz-content .jodit-wysiwyg code {
+  background-color: #f8f9fa;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.9em;
+}
+
+.u-base-wyz-content .jodit-wysiwyg pre {
+  background-color: #f8f9fa;
+  padding: 1em;
+  border-radius: 4px;
+  overflow-x: auto;
+}
+
+.u-base-wyz-content .jodit-wysiwyg pre code {
+  background-color: transparent;
+  padding: 0;
+}
+

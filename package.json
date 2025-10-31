@@ -1,0 +1,120 @@
+{
+  "name": "block-builder",
+  "version": "1.0.0",
+  "description": "Блочный конструктор для no-code разработки",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.js"
+    },
+    "./core": {
+      "types": "./dist/core.d.ts",
+      "import": "./dist/core.esm.js",
+      "require": "./dist/core.js"
+    },
+    "./vue": {
+      "types": "./src/vue.ts",
+      "import": "./src/vue.ts"
+    }
+  },
+  "workspaces": [
+    "examples/vue3",
+    "examples/vue3-core-api",
+    "examples/pure-js-vite",
+    "examples/api-usage",
+    "examples/pure-js-cdn"
+  ],
+  "files": [
+    "dist",
+    "src/vue.ts",
+    "src/ui/components/**/*.vue",
+    "src/ui/styles/**/*.scss",
+    "src/core/types/**/*",
+    "src/core/use-cases/**/*",
+    "src/core/ports/**/*",
+    "src/infrastructure/**/*",
+    "src/utils/**/*"
+  ],
+  "scripts": {
+    "build": "rollup -c rollup.config.cjs",
+    "dev:build": "rollup -c rollup.dev.cjs -w",
+    "dev:server": "node dev-server.js",
+    "dev": "concurrently -k -n BUILD,SERVER -c blue,green \"npm:dev:build\" \"npm:dev:server\"",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:verbose": "jest --verbose",
+    "test:unit": "jest --testPathPattern=\".*\\.test\\.ts$\"",
+    "test:integration": "jest --testPathPattern=\".*\\.integration\\.test\\.ts$\"",
+    "test:ci": "jest --ci --coverage --maxWorkers=2",
+    "lint": "eslint src/**/*.ts",
+    "type-check": "tsc --noEmit",
+    "start": "node dev-server.js",
+    "clean": "rimraf dist",
+    "prebuild": "npm run clean",
+    "pretest": "npm run type-check",
+    "example:vue3": "npm run dev --workspace=examples/vue3",
+    "example:pure-js": "npm run dev --workspace=examples/pure-js-vite",
+    "example:api-usage": "npm run dev --workspace=examples/api-usage",
+    "example:cdn": "npm run dev --workspace=examples/pure-js-cdn",
+    "example:vue3-core-api": "npm run dev --workspace=examples/vue3-core-api",
+    "examples:install": "npm install"
+  },
+  "keywords": [
+    "block-builder",
+    "no-code",
+    "constructor",
+    "vue3",
+    "typescript"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fellsia2019/block-builder.git"
+  },
+  "homepage": "https://github.com/fellsia2019/block-builder#readme",
+  "bugs": {
+    "url": "https://github.com/fellsia2019/block-builder/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^11.1.5",
+    "@types/jest": "^29.5.8",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.12.0",
+    "concurrently": "^9.0.1",
+    "eslint": "^8.54.0",
+    "express": "^4.18.2",
+    "identity-obj-proxy": "^3.0.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "postcss": "^8.5.6",
+    "postcss-import": "^16.1.1",
+    "rimraf": "^5.0.5",
+    "rollup": "^4.6.1",
+    "rollup-plugin-dts": "^6.1.0",
+    "rollup-plugin-postcss": "^4.0.2",
+    "sass": "^1.83.4",
+    "ts-jest": "^29.1.1",
+    "tslib": "^2.8.1",
+    "typescript": "^5.3.2"
+  },
+  "peerDependencies": {
+    "vue": "^3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "vue": {
+      "optional": true
+    }
+  }
+}

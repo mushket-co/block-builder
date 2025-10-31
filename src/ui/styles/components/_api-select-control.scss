@@ -1,0 +1,255 @@
+/**
+ * Стили для API Select контрола
+ * Используется как для Vue3, так и для чистого JS
+ */
+
+.bb-api-select {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+
+  &__label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 4px;
+  }
+
+  &__required {
+    color: #e74c3c;
+    margin-left: 2px;
+  }
+
+  &__wrapper {
+    position: relative;
+  }
+
+  &__search {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  &__input {
+    width: 100%;
+    padding: 8px 72px 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #333;
+    background-color: #fff;
+    transition: all 0.2s;
+
+    &:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+    }
+
+    &::placeholder {
+      color: #999;
+    }
+  }
+
+  &__loader,
+  &__clear {
+    position: absolute;
+    right: 40px;
+    font-size: 14px;
+    color: #999;
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.2s;
+  }
+
+  &__loader {
+    cursor: default;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  &__clear {
+    &:hover {
+      color: #e74c3c;
+    }
+  }
+
+  // Анимация для лоадера
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  &__toggle {
+    position: absolute;
+    right: 8px;
+    background: none;
+    border: none;
+    padding: 4px 8px;
+    font-size: 12px;
+    color: #666;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s;
+
+    &:hover {
+      color: #667eea;
+    }
+
+    &--open {
+      transform: rotate(180deg);
+    }
+  }
+
+  &__dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    max-height: 300px;
+    overflow-y: auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+
+    /* Кастомный скроллбар */
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: rgba(153, 153, 153, 0.3);
+      border-radius: 4px;
+
+      &:hover {
+        background-color: rgba(153, 153, 153, 0.5);
+      }
+    }
+  }
+
+  &__message {
+    padding: 16px 12px;
+    text-align: center;
+    color: #999;
+    font-size: 14px;
+
+    &--error {
+      color: #e74c3c;
+    }
+  }
+
+  &__list {
+    padding: 4px 0;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 14px;
+
+    &:hover {
+      background-color: #f5f5f5;
+    }
+
+    &--selected {
+      background-color: rgba(102, 126, 234, 0.1);
+      color: #667eea;
+    }
+  }
+
+  &__item-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__item-check {
+    margin-left: 8px;
+    color: #667eea;
+    font-weight: bold;
+  }
+
+  &__load-more {
+    padding: 10px 12px;
+    text-align: center;
+    color: #667eea;
+    cursor: pointer;
+    border-top: 1px solid #ddd;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: #f5f5f5;
+    }
+  }
+
+  &__selected {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  &__tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    background-color: rgba(102, 126, 234, 0.1);
+    color: #667eea;
+    border-radius: 4px;
+    font-size: 13px;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: rgba(102, 126, 234, 0.15);
+    }
+  }
+
+  &__tag-name {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__tag-remove {
+    cursor: pointer;
+    font-weight: bold;
+    color: #667eea;
+    transition: color 0.2s;
+
+    &:hover {
+      color: #e74c3c;
+    }
+  }
+
+  &__error {
+    color: #e74c3c;
+    font-size: 12px;
+    margin-top: 4px;
+  }
+}
+
+/* Стили для контейнера в форме */
+.api-select-control-container {
+  margin-bottom: 16px;
+}
+

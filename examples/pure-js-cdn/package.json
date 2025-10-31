@@ -1,0 +1,15 @@
+{
+  "name": "@block-builder/example-pure-js-cdn",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Пример использования block-builder без сборки (CDN)",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
+

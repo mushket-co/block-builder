@@ -1,0 +1,79 @@
+/**
+ * CSS переменные для Block Builder
+ * Можно кастомизировать через переопределение переменных
+ */
+
+:root {
+  /* Цвета бренда */
+  --bb-color-primary: #667eea;
+  --bb-color-primary-dark: #06dfdf;
+  --bb-color-primary-light: #e0f0ff;
+
+  /* Цвета состояний */
+  --bb-color-secondary: #6c757d;
+  --bb-color-secondary-dark: #5a6268;
+  --bb-color-danger: #dc3545;
+  --bb-color-danger-dark: #c82333;
+  --bb-color-danger-light: #fee;
+  --bb-color-success: #28a745;
+  --bb-color-success-dark: #218838;
+  --bb-color-warning: #ffc107;
+  --bb-color-info: #17a2b8;
+
+  /* Цвета фона */
+  --bb-bg-primary: #ffffff;
+  --bb-bg-primary-revert: #000000;
+  --bb-bg-secondary: #f8f9fa;
+  --bb-bg-tertiary: #e9ecef;
+  --bb-bg-overlay: rgba(0, 0, 0, 0.5);
+
+  /* Цвета текста */
+  --bb-text-primary: #2c3e50;
+  --bb-text-secondary: #495057;
+  --bb-text-tertiary: #666;
+  --bb-text-muted: #999;
+
+  /* Цвета границ */
+  --bb-border-color: #ddd;
+  --bb-border-color-light: #e9ecef;
+  --bb-border-color-focus: var(--bb-color-primary);
+
+  /* Размеры */
+  --bb-spacing-xs: 4px;
+  --bb-spacing-sm: 8px;
+  --bb-spacing-md: 12px;
+  --bb-spacing-lg: 16px;
+  --bb-spacing-xl: 20px;
+  --bb-spacing-2xl: 24px;
+
+  /* Border radius */
+  --bb-radius-sm: 4px;
+  --bb-radius-md: 6px;
+  --bb-radius-lg: 8px;
+
+  /* Шрифты */
+  --bb-font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  --bb-font-family-mono: 'Courier New', Courier, monospace;
+  --bb-font-size-xs: 12px;
+  --bb-font-size-sm: 14px;
+  --bb-font-size-md: 16px;
+  --bb-font-size-lg: 18px;
+  --bb-font-size-xl: 20px;
+
+  /* Тени */
+  --bb-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --bb-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --bb-shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.3);
+  --bb-shadow-primary: 0 4px 12px rgba(102, 126, 234, 0.4);
+
+  /* Transitions */
+  --bb-transition-fast: 0.15s ease;
+  --bb-transition-base: 0.2s ease;
+  --bb-transition-slow: 0.3s ease;
+
+  /* Z-index */
+  --bb-z-index-dropdown: 100;
+  --bb-z-index-modal: 1000;
+  --bb-z-index-tooltip: 1100;
+}
+

@@ -1,0 +1,21 @@
+/**
+ * Block Builder - Главный файл стилей SCSS
+ *
+ * Этот файл импортирует все необходимые стили для работы Block Builder
+ * как в чистом JS, так и во фреймворках (Vue3, React и т.д.)
+ */
+
+/* CSS переменные */
+@use './variables';
+
+/* Базовые стили */
+@use './base';
+
+/* Компоненты */
+@use './components/buttons';
+@use './components/blocks';
+@use './components/forms';
+@use './components/modals';
+@use './components/spacing-control';
+@use './components/repeater-control';
+@use './components/api-select-control';

@@ -1,0 +1,34 @@
+# Enforce LF line endings for text files across all platforms
+
+# Default behavior: treat files as text and normalize to LF in repo
+* text=auto eol=lf
+
+# Explicitly enforce LF for common text types
+*.js   text eol=lf
+*.ts   text eol=lf
+*.tsx  text eol=lf
+*.jsx  text eol=lf
+*.vue  text eol=lf
+*.json text eol=lf
+*.css  text eol=lf
+*.scss text eol=lf
+*.html text eol=lf
+*.md   text eol=lf
+*.cjs  text eol=lf
+*.mjs  text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+*.sh   text eol=lf
+
+# Keep binaries untouched
+*.png  -text
+*.jpg  -text
+*.jpeg -text
+*.gif  -text
+*.webp -text
+*.svg  -text
+*.ico  -text
+*.pdf  -text
+*.woff -text
+*.woff2 -text
+

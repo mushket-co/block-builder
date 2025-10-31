@@ -1,0 +1,21 @@
+{
+  "name": "block-builder-example-pure-js",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "autobind-decorator": "^2.4.0",
+    "block-builder": "file:../..",
+    "jodit": "^4.7.4",
+    "swiper": "^11.1.15",
+    "typograf": "^7.6.0"
+  },
+  "devDependencies": {
+    "vite": "^6.0.5"
+  }
+}

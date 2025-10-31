@@ -1,0 +1,414 @@
+/**
+ * Стили для блоков по БЭМ с использованием SCSS
+ */
+
+// Миксин для блока (устарел, оставлен для совместимости)
+@mixin block-variant($border-color, $bg-color) {
+  border-color: $border-color;
+  background: $bg-color;
+}
+
+/* Контейнер для списка блоков */
+.block-builder-blocks {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Отдельный блок */
+.block-builder-block {
+  position: relative;
+  min-height: 280px; /* Минимальная высота для контролов + отступы */
+  transition: all var(--bb-transition-slow);
+
+  /* Убираем все обводки и фоны */
+  border: none;
+  background: transparent;
+  border-radius: 0;
+
+  &:hover {
+    .block-builder-block-tooltip {
+      opacity: 1;
+    }
+  }
+
+  &.hidden {
+    .block-builder-block-content {
+      opacity: 0.3;
+      pointer-events: none;
+    }
+  }
+}
+
+/* Содержимое блока */
+.block-builder-block-content {
+  padding: 0;
+  min-height: 50px;
+}
+
+/* Поп-апчик с контролами */
+.block-builder-block-tooltip {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: white;
+  border: 1px solid var(--bb-border-color-light);
+  border-radius: var(--bb-radius-md);
+  box-shadow: var(--bb-shadow-md);
+  padding: 4px;
+  display: flex;
+  flex-direction: column; /* Вертикальная раскладка */
+  gap: 2px;
+  opacity: 0.5; /* Всегда видимые, но полупрозрачные */
+  transition: all var(--bb-transition-base);
+  z-index: 200;
+}
+
+.block-builder-block-controls {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  padding: 10px;
+  z-index: 10;
+  transform: translateX(-200vw) translateY(-200vh);
+
+  // .block-builder-block-controls-inner
+  &-inner {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-end;
+    width: fit-content;
+    margin-left: auto;
+    background-color: var(--bb-bg-primary);
+    transition: all var(--bb-transition-base);
+    padding: 8px;
+    border-radius: 8px;
+    opacity: 0.5;
+    transform: translateX(200vw) translateY(200vh);
+
+    &::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      box-shadow: 0 0 10px 0 var(--bb-bg-primary-revert);
+      opacity: 0.3;
+      pointer-events: none;
+      touch-action: none;
+      border-radius: inherit;
+    }
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+.block-builder-control-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: var(--bb-radius-sm);
+  font-size: 14px;
+  transition: all var(--bb-transition-fast);
+  color: var(--bb-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px; /* Фиксированная ширина */
+  height: 32px; /* Фиксированная высота */
+  min-width: 32px;
+  min-height: 32px;
+
+  &:hover {
+    background: var(--bb-bg-secondary);
+    color: var(--bb-color-primary);
+    transform: scale(1.1);
+  }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.95);
+  }
+}
+
+
+/* Контейнер для Vue компонента */
+.vue-component-container {
+  min-height: 50px;
+  padding: 10px;
+  border: 1px solid var(--bb-border-color-light);
+  border-radius: var(--bb-radius-sm);
+  background: var(--bb-bg-secondary);
+}
+
+/* Ошибка Vue компонента */
+.vue-error {
+  color: var(--bb-color-danger);
+  font-size: var(--bb-font-size-xs);
+  padding: 10px;
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: var(--bb-radius-sm);
+}
+
+/* Fallback содержимое блока */
+.block-content-fallback {
+  padding: var(--bb-spacing-xl);
+  background: var(--bb-bg-secondary);
+  border: 1px solid var(--bb-border-color-light);
+  border-radius: var(--bb-radius-sm);
+  font-family: var(--bb-font-family-mono);
+  font-size: var(--bb-font-size-xs);
+
+  pre {
+    margin: 10px 0 0 0;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+}
+
+/* Custom block container */
+.custom-block-container {
+  min-height: 50px;
+}
+
+/* Панель управления */
+.block-builder-controls {
+  &.block-builder-controls--fixed-top,
+  &.block-builder-controls--fixed-bottom {
+    position: fixed;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+
+    // Делаем адаптивным для мобильных
+    @media (max-width: 768px) {
+      width: 100%;
+    }
+  }
+
+  &.block-builder-controls--fixed-top {
+    top: 0;
+  }
+
+  &.block-builder-controls--fixed-bottom {
+    bottom: 0;
+  }
+
+  // .block-builder-controls-inner
+  &-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--bb-spacing-lg);
+    padding: var(--bb-spacing-xl);
+    background: var(--bb-bg-secondary);
+    border-radius: var(--bb-radius-lg);
+    border: 1px solid var(--bb-border-color-light);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+
+/* Статистика (теперь внутри controls) */
+.block-builder-controls .block-builder-stats {
+  display: flex;
+  gap: var(--bb-spacing-md);
+  margin-bottom: 0;
+  margin-left: auto;
+  padding: 8px 12px;
+  background: var(--bb-bg-tertiary);
+  border-radius: var(--bb-radius-md);
+  font-size: var(--bb-font-size-sm);
+  color: var(--bb-text-secondary);
+
+  /* Группируем stats и license badge справа */
+  &::after {
+    content: '';
+    flex: 1;
+  }
+}
+
+/* Плашка лицензии рядом со статистикой */
+.block-builder-controls-inner {
+  .block-builder-license-badge {
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
+
+/* Контейнер блоков - добавляем отступ если есть зафиксированные элементы */
+.block-builder-app {
+  &.has-fixed-controls {
+    &.has-top-controls {
+      .block-builder-blocks {
+        padding-top: 100px;
+      }
+    }
+
+    &.has-bottom-controls {
+      .block-builder-blocks {
+        padding-bottom: 100px;
+      }
+    }
+  }
+}
+
+.block-builder-blocks {
+  padding-bottom: 20px; // Стандартный отступ
+}
+
+/* Кнопка добавления блока */
+.block-builder-add-block-separator {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: var(--bb-spacing-xl) 0;
+  opacity: 0.3;
+  transition: opacity var(--bb-transition-base);
+
+  &:hover {
+    opacity: 1;
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(to right, transparent, var(--bb-border-color-light) 20%, var(--bb-border-color-light) 80%, transparent);
+    z-index: 0;
+  }
+}
+
+.block-builder-add-block-btn {
+  position: relative;
+  z-index: 1;
+  background: var(--bb-bg-primary);
+  border: 2px dashed var(--bb-color-primary);
+  border-radius: var(--bb-radius-md);
+  padding: 12px 24px;
+  cursor: pointer;
+  font-size: var(--bb-font-size-sm);
+  font-weight: 500;
+  color: var(--bb-color-primary);
+  transition: all var(--bb-transition-base);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  &__icon {
+    font-size: 20px;
+    font-weight: bold;
+    line-height: 1;
+  }
+
+  &__text {
+    font-family: var(--bb-font-family);
+  }
+
+  &:hover {
+    background: var(--bb-color-primary);
+    color: white;
+    border-style: solid;
+    transform: translateY(-2px);
+    box-shadow: var(--bb-shadow-md);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+/* Пустое состояние (когда блоков нет) */
+.block-builder-empty-state {
+  text-align: center;
+  padding: var(--bb-spacing-2xl) 0;
+}
+
+/* Модалка выбора типа блока */
+.block-builder-block-type-selection {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--bb-spacing-md);
+  padding: var(--bb-spacing-md) 0;
+}
+
+.block-builder-block-type-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--bb-spacing-sm);
+  padding: var(--bb-spacing-xl);
+  border: 2px solid var(--bb-border-color-light);
+  border-radius: var(--bb-radius-md);
+  background: var(--bb-bg-primary);
+  cursor: pointer;
+  transition: all var(--bb-transition-base);
+  min-height: 120px;
+  text-align: center;
+
+  &__icon {
+    font-size: 32px;
+    line-height: 1;
+  }
+
+  &__title {
+    font-size: var(--bb-font-size-sm);
+    font-weight: 500;
+    color: var(--bb-text-primary);
+    font-family: var(--bb-font-family);
+  }
+
+  &:hover {
+    border-color: var(--bb-color-primary);
+    background: var(--bb-color-primary-light);
+    transform: translateY(-2px);
+    box-shadow: var(--bb-shadow-md);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+/* Уведомления (для копирования ID и других действий) */
+.block-builder-notification {
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateX(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes fadeOut {
+    from {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateX(20px);
+    }
+  }
+}
+
+

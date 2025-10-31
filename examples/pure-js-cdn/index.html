@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мое приложение с BlockBuilder (Pure JS)</title>
+
+    <!-- Swiper CSS для слайдера -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background: #f5f5f5;
+        }
+        .app {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: #f8f9fa;
+        }
+        .app-header {
+            background: white;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .app-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .app-description {
+            color: #666;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        /* Модалка для деталей карточки (код пользователя, НЕ пакета!) */
+        .card-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            backdrop-filter: blur(4px);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .card-modal-overlay.show {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .card-modal-content {
+            background: white;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 24px;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .modal-close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+
+        .modal-close-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .modal-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-title {
+            margin: 0 0 12px 0;
+            font-size: 1.25rem;
+            color: #333;
+        }
+
+        .modal-description {
+            margin: 0 0 20px 0;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .modal-actions {
+            text-align: center;
+            margin-top: 24px;
+        }
+
+        .modal-link-btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3);
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .modal-link-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79, 172, 254, 0.4);
+        }
+
+        /* Hover эффекты для карточек */
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <div class="app-header">
+            <h1>Мое приложение с BlockBuilder (Pure JS)</h1>
+            <div class="app-description">
+                Это ПРАВИЛЬНОЕ использование пакета BlockBuilder на чистом JavaScript.
+                Пользователь получает готовый UI автоматически.
+                Все формы, валидация, модальные окна и UI контролы рендерятся автоматически пакетом.
+            </div>
+        </div>
+
+        <div class="app-content">
+            <!-- BlockBuilder автоматически рендерит все контролы и UI -->
+            <div class="block-builder-container" id="block-builder-container">
+                <!-- Здесь будет рендериться весь UI от пакета -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Модалка для деталей карточки (код пользователя, НЕ пакета!) -->
+    <div class="card-modal-overlay" id="cardModal">
+        <div class="card-modal-content" id="cardModalContent">
+            <div class="modal-header">
+                <h3 id="modalTitle"></h3>
+                <button class="modal-close-btn" onclick="closeCardModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <img id="modalImage" class="modal-image" src="" alt="" style="display: none;">
+                <h4 id="modalSubtitle" class="modal-title"></h4>
+                <p id="modalDescription" class="modal-description"></p>
+                <div class="modal-actions">
+                    <a id="modalLink" class="modal-link-btn" href="#" target="_blank" style="display: none;"></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Импортируем конфигурацию блоков
+        import { blockConfigs } from './block-config.js';
+
+        // Импортируем основной BlockBuilder из пакета
+        import { BlockBuilder } from '/dist/index.esm.js';
+
+        // ПРАВИЛЬНОЕ использование пакета BlockBuilder
+        // Пользователь получает готовый UI автоматически
+        // Все формы, валидация, модальные окна и UI контролы рендерятся автоматически
+
+        // Загрузка сохранённых блоков из localStorage
+        const loadSavedBlocks = () => {
+            try {
+                const savedData = localStorage.getItem('saved-blocks');
+                if (savedData) {
+                    const blocks = JSON.parse(savedData);
+                    console.log(`📦 Найдено ${blocks.length} сохранённых блоков`);
+                    return blocks;
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки сохранённых блоков:', error);
+            }
+            return [];
+        };
+
+        // Инициализация пакета
+        const blockBuilder = new BlockBuilder({
+            containerId: 'block-builder-container',
+            blockConfigs: blockConfigs,
+            // Дополнительные настройки
+            theme: 'light',
+            locale: 'ru',
+            controlsFixedPosition: 'bottom', // Фиксировать контролы (с кнопками и статистикой) снизу
+            controlsOffset: 20, // Отступ от края
+            // Загружаем сохранённые блоки при инициализации
+            initialBlocks: loadSavedBlocks(),
+            // Функция сохранения
+            onSave: async (blocks) => {
+                console.log('💾 Сохранение блоков:', blocks);
+
+                try {
+                    // Здесь вы можете сохранять блоки любым способом:
+                    // 1. Отправить на сервер через API
+                    // await fetch('/api/blocks', { method: 'POST', body: JSON.stringify(blocks) })
+
+                    // 2. Сохранить в localStorage
+                    localStorage.setItem('saved-blocks', JSON.stringify(blocks));
+
+                    // 3. Сохранить в IndexedDB
+                    // await saveToIndexedDB(blocks)
+
+                    // Возвращаем true при успешном сохранении
+                    return true;
+                } catch (error) {
+                    console.error('Ошибка сохранения:', error);
+                    // Возвращаем false при ошибке
+                    return false;
+                }
+            }
+        });
+
+        console.log('✅ BlockBuilder инициализирован с конфигурацией пользователя (Pure JS)');
+
+        // ===== ПОЛЬЗОВАТЕЛЬСКАЯ ЛОГИКА ДЛЯ МОДАЛКИ КАРТОЧЕК =====
+        // Это код пользователя, НЕ пакета!
+
+        // Функция для показа модалки с деталями карточки
+        window.showCardModal = function(card) {
+            const modal = document.getElementById('cardModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalSubtitle = document.getElementById('modalSubtitle');
+            const modalDescription = document.getElementById('modalDescription');
+            const modalImage = document.getElementById('modalImage');
+            const modalLink = document.getElementById('modalLink');
+
+            // Заполняем данные
+            modalTitle.textContent = card.title;
+            modalSubtitle.textContent = card.title;
+            modalDescription.textContent = card.text;
+
+            // Показываем/скрываем изображение
+            if (card.image) {
+                modalImage.src = card.image;
+                modalImage.alt = card.title;
+                modalImage.style.display = 'block';
+            } else {
+                modalImage.style.display = 'none';
+            }
+
+            // Показываем/скрываем кнопку
+            if (card.link && card.button) {
+                modalLink.href = card.link;
+                modalLink.textContent = card.button;
+                modalLink.style.display = 'inline-block';
+            } else {
+                modalLink.style.display = 'none';
+            }
+
+            // Показываем модалку
+            modal.classList.add('show');
+        };
+
+        // Функция для закрытия модалки
+        window.closeCardModal = function() {
+            const modal = document.getElementById('cardModal');
+            modal.classList.remove('show');
+        };
+
+        // Закрытие по клику на overlay
+        document.getElementById('cardModal').addEventListener('mousedown', function(e) {
+            if (e.target === this) {
+                closeCardModal();
+            }
+        });
+
+        // Предотвращаем всплытие события от контента модалки
+        document.getElementById('cardModalContent').addEventListener('mousedown', function(e) {
+            e.stopPropagation();
+        });
+
+        // Закрытие по ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeCardModal();
+            }
+        });
+
+        // Обработчик кликов по карточкам
+        document.addEventListener('click', function(e) {
+            const card = e.target.closest('.card[data-card-index]');
+            if (card) {
+                e.preventDefault();
+
+                // Получаем данные карточек из родительского элемента
+                const cardListBlock = card.closest('.card-list-block');
+                if (cardListBlock) {
+                    const cardsData = cardListBlock.getAttribute('data-cards');
+                    if (cardsData) {
+                        try {
+                            const cards = JSON.parse(cardsData);
+                            const cardIndex = parseInt(card.getAttribute('data-card-index'), 10);
+                            const selectedCard = cards[cardIndex];
+
+                            if (selectedCard) {
+                                showCardModal(selectedCard);
+                            }
+                        } catch (error) {
+                            console.error('Ошибка при парсинге данных карточки:', error);
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+
+    <!-- Swiper JS для слайдера -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+    <script>
+        // ===== ПОЛЬЗОВАТЕЛЬСКАЯ ЛОГИКА ДЛЯ ИНИЦИАЛИЗАЦИИ SWIPER =====
+        // Это код пользователя, НЕ пакета!
+
+        // MutationObserver для отслеживания добавления новых слайдеров
+        const initSwiper = function(swiperElement) {
+            if (swiperElement.swiper) {
+                // Swiper уже инициализирован
+                return;
+            }
+
+            const configAttr = swiperElement.getAttribute('data-swiper-config');
+            let config = {};
+
+            if (configAttr) {
+                try {
+                    config = JSON.parse(configAttr);
+                } catch (e) {
+                    console.error('Ошибка парсинга конфигурации Swiper:', e);
+                }
+            }
+
+            // Инициализируем Swiper с настройками
+            new Swiper(swiperElement, {
+                slidesPerView: 1,
+                spaceBetween: config.spaceBetween || 30,
+                loop: config.loop !== undefined ? config.loop : true,
+                autoplay: config.autoplay ? {
+                    delay: config.autoplayDelay || 3000,
+                    disableOnInteraction: false,
+                } : false,
+                pagination: {
+                    el: swiperElement.querySelector('.swiper-pagination'),
+                    clickable: true,
+                    dynamicBullets: true,
+                },
+                navigation: {
+                    nextEl: swiperElement.querySelector('.swiper-button-next'),
+                    prevEl: swiperElement.querySelector('.swiper-button-prev'),
+                },
+                effect: 'slide',
+                grabCursor: true,
+            });
+        };
+
+        // Инициализируем все существующие слайдеры
+        const initAllSwipers = function() {
+            document.querySelectorAll('.swiper').forEach(initSwiper);
+        };
+
+        // Создаём наблюдатель за изменениями DOM
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                mutation.addedNodes.forEach(function(node) {
+                    if (node.nodeType === 1) { // Element node
+                        // Проверяем сам элемент
+                        if (node.classList && node.classList.contains('swiper')) {
+                            initSwiper(node);
+                        }
+                        // Проверяем дочерние элементы
+                        if (node.querySelectorAll) {
+                            node.querySelectorAll('.swiper').forEach(initSwiper);
+                        }
+                    }
+                });
+            });
+        });
+
+        // Запускаем наблюдение за изменениями в DOM
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+
+        // Инициализируем слайдеры при загрузке страницы
+        document.addEventListener('DOMContentLoaded', initAllSwipers);
+
+        // Также вызываем инициализацию после небольшой задержки на случай динамической загрузки
+        setTimeout(initAllSwipers, 500);
+    </script>
+</body>
+</html>

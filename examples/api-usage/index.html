@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlockBuilder API Usage Example - Полный демо всех методов API</title>
+    <style>
+        .hidden-container {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="app">
+            <div class="app-header">
+                <h1>BlockBuilder API Usage Example</h1>
+                <div class="app-description">
+                    <p>✅ Полный демонстратор всех методов API</p>
+                    <p>✅ Кастомный UI вместо готового</p>
+                    <p>✅ Программное управление блоками</p>
+                    <p>✅ Все возможности пакета</p>
+                </div>
+            </div>
+
+            <div class="app-content">
+                <!-- Левая колонка - кнопки -->
+                <div class="controls">
+                    <!-- Создание блоков -->
+                    <div class="control-section">
+                        <h2>🎨 Создание блоков</h2>
+                        <div class="button-group">
+                            <button id="addTextBlock" class="btn btn-primary">📝 + Текст</button>
+                            <button id="addImageBlock" class="btn btn-primary">🖼️ + Изображение</button>
+                            <button id="addCardBlock" class="btn btn-primary">🃏 + Карточка</button>
+                            <button id="addHeroBlock" class="btn btn-primary">🎯 + Hero</button>
+                        </div>
+                    </div>
+
+                    <!-- Получение данных -->
+                    <div class="control-section">
+                        <h2>📊 Получение блоков</h2>
+                        <div class="button-group">
+                            <button id="getAllBlocks" class="btn btn-secondary">📦 Все блоки</button>
+                            <button id="getBlocksCount" class="btn btn-secondary">🔢 Количество</button>
+                            <button id="getBlocksByType" class="btn btn-secondary">🎯 По типу</button>
+                        </div>
+                    </div>
+
+                    <!-- Экспорт/импорт -->
+                    <div class="control-section">
+                        <h2>💾 Экспорт / Импорт</h2>
+                        <div class="button-group">
+                            <button id="exportBlocks" class="btn btn-success">💾 Экспорт (JSON)</button>
+                            <button id="downloadBlocks" class="btn btn-success">⬇️ Скачать</button>
+                            <button id="uploadBtn" class="btn btn-warning">⬆️ Загрузить файл</button>
+                            <button id="importBlocks" class="btn btn-warning">📥 Импорт из JSON</button>
+                        </div>
+                        <input type="file" id="uploadInput" accept=".json" style="display: none;" />
+                    </div>
+
+                    <!-- Очистка -->
+                    <div class="control-section">
+                        <h2>🗑️ Управление</h2>
+                        <div class="button-group">
+                            <button id="reorderBlocks" class="btn btn-info">🔄 Обратный порядок</button>
+                            <button id="clearBlocks" class="btn btn-danger">🗑️ Очистить все</button>
+                        </div>
+                    </div>
+
+                    <!-- Компоненты -->
+                    <div class="control-section">
+                        <h2>🧩 Компоненты</h2>
+                        <div class="button-group">
+                            <button id="registerComponent" class="btn btn-secondary">➕ Регистрация</button>
+                            <button id="getAllComponents" class="btn btn-secondary">📚 Все компоненты</button>
+                        </div>
+                    </div>
+
+                    <!-- Кастомные поля -->
+                    <div class="control-section">
+                        <h2>🎨 Кастомные поля</h2>
+                        <div class="button-group">
+                            <button id="registerCustomField" class="btn btn-secondary">➕ Регистрация</button>
+                            <button id="getAllCustomFields" class="btn btn-secondary">📚 Все поля</button>
+                        </div>
+                    </div>
+
+                    <!-- Конфигурации -->
+                    <div class="control-section">
+                        <h2>⚙️ Конфигурации</h2>
+                        <div class="button-group">
+                            <button id="getBlockConfigs" class="btn btn-secondary">⚙️ Все конфиги</button>
+                            <button id="getAvailableBlockTypes" class="btn btn-secondary">📋 Типы блоков</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Правая колонка - блоки -->
+                <div class="content-area">
+                    <!-- Панель логов -->
+                    <div class="info-section">
+                        <h3>📝 Логи операций</h3>
+                        <div id="infoPanel" class="info-panel"></div>
+                    </div>
+
+                    <!-- JSON блоков -->
+                    <div class="blocks-json">
+                        <h3>📄 Блоки (JSON)</h3>
+                        <pre id="blocksJson">[]</pre>
+                    </div>
+
+                    <!-- Визуальный рендер -->
+                    <div class="blocks-render">
+                        <h3>🎨 Рендер блоков</h3>
+                        <div id="blocksContainer"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Скрытый контейнер для BlockBuilder -->
+    <div id="hidden-container" class="hidden-container"></div>
+
+    <script type="module" src="/src/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,141 @@
+/**
+ * Стили кнопок по БЭМ с использованием SCSS
+ */
+
+// Миксин для базовой кнопки
+@mixin btn-base {
+  padding: 10px 20px;
+  border: none;
+  border-radius: var(--bb-radius-md);
+  cursor: pointer;
+  font-size: var(--bb-font-size-sm);
+  font-weight: 500;
+  transition: all var(--bb-transition-base);
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+  font-family: var(--bb-font-family);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--bb-shadow-md);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+}
+
+// Миксин для цветового варианта кнопки
+@mixin btn-variant($bg-color, $hover-color) {
+  background: $bg-color;
+  color: white;
+
+  &:hover:not(:disabled) {
+    background: $hover-color;
+  }
+}
+
+/* Базовый класс кнопки */
+.block-builder-btn {
+  @include btn-base;
+
+  /* Модификаторы размера */
+  &--sm {
+    padding: 6px 12px;
+    font-size: var(--bb-font-size-xs);
+  }
+
+  &--lg {
+    padding: 14px 28px;
+    font-size: var(--bb-font-size-md);
+  }
+
+  /* Модификаторы цвета */
+  &--primary {
+    @include btn-variant(var(--bb-color-primary), var(--bb-color-primary-dark));
+  }
+
+  &--secondary {
+    @include btn-variant(var(--bb-color-secondary), var(--bb-color-secondary-dark));
+  }
+
+  &--success {
+    @include btn-variant(var(--bb-color-success), var(--bb-color-success-dark));
+  }
+
+  &--danger {
+    @include btn-variant(var(--bb-color-danger), var(--bb-color-danger-dark));
+  }
+}
+
+/* Кнопки контролов блоков */
+.block-builder-control-btn {
+  background: none;
+  border: none;
+  padding: 5px 8px;
+  border-radius: var(--bb-radius-sm);
+  cursor: pointer;
+  font-size: var(--bb-font-size-xs);
+  transition: background var(--bb-transition-base);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  /* Стили для SVG иконок */
+  svg {
+    width: 16px;
+    height: 16px;
+    display: block;
+    stroke: currentColor;
+  }
+
+  &:hover:not(:disabled) {
+    background: rgba(0, 0, 0, 0.1);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+/* Дополнительные кнопки для специальных случаев (формы массивов) */
+.btn {
+  &-remove {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: var(--bb-radius-sm);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all var(--bb-transition-base);
+    background: var(--bb-color-danger-light);
+    color: #c00;
+
+    &:hover {
+      background: #fcc;
+    }
+  }
+
+  &-add {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: var(--bb-radius-sm);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all var(--bb-transition-base);
+    background: var(--bb-color-primary-light);
+    color: var(--bb-color-primary);
+
+    &:hover {
+      background: #c0e0ff;
+    }
+  }
+}
+

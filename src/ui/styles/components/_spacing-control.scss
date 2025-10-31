@@ -1,0 +1,326 @@
+/**
+ * Стили для SpacingControl компонента
+ * БЭМ методология: Block Element Modifier
+ */
+
+/* Блок: spacing-control */
+.spacing-control {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bb-spacing-lg);
+  padding: var(--bb-spacing-lg);
+  background-color: var(--bb-bg-secondary);
+  border-radius: var(--bb-radius-md);
+  border: 1px solid var(--bb-border-color-light);
+}
+
+/* Элемент: header */
+.spacing-control__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Элемент: label */
+.spacing-control__label {
+  font-weight: 600;
+  color: var(--bb-text-primary);
+  font-size: var(--bb-font-size-md);
+  margin: 0;
+
+  .required {
+    color: var(--bb-color-danger);
+    margin-left: 4px;
+  }
+}
+
+/* Элемент: breakpoints */
+.spacing-control__breakpoints {
+  display: flex;
+  gap: var(--bb-spacing-sm);
+  flex-wrap: wrap;
+  padding: var(--bb-spacing-sm);
+  background-color: var(--bb-bg-primary);
+  border-radius: var(--bb-radius-md);
+}
+
+/* Элемент: breakpoint-btn */
+.spacing-control__breakpoint-btn {
+  padding: var(--bb-spacing-sm) var(--bb-spacing-lg);
+  background-color: var(--bb-bg-primary);
+  border: 2px solid var(--bb-border-color);
+  border-radius: var(--bb-radius-sm);
+  font-size: var(--bb-font-size-sm);
+  font-weight: 500;
+  color: var(--bb-text-secondary);
+  cursor: pointer;
+  transition: all var(--bb-transition-base);
+  user-select: none;
+
+  &:hover {
+    background-color: var(--bb-bg-secondary);
+    border-color: var(--bb-color-primary);
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  /* Модификатор: active */
+  &--active {
+    background-color: var(--bb-color-primary);
+    border-color: var(--bb-color-primary);
+    color: #ffffff;
+    box-shadow: var(--bb-shadow-sm);
+
+    &:hover {
+      background-color: var(--bb-color-primary-dark);
+      border-color: var(--bb-color-primary-dark);
+    }
+  }
+}
+
+/* Элемент: groups */
+.spacing-control__groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bb-spacing-lg);
+}
+
+/* Элемент: group */
+.spacing-control__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bb-spacing-sm);
+  padding: var(--bb-spacing-md);
+  background-color: var(--bb-bg-primary);
+  border-radius: var(--bb-radius-md);
+}
+
+/* Элемент: group-label */
+.spacing-control__group-label {
+  font-size: var(--bb-font-size-sm);
+  font-weight: 500;
+  color: var(--bb-text-primary);
+  margin-bottom: var(--bb-spacing-xs);
+}
+
+/* Элемент: slider-wrapper */
+.spacing-control__slider-wrapper {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: var(--bb-spacing-md);
+}
+
+/* Элемент: slider (стандартный input[type=range]) */
+.spacing-control__slider {
+  width: 100%;
+  height: 8px;
+  cursor: pointer;
+  margin: 0;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+
+  /* Трек для WebKit (Chrome, Safari, Edge) */
+  &::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 8px;
+    background: var(--bb-bg-tertiary);
+    border-radius: 100px;
+  }
+
+  /* Трек для Firefox */
+  &::-moz-range-track {
+    width: 100%;
+    height: 8px;
+    background: var(--bb-bg-tertiary);
+    border-radius: 100px;
+    border: none;
+  }
+
+  /* Ползунок для WebKit */
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background-color: #ffffff;
+    border: 3px solid var(--bb-color-primary);
+    border-radius: 50%;
+    box-shadow: var(--bb-shadow-sm);
+    cursor: pointer;
+    margin-top: -6px;
+    position: relative;
+    transition: all 0.15s ease;
+
+    &:hover {
+      transform: scale(1.15);
+      border-width: 4px;
+      box-shadow: var(--bb-shadow-md);
+    }
+  }
+
+  /* Ползунок для Firefox */
+  &::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background-color: #ffffff;
+    border: 3px solid var(--bb-color-primary);
+    border-radius: 50%;
+    box-shadow: var(--bb-shadow-sm);
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover {
+      transform: scale(1.15);
+      border-width: 4px;
+      box-shadow: var(--bb-shadow-md);
+    }
+  }
+
+  /* Заполненная часть трека (для Firefox) */
+  &::-moz-range-progress {
+    height: 8px;
+    background: linear-gradient(
+      90deg,
+      var(--bb-color-primary) 0%,
+      var(--bb-color-primary-dark) 100%
+    );
+    border-radius: 100px;
+  }
+
+  /* Фокус */
+  &:focus {
+    outline: none;
+
+    &::-webkit-slider-thumb {
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+    }
+
+    &::-moz-range-thumb {
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+    }
+  }
+}
+
+/* Элемент: value-input */
+.spacing-control__value-input {
+  width: 70px;
+  padding: var(--bb-spacing-sm);
+  border: 2px solid var(--bb-border-color-light);
+  border-radius: var(--bb-radius-sm);
+  font-size: var(--bb-font-size-sm);
+  text-align: center;
+  font-weight: 500;
+  transition: border-color var(--bb-transition-base);
+
+  &:focus {
+    outline: none;
+    border-color: var(--bb-border-color-focus);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  /* Убираем стрелки в Chrome, Safari, Edge, Opera */
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* Убираем стрелки в Firefox */
+  &[type='number'] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+  }
+}
+
+/* Элемент: unit */
+.spacing-control__unit {
+  font-size: var(--bb-font-size-sm);
+  font-weight: 500;
+  color: var(--bb-text-tertiary);
+  user-select: none;
+}
+
+/* Элемент: preview */
+.spacing-control__preview {
+  padding: var(--bb-spacing-md);
+  background-color: var(--bb-bg-primary);
+  border-radius: var(--bb-radius-md);
+  border: 1px solid var(--bb-border-color-light);
+}
+
+/* Элемент: preview-title */
+.spacing-control__preview-title {
+  font-size: var(--bb-font-size-sm);
+  font-weight: 600;
+  color: var(--bb-text-primary);
+  margin-bottom: var(--bb-spacing-sm);
+}
+
+/* Элемент: preview-code */
+.spacing-control__preview-code {
+  margin: 0;
+  padding: var(--bb-spacing-md);
+  background-color: #282c34;
+  color: #abb2bf;
+  border-radius: var(--bb-radius-sm);
+  font-size: var(--bb-font-size-xs);
+  font-family: var(--bb-font-family-mono);
+  overflow-x: auto;
+  white-space: pre;
+  line-height: 1.6;
+
+  /* Подсветка синтаксиса для CSS */
+  &::before {
+    content: '';
+  }
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 767px) {
+  .spacing-control {
+    padding: var(--bb-spacing-md);
+  }
+
+  .spacing-control__breakpoints {
+    gap: var(--bb-spacing-xs);
+  }
+
+  .spacing-control__breakpoint-btn {
+    padding: var(--bb-spacing-xs) var(--bb-spacing-md);
+    font-size: var(--bb-font-size-xs);
+  }
+
+  .spacing-control__slider-wrapper {
+    grid-template-columns: 1fr;
+    gap: var(--bb-spacing-sm);
+  }
+
+  .spacing-control__value-input {
+    width: 100%;
+  }
+
+  .spacing-control__unit {
+    display: none;
+  }
+
+  .spacing-control__preview-code {
+    font-size: 10px;
+  }
+}
+
+/* Адаптивность для планшетов */
+@media (min-width: 768px) and (max-width: 1199px) {
+  .spacing-control__slider-wrapper {
+    gap: var(--bb-spacing-sm);
+  }
+
+  .spacing-control__value-input {
+    width: 60px;
+  }
+}
+

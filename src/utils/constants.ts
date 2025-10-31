@@ -1,0 +1,212 @@
+/**
+ * Константы для использования по всему приложению
+ */
+
+// Таймауты
+export const HTTP_DEFAULT_TIMEOUT_MS = 30000; // 30 секунд
+export const NOTIFICATION_DISPLAY_DURATION_MS = 12000; // 12 секунд
+export const ERROR_RENDER_DELAY_MS = 100; // 100 миллисекунд
+export const REPEATER_ACCORDION_ANIMATION_DELAY_MS = 350; // 350 миллисекунд для анимации раскрытия
+
+// LocalStorage ключи
+export const STORAGE_KEY_BLOCKS = 'naberika_blocks';
+
+// Идентификаторы элементов
+export const FORM_ID_PREFIX = 'block-builder-form';
+
+// Селекторы CSS классов
+export const CSS_CLASSES = {
+  MODAL_BODY: 'block-builder-modal-body',
+  FORM_GROUP: 'block-builder-form-group',
+  FORM_CONTROL: 'block-builder-form-control',
+  FORM_ERRORS: 'block-builder-form-errors',
+  ERROR: 'error',
+  SPACING_CONTROL_CONTAINER: 'spacing-control-container',
+  REPEATER_CONTROL_CONTAINER: 'repeater-control-container',
+  API_SELECT_CONTROL_CONTAINER: 'api-select-control-container',
+  CUSTOM_FIELD_CONTROL_CONTAINER: 'custom-field-control-container',
+} as const;
+
+// Сообщения об ошибках
+export const ERROR_MESSAGES = {
+  BLOCK_NOT_FOUND: (id: string) => `Block with id ${id} not found`,
+  COMPONENT_NOT_REGISTERED: (name: string) => `Component '${name}' is not registered`,
+  BLOCK_TYPE_REQUIRED: 'Block type is required and must be a string',
+  BLOCK_TYPE_EMPTY: 'Block type cannot be empty',
+  INVALID_SETTINGS: (key: string) => `Invalid setting value for key '${key}': must be primitive type`,
+  INVALID_PROPS: (key: string) => `Invalid prop value for key '${key}': must be primitive type`,
+  INVALID_STYLE: (key: string) => `Invalid style value for key '${key}': must be string or number`,
+  STORAGE_QUOTA_EXCEEDED: 'Превышен лимит хранилища localStorage. Попробуйте уменьшить количество блоков.',
+  FAILED_TO_LOAD_BLOCKS: 'Ошибка загрузки блоков из localStorage',
+  FAILED_TO_SAVE_BLOCKS: 'Ошибка сохранения блоков в localStorage',
+  FAILED_TO_COPY_CLIPBOARD: 'Unable to copy to clipboard',
+  LICENSE_VERIFICATION_FAILED: 'Ошибка проверки лицензии',
+} as const;
+
+export const UI_STRINGS = {
+  // Базовые кнопки
+  create: 'Создать',
+  save: 'Сохранить',
+  cancel: 'Отмена',
+  delete: 'Удалить',
+  duplicate: 'Дублировать',
+  edit: 'Редактировать',
+
+  // Модальные окна и confirm
+  confirmDelete: 'Удалить все блоки?',
+  confirmTitle: 'Подтверждение удаления',
+  confirmYes: 'Подтвердить',
+  confirmNo: 'Отмена',
+  saveNotEnabled: 'Функция сохранения не настроена. Передайте onSave в конфигурацию BlockBuilder.',
+
+  // Валидатор, формы, notifications
+  errorSaveFailed: 'Произошла ошибка при сохранении',
+  errorCreateFailed: 'Ошибка при создании',
+  errorBlockNotFound: 'Блок не найден',
+  successSaved: 'Данные успешно сохранены',
+  successDeleted: 'Блоки удалены',
+  copiedId: 'ID скопирован:',
+  copyError: 'Ошибка копирования ID',
+
+  // Repeater
+  repeaterAdd: 'Добавить',
+  repeaterRemove: 'Удалить',
+  repeaterItem: 'Элемент',
+  repeaterMin: 'Минимум:',
+  repeaterMax: 'Максимум:',
+
+  imageBlockBorderRadiusLabel: 'Скругление углов изображения',
+  borderRadiusCannotBeNegative: 'Скругление не может быть отрицательным',
+  maxBorderRadius: 'Максимальное скругление: 50px',
+
+  buttonBlockTitle: 'Настройка кнопки',
+  buttonBlockDescription: 'Настройте параметры кнопки',
+  buttonBlockTextLabel: 'Текст кнопки',
+  buttonBlockTextPlaceholder: 'Нажми меня',
+  buttonTextRequired: 'Текст кнопки обязателен',
+  buttonTextCannotBeEmpty: 'Текст не может быть пустым',
+  buttonBlockBackgroundColorLabel: 'Цвет фона кнопки',
+  backgroundColorRequired: 'Цвет фона обязателен',
+  buttonBlockColorLabel: 'Цвет текста кнопки',
+  textColorRequired: 'Цвет текста обязателен',
+  buttonBlockBorderRadiusLabel: 'Скругление углов кнопки',
+  buttonBlockPaddingLabel: 'Отступы',
+  buttonBlockPaddingPlaceholder: '8px 16px',
+  paddingRequired: 'Отступы обязательны',
+  buttonBlockOnClickLabel: 'Обработчик клика',
+  buttonBlockOnClickPlaceholder: 'alert("Привет!")',
+  onClickRequired: 'Обработчик клика обязателен',
+
+  // Card list
+  cardListBlockTitle: 'Настройка списка карточек',
+  cardListBlockDescription: 'Настройте параметры списка карточек',
+  cardListBlockTitleLabel: 'Заголовок списка',
+  cardListBlockTitlePlaceholder: 'Наши услуги',
+  cardListTitleRequired: 'Заголовок обязателен',
+  cardListTitleCannotBeEmpty: 'Заголовок не может быть пустым',
+  card1TitleLabel: 'Карточка 1 - Заголовок',
+  card1TitlePlaceholder: 'Веб-разработка',
+  card1TitleRequired: 'Заголовок карточки обязателен',
+  card1TextLabel: 'Карточка 1 - Описание',
+  card1TextPlaceholder: 'Создание современных веб-приложений',
+  card1TextRequired: 'Описание карточки обязательно',
+  card1ButtonLabel: 'Карточка 1 - Текст кнопки',
+  card1ButtonPlaceholder: 'Подробнее',
+  card1ButtonRequired: 'Текст кнопки обязателен',
+  card1LinkLabel: 'Карточка 1 - Ссылка',
+  card1LinkPlaceholder: 'https://example.com',
+  card1LinkRequired: 'Ссылка обязательна',
+  card1ImageLabel: 'Карточка 1 - Изображение',
+  card1ImagePlaceholder: 'https://i.pinimg.com/...',
+  card1ImageRequired: 'Изображение обязательно',
+  card2TitleLabel: 'Карточка 2 - Заголовок',
+  card2TitlePlaceholder: 'Мобильные приложения',
+  card2TitleRequired: 'Заголовок карточки обязателен',
+  card2TextLabel: 'Карточка 2 - Описание',
+  card2TextPlaceholder: 'Разработка мобильных приложений для iOS и Android',
+  card2TextRequired: 'Описание карточки обязательно',
+  card2ButtonLabel: 'Карточка 2 - Текст кнопки',
+  card2ButtonPlaceholder: 'Узнать больше',
+  card2ButtonRequired: 'Текст кнопки обязателен',
+  card2LinkLabel: 'Карточка 2 - Ссылка',
+  card2LinkPlaceholder: 'https://example.com',
+  card2LinkRequired: 'Ссылка обязательна',
+  card2ImageLabel: 'Карточка 2 - Изображение',
+  card2ImagePlaceholder: 'https://i.pinimg.com/...',
+  card2ImageRequired: 'Изображение обязательно',
+  card3TitleLabel: 'Карточка 3 - Заголовок',
+  card3TitlePlaceholder: 'Дизайн',
+  card3TitleRequired: 'Заголовок карточки обязателен',
+  card3TextLabel: 'Карточка 3 - Описание',
+  card3TextPlaceholder: 'Создание уникального дизайна для вашего бренда',
+  card3TextRequired: 'Описание карточки обязательно',
+  card3ButtonLabel: 'Карточка 3 - Текст кнопки',
+  card3ButtonPlaceholder: 'Посмотреть работы',
+  card3ButtonRequired: 'Текст кнопки обязателен',
+  card3LinkLabel: 'Карточка 3 - Ссылка',
+  card3LinkPlaceholder: 'https://example.com',
+  card3LinkRequired: 'Ссылка обязательна',
+  card3ImageLabel: 'Карточка 3 - Изображение',
+  card3ImagePlaceholder: 'https://i.pinimg.com/...',
+  card3ImageRequired: 'Изображение обязательно',
+  cardListBlockCardBackgroundLabel: 'Цвет фона карточек',
+  cardBackgroundRequired: 'Цвет фона обязателен',
+  cardListBlockCardTextColorLabel: 'Цвет текста карточек',
+  cardTextColorRequired: 'Цвет текста обязателен',
+  cardListBlockCardBorderRadiusLabel: 'Скругление карточек',
+  columnsOne: '1 колонка',
+  columnsTwo: '2 колонки',
+  columnsThree: '3 колонки',
+  columnsFour: '4 колонки',
+  columnsRequired: 'Количество колонок обязательно',
+  cardListBlockColumnsLabel: 'Количество колонок',
+  cardListBlockGapLabel: 'Отступ между карточками',
+  gapCannotBeNegative: 'Отступ не может быть отрицательным',
+  maxGap: 'Максимальный отступ: 50px',
+  createCardList: 'Создать список карточек',
+
+  // Примеры других, которые ещё могут понадобиться
+  blockTextTitle: 'Настройка текстового блока',
+  blockTextDescription: 'Настройте параметры текстового блока',
+  textBlockContentLabel: 'Текст',
+  blockTextPlaceholder: 'Введите текст...',
+  requiredText: 'Текст обязателен для заполнения',
+  textCannotBeEmpty: 'Текст не может быть пустым',
+  textBlockFontSizeLabel: 'Размер шрифта',
+  fontSizeRequired: 'Размер шрифта обязателен',
+  minFontSize: 'Минимальный размер шрифта: 8px',
+  maxFontSize: 'Максимальный размер шрифта: 72px',
+  textBlockColorLabel: 'Цвет текста',
+  colorRequired: 'Цвет обязателен',
+  textBlockTextAlignLabel: 'Выравнивание',
+  textAlignLeft: 'По левому краю',
+  textAlignCenter: 'По центру',
+  textAlignRight: 'По правому краю',
+  textAlignJustify: 'По ширине',
+  textAlignRequired: 'Выравнивание обязательно',
+
+  blockImageTitle: 'Настройка блока изображения',
+  blockImageDescription: 'Настройте параметры блока изображения',
+  imageBlockSrcLabel: 'URL изображения',
+  imageBlockSrcPlaceholder: 'https://example.com/image.jpg',
+  imageSrcRequired: 'URL изображения обязателен',
+  validUrl: 'Введите корректный URL',
+  imageBlockAltLabel: 'Альтернативный текст',
+  imageBlockAltPlaceholder: 'Описание изображения',
+  altRequired: 'Альтернативный текст обязателен',
+
+  blockTypeSelectionTitle: 'Выберите тип блока',
+  cancelButtonText: 'Отмена',
+  blockConfigNotFound: 'Конфигурация для типа блока не найдена',
+  addBlockTitle: 'Добавление',
+  addButtonText: 'Добавить',
+  blockCreationError: 'Ошибка создания блока',
+  editBlockTitle: 'Редактирование',
+  saveButtonText: 'Сохранить',
+  blockUpdateError: 'Ошибка обновления блока',
+  deleteBlockConfirmTitle: 'Удалить блок?',
+  deleteBlockConfirmMessage: 'Вы действительно хотите удалить блок?',
+  clearAllBlocksConfirmTitle: 'Очистить все блоки?',
+  clearAllBlocksConfirmMessage: 'Это действие удалит все блоки. Продолжить?',
+  blockIdCopied: 'ID скопирован',
+};
