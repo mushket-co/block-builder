@@ -50,12 +50,15 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Тесты
-__tests__/
-*.test.ts
-*.test.js
-*.spec.ts
-*.spec.js
+# Тесты - исключаем все тестовые файлы и папки
+**/__tests__/**
+**/*.test.ts
+**/*.test.js
+**/*.spec.ts
+**/*.spec.js
+src/**/__tests__/**
+src/**/*.test.ts
+src/**/*.spec.ts
 
 # Временные файлы
 *.tmp
