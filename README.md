@@ -35,11 +35,6 @@ src/
 └── examples/                # 📚 Примеры использования
 ```
 
-### Зависимости
-- **UI → Use Case** ✅
-- **Use Case → Entity** ✅
-- **Use Case → Port** ✅
-- **Infrastructure → Port** ✅
 
 ## 🚀 Быстрый старт
 
@@ -234,23 +229,6 @@ console.log(UI_STRINGS.create); // 'Создать'
 
 ---
 
-## 🧑‍💻 Правила код-стайла и архитектурных изменений
-- 💡 Все новые UI-компоненты используют реактивную модель (Vue refs, события). Запрещено прямое обращение к DOM.
-- 💡 Локализация только через ресурс `UI_STRINGS`, не хардкодьте тексты.
-- 💡 Публичные API строго типизированы (TS). Любой any вне приватной реализации требует объяснения в PR.
-- 💡 Все архитектурные решения обсуждаются через обсуждение с мейнтейнерами.
-
----
-
-## ✅ Clean Architecture: чек-лист
-- ⬜ Нет бизнес-логики в компонентах UI.
-- ⬜ Все операции с доменом — через use case.
-- ⬜ UI взаимодействует с use case и сервисами только через публичные типизированные интерфейсы.
-- ⬜ Всё состояние формы — реактивное, ошибок — централизованно через ресурсы.
-- ⬜ Нет querySelector/document.* в UI/контроллерах — только через refs/events.
-
----
-
 ## ⚡ Два способа использования
 
 ### 1️⃣ BlockBuilder (Pure JS) - Автоматический UI
@@ -279,6 +257,7 @@ const blockBuilder = new BlockBuilder({
         :block-management-use-case="blockManagementUseCase"
         :api-select-use-case="apiSelectUseCase"
         :custom-field-renderer-registry="customFieldRendererRegistry"
+        :initial-blocks="initialBlocks"
         :on-save="handleSave"
       />
 </template>
@@ -322,13 +301,37 @@ const availableBlockTypes = ref(
   }))
 )
 
-const handleSave = async (blocks) => {
-  // В реальном приложении здесь будет POST на ваш API:
-  // await fetch('/api/blocks', { method: 'POST', body: JSON.stringify(blocks) })
+// Загрузка сохраненных блоков при инициализации
+const loadSavedBlocks = () => {
+  try {
+    const savedData = localStorage.getItem('saved-blocks')
+    if (savedData) {
+      return JSON.parse(savedData)
+    }
+  } catch (error) {
+    console.error('Ошибка загрузки блоков:', error)
+  }
+  return []
+}
 
-  // Для демо сохраняем в localStorage
-  localStorage.setItem('saved-blocks', JSON.stringify(blocks))
-  return true
+const initialBlocks = ref(loadSavedBlocks())
+
+const handleSave = async (blocks) => {
+  try {
+    // В реальном приложении здесь будет POST на ваш API:
+    // await fetch('/api/blocks', {
+    //   method: 'POST',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: JSON.stringify(blocks)
+    // })
+
+    // Для демо сохраняем в localStorage
+    localStorage.setItem('saved-blocks', JSON.stringify(blocks))
+    return true
+  } catch (error) {
+    console.error('Ошибка сохранения:', error)
+    return false
+  }
 }
 </script>
 ```
@@ -938,6 +941,8 @@ BlockBuilder поддерживает систему лицензировани�
 
 ### Активация PRO лицензии
 
+> 💡 **Тестовый ключ для localhost:** Для разработки на localhost доступен тестовый ключ PRO лицензии: `BB-PRO-1234-5678-ABCD`
+
 #### 1. Через ключ лицензии
 
 ```javascript
@@ -947,7 +952,7 @@ const blockBuilder = new BlockBuilder({
   containerId: 'my-app',
   blockConfigs: blockConfigs,
   license: {
-    key: 'your-pro-license-key' // Ключ будет проверен через verifyKey API
+    key: 'BB-PRO-1234-5678-ABCD' // Тестовый ключ для localhost или ваш PRO ключ
   }
 })
 
@@ -970,7 +975,7 @@ const blockBuilder = new BlockBuilder({
 import { ref } from 'vue'
 import { BlockBuilderComponent } from '@mushket-co/block-builder/vue'
 
-const licenseKey = ref('your-pro-license-key')
+const licenseKey = ref('BB-PRO-1234-5678-ABCD') // Тестовый ключ для localhost
 
 const handleLicenseChange = (licenseInfo) => {
   console.log('Лицензия обновлена:', licenseInfo)
@@ -992,7 +997,7 @@ const blockBuilder = new BlockBuilder({
 })
 
 // Проверка ключа лицензии
-await licenseService.verifyKey('your-pro-license-key')
+await licenseService.verifyKey('BB-PRO-1234-5678-ABCD') // Тестовый ключ для localhost
 
 // Подписка на изменения лицензии
 licenseService.onLicenseChange((licenseInfo) => {

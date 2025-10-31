@@ -41,7 +41,6 @@ npm run dev
 
 ❌ **Конфликты версий:**
 - Vue через глобальную переменную
-- Swiper из CDN с ограничениями
 - Проблемы совместимости модулей
 
 ❌ **Производительность:**
@@ -106,11 +105,11 @@ pure-js-cdn/
 </head>
 <body>
     <div id="app"></div>
-    
+
     <script type="module">
         // Импорт BlockBuilder
         import { BlockBuilder } from '/dist/index.esm.js';
-        
+
         // Конфигурация
         const blockBuilder = new BlockBuilder({
             containerId: 'app',
@@ -126,7 +125,7 @@ pure-js-cdn/
 1. **Выберите подход:**
    - Vue3 → используйте `examples/vue3`
    - Vanilla JS → используйте `examples/pure-js-vite`
-   
+
 2. **Установите зависимости:**
    ```bash
    npm install
