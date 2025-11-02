@@ -16,7 +16,7 @@ export enum TLicenseType {
 }
 
 // URL сервера лицензий (встроен в пакет)
-const DEFAULT_LICENSE_SERVER_URL = 'https://api.blockbuilder';
+const DEFAULT_LICENSE_SERVER_URL = 'https://api.block-builder.ru';
 
 export interface ILicenseConfig {
   type?: TLicenseType; // Прямое указание типа (для удобства)
