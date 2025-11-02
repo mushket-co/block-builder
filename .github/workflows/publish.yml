@@ -52,6 +52,7 @@ jobs:
             # Убираем префикс "v" если есть
             VERSION=${VERSION#v}
             echo "version=$VERSION" >> $GITHUB_OUTPUT
+            echo "tag_name=${{ github.event.release.tag_name }}" >> $GITHUB_OUTPUT
             echo "Using version from release tag: $VERSION"
             echo "Release tag: ${{ github.event.release.tag_name }}"
           else
@@ -85,17 +86,81 @@ jobs:
               VERSION="$MAJOR.$MINOR.$PATCH"
             fi
             echo "version=$VERSION" >> $GITHUB_OUTPUT
+            echo "tag_name=v$VERSION" >> $GITHUB_OUTPUT
             echo "New version: $VERSION"
           fi
 
-      - name: Update package.json version
+      - name: Fetch tags
         run: |
-          npm version ${{ steps.version.outputs.version }} --no-git-tag-version
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add package.json package-lock.json
-          git commit -m "chore: bump version to ${{ steps.version.outputs.version }}" || echo "No changes to commit"
-          git push || echo "Nothing to push"
+          git fetch --tags --force
+
+      - name: Find previous tag
+        id: previous_tag
+        run: |
+          CURRENT_TAG="${{ steps.version.outputs.tag_name }}"
+          # Получаем все теги, сортируем по версии и находим предыдущий
+          ALL_TAGS=$(git tag -l "v*" | sort -V)
+          PREVIOUS_TAG=$(echo "$ALL_TAGS" | grep -B1 "^${CURRENT_TAG}$" | head -n1 | xargs)
+          
+          if [ -z "$PREVIOUS_TAG" ] || [ "$PREVIOUS_TAG" = "$CURRENT_TAG" ]; then
+            # Если предыдущего тега нет, берем первый коммит
+            PREVIOUS_TAG=$(git rev-list --max-parents=0 HEAD 2>/dev/null || echo "")
+            if [ -z "$PREVIOUS_TAG" ]; then
+              # Если не удалось найти первый коммит, используем пустой commit
+              PREVIOUS_TAG=$(git hash-object -t tree /dev/null)
+            fi
+            echo "previous_tag=$PREVIOUS_TAG" >> $GITHUB_OUTPUT
+            echo "Using first commit as previous tag: $PREVIOUS_TAG"
+          else
+            echo "previous_tag=$PREVIOUS_TAG" >> $GITHUB_OUTPUT
+            echo "Found previous tag: $PREVIOUS_TAG"
+          fi
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          PREV_TAG="${{ steps.previous_tag.outputs.previous_tag }}"
+          CURR_TAG="${{ steps.version.outputs.tag_name }}"
+          
+          # Проверяем существует ли текущий тег локально
+          if git rev-parse "$CURR_TAG" >/dev/null 2>&1; then
+            # Тег существует локально
+            COMMITS=$(git log ${PREV_TAG}..${CURR_TAG} --pretty=format:"- %s (%h)" --no-merges 2>/dev/null || echo "")
+          else
+            # Тег еще не создан, используем HEAD
+            COMMITS=$(git log ${PREV_TAG}..HEAD --pretty=format:"- %s (%h)" --no-merges 2>/dev/null || echo "")
+          fi
+          
+          if [ -z "$COMMITS" ]; then
+            COMMITS="- Нет изменений"
+          fi
+          
+          # Для GitHub API нужна многострочная строка
+          {
+            echo "changelog<<EOF"
+            echo "$COMMITS"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+          
+          echo "Generated changelog:"
+          echo "$COMMITS"
+
+      - name: Check and update package.json version
+        run: |
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          TARGET_VERSION="${{ steps.version.outputs.version }}"
+          
+          if [ "$CURRENT_VERSION" != "$TARGET_VERSION" ]; then
+            echo "Updating version from $CURRENT_VERSION to $TARGET_VERSION"
+            npm version $TARGET_VERSION --no-git-tag-version
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add package.json package-lock.json
+            git commit -m "chore: bump version to $TARGET_VERSION" || echo "No changes to commit"
+            git push || echo "Nothing to push"
+          else
+            echo "Version already matches: $CURRENT_VERSION"
+          fi
 
       - name: Debug info
         run: |
@@ -120,17 +185,27 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create GitHub Release
-        if: github.event_name == 'workflow_dispatch'
+      - name: Create or Update GitHub Release
         uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v${{ steps.version.outputs.version }}
-          name: Release v${{ steps.version.outputs.version }}
+          tag_name: ${{ steps.version.outputs.tag_name }}
+          name: Release ${{ steps.version.outputs.version }}
           body: |
-            ## Changes
-            - See [commit log](https://github.com/${{ github.repository }}/compare/${{ github.event.before }}...${{ github.sha }})
+            ## Что изменилось
+            
+            ${{ steps.changelog.outputs.changelog }}
+            
+            ## Сравнение изменений
+            
+            [Полный список коммитов](https://github.com/${{ github.repository }}/compare/${{ steps.previous_tag.outputs.previous_tag }}...${{ steps.version.outputs.tag_name }})
+            
+            ## Установка
+            
+            ```bash
+            npm install @mushket-co/block-builder@${{ steps.version.outputs.version }}
+            ```
           draft: false
           prerelease: false
 
