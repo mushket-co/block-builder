@@ -17,7 +17,7 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -63,7 +63,7 @@ jobs:
               MAJOR=${parts[0]}
               MINOR=${parts[1]}
               PATCH=${parts[2]}
-              
+
               case "$VERSION_INPUT" in
                 major)
                   MAJOR=$((MAJOR + 1))
