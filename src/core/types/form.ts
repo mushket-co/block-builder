@@ -6,7 +6,7 @@ import { IValidationRule } from './validation';
 import { ICustomFieldConfig } from '../ports/CustomFieldRenderer';
 
 // Типы полей форм
-export type TFieldType = 'text' | 'number' | 'email' | 'url' | 'textarea' | 'select' | 'checkbox' | 'color' | 'file' | 'spacing' | 'repeater' | 'api-select' | 'custom';
+export type TFieldType = 'text' | 'number' | 'email' | 'url' | 'textarea' | 'select' | 'checkbox' | 'color' | 'file' | 'image' | 'spacing' | 'repeater' | 'api-select' | 'custom';
 
 // Типы отступов
 export type TSpacingType = 'padding-top' | 'padding-bottom' | 'margin-top' | 'margin-bottom';
@@ -109,6 +109,47 @@ export interface IApiSelectConfig {
   errorText?: string; // Текст при ошибке
 }
 
+// Конфигурация для image поля
+export interface IImageUploadConfig {
+  /**
+   * URL API для загрузки файла на сервер пользователя
+   * Если не указан, будет использоваться base64 encoding
+   */
+  uploadUrl?: string;
+
+  /**
+   * Имя параметра для файла в FormData (по умолчанию 'file')
+   * Имя ключа, по которому файл будет отправляться на сервер
+   */
+  fileParamName?: string;
+
+  /**
+   * Дополнительные заголовки для запроса загрузки
+   */
+  uploadHeaders?: Record<string, string>;
+
+  /**
+   * Максимальный размер файла в байтах (по умолчанию 10MB)
+   */
+  maxFileSize?: number;
+
+  /**
+   * Разрешенные типы файлов (по умолчанию 'image/*')
+   */
+  accept?: string;
+
+  /**
+   * Функция преобразования ответа сервера в URL
+   * По умолчанию возвращается ответ сервера как есть (любой тип)
+   */
+  responseMapper?: (response: any) => any;
+
+  /**
+   * Callback для обработки ошибки загрузки
+   */
+  onUploadError?: (error: Error) => void;
+}
+
 // Конфигурация поля формы
 export interface IFormFieldConfig {
   field: string;
@@ -122,6 +163,7 @@ export interface IFormFieldConfig {
   repeaterConfig?: IRepeaterFieldConfig; // Для типа 'repeater'
   apiSelectConfig?: IApiSelectConfig; // Для типа 'api-select'
   customFieldConfig?: ICustomFieldConfig; // Для типа 'custom'
+  imageUploadConfig?: IImageUploadConfig; // Для типа 'image'
 }
 
 // Конфигурация блока с опциями spacing

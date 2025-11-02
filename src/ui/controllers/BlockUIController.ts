@@ -18,7 +18,7 @@ import { ICustomFieldRendererRegistry } from "../../core/ports/CustomFieldRender
 import { copyToClipboard } from "../../utils/copyToClipboard";
 import { UniversalValidator } from "../../utils/universalValidation";
 import { addSpacingFieldToFields } from "../../utils/blockSpacingHelpers";
-import { scrollToFirstError, parseErrorKey } from "../../utils/formErrorHelpers";
+import { scrollToFirstError, parseErrorKey, findFieldElement, scrollToElement, focusElement } from "../../utils/formErrorHelpers";
 import { afterRender } from "../../utils/domReady";
 import { EventDelegation } from "../EventDelegation";
 import { LicenseService, ILicenseInfo } from "../../core/services/LicenseService";
@@ -57,6 +57,8 @@ export class BlockUIController {
   private eventDelegation: EventDelegation;
   private licenseService: LicenseService;
   private originalBlockConfigs?: Record<string, any>;
+  private currentFormFields: Map<string, TFieldConfig> = new Map(); // Сохраняем конфигурацию полей для доступа к responseMapper
+  private repeaterFieldConfigs: Map<string, Map<string, TFieldConfig>> = new Map(); // Сохраняем оригинальные конфигурации полей repeater для доступа к responseMapper
 
   constructor(config: IBlockUIControllerConfig) {
     this.config = config;
@@ -198,15 +200,35 @@ export class BlockUIController {
       title: `${config.title} ${UI_STRINGS.addBlockTitle}`,
       bodyHTML: formHTML,
       onSubmit: () => this.handleCreateBlock(type, fields, position),
-      onCancel: () => this.modalManager.closeModal(),
+      onCancel: () => {
+        this.currentFormFields.clear(); // Очищаем при закрытии
+        this.repeaterFieldConfigs.clear();
+        this.modalManager.closeModal();
+      },
       submitButtonText: UI_STRINGS.addButtonText,
     });
 
-    // Инициализируем spacing, repeater, api-select и custom field контролы после рендеринга модалки
+    // Сохраняем конфигурацию полей для доступа к responseMapper
+    this.currentFormFields.clear();
+    this.repeaterFieldConfigs.clear();
+    fields.forEach(field => {
+      this.currentFormFields.set(field.field, field);
+      // Сохраняем конфигурации полей внутри repeater для доступа к responseMapper
+      if (field.type === 'repeater' && field.repeaterConfig?.fields) {
+        const repeaterFieldsMap = new Map<string, TFieldConfig>();
+        field.repeaterConfig.fields.forEach((repeaterField: TFieldConfig) => {
+          repeaterFieldsMap.set(repeaterField.field, repeaterField);
+        });
+        this.repeaterFieldConfigs.set(field.field, repeaterFieldsMap);
+      }
+    });
+
+    // Инициализируем spacing, repeater, api-select, image upload и custom field контролы после рендеринга модалки
     afterRender(async () => {
       this.initializeSpacingControls();
       this.initializeRepeaterControls();
       await this.initializeApiSelectControls();
+      this.initializeImageUploadControls();
       await this.initializeCustomFieldControls();
     });
   }
@@ -288,6 +310,9 @@ export class BlockUIController {
       try {
         const repeaterConfig = parseJSONFromAttribute(config);
 
+        // Сохраняем ссылку на this для использования в callback
+        const self = this;
+        
         // Создаем рендерер
         const renderer = new RepeaterControlRenderer({
           fieldName: repeaterConfig.field,
@@ -300,6 +325,11 @@ export class BlockUIController {
             // Сохраняем в data-атрибуте для последующего получения
             container.setAttribute("data-repeater-value", JSON.stringify(value));
           },
+          onAfterRender: () => {
+            // Инициализируем image upload контролы после рендера repeater
+            // (так как repeater может содержать поля изображений)
+            self.initializeImageUploadControls();
+          }
         });
 
         // Рендерим контрол
@@ -486,6 +516,355 @@ export class BlockUIController {
   }
 
   /**
+   * Инициализация image upload контролов
+   */
+  private initializeImageUploadControls(): void {
+    const containers = document.querySelectorAll(".image-upload-field");
+
+    containers.forEach((container) => {
+      const fieldName = container.getAttribute("data-field-name");
+      if (!fieldName) return;
+      
+      // Проверяем, не инициализирован ли уже этот контрол
+      if (container.hasAttribute('data-image-initialized')) return;
+      container.setAttribute('data-image-initialized', 'true');
+
+      const fileInput = container.querySelector('input[type="file"]') as HTMLInputElement;
+      const hiddenInput = container.querySelector('input[type="hidden"][data-image-value="true"]') as HTMLInputElement;
+      const preview = container.querySelector('.image-upload-field__preview') as HTMLElement;
+      const previewImg = preview?.querySelector('img') as HTMLImageElement;
+      const label = container.querySelector('label[for]') as HTMLLabelElement;
+      const labelText = label?.querySelector('.image-upload-field__label-text') as HTMLElement;
+      const loadingText = label?.querySelector('.image-upload-field__loading-text') as HTMLElement;
+      const errorDiv = container.querySelector('.image-upload-field__error') as HTMLElement;
+
+      if (!fileInput || !hiddenInput) return;
+
+      // Получаем конфигурацию из data-атрибута
+      const configStr = fileInput.getAttribute('data-config') || '{}';
+      let config: any = {};
+      try {
+        config = JSON.parse(configStr.replace(/&quot;/g, '"'));
+      } catch (e) {
+        console.error('Ошибка парсинга конфига изображения:', e);
+      }
+
+      // Получаем полную конфигурацию поля для доступа к responseMapper
+      // Проверяем, является ли это полем внутри repeater'а
+      const repeaterField = container.getAttribute('data-repeater-field');
+      const repeaterIndex = container.getAttribute('data-repeater-index');
+      const repeaterItemField = container.getAttribute('data-repeater-item-field');
+      
+      let imageUploadConfig: any = undefined;
+      let responseMapper: any = undefined;
+      
+      if (repeaterField && repeaterItemField !== null) {
+        // Это поле внутри repeater'а - получаем оригинальную конфигурацию из сохраненных полей
+        // (функции responseMapper не сохраняются в JSON, поэтому используем оригинальную конфигурацию)
+        const repeaterFieldsMap = this.repeaterFieldConfigs.get(repeaterField);
+        if (repeaterFieldsMap) {
+          const itemFieldConfig = repeaterFieldsMap.get(repeaterItemField);
+          if (itemFieldConfig) {
+            imageUploadConfig = itemFieldConfig.imageUploadConfig;
+            responseMapper = imageUploadConfig?.responseMapper;
+          }
+        }
+      } else {
+        // Обычное поле
+        const fieldConfig = this.currentFormFields.get(fieldName);
+        imageUploadConfig = fieldConfig?.imageUploadConfig;
+        responseMapper = imageUploadConfig?.responseMapper;
+      }
+
+      const uploadHeaders = config.uploadHeaders || {};
+
+      // Инициализация preview при загрузке (если есть значение)
+      // Сначала пробуем получить значение из данных repeater, если это поле внутри repeater
+      let currentValue: any = hiddenInput.value;
+      
+      if (repeaterField && repeaterIndex !== null && repeaterItemField !== null) {
+        // Если это поле внутри repeater, получаем значение из данных repeater
+        const repeaterRenderer = this.repeaterRenderers.get(repeaterField);
+        if (repeaterRenderer) {
+          const index = parseInt(repeaterIndex, 10);
+          const rendererValue = (repeaterRenderer as any).value;
+          if (rendererValue && rendererValue[index] !== undefined) {
+            currentValue = rendererValue[index][repeaterItemField];
+          }
+        }
+      } else {
+        // Для обычных полей используем значение из hidden input
+        if (currentValue) {
+          try {
+            // Пробуем распарсить JSON
+            const parsed = JSON.parse(currentValue.replace(/&quot;/g, '"'));
+            if (typeof parsed === 'object' && parsed !== null) {
+              currentValue = parsed;
+            }
+          } catch {
+            // Если не JSON, оставляем как строку (base64)
+          }
+        }
+      }
+      
+      // Извлекаем URL для preview
+      // Поддерживаем и src (правильное поле) и url (для обратной совместимости)
+      if (currentValue) {
+        try {
+          let imageUrl = '';
+          if (typeof currentValue === 'string') {
+            imageUrl = currentValue;
+          } else if (typeof currentValue === 'object' && currentValue !== null) {
+            // Приоритет src, затем url для обратной совместимости
+            imageUrl = currentValue.src || currentValue.url || '';
+          }
+          
+          if (imageUrl && previewImg) {
+            previewImg.src = imageUrl;
+            previewImg.style.display = 'block';
+            if (preview) {
+              preview.style.display = 'block';
+              preview.style.position = 'relative';
+              preview.style.marginBottom = '12px';
+            }
+            // Обновляем label если есть изображение
+            if (labelText) labelText.textContent = 'Изменить файл';
+          }
+        } catch (e) {
+          console.error('Ошибка инициализации preview:', e);
+        }
+      }
+
+      // Сохраняем ссылку на класс для использования в обработчиках
+      const self = this;
+
+      // Обработчик кнопки очистки
+      const clearBtn = container.querySelector('.image-upload-field__preview-clear') as HTMLButtonElement;
+      if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+          fileInput.value = '';
+          hiddenInput.value = '';
+          if (preview) preview.style.display = 'none';
+          if (labelText) labelText.textContent = 'Выберите изображение';
+          
+          // Если это поле внутри repeater'а - обновляем данные repeater'а
+          if (repeaterField && repeaterIndex !== null && repeaterItemField !== null) {
+            const repeaterRenderer = self.repeaterRenderers.get(repeaterField);
+            if (repeaterRenderer) {
+              const index = parseInt(repeaterIndex, 10);
+              const rendererValue = (repeaterRenderer as any).value;
+              if (rendererValue && rendererValue[index] !== undefined) {
+                rendererValue[index][repeaterItemField] = '';
+                (repeaterRenderer as any).emitChange();
+                // UI уже обновлен через очистку preview выше
+              }
+            }
+          }
+        });
+      }
+      
+      // Обработчик изменения файла
+      fileInput.addEventListener('change', async (e) => {
+        const file = (e.target as HTMLInputElement).files?.[0];
+        if (!file) return;
+
+        // Проверка типа
+        if (!file.type.startsWith('image/')) {
+          if (errorDiv) {
+            errorDiv.textContent = 'Пожалуйста, выберите файл изображения';
+            errorDiv.style.display = 'block';
+          }
+          return;
+        }
+
+        // Проверка размера
+        if (config.maxFileSize && file.size > config.maxFileSize) {
+          if (errorDiv) {
+            errorDiv.textContent = `Размер файла не должен превышать ${Math.round(config.maxFileSize / 1024 / 1024)}MB`;
+            errorDiv.style.display = 'block';
+          }
+          return;
+        }
+
+        // Скрываем ошибку и показываем загрузку
+        if (errorDiv) errorDiv.style.display = 'none';
+        if (labelText) labelText.style.display = 'none';
+        if (loadingText) loadingText.style.display = 'inline';
+        if (label) {
+          label.style.pointerEvents = 'none';
+          label.style.opacity = '0.7';
+          label.style.cursor = 'not-allowed';
+        }
+        fileInput.disabled = true;
+
+        try {
+          let result: any;
+
+          if (config.uploadUrl) {
+            // Загрузка на сервер
+            const formData = new FormData();
+            formData.append(config.fileParamName || 'file', file);
+
+            const response = await fetch(config.uploadUrl, {
+              method: 'POST',
+              headers: uploadHeaders,
+              body: formData
+            });
+
+            if (!response.ok) {
+              throw new Error('Ошибка загрузки: ' + response.statusText);
+            }
+
+            const responseData = await response.json();
+            
+            // Применяем responseMapper, если он есть
+            if (responseMapper && typeof responseMapper === 'function') {
+              result = responseMapper(responseData);
+            } else {
+              // По умолчанию: возвращаем ответ как есть
+              result = responseData;
+            }
+          } else {
+            // Base64
+            result = await new Promise<string>((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = (e) => resolve(e.target?.result as string);
+              reader.onerror = reject;
+              reader.readAsDataURL(file);
+            });
+          }
+
+          // Если это поле внутри repeater'а - сначала обновляем данные repeater'а
+          if (repeaterField && repeaterIndex !== null && repeaterItemField !== null) {
+            const repeaterRenderer = self.repeaterRenderers.get(repeaterField);
+            if (repeaterRenderer) {
+              const index = parseInt(repeaterIndex, 10);
+              const rendererValue = (repeaterRenderer as any).value;
+              if (rendererValue && rendererValue[index] !== undefined) {
+                rendererValue[index][repeaterItemField] = result;
+                (repeaterRenderer as any).emitChange();
+              }
+            }
+          }
+          
+          // Затем обновляем hidden input для синхронизации с формой
+          hiddenInput.value = typeof result === 'object' && result !== null ? JSON.stringify(result) : (result || '');
+
+          // Обновляем preview - извлекаем URL как во Vue компоненте
+          // base64 - всегда строка
+          // серверное загрузка - объект с обязательным src
+          // Поддерживаем и src (правильное поле) и url (для обратной совместимости)
+          let imageUrl = '';
+          if (typeof result === 'string') {
+            imageUrl = result;
+          } else if (typeof result === 'object' && result !== null) {
+            // Приоритет src, затем url для обратной совместимости
+            imageUrl = result.src || result.url || '';
+          }
+          
+          if (imageUrl) {
+            if (previewImg) {
+              previewImg.src = imageUrl;
+              previewImg.style.display = 'block';
+            }
+            if (preview) {
+              preview.style.display = 'block';
+              preview.style.position = 'relative';
+              preview.style.marginBottom = '12px';
+            }
+            // Обновляем label
+            if (labelText) labelText.textContent = 'Изменить файл';
+          }
+
+          // Удаляем класс ошибки и скрываем сообщение об ошибке валидации
+          if (container) {
+            container.classList.remove('error');
+            // Скрываем все сообщения об ошибках валидации
+            const validationErrorDivs = container.querySelectorAll('.image-upload-field__error');
+            validationErrorDivs.forEach((div: Element) => {
+              const errorEl = div as HTMLElement;
+              // Скрываем все ошибки валидации после успешной загрузки
+              errorEl.style.display = 'none';
+              errorEl.textContent = '';
+            });
+          }
+
+          // Если это поле внутри repeater'а - обновляем ошибки валидации в renderer'е
+          // Это нужно, чтобы после загрузки изображения ошибка валидации исчезла
+          if (repeaterField && repeaterIndex !== null && repeaterItemField !== null) {
+            const repeaterRenderer = self.repeaterRenderers.get(repeaterField);
+            if (repeaterRenderer && self.currentFormFields.size > 0) {
+              // Получаем текущие данные формы
+              const formData = self.getFormDataWithSpacing('block-builder-form');
+              // Находим конфигурацию полей для текущего блока
+              const fields = Array.from(self.currentFormFields.values());
+              // Валидируем форму заново с обновленными данными (изображение теперь загружено)
+              const validation = UniversalValidator.validateForm(formData, fields);
+              
+              // Сохраняем новые ошибки для использования при следующем сохранении
+              // Это важно, чтобы ошибки не показывались повторно при следующей попытке сохранения
+              
+              // Обновляем ошибки в repeater renderer'е - это перерендерит контрол
+              // и для загруженного изображения ошибка исчезнет
+              if (repeaterRenderer.updateErrors) {
+                repeaterRenderer.updateErrors(validation.errors);
+              }
+              
+              // Также обновляем ошибки в остальных repeater renderer'ах, чтобы они были синхронизированы
+              self.repeaterRenderers.forEach((renderer) => {
+                if (renderer !== repeaterRenderer && renderer.updateErrors) {
+                  renderer.updateErrors(validation.errors);
+                }
+              });
+              
+              // Очищаем старые ошибки валидации для этого поля, чтобы класс error убрался
+              const fieldNamePath = `${repeaterField}[${repeaterIndex}].${repeaterItemField}`;
+              if (!validation.errors[fieldNamePath] || validation.errors[fieldNamePath].length === 0) {
+                // Если ошибки для этого поля нет - убираем класс error с контейнера
+                setTimeout(() => {
+                  const errorContainer = document.querySelector(`[data-field-name="${fieldNamePath}"]`) as HTMLElement;
+                  if (errorContainer) {
+                    errorContainer.classList.remove('error');
+                    // Также убираем ошибки из DOM
+                    const errorDivs = errorContainer.querySelectorAll('.image-upload-field__error');
+                    errorDivs.forEach((div: Element) => {
+                      const errorEl = div as HTMLElement;
+                      if (errorEl.textContent) {
+                        errorEl.style.display = 'none';
+                        errorEl.textContent = '';
+                      }
+                    });
+                  }
+                }, 100);
+              }
+            }
+          }
+
+          // Триггерим событие изменения для формы
+          const changeEvent = new Event('change', { bubbles: true });
+          hiddenInput.dispatchEvent(changeEvent);
+
+        } catch (error: any) {
+          if (errorDiv) {
+            errorDiv.textContent = error.message || 'Ошибка при загрузке файла';
+            errorDiv.style.display = 'block';
+          }
+        } finally {
+          // Скрываем загрузку
+          if (labelText) labelText.style.display = 'inline';
+          if (loadingText) loadingText.style.display = 'none';
+          if (label) {
+            label.style.pointerEvents = 'auto';
+            label.style.opacity = '1';
+            label.style.cursor = 'pointer';
+          }
+          fileInput.disabled = false;
+        }
+      });
+    });
+  }
+
+  /**
    * Показ ошибки в контейнере кастомного поля
    */
   private showCustomFieldError(container: HTMLElement, message: string): void {
@@ -641,15 +1020,35 @@ export class BlockUIController {
       title: `${config.title} ${UI_STRINGS.editBlockTitle}`,
       bodyHTML: formHTML,
       onSubmit: () => this.handleUpdateBlock(blockId, block.type, fields),
-      onCancel: () => this.modalManager.closeModal(),
+      onCancel: () => {
+        this.currentFormFields.clear(); // Очищаем при закрытии
+        this.repeaterFieldConfigs.clear();
+        this.modalManager.closeModal();
+      },
       submitButtonText: UI_STRINGS.saveButtonText,
     });
 
-    // Инициализируем spacing, repeater, api-select и custom контролы после рендеринга модалки
+    // Сохраняем конфигурацию полей для доступа к responseMapper
+    this.currentFormFields.clear();
+    this.repeaterFieldConfigs.clear();
+    fields.forEach(field => {
+      this.currentFormFields.set(field.field, field);
+      // Сохраняем конфигурации полей внутри repeater для доступа к responseMapper
+      if (field.type === 'repeater' && field.repeaterConfig?.fields) {
+        const repeaterFieldsMap = new Map<string, TFieldConfig>();
+        field.repeaterConfig.fields.forEach((repeaterField: TFieldConfig) => {
+          repeaterFieldsMap.set(repeaterField.field, repeaterField);
+        });
+        this.repeaterFieldConfigs.set(field.field, repeaterFieldsMap);
+      }
+    });
+
+    // Инициализируем spacing, repeater, api-select, image upload и custom контролы после рендеринга модалки
     afterRender(async () => {
       this.initializeSpacingControls();
       this.initializeRepeaterControls();
       await this.initializeApiSelectControls();
+      this.initializeImageUploadControls();
       await this.initializeCustomFieldControls();
     });
   }
@@ -961,6 +1360,17 @@ export class BlockUIController {
     const modalBody = document.querySelector(".block-builder-modal-body") as HTMLElement;
     if (!modalBody) return;
 
+    // Получаем все ошибки для точного поиска поля
+    const allErrors = this.getRepeaterErrors();
+    
+    // Находим первую ошибку для этого repeater и элемента
+    const firstErrorKey = Object.keys(allErrors).find(key => {
+      const errorInfo = parseErrorKey(key);
+      return errorInfo.isRepeaterField && 
+             errorInfo.repeaterFieldName === repeaterFieldName && 
+             errorInfo.repeaterIndex === itemIndex;
+    });
+
     // Проверяем, свернут ли элемент
     if (renderer.isItemCollapsed(itemIndex)) {
       // Раскрываем элемент
@@ -969,28 +1379,64 @@ export class BlockUIController {
       // После раскрытия скроллим к конкретному полю
       // Увеличенная задержка для завершения анимации раскрытия
       setTimeout(() => {
-
-        // Используем исходные ошибки для скролла - они уже содержат все нужные данные
-        const allErrors: Record<string, string[]> = {};
-        Object.entries(this.repeaterRenderers.get(repeaterFieldName)?.["errors"] || {}).forEach(([key, value]) => {
-          allErrors[key] = value;
-        });
-
-        // Скроллим к полю с ошибкой
+        // Если нашли конкретную ошибку - используем точный поиск
+        if (firstErrorKey) {
+          const errorInfo = parseErrorKey(firstErrorKey);
+          const fieldElement = findFieldElement(modalBody, errorInfo);
+          if (fieldElement) {
+            // Скроллим к конкретному элементу
+            scrollToElement(fieldElement, {
+              offset: 40,
+              behavior: "smooth"
+            });
+            // Фокусируемся на элементе
+            focusElement(fieldElement);
+          } else {
+            // Fallback к обычному скроллу
+            scrollToFirstError(modalBody, allErrors, {
+              offset: 40,
+              behavior: "smooth",
+              autoFocus: true,
+            });
+          }
+        } else {
+          // Fallback к обычному скроллу
+          scrollToFirstError(modalBody, allErrors, {
+            offset: 40,
+            behavior: "smooth",
+            autoFocus: true,
+          });
+        }
+      }, 350); // Увеличена задержка для завершения анимации раскрытия
+    } else {
+      // Элемент уже развернут - скроллим к полю сразу
+      if (firstErrorKey) {
+        const errorInfo = parseErrorKey(firstErrorKey);
+        const fieldElement = findFieldElement(modalBody, errorInfo);
+        if (fieldElement) {
+          // Скроллим к конкретному элементу
+          scrollToElement(fieldElement, {
+            offset: 40,
+            behavior: "smooth"
+          });
+          // Фокусируемся на элементе
+          focusElement(fieldElement);
+        } else {
+          // Fallback к обычному скроллу
+          scrollToFirstError(modalBody, allErrors, {
+            offset: 40,
+            behavior: "smooth",
+            autoFocus: true,
+          });
+        }
+      } else {
+        // Fallback к обычному скроллу
         scrollToFirstError(modalBody, allErrors, {
           offset: 40,
           behavior: "smooth",
           autoFocus: true,
         });
-      }, 350); // Увеличена задержка для завершения анимации раскрытия
-    } else {
-
-      // Элемент уже развернут - скроллим к полю сразу
-      scrollToFirstError(modalBody, this.getRepeaterErrors(), {
-        offset: 40,
-        behavior: "smooth",
-        autoFocus: true,
-      });
+      }
     }
   }
 
@@ -1000,25 +1446,45 @@ export class BlockUIController {
   private getRepeaterErrors(): Record<string, string[]> {
     const errors: Record<string, string[]> = {};
 
-    // Ищем все сообщения об ошибках в DOM
-    document.querySelectorAll(".repeater-control__field-error").forEach((errorEl) => {
-      const field = errorEl.closest(".repeater-control__field") as HTMLElement;
-      if (field) {
-        const input = field.querySelector("input, textarea, select") as HTMLElement;
-        if (input) {
-          const dataIndex = input.getAttribute("data-item-index");
-          const fieldName = input.getAttribute("data-field-name");
+    // Ищем все сообщения об ошибках в DOM (включая image поля)
+    // Для обычных полей - .repeater-control__field-error
+    // Для image полей - .image-upload-field__error внутри repeater
+    document.querySelectorAll(".repeater-control__field-error, .image-upload-field__error").forEach((errorEl) => {
+      let field: HTMLElement | null = null;
+      let repeaterIndex: string | null = null;
+      let fieldName: string | null = null;
+      
+      // Проверяем, является ли это ошибкой image поля
+      const isImageField = errorEl.classList.contains("image-upload-field__error");
+      
+      if (isImageField) {
+        // Для image полей ищем родительский контейнер image-upload-field
+        const imageField = errorEl.closest(".image-upload-field") as HTMLElement;
+        if (imageField) {
+          field = imageField;
+          repeaterIndex = imageField.getAttribute("data-repeater-index");
+          fieldName = imageField.getAttribute("data-repeater-item-field");
+        }
+      } else {
+        // Для обычных полей используем старую логику
+        field = errorEl.closest(".repeater-control__field") as HTMLElement;
+        if (field) {
+          const input = field.querySelector("input, textarea, select") as HTMLElement;
+          if (input) {
+            repeaterIndex = input.getAttribute("data-item-index");
+            fieldName = input.getAttribute("data-field-name");
+          }
+        }
+      }
 
-          if (dataIndex !== null && fieldName) {
-            // Находим имя repeater по структуре DOM
-            const repeaterControl = field.closest(".repeater-control") as HTMLElement;
-            if (repeaterControl) {
-              const repeaterFieldName = repeaterControl.getAttribute("data-field-name");
-              if (repeaterFieldName) {
-                const errorKey = `${repeaterFieldName}[${dataIndex}].${fieldName}`;
-                errors[errorKey] = [errorEl.textContent || ""];
-              }
-            }
+      if (repeaterIndex !== null && fieldName) {
+        // Находим имя repeater по структуре DOM
+        const repeaterControl = field?.closest(".repeater-control") as HTMLElement;
+        if (repeaterControl) {
+          const repeaterFieldName = repeaterControl.getAttribute("data-field-name");
+          if (repeaterFieldName) {
+            const errorKey = `${repeaterFieldName}[${repeaterIndex}].${fieldName}`;
+            errors[errorKey] = [errorEl.textContent || ""];
           }
         }
       }

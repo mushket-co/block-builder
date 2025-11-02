@@ -96,11 +96,24 @@ export const blockConfigs = {
     icon: '🖼️',
     description: 'Добавьте изображение на страницу',
     // HTML template для рендеринга блока
-    template: (props) => `
+    template: (props) => {
+      // Преобразуем src в URL для img тега
+      // base64 - всегда строка
+      // серверное загрузка - объект с обязательным src
+      const getImageUrl = (src) => {
+        if (typeof src === 'string') return src;
+        if (typeof src === 'object' && src !== null) {
+          return src.src || '';
+        }
+        return '';
+      };
+      const imageUrl = getImageUrl(props.image);
+      
+      return `
       <div style="text-align: center; margin: 20px 0;">
         <img 
-          src="${props.src}" 
-          alt="${props.alt}" 
+          src="${imageUrl}" 
+          alt="${props.alt || ''}" 
           style="
             max-width: 100%;
             height: auto;
@@ -109,17 +122,17 @@ export const blockConfigs = {
           " 
         />
       </div>
-    `,
+    `;
+    },
     fields: [
       {
-        field: 'src',
-        label: 'URL изображения',
-        type: 'text',
-        placeholder: 'https://example.com/image.jpg',
+        field: 'image',
+        label: 'Изображение',
+        type: 'image',
         rules: [
-          { type: 'required', message: 'URL изображения обязателен' }
+          { type: 'required', message: 'Изображение обязательно' }
         ],
-        defaultValue: '../static-files/img/1364537351_peyzazhi-na-rabochiy-stol-1.jpeg'
+        defaultValue: ''
       },
       {
         field: 'alt',
@@ -224,15 +237,29 @@ export const blockConfigs = {
       const cardTextColor = props.cardTextColor || '#333333';
       const cardBorderRadius = parseInt(props.cardBorderRadius || '8', 10);
 
+      // Преобразуем изображение в URL
+      // base64 - всегда строка
+      // серверное загрузка - объект с обязательным src
+      const getImageUrl = (image) => {
+        if (!image) return '';
+        if (typeof image === 'string') return image;
+        if (typeof image === 'object' && image !== null) {
+          return image.src || '';
+        }
+        return '';
+      };
+
       const cards = [
         { title: props.card1_title, text: props.card1_text, button: props.card1_button, link: props.card1_link, image: props.card1_image },
         { title: props.card2_title, text: props.card2_text, button: props.card2_button, link: props.card2_link, image: props.card2_image },
         { title: props.card3_title, text: props.card3_text, button: props.card3_button, link: props.card3_link, image: props.card3_image }
       ].filter(c => c && c.title && c.text);
 
-      const cardsHtml = cards.map((card, index) => `
+      const cardsHtml = cards.map((card, index) => {
+        const imageUrl = getImageUrl(card.image);
+        return `
         <div class="card" data-card-index="${index}" style="background-color:${cardBackground};color:${cardTextColor};border-radius:${cardBorderRadius}px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.1);transition:all 0.2s ease;cursor:pointer;">
-          ${card.image ? `<div class="card-image"><img src="${card.image}" alt="${card.title}" style="width:100%;height:200px;object-fit:cover;border-radius:4px;margin-bottom:15px;"/></div>` : ''}
+          ${imageUrl ? `<div class="card-image"><img src="${imageUrl}" alt="${card.title}" style="width:100%;height:200px;object-fit:cover;border-radius:4px;margin-bottom:15px;"/></div>` : ''}
           <h3 class="card-title" style="margin-bottom:10px;font-size:18px;font-weight:600;">${card.title}</h3>
           <p class="card-text" style="margin-bottom:15px;line-height:1.5;opacity:0.8;">${card.text}</p>
           ${card.button && card.link ? `<span class="card-button" style="display:inline-block;background-color:#007bff;color:#ffffff;padding:8px 16px;border-radius:4px;text-decoration:none;font-size:14px;font-weight:500;transition:all 0.2s ease;">${card.button}</span>` : ''}
@@ -306,12 +333,11 @@ export const blockConfigs = {
       {
         field: 'card1_image',
         label: 'Карточка 1 - Изображение',
-        type: 'text',
-        placeholder: 'https://example.com/image.jpg',
+        type: 'image',
         rules: [
           { type: 'required', message: 'Изображение обязательно' }
         ],
-        defaultValue: '../static-files/img/fwfw.jpg'
+        defaultValue: ''
       },
       {
         field: 'card2_title',
@@ -356,12 +382,11 @@ export const blockConfigs = {
       {
         field: 'card2_image',
         label: 'Карточка 2 - Изображение',
-        type: 'text',
-        placeholder: 'https://example.com/image.jpg',
+        type: 'image',
         rules: [
           { type: 'required', message: 'Изображение обязательно' }
         ],
-        defaultValue: '../static-files/img/fwfw.jpg'
+        defaultValue: ''
       },
       {
         field: 'card3_title',
@@ -406,12 +431,11 @@ export const blockConfigs = {
       {
         field: 'card3_image',
         label: 'Карточка 3 - Изображение',
-        type: 'text',
-        placeholder: 'https://example.com/image.jpg',
+        type: 'image',
         rules: [
           { type: 'required', message: 'Изображение обязательно' }
         ],
-        defaultValue: '../static-files/img/fwfw.jpg'
+        defaultValue: ''
       },
       {
         field: 'cardBackground',
@@ -480,11 +504,23 @@ export const blockConfigs = {
       const loop = props.loop !== 'false' && props.loop !== false;
       const spaceBetween = parseInt(props.spaceBetween || '30', 10);
 
+      // Преобразуем изображение в URL
+      // base64 - всегда строка
+      // серверное загрузка - объект с обязательным src
+      const getImageUrl = (image) => {
+        if (!image) return '';
+        if (typeof image === 'string') return image;
+        if (typeof image === 'object' && image !== null) {
+          return image.src || '';
+        }
+        return '';
+      };
+
       const slides = [
-        { url: props.image1_url, title: props.image1_title, description: props.image1_description },
-        { url: props.image2_url, title: props.image2_title, description: props.image2_description },
-        { url: props.image3_url, title: props.image3_title, description: props.image3_description },
-        { url: props.image4_url, title: props.image4_title, description: props.image4_description }
+        { url: getImageUrl(props.image1_url), title: props.image1_title, description: props.image1_description },
+        { url: getImageUrl(props.image2_url), title: props.image2_title, description: props.image2_description },
+        { url: getImageUrl(props.image3_url), title: props.image3_title, description: props.image3_description },
+        { url: getImageUrl(props.image4_url), title: props.image4_title, description: props.image4_description }
       ].filter(s => s && s.url && s.title);
 
       const swiperId = `swiper-${Math.random().toString(36).substr(2, 9)}`;
@@ -534,13 +570,12 @@ export const blockConfigs = {
       },
       {
         field: 'image1_url',
-        label: 'Изображение 1 - URL',
-        type: 'text',
-        placeholder: 'https://example.com/image1.jpg',
+        label: 'Изображение 1',
+        type: 'image',
         rules: [
-          { type: 'required', message: 'URL изображения обязателен' }
+          { type: 'required', message: 'Изображение обязательно' }
         ],
-        defaultValue: '../static-files/img/fwfw.jpg'
+        defaultValue: ''
       },
       {
         field: 'image1_title',
@@ -564,13 +599,12 @@ export const blockConfigs = {
       },
       {
         field: 'image2_url',
-        label: 'Изображение 2 - URL',
-        type: 'text',
-        placeholder: 'https://example.com/image2.jpg',
+        label: 'Изображение 2',
+        type: 'image',
         rules: [
-          { type: 'required', message: 'URL изображения обязателен' }
+          { type: 'required', message: 'Изображение обязательно' }
         ],
-        defaultValue: '../static-files/img/spanch.jpg'
+        defaultValue: ''
       },
       {
         field: 'image2_title',
@@ -594,13 +628,12 @@ export const blockConfigs = {
       },
       {
         field: 'image3_url',
-        label: 'Изображение 3 - URL',
-        type: 'text',
-        placeholder: 'https://example.com/image3.jpg',
+        label: 'Изображение 3',
+        type: 'image',
         rules: [
-          { type: 'required', message: 'URL изображения обязателен' }
+          { type: 'required', message: 'Изображение обязательно' }
         ],
-        defaultValue: '../static-files/img/мэдвэд.jpg'
+        defaultValue: ''
       },
       {
         field: 'image3_title',
@@ -624,13 +657,12 @@ export const blockConfigs = {
       },
       {
         field: 'image4_url',
-        label: 'Изображение 4 - URL',
-        type: 'text',
-        placeholder: 'https://example.com/image4.jpg',
+        label: 'Изображение 4',
+        type: 'image',
         rules: [
-          { type: 'required', message: 'URL изображения обязателен' }
+          { type: 'required', message: 'Изображение обязательно' }
         ],
-        defaultValue: '../static-files/img/Квантовое_4D-кодирование_картинка.jpg'
+        defaultValue: ''
       },
       {
         field: 'image4_title',

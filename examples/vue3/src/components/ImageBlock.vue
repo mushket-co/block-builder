@@ -2,7 +2,7 @@
   <div class="image-block">
     <div class="container">
       <img
-        :src="src"
+        :src="imageUrl"
         :alt="alt"
         :style="imageStyle"
         @error="handleImageError"
@@ -16,8 +16,8 @@
 import { computed } from 'vue'
 
 const props = defineProps({
-  src: {
-    type: String,
+  image: {
+    type: [String, Object],
     required: true
   },
   alt: {
@@ -30,6 +30,17 @@ const props = defineProps({
   }
 })
 
+// Преобразуем image в URL для img тега
+// base64 - всегда строка
+// серверное загрузка - объект с обязательным src
+const imageUrl = computed(() => {
+  if (typeof props.image === 'string') return props.image;
+  if (typeof props.image === 'object' && props.image !== null) {
+    return props.image.src || '';
+  }
+  return '';
+});
+
 const imageStyle = computed(() => ({
   borderRadius: `${props.borderRadius}px`,
   maxWidth: '100%',
@@ -39,11 +50,11 @@ const imageStyle = computed(() => ({
 }))
 
 const handleImageError = () => {
-  console.warn('Ошибка загрузки изображения:', props.src)
+  // Обработка ошибки загрузки изображения
 }
 
 const handleImageLoad = () => {
-  console.log('Изображение загружено:', props.src)
+  // Изображение загружено
 }
 </script>
 

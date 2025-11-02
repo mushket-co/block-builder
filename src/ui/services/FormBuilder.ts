@@ -63,6 +63,9 @@ export class FormBuilder {
     case 'checkbox':
       return this.generateCheckboxHTML(fieldId, field, value);
 
+    case 'image':
+      return this.generateImagePlaceholderHTML(fieldId, field, value, required);
+
     case 'spacing':
       return this.generateSpacingPlaceholderHTML(fieldId, field, value, required);
 
@@ -222,6 +225,83 @@ export class FormBuilder {
       </label>
     </div>
   `;
+  }
+
+  /**
+   * Генерация image поля для загрузки изображений
+   */
+  private generateImagePlaceholderHTML(fieldId: string, field: TFieldConfig, value: any, required: string): string {
+    const escapedLabel = this.escapeHtml(field.label);
+    
+    // Извлекаем URL для preview
+    const getImageUrl = (val: any): string => {
+      if (!val) return '';
+      if (typeof val === 'string') return val;
+      if (typeof val === 'object' && val !== null) {
+        return val.src || '';
+      }
+      return '';
+    };
+    
+    const imageUrl = getImageUrl(value);
+    const hasImage = !!imageUrl;
+    
+    // Конфигурация загрузки
+    const config = field.imageUploadConfig || {};
+    const uploadUrl = config.uploadUrl || '';
+    const maxFileSize = config.maxFileSize || (10 * 1024 * 1024);
+    const fileParamName = config.fileParamName || 'file';
+    
+    // Сериализуем конфигурацию для JS обработчика
+    const configJson = JSON.stringify({
+      uploadUrl,
+      fileParamName,
+      maxFileSize,
+      uploadHeaders: config.uploadHeaders || {},
+      responseMapper: config.responseMapper ? 'CUSTOM' : null, // Нужен будет в обработчике
+      onUploadError: config.onUploadError ? 'CUSTOM' : null
+    }).replace(/"/g, '&quot;');
+    
+    // Сериализуем uploadHeaders отдельно для использования в скрипте
+    const uploadHeadersJson = JSON.stringify(config.uploadHeaders || {}).replace(/"/g, '&quot;');
+    
+    return `
+    <div class="block-builder-form-group image-upload-field" data-field-name="${field.field}">
+      <label for="${fieldId}" class="image-upload-field__label">
+        ${escapedLabel} ${required ? '<span class="image-upload-field__required">*</span>' : ''}
+      </label>
+      
+      <!-- Preview изображения -->
+      <div class="image-upload-field__preview" ${hasImage ? '' : 'style="display: none;"'}>
+        <img src="${this.escapeHtml(imageUrl)}" alt="${escapedLabel}" class="image-upload-field__preview-img" />
+        <button type="button" class="image-upload-field__preview-clear" title="Удалить изображение">×</button>
+      </div>
+      
+      <!-- Поле загрузки файла -->
+      <div class="image-upload-field__file">
+        <input
+          type="file"
+          id="${fieldId}"
+          name="${field.field}"
+          accept="image/*"
+          class="image-upload-field__file-input"
+          data-config='${configJson}'
+          data-field-name="${field.field}"
+        />
+        <label for="${fieldId}" class="image-upload-field__file-label">
+          <span class="image-upload-field__label-text">${hasImage ? 'Изменить файл' : 'Выберите изображение'}</span>
+          <span class="image-upload-field__loading-text" style="display: none;">⏳ Загрузка...</span>
+        </label>
+        <span class="image-upload-field__error" style="display: none;"></span>
+      </div>
+      
+      <!-- Сообщение об ошибке валидации -->
+      <div class="image-upload-field__error" style="display: none;"></div>
+      
+      <!-- Hidden input для хранения значения -->
+      <input type="hidden" name="${field.field}" value="${this.escapeHtml(typeof value === 'object' ? JSON.stringify(value) : (value || ''))}" data-image-value="true" />
+    </div>
+    `;
   }
 
   /**

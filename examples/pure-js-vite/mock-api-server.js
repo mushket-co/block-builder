@@ -110,8 +110,40 @@ export function setupMockApi(app, port = 3002) {
     res.end('Method Not Allowed');
   });
 
-  console.log('✅ Mock API сервер запущен:');
-  console.log(`   GET  http://localhost:${port}/api/news`);
-  console.log(`   POST http://localhost:${port}/api/news`);
+  // Обработчик загрузки файлов
+  app.use((req, res, next) => {
+    if (!req.url.startsWith('/api/upload')) {
+      return next();
+    }
+
+    // Обработка только POST запросов
+    if (req.method !== 'POST') {
+      res.statusCode = 405;
+      res.end('Method Not Allowed');
+      return;
+    }
+
+    // Простой парсер multipart/form-data (для демо)
+    let body = Buffer.alloc(0);
+    
+    req.on('data', chunk => {
+      body = Buffer.concat([body, chunk]);
+    });
+
+    req.on('end', () => {
+      // Эмулируем задержку загрузки
+      setTimeout(() => {
+        // Генерируем фиктивный URL - в реальности файл сохранялся бы на сервере
+        const timestamp = Date.now();
+        const randomId = Math.random().toString(36).substring(7);
+        const mockUrl = `/uploads/${timestamp}-${randomId}.jpg`;
+        
+        // Возвращаем URL загруженного файла как объект
+        // В реальности ответ может быть каким угодно - строкой, объектом и т.д.
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ url: mockUrl }));
+      }, 500);
+    });
+  });
 }
 

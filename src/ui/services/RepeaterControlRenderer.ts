@@ -13,6 +13,7 @@ export interface IRepeaterControlOptions {
   config?: IRepeaterFieldConfig;
   value?: any[];
   onChange?: (value: any[]) => void;
+  onAfterRender?: () => void; // Callback после рендера для инициализации вложенных контролов
 }
 
 export class RepeaterControlRenderer {
@@ -23,6 +24,7 @@ export class RepeaterControlRenderer {
   private config: IRepeaterFieldConfig;
   private value: any[];
   private onChange?: (value: any[]) => void;
+  private onAfterRender?: () => void;
   private container?: HTMLElement;
   private collapsedItems: Set<number> = new Set();
   private itemIdCounter = 0;
@@ -35,6 +37,7 @@ export class RepeaterControlRenderer {
   this.config = options.config || { fields: [] };
   this.value = options.value || [];
   this.onChange = options.onChange;
+  this.onAfterRender = options.onAfterRender;
 
   // Инициализируем минимальное количество элементов
   const effectiveMin = this.getEffectiveMin();
@@ -342,6 +345,9 @@ export class RepeaterControlRenderer {
         </div>
       `;
 
+    case 'image':
+      return this.generateImageFieldHTML(field, itemIndex, value, fieldId, required, hasError, errors);
+
     default: // text
       return `
         <div class="repeater-control__field ${hasError ? 'error' : ''}">
@@ -363,6 +369,104 @@ export class RepeaterControlRenderer {
         </div>
       `;
   }
+  }
+
+  /**
+   * Экранирование HTML для предотвращения XSS атак
+   */
+  private escapeHtml(text: string): string {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  /**
+   * Генерация HTML для поля изображения в repeater
+   */
+  private generateImageFieldHTML(
+    field: IRepeaterItemFieldConfig,
+    itemIndex: number,
+    value: any,
+    fieldId: string,
+    required: string,
+    hasError: boolean,
+    errors: string[]
+  ): string {
+    // Извлекаем URL для preview
+    // Поддерживаем и src (правильное поле) и url (для обратной совместимости)
+    const getImageUrl = (val: any): string => {
+      if (!val) return '';
+      if (typeof val === 'string') return val;
+      if (typeof val === 'object' && val !== null) {
+        // Приоритет src, затем url для обратной совместимости
+        return val.src || val.url || '';
+      }
+      return '';
+    };
+
+    const imageUrl = getImageUrl(value);
+    const hasImage = !!imageUrl;
+
+    // Конфигурация загрузки
+    const config = (field as any).imageUploadConfig || {};
+    const uploadUrl = config.uploadUrl || '';
+    const maxFileSize = config.maxFileSize || (10 * 1024 * 1024);
+    const fileParamName = config.fileParamName || 'file';
+
+    // Сериализуем конфигурацию для JS обработчика
+    const configJson = JSON.stringify({
+      uploadUrl,
+      fileParamName,
+      maxFileSize,
+      uploadHeaders: config.uploadHeaders || {},
+      responseMapper: config.responseMapper ? 'CUSTOM' : null,
+      onUploadError: config.onUploadError ? 'CUSTOM' : null
+    }).replace(/"/g, '&quot;');
+
+    const escapedLabel = this.escapeHtml(field.label);
+    const errorClass = hasError ? 'error' : '';
+    const fieldNamePath = `${this.fieldName}[${itemIndex}].${field.field}`;
+
+    return `
+      <div class="repeater-control__field image-upload-field ${errorClass}" data-field-name="${fieldNamePath}" data-repeater-field="${this.fieldName}" data-repeater-index="${itemIndex}" data-repeater-item-field="${field.field}">
+        <label for="${fieldId}" class="repeater-control__field-label">
+          ${escapedLabel} ${required ? '<span class="required">*</span>' : ''}
+        </label>
+
+        <!-- Preview изображения -->
+        <div class="image-upload-field__preview" ${hasImage ? '' : 'style="display: none;"'}>
+          <img src="${this.escapeHtml(imageUrl)}" alt="${escapedLabel}" class="image-upload-field__preview-img" />
+          <button type="button" class="image-upload-field__preview-clear" data-item-index="${itemIndex}" data-field-name="${field.field}" data-repeater-field="${this.fieldName}" title="Удалить изображение">×</button>
+        </div>
+
+        <!-- Поле загрузки файла -->
+        <div class="image-upload-field__file">
+          <input
+            type="file"
+            id="${fieldId}"
+            name="${fieldNamePath}"
+            accept="image/*"
+            class="image-upload-field__file-input"
+            data-config='${configJson}'
+            data-item-index="${itemIndex}"
+            data-field-name="${field.field}"
+            data-repeater-field-name="${this.fieldName}"
+          />
+          <label for="${fieldId}" class="image-upload-field__file-label">
+            <span class="image-upload-field__label-text">${hasImage ? 'Изменить файл' : 'Выберите изображение'}</span>
+            <span class="image-upload-field__loading-text" style="display: none;">⏳ Загрузка...</span>
+          </label>
+          <span class="image-upload-field__error" style="display: none;"></span>
+        </div>
+
+        <!-- Сообщение об ошибке валидации -->
+        <div class="image-upload-field__error" style="display: ${hasError ? 'block' : 'none'};">${hasError ? this.escapeHtml(errors[0]) : ''}</div>
+
+        <!-- Hidden input для хранения значения -->
+        <input type="hidden" name="${fieldNamePath}" value="${typeof value === 'object' && value !== null ? JSON.stringify(value).replace(/"/g, '&quot;') : (this.escapeHtml(value || ''))}" data-image-value="true" data-item-index="${itemIndex}" data-field-name="${field.field}" data-repeater-field-name="${this.fieldName}" />
+      </div>
+    `;
   }
 
   /**
@@ -495,8 +599,17 @@ export class RepeaterControlRenderer {
    */
   public render(container: HTMLElement): void {
   this.container = container;
+  // Очищаем флаги инициализации image upload контролов при перерендере
+  container.querySelectorAll('[data-image-initialized]').forEach(el => {
+    el.removeAttribute('data-image-initialized');
+  });
   container.innerHTML = this.generateHTML();
   this.attachEventListeners();
+  
+  // Вызываем callback для инициализации вложенных контролов (например, image upload)
+  if (this.onAfterRender) {
+    this.onAfterRender();
+  }
   }
 
   /**

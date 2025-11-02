@@ -250,11 +250,24 @@ export const blockConfigs = {
     description: 'Добавьте изображение',
     render: {
       kind: 'html',
-      template: (props) => `
+      template: (props) => {
+        // Преобразуем src в URL для img тега
+        // base64 - всегда строка
+        // серверное загрузка - объект с обязательным src
+        const getImageUrl = (src) => {
+          if (typeof src === 'string') return src;
+          if (typeof src === 'object' && src !== null) {
+            return src.src || '';
+          }
+          return '';
+        };
+        const imageUrl = getImageUrl(props.image);
+
+        return `
         <div class="image-block" style="text-align: center; margin: 20px 0;">
           <div class="container">
             <img
-              src="${props.src}"
+              src="${imageUrl}"
               alt="${props.alt}"
               style="
                 border-radius: ${props.borderRadius}px;
@@ -269,18 +282,30 @@ export const blockConfigs = {
             />
           </div>
         </div>
-      `
+      `;
+      }
     },
     fields: [
       {
-        field: 'src',
-        label: 'URL изображения',
-        type: 'text',
-        placeholder: 'https://example.com/image.jpg',
+        field: 'image',
+        label: 'Изображение',
+        type: 'image',
         rules: [
-          { type: 'required', message: 'URL обязателен' }
+          { type: 'required', message: 'Изображение обязательно' }
         ],
-        defaultValue: '/1.jpeg'
+        defaultValue: '',
+        imageUploadConfig: {
+          uploadUrl: '/api/upload',
+          fileParamName: 'file',
+          maxFileSize: 1 * 1024 * 1024,
+          responseMapper: (response) => ({
+            src: response.url
+          }) // 5MB для демо
+          // responseMapper: (response) => response.url // Извлекаем только URL
+          // ИЛИ можно вернуть объект с метаданными:
+          // responseMapper: (response) => ({ src: response.url, width: response.width, height: response.height })
+          // uploadHeaders: { 'Authorization': 'Bearer test-token' }, // Раскомментируйте для теста заголовков
+        }
       },
       {
         field: 'alt',
@@ -324,7 +349,7 @@ export const blockConfigs = {
                 font-weight: 500;
                 transition: all 0.2s ease;
               "
-              onclick="console.log('Кнопка нажата: ${props.text.replace(/'/g, "\\'")}'); this.textContent='Загрузка...'; setTimeout(() => this.textContent='${props.text.replace(/'/g, "\\'")}', 1000)"
+              onclick="this.textContent='Загрузка...'; setTimeout(() => this.textContent='${props.text.replace(/'/g, "\\'")}', 1000)"
               onmouseover="this.style.transform='scale(1.05)'; this.style.filter='brightness(1.1)'"
               onmouseout="this.style.transform='scale(1)'; this.style.filter='brightness(1)'"
             >
@@ -393,7 +418,24 @@ export const blockConfigs = {
         const sliderId = `swiper-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 
         // ✅ НОВЫЙ подход: используем массив slides из props
-        const slides = (props.slides || []).filter(slide => slide.url && slide.title)
+        // Преобразуем изображение в URL
+        // base64 - всегда строка
+        // серверное загрузка - объект с обязательным src
+        // Поддерживаем и src (правильное поле) и url (для обратной совместимости)
+        const getImageUrl = (image) => {
+          if (!image) return '';
+          if (typeof image === 'string') return image;
+          if (typeof image === 'object' && image !== null) {
+            // Приоритет src, затем url для обратной совместимости
+            return image.src || image.url || '';
+          }
+          return '';
+        };
+
+        const slides = (props.slides || []).map(slide => ({
+          ...slide,
+          imageUrl: getImageUrl(slide.image)
+        })).filter(slide => slide.imageUrl && slide.title)
 
         // Преобразуем значения
         const autoplayValue = typeof props.autoplay === 'string'
@@ -421,7 +463,7 @@ export const blockConfigs = {
                     ${slides.map(slide => `
                       <div class="swiper-slide">
                         <div style="position: relative; background: white;">
-                          <img src="${slide.url}" alt="${slide.title}" style="width: 100%; height: 400px; object-fit: cover; display: block;" />
+                          <img src="${slide.imageUrl}" alt="${slide.title}" style="width: 100%; height: 400px; object-fit: cover; display: block;" />
                           <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); padding: 30px 20px 20px; color: white;">
                             <h3 style="margin: 0 0 8px 0; font-size: 20px; font-weight: 600;">${slide.title}</h3>
                             <p style="margin: 0; font-size: 14px; opacity: 0.9;">${slide.description}</p>
@@ -486,22 +528,22 @@ export const blockConfigs = {
         ],
         defaultValue: [
           {
-            url: '/qw.jpg',
+            image: '',
             title: 'Природа',
             description: 'Красивый пейзаж природы'
           },
           {
-            url: '/Edvard_Grieg.jpg',
+            image: '',
             title: 'Эдвард Григ',
             description: 'Знаменитый норвежский композитор'
           },
           {
-            url: '/bear.jpg',
+            image: '',
             title: 'Медведь',
             description: 'Дикая природа'
           },
           {
-            url: '/spanch.jpg',
+            image: '',
             title: 'Губка Боб',
             description: 'Популярный мультипликационный персонаж'
           }
@@ -515,12 +557,19 @@ export const blockConfigs = {
           collapsible: true,
           fields: [
             {
-              field: 'url',
-              label: 'URL изображения',
-              type: 'text',
-              placeholder: '/путь/к/изображению.jpg',
-              rules: [{ type: 'required', message: 'URL обязателен' }],
-              defaultValue: ''
+              field: 'image',
+              label: 'Изображение',
+              type: 'image',
+              rules: [{ type: 'required', message: 'Изображение обязательно' }],
+              defaultValue: '',
+              imageUploadConfig: {
+                uploadUrl: '/api/upload',
+                fileParamName: 'file',
+                maxFileSize: 1 * 1024 * 1024, // 1MB для демо
+                responseMapper: (response) => ({
+                  src: response.url // ОБЯЗАТЕЛЬНО вернуть объект с полем src!
+                })
+              }
             },
             {
               field: 'title',
@@ -586,6 +635,18 @@ export const blockConfigs = {
       mount: (container, props) => {
         const cards = (props.cards || []).filter(card => card.title && card.text);
 
+        // Преобразуем изображение в URL
+        // base64 - всегда строка
+        // серверное загрузка - объект с обязательным src
+        const getImageUrl = (image) => {
+          if (!image) return '';
+          if (typeof image === 'string') return image;
+          if (typeof image === 'object' && image !== null) {
+            return image.src || '';
+          }
+          return '';
+        };
+
         container.innerHTML = `
           <div class="card-list-block" style="padding: 40px 20px; background: #f8f9fa;">
             <div class="container">
@@ -598,7 +659,9 @@ export const blockConfigs = {
                 max-width: 1200px;
                 margin: 0 auto;
               ">
-              ${cards.map(card => `
+              ${cards.map(card => {
+                const imageUrl = getImageUrl(card.image);
+                return `
                 <div class="card" style="
                   background: ${props.cardBackground || '#ffffff'};
                   border-radius: ${props.cardBorderRadius || 8}px;
@@ -609,7 +672,7 @@ export const blockConfigs = {
                   display: flex;
                   flex-direction: column;
                 ">
-                  ${card.image ? `
+                  ${imageUrl ? `
                     <div style="
                       width: 100%;
                       height: 200px;
@@ -617,7 +680,7 @@ export const blockConfigs = {
                       background: #e9ecef;
                     ">
                       <img
-                        src="${card.image}"
+                        src="${imageUrl}"
                         alt="${card.title}"
                         style="width: 100%; height: 100%; object-fit: cover; display: block;"
                       />
@@ -662,7 +725,8 @@ export const blockConfigs = {
                     ` : ''}
                   </div>
                 </div>
-              `).join('')}
+              `;
+              }).join('')}
               </div>
             </div>
           </div>
@@ -702,21 +766,21 @@ export const blockConfigs = {
             text: 'Создание современных веб-приложений',
             button: 'Подробнее',
             link: 'https://example.com',
-            image: '/2.jpg'
+            image: ''
           },
           {
             title: 'Мобильные приложения',
             text: 'Разработка мобильных приложений для iOS и Android',
             button: 'Узнать больше',
             link: 'https://example.com',
-            image: '/spanch.jpg'
+            image: ''
           },
           {
             title: 'Дизайн',
             text: 'Создание уникального дизайна для вашего бренда',
             button: 'Посмотреть работы',
             link: 'https://example.com',
-            image: '/bear.jpg'
+            image: ''
           }
         ],
         repeaterConfig: {
@@ -745,11 +809,10 @@ export const blockConfigs = {
             },
             {
               field: 'image',
-              label: 'Изображение (URL)',
-              type: 'text',
-              placeholder: '/путь/к/изображению.jpg',
+              label: 'Изображение',
+              type: 'image',
               rules: [],
-              defaultValue: '/2.jpg'
+              defaultValue: ''
             },
             {
               field: 'button',
@@ -830,9 +893,20 @@ export const blockConfigs = {
       template: (props) => {
         const cards = props.cards || []
 
+        const getImageUrl = (image) => {
+          if (!image) return '';
+          if (typeof image === 'string') return image;
+          if (typeof image === 'object' && image !== null) {
+            return image.src || '';
+          }
+          return '';
+        };
+
         const cardsHtml = cards.map(card => {
           const cardBg = card.backgroundColor || props.cardDefaultBg || '#ffffff'
           const cardTextColor = card.textColor || props.cardDefaultTextColor || '#333333'
+          const imageUrl = getImageUrl(card.image);
+          const imageMobileUrl = getImageUrl(card.imageMobile);
 
           return `
             <div class="rich-card" style="
@@ -843,18 +917,18 @@ export const blockConfigs = {
               overflow: hidden;
               transition: transform 0.3s ease, box-shadow 0.3s ease;
             ">
-              ${card.image || card.imageMobile ? `
+              ${imageUrl || imageMobileUrl ? `
                 <div style="
                   width: 100%;
                   height: 240px;
                   overflow: hidden;
                 ">
                   <picture>
-                    ${card.imageMobile ? `
-                      <source srcset="${card.imageMobile}" media="(max-width: 768px)" />
+                    ${imageMobileUrl ? `
+                      <source srcset="${imageMobileUrl}" media="(max-width: 768px)" />
                     ` : ''}
                     <img
-                      src="${card.image || card.imageMobile}"
+                      src="${imageUrl || imageMobileUrl}"
                       alt="${card.imageAlt || card.title || ''}"
                       style="
                         width: 100%;
@@ -1111,8 +1185,8 @@ export const blockConfigs = {
             link: 'https://example.com/product-1',
             linkTarget: '_blank',
             buttonText: 'Узнать подробнее',
-            image: '/1.jpeg',
-            imageMobile: '/1.jpeg',
+            image: '',
+            imageMobile: '',
             imageAlt: 'Премиум продукт',
             backgroundColor: '#ffffff',
             textColor: '#333333',
@@ -1128,8 +1202,8 @@ export const blockConfigs = {
             link: 'https://example.com/product-2',
             linkTarget: '_self',
             buttonText: 'Подробности',
-            image: '/2.jpg',
-            imageMobile: '/2.jpg',
+            image: '',
+            imageMobile: '',
             imageAlt: 'Стандарт версия',
             backgroundColor: '#f8f9fa',
             textColor: '#212529',
@@ -1145,8 +1219,8 @@ export const blockConfigs = {
             link: 'https://example.com/product-3',
             linkTarget: '_blank',
             buttonText: 'Связаться с нами',
-            image: '/3.png',
-            imageMobile: '/3.png',
+            image: '',
+            imageMobile: '',
             imageAlt: 'Корпоративное решение',
             backgroundColor: '#e7f3ff',
             textColor: '#004085',
@@ -1228,18 +1302,16 @@ export const blockConfigs = {
             {
               field: 'image',
               label: 'Изображение (десктоп)',
-              type: 'text',
-              placeholder: '/путь/к/изображению.jpg',
+              type: 'image',
               rules: [],
-              defaultValue: '/2.jpg'
+              defaultValue: ''
             },
             {
               field: 'imageMobile',
               label: 'Изображение (мобильное)',
-              type: 'text',
-              placeholder: '/путь/к/мобильному-изображению.jpg',
+              type: 'image',
               rules: [],
-              defaultValue: '/2.jpg'
+              defaultValue: ''
             },
             {
               field: 'imageAlt',

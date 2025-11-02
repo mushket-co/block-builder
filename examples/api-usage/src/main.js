@@ -44,20 +44,35 @@ const blockConfigs = {
     description: 'Простой блок с изображением',
     render: {
       kind: 'html',
-      template: (props) => `
+      template: (props) => {
+        // Преобразуем src в URL для img тега
+        // base64 - всегда строка
+        // серверное загрузка - объект с обязательным src
+        const getImageUrl = (src) => {
+          if (!src) return '/1.jpeg';
+          if (typeof src === 'string') return src;
+          if (typeof src === 'object' && src !== null) {
+            return src.src || '';
+          }
+          return '';
+        };
+        const imageUrl = getImageUrl(props.image);
+        
+        return `
         <div class="image-block" style="padding: 1rem; background: white; border-radius: 4px; margin-bottom: 1rem; text-align: center;">
-          <img src="${props.src || '/1.jpeg'}"
-               alt="${props.alt || 'Изображение'}"
+          <img src="${imageUrl}"
+               alt="${props.alt || ''}"
                style="max-width: 100%; border-radius: 4px;" />
         </div>
-      `
+      `;
+      }
     },
     fields: [
       {
-        field: 'src',
-        label: 'URL изображения',
-        type: 'text',
-        defaultValue: '/1.jpeg'
+        field: 'image',
+        label: 'Изображение',
+        type: 'image',
+        defaultValue: ''
       },
       {
         field: 'alt',
@@ -129,8 +144,22 @@ const blockConfigs = {
     description: 'Главная секция с изображением и текстом',
     render: {
       kind: 'html',
-      template: (props) => `
-        <div class="hero-block" style="position: relative; height: 400px; background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${props.bgImage || '/1.jpeg'}); background-size: cover; display: flex; align-items: center; justify-content: center; color: white; margin-bottom: 1rem;">
+      template: (props) => {
+        // Преобразуем bgImage в URL
+        // base64 - всегда строка
+        // серверное загрузка - объект с обязательным src
+        const getImageUrl = (bgImage) => {
+          if (!bgImage) return '';
+          if (typeof bgImage === 'string') return bgImage;
+          if (typeof bgImage === 'object' && bgImage !== null) {
+            return bgImage.src || '';
+          }
+          return '';
+        };
+        const bgImageUrl = getImageUrl(props.bgImage);
+        
+        return `
+        <div class="hero-block" style="position: relative; height: 400px; background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5))${bgImageUrl ? `, url(${bgImageUrl})` : ''}; background-size: cover; display: flex; align-items: center; justify-content: center; color: white; margin-bottom: 1rem;">
           <div style="text-align: center; padding: 2rem;">
             <h1 style="font-size: ${props.titleSize || 48}px; margin: 0 0 1rem 0;">
               ${props.title || 'Заголовок Hero'}
@@ -158,8 +187,8 @@ const blockConfigs = {
       {
         field: 'bgImage',
         label: 'Фоновое изображение',
-        type: 'text',
-        defaultValue: '/1.jpeg'
+        type: 'image',
+        defaultValue: ''
       },
       {
         field: 'titleSize',
@@ -183,7 +212,6 @@ const loadSavedBlocks = () => {
     const savedData = localStorage.getItem('saved-blocks')
     if (savedData) {
       const blocks = JSON.parse(savedData)
-      console.log(`📦 Найдено ${blocks.length} сохранённых блоков`)
       return blocks
     }
   } catch (error) {
@@ -198,9 +226,6 @@ const blockBuilder = new BlockBuilder({
   blockConfigs: blockConfigs,
   autoInit: false // Ручная инициализация
 })
-
-console.log('✅ BlockBuilder API инициализирован')
-console.log('📦 Используется только программный API, без готового UI')
 
 // Загружаем начальные блоки если есть
 const initialBlocks = loadSavedBlocks()
@@ -274,7 +299,6 @@ function logInfo(message, data = null) {
     logEntry.innerHTML += `<pre>${JSON.stringify(data, null, 2)}</pre>`
   }
   infoEl.insertBefore(logEntry, infoEl.firstChild)
-  console.log(`[${timestamp}]`, message, data || '')
 }
 
 // ===== ФУНКЦИИ ДЛЯ ОТОБРАЖЕНИЯ =====

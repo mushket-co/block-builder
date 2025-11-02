@@ -11,7 +11,6 @@ const loadSavedBlocks = () => {
     const savedData = localStorage.getItem('saved-blocks')
     if (savedData) {
       const blocks = JSON.parse(savedData)
-      console.log(`📦 Найдено ${blocks.length} сохранённых блоков`)
       return blocks
     }
   } catch (error) {
@@ -37,8 +36,6 @@ const blockBuilder = new BlockBuilder({
   },
   // Пример функции сохранения
   onSave: async (blocks) => {
-    console.log('💾 Сохранение блоков:', blocks)
-
     try {
       // Здесь вы можете сохранять блоки любым способом:
       // 1. Отправить на сервер через API
@@ -62,8 +59,3 @@ const blockBuilder = new BlockBuilder({
 
 // ✅ Регистрируем кастомный WYSIWYG редактор
 blockBuilder.registerCustomFieldRenderer(new WysiwygFieldRenderer())
-
-console.log('✅ BlockBuilder инициализирован')
-console.log('✅ Зарегистрирован WYSIWYG редактор')
-console.log('📦 Доступные блоки:', Object.keys(blockConfigs))
-console.log('🎯 Это чистый JS пример с Vite сборкой')

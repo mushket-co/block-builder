@@ -50,10 +50,10 @@ export const blockConfigs = {
     },
     fields: [
       {
-        field: 'src',
-        label: 'URL изображения',
-        type: 'text',
-        defaultValue: '/1.jpeg'
+        field: 'image',
+        label: 'Изображение',
+        type: 'image',
+        defaultValue: ''
       },
       {
         field: 'alt',
@@ -124,8 +124,8 @@ export const blockConfigs = {
       {
         field: 'bgImage',
         label: 'Фоновое изображение',
-        type: 'text',
-        defaultValue: '/1.jpeg'
+        type: 'image',
+        defaultValue: ''
       }
     ]
   }

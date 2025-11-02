@@ -13,11 +13,25 @@ import { computed } from 'vue'
 const props = defineProps({
   title: String,
   subtitle: String,
-  bgImage: String
+  bgImage: [String, Object]
 })
 
+// Преобразуем bgImage в URL
+// base64 - всегда строка
+// серверное загрузка - объект с обязательным src
+const getImageUrl = (bgImage) => {
+  if (!bgImage) return '';
+  if (typeof bgImage === 'string') return bgImage;
+  if (typeof bgImage === 'object' && bgImage !== null) {
+    return bgImage.src || '';
+  }
+  return '';
+};
+
+const bgImageUrl = computed(() => getImageUrl(props.bgImage));
+
 const heroStyle = computed(() => ({
-  backgroundImage: props.bgImage ? `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${props.bgImage})` : 'linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5))',
+  backgroundImage: bgImageUrl.value ? `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${bgImageUrl.value})` : 'linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5))',
   backgroundSize: 'cover',
   backgroundPosition: 'center'
 }))

@@ -249,9 +249,9 @@
               :key="field.field"
               class="block-builder-form-group"
               :data-field-name="field.field"
-              :class="{ 'error': formErrors[field.field] }"
+              :class="{ 'error': formErrors[field.field] && field.type !== 'image' }"
             >
-              <!-- Лейбл только для полей без собственного лейбла (spacing и repeater имеют свой) -->
+              <!-- Лейбл только для полей без собственного лейбла (spacing, repeater и image имеют свой) -->
               <label
                 v-if="isRegularInputField(field)"
                 :for="'field-' + field.field"
@@ -304,6 +304,17 @@
                 :class="{ 'error': formErrors[field.field] }"
               />
 
+              <!-- Image Upload -->
+              <ImageUploadField
+                v-else-if="field.type === 'image'"
+                v-model="formData[field.field]"
+                :label="field.label"
+                :required="isFieldRequired(field)"
+                :placeholder="field.placeholder"
+                :error="formErrors[field.field]?.[0]"
+                :image-upload-config="field.imageUploadConfig"
+              />
+
               <!-- Select -->
               <select
                 v-else-if="field.type === 'select'"
@@ -346,7 +357,7 @@
                 :breakpoints="getSpacingBreakpoints(field)"
                 :required="isFieldRequired(field)"
                 :show-preview="true"
-                :license-feature-checker="getLicenseFeatureChecker()"
+                :license-feature-checker="getLicenseFeatureChecker"
               />
 
               <!-- Repeater Control -->
@@ -400,14 +411,13 @@
                   {{ field.label }}
                   <span v-if="isFieldRequired(field)" class="required">*</span>
                 </label>
-                <component
-                  v-if="isCustomFieldAvailable(field) && props.customFieldRendererRegistry?.get(field.customFieldConfig?.rendererId)?.vueComponent"
-                  :is="props.customFieldRendererRegistry.get(field.customFieldConfig.rendererId).vueComponent"
+                <CustomField
+                  v-if="isCustomFieldAvailable(field) && props.customFieldRendererRegistry?.get(field.customFieldConfig?.rendererId)"
+                  :field="field"
                   v-model="formData[field.field]"
-                  :label="field.label"
-                  :options="field.customFieldConfig?.options"
-                  :required="field.rules?.some(r => r.type === 'required')"
-                  :error="formErrors[field.field]?.[0]"
+                  :form-errors="formErrors"
+                  :custom-field-renderer-registry="props.customFieldRendererRegistry"
+                  :is-field-required="isFieldRequired"
                 />
                 <div
                   v-else
@@ -417,8 +427,8 @@
                 </div>
               </div>
 
-              <!-- Ошибки валидации (общие для всех типов полей, кроме api-select - там ошибки внутри компонента) -->
-              <div v-if="formErrors[field.field] && field.type !== 'api-select'" class="block-builder-form-errors">
+              <!-- Ошибки валидации (общие для всех типов полей, кроме api-select и image - они сами показывают ошибки) -->
+              <div v-if="formErrors[field.field] && field.type !== 'api-select' && field.type !== 'image'" class="block-builder-form-errors">
                 <span v-for="error in formErrors[field.field]" :key="error" class="error">{{ error }}</span>
               </div>
             </div>
@@ -439,7 +449,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import { ref, reactive, computed, onMounted, onBeforeUnmount, nextTick, toRaw } from 'vue';
 import { IBlock, TBlockId } from '../../core/types';
 import { BlockManagementUseCase } from '../../core/use-cases/BlockManagementUseCase';
 import type { ApiSelectUseCase } from '../../core/use-cases/ApiSelectUseCase';
@@ -448,7 +458,7 @@ import { UniversalValidator } from '../../utils/universalValidation';
 import { addSpacingFieldToFields } from '../../utils/blockSpacingHelpers';
 import { getBlockInlineStyles, watchBreakpointChanges } from '../../utils/breakpointHelpers';
 import { ISpacingData } from '../../utils/spacingHelpers';
-import { scrollToFirstError, parseErrorKey } from '../../utils/formErrorHelpers';
+import { scrollToFirstError, parseErrorKey, findFieldElement, scrollToElement, focusElement } from '../../utils/formErrorHelpers';
 import { LicenseService } from '../../core/services/LicenseService';
 import type { LicenseFeatureChecker } from '../../core/services/LicenseFeatureChecker';
 import { LicenseFeature } from '../../core/services/LicenseFeatureChecker';
@@ -456,6 +466,8 @@ import SpacingControl from './SpacingControl.vue';
 import RepeaterControl from './RepeaterControl.vue';
 // @ts-ignore - Vue SFC components with <script setup> are properly handled by build tools
 import ApiSelectField from './ApiSelectField.vue';
+import ImageUploadField from './ImageUploadField.vue';
+import CustomField from './CustomField.vue';
 
 import * as Icon from '../icons/Icon.vue';
 import { initIcons } from '../icons/index';
@@ -533,7 +545,6 @@ const selectedPosition = ref<number | undefined>(undefined);
 const formData = reactive<Record<string, any>>({});
 const formErrors = reactive<Record<string, string[]>>({});
 const repeaterRefs = new Map<string, any>();
-const customFieldInstances = new Map<string, any>();
 const originalInitialBlocks = ref(props.initialBlocks ? [...props.initialBlocks] : []); // Сохраняем исходные блоки
 
 // Создаем LicenseService если передан licenseKey (для обратной совместимости)
@@ -551,10 +562,15 @@ if (props.licenseKey && !props.licenseService) {
 
   // Подписываемся на изменения лицензии для обновления реактивного состояния
   service.onLicenseChange(async (info) => {
+    // Сохраняем предыдущее состояние ДО обновления
+    const wasPro = licenseState.value?.isPro ?? false;
+    const isNowPro = info.isPro;
+    
+    // Обновляем реактивное состояние (это заставит Vue пересчитать licenseInfoComputed)
     licenseState.value = info;
-    console.log('🎉 PRO режим активирован! Обновляем UI...');
-    // Перезагружаем все блоки после активации PRO
-    await reloadAllBlocksAfterProActivation();
+    
+    // Перезагружаем все блоки при любом изменении лицензии
+    await reloadBlocksAfterLicenseChange();
   });
 }
 
@@ -703,14 +719,21 @@ const getBlockVisibilityTooltip = (block: IBlock): string => {
 };
 
 // Получить LicenseFeatureChecker для передачи в компоненты
-const getLicenseFeatureChecker = (): LicenseFeatureChecker | undefined => {
+// Используем computed, чтобы реактивно отслеживать изменения лицензии
+const getLicenseFeatureChecker = computed((): LicenseFeatureChecker | null => {
   const licenseService = props.licenseService || internalLicenseService.value;
-  return licenseService ? licenseService.getFeatureChecker() : undefined;
-};
+  // Доступ к licenseState.value.isPro заставляет computed пересчитываться при изменении
+  // Это критично для обновления после асинхронной проверки лицензии
+  const currentIsPro = licenseState.value?.isPro;
+  // Принудительно перечитываем checker при изменении лицензии
+  // getFeatureChecker() всегда возвращает актуальный checker, созданный с обновленной лицензией
+  const checker = licenseService ? licenseService.getFeatureChecker() : null;
+  return checker;
+});
 
 // Получить сообщение об ограничении для API Select
 const getApiSelectRestrictionMessage = (): string => {
-  const checker = getLicenseFeatureChecker();
+  const checker = getLicenseFeatureChecker.value;
   if (checker) {
     return checker.getFeatureRestrictionMessage(LicenseFeature.API_SELECT);
   }
@@ -719,7 +742,7 @@ const getApiSelectRestrictionMessage = (): string => {
 
 // Получить сообщение об ограничении для Custom Fields
 const getCustomFieldsRestrictionMessage = (): string => {
-  const checker = getLicenseFeatureChecker();
+  const checker = getLicenseFeatureChecker.value;
   if (checker) {
     return checker.getFeatureRestrictionMessage(LicenseFeature.CUSTOM_FIELDS);
   }
@@ -729,7 +752,7 @@ const getCustomFieldsRestrictionMessage = (): string => {
 // Проверить доступность API Select поля
 const isApiSelectAvailable = (field: any): boolean => {
   // Проверяем лицензию через checker
-  const checker = getLicenseFeatureChecker();
+  const checker = getLicenseFeatureChecker.value;
   if (!checker || !checker.canUseApiSelect()) {
     return false;
   }
@@ -740,7 +763,7 @@ const isApiSelectAvailable = (field: any): boolean => {
 // Проверить доступность Custom поля
 const isCustomFieldAvailable = (field: any): boolean => {
   // Проверяем лицензию через checker
-  const checker = getLicenseFeatureChecker();
+  const checker = getLicenseFeatureChecker.value;
   if (!checker || !checker.canUseCustomFields()) {
     return false;
   }
@@ -750,12 +773,21 @@ const isCustomFieldAvailable = (field: any): boolean => {
 
 // Получить брекпоинты для spacing с учетом лицензии
 const getSpacingBreakpoints = (field: any): any[] | undefined => {
+  // Теперь breakpoints всегда сохраняются в spacingConfig при генерации поля
+  let breakpoints = field.spacingConfig?.breakpoints;
+  
+  // Если breakpoints всё ещё не найдены в spacingConfig (fallback), пытаемся получить их из конфига блока
+  if ((!breakpoints || breakpoints.length === 0) && currentBlockType.value) {
+    const blockConfig = currentBlockType.value as any;
+    breakpoints = blockConfig?.spacingOptions?.config?.breakpoints;
+  }
+
   // Если кастомные брекпоинты отсутствуют - возвращаем undefined (используются дефолтные)
-  if (!field.spacingConfig?.breakpoints || field.spacingConfig.breakpoints.length === 0) {
+  if (!breakpoints || !Array.isArray(breakpoints) || breakpoints.length === 0) {
     return undefined;
   }
 
-  const checker = getLicenseFeatureChecker();
+  const checker = getLicenseFeatureChecker.value;
 
   // Если checker отсутствует или лицензия не PRO - не передаем кастомные брекпоинты
   if (!checker || !checker.hasAdvancedSpacing()) {
@@ -763,7 +795,8 @@ const getSpacingBreakpoints = (field: any): any[] | undefined => {
   }
 
   // Только если есть checker и лицензия PRO - передаем кастомные брекпоинты
-  return field.spacingConfig.breakpoints;
+  // Преобразуем Proxy в обычный массив для избежания проблем с реактивностью Vue
+  return Array.isArray(breakpoints) ? toRaw(breakpoints) : breakpoints;
 };
 
 
@@ -772,7 +805,8 @@ const isRegularInputField = (field: any): boolean => {
          field.type !== 'repeater' &&
          field.type !== 'checkbox' &&
          field.type !== 'api-select' &&
-         field.type !== 'custom';
+         field.type !== 'custom' &&
+         field.type !== 'image';
 };
 
 const isFieldRequired = (field: any): boolean => {
@@ -818,8 +852,6 @@ const loadInitialBlocks = async () => {
       filteredBlocks = props.initialBlocks.filter(block => allowedTypes.includes(block.type));
     }
 
-    console.log(`📋 Загрузка блоков. Лицензия: ${licenseInfoComputed.value.isPro ? 'PRO' : 'FREE'}, загружаем: ${filteredBlocks.length} из ${props.initialBlocks.length} блоков`);
-
     for (const block of filteredBlocks) {
       await blockService.createBlock(block as any);
     }
@@ -829,12 +861,12 @@ const loadInitialBlocks = async () => {
   }
 };
 
-// Перезагружает все блоки после активации PRO режима
-const reloadAllBlocksAfterProActivation = async () => {
+// Перезагружает блоки при изменении лицензии (PRO↔FREE)
+const reloadBlocksAfterLicenseChange = async () => {
   try {
-    console.log('🔄 Перезагрузка блоков после активации PRO');
+    const licenseService = props.licenseService || internalLicenseService.value;
 
-    // Получаем все блоки из репозитория (которые могли быть отфильтрованы при загрузке)
+    // Получаем все блоки из репозитория ДО очистки (чтобы сохранить их)
     const currentBlocks = await blockService.getAllBlocks() as any[];
 
     // Также берем блоки из originalInitialBlocks (которые были в props)
@@ -849,22 +881,70 @@ const reloadAllBlocksAfterProActivation = async () => {
     // Очищаем все блоки из репозитория
     await blockService.clearAllBlocks();
 
-    // Загружаем все блоки без ограничений (теперь PRO версия)
-    // В PRO режиме filterBlocksByLicense не будет фильтровать блоки
-    const licenseService = props.licenseService || internalLicenseService.value;
+    // Фильтруем блоки с учетом новой лицензии
     if (licenseService && allBlocksToReload.length > 0) {
-      const allBlockTypes = availableBlockTypes.value.map(bt => bt.type);
+      // Получаем список типов блоков из конфигурации пользователя (props.config.availableBlockTypes)
+      // Это основной источник типов блоков - конфигурация пользователя
+      let allBlockTypes: string[] = [];
+      
+      // Приоритет 1: типы из конфигурации пользователя (props.config.availableBlockTypes)
+      if (props.config?.availableBlockTypes && props.config.availableBlockTypes.length > 0) {
+        allBlockTypes = props.config.availableBlockTypes.map(bt => bt.type);
+      } 
+      // Приоритет 2: типы из componentRegistry (зарегистрированные компоненты)
+      else if (componentRegistry) {
+        const registeredComponents = componentRegistry.getAll();
+        allBlockTypes = Object.keys(registeredComponents);
+      }
+      // Приоритет 3: fallback - уникальные типы из самих блоков
+      else {
+        allBlockTypes = [...new Set(allBlocksToReload.map(block => block.type))];
+      }
+      
       const allowedTypes = licenseService.getAllowedBlockTypes(allBlockTypes);
-      // В PRO режиме filterBlocksByLicense вернет все блоки
       const filteredBlocks = licenseService.filterBlocksByLicense(allBlocksToReload, allowedTypes);
 
+      // Загружаем только разрешенные блоки
       for (const block of filteredBlocks) {
-        await blockService.createBlock(block as any);
+        try {
+          await blockService.createBlock(block as any);
+        } catch (error) {
+          console.warn(`⚠️ Не удалось создать блок ${block.id}:`, error);
+        }
       }
     } else if (allBlocksToReload.length > 0) {
-      // Fallback: загружаем все блоки если нет licenseService
-      for (const block of allBlocksToReload) {
-        await blockService.createBlock(block as any);
+      // Fallback: фильтрация вручную если нет licenseService
+      const licenseInfo = licenseInfoComputed.value;
+      
+      // Получаем список типов блоков из конфигурации пользователя
+      let allBlockTypes: string[] = [];
+      
+      // Приоритет 1: типы из конфигурации пользователя
+      if (props.config?.availableBlockTypes && props.config.availableBlockTypes.length > 0) {
+        allBlockTypes = props.config.availableBlockTypes.map(bt => bt.type);
+      } 
+      // Приоритет 2: типы из componentRegistry
+      else if (componentRegistry) {
+        const registeredComponents = componentRegistry.getAll();
+        allBlockTypes = Object.keys(registeredComponents);
+      }
+      // Приоритет 3: fallback - уникальные типы из блоков
+      else {
+        allBlockTypes = [...new Set(allBlocksToReload.map(block => block.type))];
+      }
+      
+      const allowedTypes = licenseInfo.isPro
+        ? allBlockTypes
+        : allBlockTypes.slice(0, licenseInfo.maxBlockTypes);
+
+      const filteredBlocks = allBlocksToReload.filter(block => allowedTypes.includes(block.type));
+
+      for (const block of filteredBlocks) {
+        try {
+          await blockService.createBlock(block as any);
+        } catch (error) {
+          console.warn(`⚠️ Не удалось создать блок ${block.id}:`, error);
+        }
       }
     }
 
@@ -873,8 +953,6 @@ const reloadAllBlocksAfterProActivation = async () => {
 
     // Обновляем watchers для новых блоков
     await setupBreakpointWatchers();
-
-    console.log('✅ Блоки перезагружены без ограничений:', blocks.value.length);
   } catch (error) {
     console.error('Ошибка перезагрузки блоков:', error);
   }
@@ -1453,25 +1531,114 @@ const openRepeaterAccordion = async (repeaterFieldName: string, itemIndex: numbe
       await new Promise(resolve => setTimeout(resolve, 350));
 
       // Теперь скроллим к конкретному полю с ошибкой
+      // Даем дополнительное время на полное обновление DOM после раскрытия
+      await nextTick();
+      await new Promise(resolve => setTimeout(resolve, 50));
+
       const modalContent = document.querySelector('.block-builder-modal-body') as HTMLElement;
       if (modalContent) {
+        // Находим ошибку для конкретного элемента репитера
+        const errorKey = Object.keys(formErrors).find(key => {
+          const errorInfo = parseErrorKey(key);
+          return errorInfo.isRepeaterField &&
+                 errorInfo.repeaterFieldName === repeaterFieldName &&
+                 errorInfo.repeaterIndex === itemIndex;
+        });
+
+        if (errorKey) {
+          const errorInfo = parseErrorKey(errorKey);
+
+          const fieldElement = findFieldElement(modalContent, errorInfo);
+
+          if (fieldElement) {
+            // Скроллим к конкретному элементу
+            scrollToElement(fieldElement, {
+              offset: 40,
+              behavior: 'smooth'
+            });
+            // Фокусируемся на элементе
+            focusElement(fieldElement);
+          } else {
+            const repeaterContainer = modalContent.querySelector(`[data-field-name="${errorInfo.repeaterFieldName}"]`);
+
+            if (repeaterContainer) {
+              const repeaterItems = repeaterContainer.querySelectorAll('.repeater-control__item');
+
+              if (repeaterItems[errorInfo.repeaterIndex || 0]) {
+                const targetItem = repeaterItems[errorInfo.repeaterIndex || 0] as HTMLElement;
+                const imageFields = targetItem.querySelectorAll('.image-upload-field');
+              }
+            }
+
+            // Fallback к обычному скроллу
+            scrollToFirstError(modalContent, formErrors, {
+              offset: 40,
+              behavior: 'smooth',
+              autoFocus: true
+            });
+          }
+        } else {
+          // Fallback к обычному скроллу
+          scrollToFirstError(modalContent, formErrors, {
+            offset: 40,
+            behavior: 'smooth',
+            autoFocus: true
+          });
+        }
+      }
+    }
+  } else {
+    // Элемент уже развернут - скроллим к полю сразу
+    const modalContent = document.querySelector('.block-builder-modal-body') as HTMLElement;
+    if (modalContent) {
+      // Находим ошибку для конкретного элемента репитера
+      const errorKey = Object.keys(formErrors).find(key => {
+        const errorInfo = parseErrorKey(key);
+        return errorInfo.isRepeaterField &&
+               errorInfo.repeaterFieldName === repeaterFieldName &&
+               errorInfo.repeaterIndex === itemIndex;
+      });
+
+      if (errorKey) {
+        const errorInfo = parseErrorKey(errorKey);
+
+        const fieldElement = findFieldElement(modalContent, errorInfo);
+
+        if (fieldElement) {
+          // Скроллим к конкретному элементу
+          scrollToElement(fieldElement, {
+            offset: 40,
+            behavior: 'smooth'
+          });
+          // Фокусируемся на элементе
+          focusElement(fieldElement);
+        } else {
+          const repeaterContainer = modalContent.querySelector(`[data-field-name="${errorInfo.repeaterFieldName}"]`);
+
+          if (repeaterContainer) {
+            const repeaterItems = repeaterContainer.querySelectorAll('.repeater-control__item');
+
+            if (repeaterItems[errorInfo.repeaterIndex || 0]) {
+              const targetItem = repeaterItems[errorInfo.repeaterIndex || 0] as HTMLElement;
+              const imageFields = targetItem.querySelectorAll('.image-upload-field');
+            }
+          }
+
+          // Fallback к обычному скроллу
+          scrollToFirstError(modalContent, formErrors, {
+            offset: 40,
+            behavior: 'smooth',
+            autoFocus: true
+          });
+        }
+      } else {
+        // Fallback к обычному скроллу
         scrollToFirstError(modalContent, formErrors, {
           offset: 40,
           behavior: 'smooth',
           autoFocus: true
         });
       }
-    }
-  } else {
-
-    // Элемент уже развернут - скроллим к полю сразу
-    const modalContent = document.querySelector('.block-builder-modal-body') as HTMLElement;
-    if (modalContent) {
-      scrollToFirstError(modalContent, formErrors, {
-        offset: 40,
-        behavior: 'smooth',
-        autoFocus: true
-      });
     }
   }
 };
@@ -1484,10 +1651,9 @@ onMounted(async () => {
   // Если передан внешний licenseService (не внутренний из licenseKey), подписываемся на изменения
   // Подписка для internalLicenseService уже установлена при создании выше
   if (props.licenseService && !internalLicenseService.value) {
-    props.licenseService.onLicenseChange(() => {
-      console.log('🎉 PRO режим активирован!');
-      // Перезагружаем все блоки без ограничений
-      reloadAllBlocksAfterProActivation();
+    props.licenseService.onLicenseChange(async () => {
+      // Перезагружаем все блоки при любом изменении лицензии
+      await reloadBlocksAfterLicenseChange();
     });
   }
 

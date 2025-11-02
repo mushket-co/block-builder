@@ -214,20 +214,33 @@ export class UIRenderer {
     const licenseBanner = this.renderLicenseBanner();
     const container = document.getElementById(this.config.containerId);
     if (container) {
-      const existingBanner = container.querySelector('.block-builder-license-banner');
-      if (existingBanner) {
-        existingBanner.outerHTML = licenseBanner;
-      } else if (licenseBanner && !licenseInfo.isPro) {
-        // Добавляем баннер если его нет
-        const controlsPanel = container.querySelector('.block-builder-controls');
-        if (controlsPanel && controlsPanel.parentNode) {
+      // Ищем баннер в основном контейнере или внутри block-builder-app
+      const appContainer = container.querySelector('.block-builder-app') || container;
+      const existingBanner = appContainer.querySelector('.block-builder-license-banner');
+      
+      if (!licenseInfo.isPro && licenseBanner) {
+        // Показываем баннер для FREE версии
+        if (existingBanner) {
+          // Обновляем существующий баннер
+          existingBanner.outerHTML = licenseBanner;
+        } else {
+          // Добавляем баннер в самое начало контейнера (вверху страницы)
           const tempDiv = document.createElement('div');
-          tempDiv.innerHTML = licenseBanner;
+          tempDiv.innerHTML = licenseBanner.trim();
           const bannerNode = tempDiv.firstChild;
+          
           if (bannerNode) {
-            controlsPanel.parentNode.insertBefore(bannerNode, controlsPanel);
+            // Вставляем в начало block-builder-app, или если его нет - в начало контейнера
+            if (appContainer.firstChild) {
+              appContainer.insertBefore(bannerNode, appContainer.firstChild);
+            } else {
+              appContainer.appendChild(bannerNode);
+            }
           }
         }
+      } else if (licenseInfo.isPro && existingBanner) {
+        // Удаляем баннер для PRO версии
+        existingBanner.remove();
       }
     }
 

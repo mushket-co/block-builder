@@ -19,11 +19,11 @@
       class="gallery-swiper"
     >
       <SwiperSlide
-        v-for="(slide, index) in slides"
+        v-for="(slide, index) in processedSlides"
         :key="index"
       >
         <div class="slide-content">
-          <img :src="slide.url" :alt="slide.title" />
+          <img :src="slide.imageUrl" :alt="slide.title" />
           <div class="slide-info">
             <h3>{{ slide.title }}</h3>
             <p>{{ slide.description }}</p>
@@ -51,22 +51,22 @@ const props = defineProps({
     type: Array,
     default: () => [
       {
-        url: '/2.jpg',
+        image: '',
         title: 'Изображение 1',
         description: 'Описание первого изображения'
       },
       {
-        url: '/spanch.jpg',
+        image: '',
         title: 'Изображение 2',
         description: 'Описание второго изображения'
       },
       {
-        url: '/bear.jpg',
+        image: '',
         title: 'Изображение 3',
         description: 'Описание третьего изображения'
       },
       {
-        url: '/3.png',
+        image: '',
         title: 'Изображение 4',
         description: 'Описание четвёртого изображения'
       }
@@ -112,6 +112,27 @@ const autoplayConfig = computed(() => {
     delay: autoplayDelayValue.value,
     disableOnInteraction: false
   } : false
+})
+
+// Преобразуем изображение в URL
+// base64 - всегда строка
+// серверное загрузка - объект с обязательным src
+// Поддерживаем и src (правильное поле) и url (для обратной совместимости)
+const getImageUrl = (image) => {
+  if (!image) return '';
+  if (typeof image === 'string') return image;
+  if (typeof image === 'object' && image !== null) {
+    // Приоритет src, затем url для обратной совместимости
+    return image.src || image.url || '';
+  }
+  return '';
+};
+
+const processedSlides = computed(() => {
+  return (props.slides || []).map(slide => ({
+    ...slide,
+    imageUrl: getImageUrl(slide.image)
+  })).filter(slide => slide.imageUrl && slide.title)
 })
 </script>
 

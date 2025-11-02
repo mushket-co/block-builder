@@ -3,7 +3,7 @@
   Используется для динамического добавления/удаления элементов (карточек, слайдов и т.д.)
 -->
 <template>
-  <div class="repeater-control">
+  <div class="repeater-control" :data-field-name="fieldName">
     <div class="repeater-control__header">
       <label class="repeater-control__label">
         {{ label }}
@@ -167,12 +167,24 @@
               type="color"
               v-model="item[field.field]"
               class="repeater-control__field-color"
-              @input="onFieldChange"
-              :data-field-name="field.field"
             />
 
-            <!-- Сообщение об ошибке (общее для всех типов полей) -->
-            <div v-if="hasFieldError(index, field.field)" class="repeater-control__field-error">
+            <!-- Image Upload - используем полноценный ImageUploadField -->
+            <ImageUploadField
+              v-else-if="field.type === 'image'"
+              :model-value="item[field.field]"
+              @update:model-value="updateItemField(index, field.field, $event)"
+              :label="''"
+              :required="isFieldRequired(field)"
+              :error="hasFieldError(index, field.field) ? getFieldErrors(index, field.field)[0] : ''"
+              :image-upload-config="field.imageUploadConfig"
+              :dataRepeaterField="fieldName"
+              :dataRepeaterIndex="index"
+              :dataRepeaterItemField="field.field"
+            />
+
+            <!-- Сообщение об ошибке (для полей, которые сами не показывают ошибки) -->
+            <div v-if="field.type !== 'image' && hasFieldError(index, field.field)" class="repeater-control__field-error">
               {{ getFieldErrors(index, field.field)[0] }}
             </div>
           </div>
@@ -193,10 +205,10 @@
     <!-- Подсказка о лимитах -->
     <div v-if="effectiveMin || max" class="repeater-control__hint">
       <span v-if="effectiveMin && itemCount < effectiveMin" class="repeater-control__hint--error">
-        {{ (UI_STRINGS && UI_STRINGS.repeaterMin) ? UI_STRINGS.repeaterMin : 'Минимум:' }} {{ effectiveMin }}
+        {{ repeaterMinText }} {{ effectiveMin }}
       </span>
       <span v-else-if="max && itemCount >= max" class="repeater-control__hint--warning">
-        {{ (UI_STRINGS && UI_STRINGS.repeaterMax) ? UI_STRINGS.repeaterMax : 'Максимум:' }} {{ max }}
+        {{ repeaterMaxText }} {{ max }}
       </span>
     </div>
   </div>
@@ -205,6 +217,7 @@
 <script>
 import { ref, computed, watch, onMounted } from 'vue';
 import { UI_STRINGS } from '../../utils/constants';
+import ImageUploadField from './ImageUploadField.vue';
 
 export default {
   name: 'RepeaterControl',
@@ -394,6 +407,12 @@ export default {
       emitUpdate();
     };
 
+    // Обновление поля элемента (используется для ImageUploadField)
+    const updateItemField = (index, fieldName, value) => {
+      items.value[index][fieldName] = value;
+      emitUpdate();
+    };
+
     // Отправка обновлений
     const emitUpdate = () => {
       // Убираем внутренний _id перед отправкой
@@ -440,6 +459,15 @@ export default {
       }
     };
 
+    // Тексты для подсказок (чтобы избежать использования UI_STRINGS в шаблоне)
+    const repeaterMinText = computed(() => {
+      return UI_STRINGS?.repeaterMin || 'Минимум:';
+    });
+
+    const repeaterMaxText = computed(() => {
+      return UI_STRINGS?.repeaterMax || 'Максимум:';
+    });
+
     // Следим за изменениями modelValue
     watch(() => props.modelValue, (newValue) => {
       if (JSON.stringify(newValue) !== JSON.stringify(items.value.map(({ _id, ...rest }) => rest))) {
@@ -484,8 +512,14 @@ export default {
       getFieldErrors,
       hasFieldError,
       expandItem,
-      isItemCollapsed
+      isItemCollapsed,
+      updateItemField,
+      repeaterMinText,
+      repeaterMaxText
     };
+  },
+  components: {
+    ImageUploadField
   }
 };
 </script>

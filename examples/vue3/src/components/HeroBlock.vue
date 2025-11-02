@@ -8,18 +8,32 @@
       </button>
     </div>
     <div v-if="backgroundImage" class="hero-block__background">
-      <img :src="backgroundImage" :alt="title" />
+      <img :src="backgroundImageUrl" :alt="title" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-defineProps<{
+import { computed } from 'vue';
+
+const props = defineProps<{
   title: string;
   subtitle?: string;
   buttonText?: string;
-  backgroundImage?: string;
+  backgroundImage?: string | object;
 }>();
+
+// Преобразуем backgroundImage в URL
+// base64 - всегда строка
+// серверное загрузка - объект с обязательным src
+const backgroundImageUrl = computed(() => {
+  if (!props.backgroundImage) return '';
+  if (typeof props.backgroundImage === 'string') return props.backgroundImage;
+  if (typeof props.backgroundImage === 'object') {
+    return (props.backgroundImage as any).src || '';
+  }
+  return '';
+});
 </script>
 
 <style scoped>

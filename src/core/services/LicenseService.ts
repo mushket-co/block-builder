@@ -39,13 +39,16 @@ export class LicenseService {
    * Проверка лицензионного ключа
    */
   async verifyKey(key: string): Promise<TLicenseType> {
+    // Сохраняем предыдущий тип для определения изменения
+    const previousType = this.license.getType();
+    
     const type = await this.license.verifyKey(key);
 
     // Пересоздаем feature checker с новой лицензией
     this.featureChecker = new LicenseFeatureChecker(this.license);
 
-    // Уведомляем подписчиков об изменении лицензии
-    if (type === TLicenseType.PRO) {
+    // Уведомляем подписчиков об изменении лицензии (если тип изменился)
+    if (previousType !== type) {
       this.notifyLicenseChange();
     }
 
@@ -79,7 +82,13 @@ export class LicenseService {
     }
 
     const maxBlockTypes = this.license.getMaxBlockTypes();
-    return allBlockTypes.slice(0, maxBlockTypes);
+    
+    if (maxBlockTypes <= 0) {
+      return [];
+    }
+    
+    const allowed = allBlockTypes.slice(0, maxBlockTypes);
+    return allowed;
   }
 
   /**

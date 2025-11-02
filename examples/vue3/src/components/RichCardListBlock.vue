@@ -36,11 +36,11 @@
           <picture>
             <source
               v-if="card.imageMobile"
-              :srcset="card.imageMobile"
+              :srcset="getImageUrl(card.imageMobile)"
               media="(max-width: 768px)"
             />
             <img
-              :src="card.image || card.imageMobile"
+              :src="getImageUrl(card.image || card.imageMobile)"
               :alt="card.imageAlt || card.title"
               class="rich-card__image"
             />
@@ -110,6 +110,21 @@
 <script>
 export default {
   name: 'RichCardListBlock',
+  computed: {
+    // Преобразуем изображение в URL
+    // base64 - всегда строка
+    // серверное загрузка - объект с обязательным src
+    getImageUrl() {
+      return (img) => {
+        if (!img) return '';
+        if (typeof img === 'string') return img;
+        if (typeof img === 'object' && img !== null) {
+          return img.src || '';
+        }
+        return '';
+      };
+    }
+  },
   props: {
     // Общие настройки
     sectionTitle: {

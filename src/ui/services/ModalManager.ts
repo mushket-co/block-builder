@@ -181,7 +181,30 @@ export class ModalManager {
   const props: Record<string, any> = {};
 
   for (const [key, value] of formData.entries()) {
-    props[key] = value;
+    // Пропускаем поля внутри repeater (они имеют формат "fieldName[index].subField")
+    // Эти поля обрабатываются отдельно через repeater renderer
+    if (key.includes('[') && key.includes('].')) {
+      continue;
+    }
+
+    // Проверяем, является ли поле скрытым полем изображения с JSON значением
+    const hiddenInput = form.querySelector(`input[type="hidden"][name="${key}"][data-image-value="true"]`);
+    if (hiddenInput && typeof value === 'string') {
+      try {
+        // Пробуем распарсить JSON (для объектов изображений)
+        const parsed = JSON.parse(value);
+        if (typeof parsed === 'object' && parsed !== null) {
+          props[key] = parsed;
+        } else {
+          props[key] = value;
+        }
+      } catch {
+        // Если не JSON, оставляем как есть (строка base64)
+        props[key] = value;
+      }
+    } else {
+      props[key] = value;
+    }
   }
 
   return props;

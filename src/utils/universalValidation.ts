@@ -278,15 +278,13 @@ export class BlockFormConfigs {
     description: UI_STRINGS.blockImageDescription,
     fields: [
       {
-        field: 'src',
+        field: 'image',
         label: UI_STRINGS.imageBlockSrcLabel,
-        type: 'url',
-        placeholder: UI_STRINGS.imageBlockSrcPlaceholder,
+        type: 'image',
         rules: [
-          { type: 'required', field: 'src', message: UI_STRINGS.imageSrcRequired },
-          { type: 'url', field: 'src', message: UI_STRINGS.validUrl }
+          { type: 'required', field: 'image', message: UI_STRINGS.imageSrcRequired }
         ],
-        defaultValue: ''
+        defaultValue: ''  // Пустое значение по умолчанию для изображений
       },
       {
         field: 'alt',

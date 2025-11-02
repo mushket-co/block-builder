@@ -1,0 +1,134 @@
+.image-upload-field {
+  &__label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+  }
+
+  &__required {
+    color: #dc3545;
+    margin-left: 4px;
+  }
+
+  &__preview {
+    position: relative;
+    margin-bottom: 12px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #e0e0e0;
+    background: #f5f5f5;
+  }
+
+  &__preview-img {
+    display: block;
+    width: 100%;
+    max-height: 200px;
+    object-fit: contain;
+  }
+
+  &__preview-clear {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.9);
+    }
+  }
+
+  &__clear-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.9);
+    }
+  }
+
+  &__file {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__file-input {
+    display: none;
+  }
+
+  &__file-label {
+    display: block;
+    padding: 12px;
+    border: 2px dashed #ddd;
+    border-radius: 4px;
+    text-align: center;
+    cursor: pointer;
+    color: #666;
+    font-size: 14px;
+    transition: all 0.2s;
+
+    &:hover:not(&--loading) {
+      border-color: #007bff;
+      background: #f0f8ff;
+      color: #007bff;
+    }
+
+    &--loading {
+      cursor: not-allowed;
+      opacity: 0.7;
+      border-color: #007bff;
+      background: #f0f8ff;
+    }
+  }
+
+  &__label-text {
+    display: inline-block;
+  }
+
+  &__loading-text {
+    display: none;
+  }
+
+  &__error {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #dc3545;
+  }
+
+  // Стили для ошибок валидации
+  &.error {
+    .image-upload-field__file-label {
+      border-color: #dc3545;
+      background-color: #fff5f5;
+    }
+  }
+}
+

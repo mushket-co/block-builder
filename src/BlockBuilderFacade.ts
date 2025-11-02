@@ -81,11 +81,11 @@ export class BlockBuilderFacade {
   this.licenseService = new LicenseService(options.license);
 
   // Подписка на изменение лицензии для обновления UI
-  this.licenseService.onLicenseChange(() => {
-    // После активации PRO перезагружаем конфигурацию блоков
+  this.licenseService.onLicenseChange(async () => {
+    // При любом изменении лицензии (PRO↔FREE) перезагружаем конфигурацию блоков
     this.reloadLicenseConfiguration();
-    // Перезагружаем все блоки для отображения всех типов
-    this.reloadBlocksAfterProActivation();
+    // Перезагружаем все блоки с учетом новой лицензии
+    await this.reloadBlocksAfterLicenseChange();
   });
 
   // ✅ ЧИСТАЯ АРХИТЕКТУРА: Используем Factory для компонирования зависимостей
@@ -250,8 +250,18 @@ export class BlockBuilderFacade {
    */
   private async loadInitialBlocks(blocks: IBlockDto[]): Promise<void> {
       try {
+          // Получаем список типов блоков из конфигурации или из самих блоков
+          let allBlockTypes: string[] = [];
+          const configBlockTypes = Object.keys(this.originalBlockConfigs || this.blockConfigs);
+          
+          if (configBlockTypes.length > 0) {
+              allBlockTypes = configBlockTypes;
+          } else {
+              // Fallback: получаем уникальные типы из самих блоков
+              allBlockTypes = [...new Set(blocks.map(block => block.type))];
+          }
+          
           // Используем LicenseService для фильтрации блоков
-          const allBlockTypes = Object.keys(this.originalBlockConfigs || this.blockConfigs);
           const allowedTypes = this.licenseService.getAllowedBlockTypes(allBlockTypes);
           const filteredBlocks = this.licenseService.filterBlocksByLicense(blocks, allowedTypes);
 
@@ -283,23 +293,48 @@ export class BlockBuilderFacade {
   }
 
   /**
-   * Перезагружает блоки после активации PRO режима
-   * Очищает репозиторий и загружает все блоки без ограничений
+   * Перезагружает блоки при изменении лицензии (PRO↔FREE)
+   * Сохраняет текущие блоки, фильтрует их по новой лицензии и перезагружает
    */
-  private async reloadBlocksAfterProActivation(): Promise<void> {
-      if (!this.uiController || !this.originalInitialBlocks) return;
+  private async reloadBlocksAfterLicenseChange(): Promise<void> {
+      if (!this.uiController) return;
 
       try {
+          // Получаем все текущие блоки из репозитория ДО очистки
+          const currentBlocks = await this.repository.getAll();
+
+          // Объединяем с originalInitialBlocks (которые были в props)
+          const allBlocksMap = new Map<string, IBlockDto>();
+          currentBlocks.forEach(block => allBlocksMap.set(block.id, block));
+          if (this.originalInitialBlocks) {
+              this.originalInitialBlocks.forEach(block => allBlocksMap.set(block.id, block));
+          }
+          const allBlocksToReload = Array.from(allBlocksMap.values());
+
           // Очищаем репозиторий
           await this.repository.clear();
 
-          // Загружаем ВСЕ блоки без ограничений (лицензия теперь PRO)
-          await this.loadInitialBlocks(this.originalInitialBlocks);
+          // Загружаем блоки с учетом новой лицензии
+          // В loadInitialBlocks используется Object.keys(this.originalBlockConfigs || this.blockConfigs)
+          // Но если конфигурация недоступна, используем типы из самих блоков
+          if (allBlocksToReload.length > 0) {
+              // Проверяем, что у нас есть конфигурация блоков
+              const blockConfigsKeys = Object.keys(this.originalBlockConfigs || this.blockConfigs);
+              if (blockConfigsKeys.length === 0) {
+                  // Если конфигурация недоступна, используем типы из блоков
+                  console.warn('⚠️ BlockBuilderFacade: Конфигурация блоков недоступна, используем типы из самих блоков');
+              }
+              
+              await this.loadInitialBlocks(allBlocksToReload);
+          }
 
-          // Обновляем UI
+          // Обновляем UI контроллер
           await this.uiController.refreshBlocks();
+
+          // Обновляем статус лицензии в UI (баннер, badge и т.д.)
+          this.updateUIForLicenseChange();
       } catch (error) {
-          // Ошибка перезагрузки блоков игнорируется
+          console.error('Ошибка перезагрузки блоков:', error);
       }
   }
 

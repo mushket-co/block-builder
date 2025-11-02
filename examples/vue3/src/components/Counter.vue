@@ -202,7 +202,7 @@ watch(() => props.initialValue, (newValue) => {
 })
 
 onMounted(() => {
-  console.log('🔢 Counter компонент загружен асинхронно!')
+  // Компонент загружен
 })
 </script>
 

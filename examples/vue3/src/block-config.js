@@ -168,15 +168,22 @@ export const blockConfigs = {
     },
     fields: [
       {
-        field: 'src',
-        label: 'URL изображения',
-        type: 'text',
-        placeholder: 'https://example.com/image.jpg',
+        field: 'image',
+        label: 'Изображение',
+        type: 'image',
         rules: [
-          { type: 'required', message: 'URL обязателен' },
-          { type: 'url', message: 'Введите корректный URL' }
+          { type: 'required', message: 'Изображение обязательно' }
         ],
-        defaultValue: '/1.jpeg'
+        defaultValue: '',
+
+        imageUploadConfig: {
+          uploadUrl: '/api/upload',
+          fileParamName: 'file',
+          maxFileSize: 5 * 1024 * 1024, // 5MB для демо
+          responseMapper: (response) => ({
+            src: response.url
+          })
+        }
       },
       {
         field: 'alt',
@@ -252,7 +259,24 @@ export const blockConfigs = {
         rules: [{ type: 'required', message: 'Отступы обязательны' }],
         defaultValue: '8px 16px'
       }
-    ]
+    ],
+    spacingOptions: {
+      enabled: true, // По умолчанию true, можно отключить установив false
+      // Какие типы отступов доступны (по умолчанию все 4)
+      spacingTypes: ['padding-top', 'padding-bottom', 'margin-top', 'margin-bottom'],
+      config: {
+        min: 0,
+        max: 120,
+        step: 8,
+        // Кастомные брекпоинты (когда указаны, заменяют дефолтные)
+        breakpoints: [
+          { name: 'xlarge', label: 'XL2 (Desktop)', maxWidth: undefined }, // Desktop без ограничения
+          { name: 'large', label: 'L2 (Laptop)', maxWidth: 1440 },
+          { name: 'medium', label: 'M2 (Tablet)', maxWidth: 1024 },
+          { name: 'small', label: 'S2 (Mobile)', maxWidth: 640 }
+        ]
+      }
+    }
   },
 
   hero: {
@@ -402,21 +426,21 @@ export const blockConfigs = {
             text: 'Создание современных веб-приложений',
             button: 'Подробнее',
             link: 'https://example.com',
-            image: '/2.jpg'
+            image: ''
           },
           {
             title: 'Мобильные приложения',
             text: 'Разработка мобильных приложений для iOS и Android',
             button: 'Узнать больше',
             link: 'https://example.com',
-            image: '/spanch.jpg'
+            image: ''
           },
           {
             title: 'Дизайн',
             text: 'Создание уникального дизайна для вашего бренда',
             button: 'Посмотреть работы',
             link: 'https://example.com',
-            image: '/bear.jpg'
+            image: ''
           }
         ],
         repeaterConfig: {
@@ -445,11 +469,10 @@ export const blockConfigs = {
             },
             {
               field: 'image',
-              label: 'Изображение (URL)',
-              type: 'text',
-              placeholder: '/путь/к/изображению.jpg',
+              label: 'Изображение',
+              type: 'image',
               rules: [],
-              defaultValue: '/2.jpg'
+              defaultValue: ''
             },
             {
               field: 'button',
@@ -595,22 +618,22 @@ export const blockConfigs = {
         ],
         defaultValue: [
           {
-            url: '/2.jpg',
+            image: '',
             title: 'Изображение 1',
             description: 'Описание первого изображения'
           },
           {
-            url: '/spanch.jpg',
+            image: '',
             title: 'Изображение 2',
             description: 'Описание второго изображения'
           },
           {
-            url: '/bear.jpg',
+            image: '',
             title: 'Изображение 3',
             description: 'Описание третьего изображения'
           },
           {
-            url: '/3.png',
+            image: '',
             title: 'Изображение 4',
             description: 'Описание четвёртого изображения'
           }
@@ -624,12 +647,19 @@ export const blockConfigs = {
           collapsible: true,
           fields: [
             {
-              field: 'url',
-              label: 'URL изображения',
-              type: 'text',
-              placeholder: '/путь/к/изображению.jpg',
-              rules: [{ type: 'required', message: 'URL обязателен' }],
-              defaultValue: ''
+              field: 'image',
+              label: 'Изображение',
+              type: 'image',
+              rules: [{ type: 'required', message: 'Изображение обязательно' }],
+              defaultValue: '',
+              imageUploadConfig: {
+                uploadUrl: '/api/upload',
+                fileParamName: 'file',
+                maxFileSize: 5 * 1024 * 1024, // 5MB для демо
+                responseMapper: (response) => ({
+                  src: response.url // ОБЯЗАТЕЛЬНО вернуть объект с полем src!
+                })
+              }
             },
             {
               field: 'title',
@@ -970,8 +1000,8 @@ export const blockConfigs = {
             link: 'https://example.com/product-1',
             linkTarget: '_blank',
             buttonText: 'Узнать подробнее',
-            image: '/1.jpeg',
-            imageMobile: '/1.jpeg',
+            image: '',
+            imageMobile: '',
             imageAlt: 'Премиум продукт',
             backgroundColor: '#ffffff',
             textColor: '#333333',
@@ -987,8 +1017,8 @@ export const blockConfigs = {
             link: 'https://example.com/product-2',
             linkTarget: '_self',
             buttonText: 'Подробности',
-            image: '/2.jpg',
-            imageMobile: '/2.jpg',
+            image: '',
+            imageMobile: '',
             imageAlt: 'Стандарт версия',
             backgroundColor: '#f8f9fa',
             textColor: '#212529',
@@ -1004,8 +1034,8 @@ export const blockConfigs = {
             link: 'https://example.com/product-3',
             linkTarget: '_blank',
             buttonText: 'Связаться с нами',
-            image: '/3.png',
-            imageMobile: '/3.png',
+            image: '',
+            imageMobile: '',
             imageAlt: 'Корпоративное решение',
             backgroundColor: '#e7f3ff',
             textColor: '#004085',
@@ -1087,18 +1117,16 @@ export const blockConfigs = {
             {
               field: 'image',
               label: 'Изображение (десктоп)',
-              type: 'text',
-              placeholder: '/путь/к/изображению.jpg',
+              type: 'image',
               rules: [],
-              defaultValue: '/2.jpg'
+              defaultValue: ''
             },
             {
               field: 'imageMobile',
               label: 'Изображение (мобильное)',
-              type: 'text',
-              placeholder: '/путь/к/мобильному-изображению.jpg',
+              type: 'image',
               rules: [],
-              defaultValue: '/2.jpg'
+              defaultValue: ''
             },
             {
               field: 'imageAlt',

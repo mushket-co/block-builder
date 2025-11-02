@@ -36,6 +36,8 @@ export class License {
 
   constructor(config: ILicenseConfig) {
     this.config = config;
+    // Тип лицензии определяется ТОЛЬКО через явное указание type или ответ сервера
+    // Ключ проверяется ИСКЛЮЧИТЕЛЬНО на сервере через метод verifyKey
     this.licenseType = config.type || TLicenseType.FREE;
     this.validateConfig();
   }
@@ -76,7 +78,9 @@ export class License {
         });
 
         if (!response.ok) {
-          return this.licenseType;
+          // Если сервер вернул ошибку, ключ неверный - устанавливаем FREE
+          this.updateType(TLicenseType.FREE);
+          return TLicenseType.FREE;
         }
 
         const data = await response.json();
@@ -85,11 +89,14 @@ export class License {
           this.updateType(TLicenseType.PRO);
           return TLicenseType.PRO;
         } else {
+          // Ключ неверный или не PRO - устанавливаем FREE
           this.updateType(TLicenseType.FREE);
           return TLicenseType.FREE;
         }
       } catch (error) {
-        return this.licenseType;
+        // При ошибке сети или парсинга - ключ не был проверен, устанавливаем FREE
+        this.updateType(TLicenseType.FREE);
+        return TLicenseType.FREE;
       } finally {
         this.isVerifying = false;
       }
@@ -110,6 +117,10 @@ export class License {
    */
   updateType(type: TLicenseType): void {
     this.licenseType = type;
+    // При смене на FREE убеждаемся, что maxBlockTypes установлен
+    if (type === TLicenseType.FREE && !this.config.maxBlockTypes) {
+      this.config.maxBlockTypes = 5; // Значение по умолчанию для FREE
+    }
   }
 
   /**

@@ -27,18 +27,11 @@ export function generateSpacingField(
   'margin-bottom'
   ];
 
-  // Обработка кастомных брекпоинтов по лицензии
-  // В FREE версии кастомные брекпоинты недоступны - используем только дефолтные
-  let breakpoints = options?.config?.breakpoints;
-
-  // ВСЕГДА проверяем лицензию перед использованием кастомных брекпоинтов
-  if (breakpoints && breakpoints.length > 0) {
-    // Если есть кастомные брекпоинты, проверяем лицензию
-    if (!licenseFeatureChecker || !licenseFeatureChecker.hasAdvancedSpacing()) {
-      // В FREE версии или если checker отсутствует - игнорируем кастомные брекпоинты
-      breakpoints = undefined;
-    }
-  }
+  // Обработка кастомных брекпоинтов
+  // Важно: breakpoints всегда сохраняем в конфиге, даже если лицензия не PRO
+  // Проверка лицензии будет происходить позже в UI компонентах (SpacingControl)
+  // Это позволяет использовать кастомные брекпоинты, если лицензия станет PRO позже
+  const breakpoints = options?.config?.breakpoints;
 
   // Базовая конфигурация
   const spacingConfig = {
@@ -46,7 +39,7 @@ export function generateSpacingField(
     min: options?.config?.min ?? 0,
     max: options?.config?.max ?? 200,
     step: options?.config?.step ?? 4,
-    breakpoints
+    breakpoints // Сохраняем breakpoints всегда, проверка лицензии будет в UI
   };
 
   // Генерируем defaultValue динамически на основе брекпоинтов

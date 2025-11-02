@@ -15,7 +15,7 @@
           @click="handleCardClick($event, card)"
         >
           <div v-if="card.image" class="card-image">
-            <img :src="card.image" :alt="card.title" />
+            <img :src="getImageUrl(card.image)" :alt="card.title" />
           </div>
           <h3 class="card-title">{{ card.title }}</h3>
           <p class="card-text">{{ card.text }}</p>
@@ -49,7 +49,7 @@
           <div class="modal-body">
             <img
               v-if="selectedCard?.image"
-              :src="selectedCard.image"
+              :src="getImageUrl(selectedCard.image)"
               :alt="selectedCard.title"
             />
             <h4>{{ selectedCard?.title }}</h4>
@@ -83,21 +83,21 @@ const props = defineProps({
         text: 'Создание современных веб-приложений',
         button: 'Подробнее',
         link: 'https://example.com',
-        image: '/2.jpg'
+        image: ''
       },
       {
         title: 'Мобильные приложения',
         text: 'Разработка мобильных приложений для iOS и Android',
         button: 'Узнать больше',
         link: 'https://example.com',
-        image: '/spanch.jpg'
+        image: ''
       },
       {
         title: 'Дизайн',
         text: 'Создание уникального дизайна для вашего бренда',
         button: 'Посмотреть работы',
         link: 'https://example.com',
-        image: '/bear.jpg'
+        image: ''
       }
     ]
   },
@@ -110,6 +110,18 @@ const props = defineProps({
 
 const selectedCard = ref(null)
 const showModal = ref(false)
+
+// Преобразуем изображение в URL
+// base64 - всегда строка
+// серверное загрузка - объект с обязательным src
+const getImageUrl = (img) => {
+  if (!img) return '';
+  if (typeof img === 'string') return img;
+  if (typeof img === 'object' && img !== null) {
+    return img.src || '';
+  }
+  return '';
+};
 
 const containerStyle = computed(() => ({
   display: 'grid',

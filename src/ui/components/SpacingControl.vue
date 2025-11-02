@@ -168,7 +168,8 @@ export default {
       // ВСЕГДА проверяем лицензию ПЕРВЫМ - в FREE версии кастомные брекпоинты недоступны
       if (props.licenseFeatureChecker) {
         // Если лицензия не PRO - используем только дефолтные брекпоинты
-        if (!props.licenseFeatureChecker.hasAdvancedSpacing()) {
+        const hasAdvanced = props.licenseFeatureChecker.hasAdvancedSpacing();
+        if (!hasAdvanced) {
           return DEFAULT_BREAKPOINTS;
         }
       } else {
@@ -179,7 +180,8 @@ export default {
       // Только если есть licenseFeatureChecker И лицензия PRO - можем использовать кастомные брекпоинты
       // Если breakpoints передан и не пустой - используем только его
       if (props.breakpoints && props.breakpoints.length > 0) {
-        return props.breakpoints;
+        // Преобразуем Proxy в обычный массив для избежания проблем с реактивностью Vue
+        return Array.isArray(props.breakpoints) ? [...props.breakpoints] : props.breakpoints;
       }
       // Иначе используем дефолтные
       return DEFAULT_BREAKPOINTS;

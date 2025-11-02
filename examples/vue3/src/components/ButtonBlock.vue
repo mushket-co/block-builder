@@ -55,7 +55,6 @@ const buttonStyle = computed(() => ({
 
 const handleClick = () => {
   isLoading.value = true
-  console.log('Кнопка нажата:', props.text)
   setTimeout(() => {
     isLoading.value = false
   }, 1000)

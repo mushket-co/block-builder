@@ -1,14 +1,27 @@
 <template>
   <div class="image-block">
-    <img :src="src" :alt="alt" />
+    <img :src="imageUrl" :alt="alt" />
   </div>
 </template>
 
 <script setup>
-defineProps({
-  src: String,
+import { computed } from 'vue';
+
+const props = defineProps({
+  image: [String, Object],
   alt: String
-})
+});
+
+// Преобразуем image в URL для img тега
+// base64 - всегда строка
+// серверное загрузка - объект с обязательным src
+const imageUrl = computed(() => {
+  if (typeof props.image === 'string') return props.image;
+  if (typeof props.image === 'object' && props.image !== null) {
+    return props.image.src || '';
+  }
+  return '';
+});
 </script>
 
 <style scoped>

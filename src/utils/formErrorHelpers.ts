@@ -77,17 +77,82 @@ export function getFirstErrorKey(errors: Record<string, string[]>): string | nul
  */
 export function findFieldElement(containerElement: HTMLElement, errorInfo: IFirstErrorInfo): HTMLElement | null {
   if (!errorInfo.isRepeaterField) {
-    // Только по data-field-name
+    // Сначала пробуем найти по data-field-name (для обычных полей)
+    let element = containerElement.querySelector(`[data-field-name="${errorInfo.fieldKey}"]`) as HTMLElement;
+    if (element) return element;
+    
+    // Если не нашли, пробуем найти image-upload-field
+    element = containerElement.querySelector(`.image-upload-field[data-field-name="${errorInfo.fieldKey}"]`) as HTMLElement;
+    if (element) return element;
+    
+    // Запасной вариант - ищем в block-builder-form-group
     return containerElement.querySelector(`.block-builder-form-group[data-field-name="${errorInfo.fieldKey}"]`) as HTMLElement || null;
   }
-  // Только repeater-секция по data-field-name, затем поиск .repeater-control__item по индексу
-  const repeaterContainer = containerElement.querySelector(`[data-field-name="${errorInfo.repeaterFieldName}"]`);
-  if (!repeaterContainer) return null;
+  
+  // Для repeater полей ищем контейнер репитера
+  // Пробуем найти по классу .repeater-control с data-field-name
+  let repeaterContainer = containerElement.querySelector(`.repeater-control[data-field-name="${errorInfo.repeaterFieldName}"]`) as HTMLElement;
+  
+  // Если не нашли по точному селектору, ищем любой элемент с data-field-name
+  if (!repeaterContainer) {
+    repeaterContainer = containerElement.querySelector(`[data-field-name="${errorInfo.repeaterFieldName}"]`) as HTMLElement;
+  }
+  
+  if (!repeaterContainer) {
+    return null;
+  }
+  
   const repeaterItems = repeaterContainer.querySelectorAll('.repeater-control__item');
-  const targetItem = repeaterItems[errorInfo.repeaterIndex || 0] as HTMLElement;
+  const itemIndex = errorInfo.repeaterIndex || 0;
+  
+  if (itemIndex >= repeaterItems.length) {
+    return null;
+  }
+  
+  const targetItem = repeaterItems[itemIndex] as HTMLElement;
   if (!targetItem) return null;
-  // Только поиск поля по data-field-name внутри repeater
-  return targetItem.querySelector(`.repeater-control__field [data-field-name="${errorInfo.nestedFieldName}"]`) as HTMLElement || null;
+  
+  // Ищем поле по полному пути data-field-name (например, "slides[0].image")
+  const fullFieldPath = `${errorInfo.repeaterFieldName}[${errorInfo.repeaterIndex}].${errorInfo.nestedFieldName}`;
+  let fieldElement = targetItem.querySelector(`[data-field-name="${fullFieldPath}"]`) as HTMLElement;
+  if (fieldElement) {
+    return fieldElement;
+  }
+  
+  // Ищем image-upload-field по data-repeater-item-field (более точный поиск)
+  // Также проверяем по data-repeater-index для точного совпадения
+  // Важно: data-repeater-index может быть как числом, так и строкой в DOM, поэтому используем ручное сравнение
+  const imageUploadFields = targetItem.querySelectorAll<HTMLElement>(`.image-upload-field[data-repeater-item-field="${errorInfo.nestedFieldName}"]`);
+  
+  for (const el of Array.from(imageUploadFields)) {
+    const repeaterIndexAttr = el.getAttribute('data-repeater-index');
+    if (repeaterIndexAttr !== null) {
+      const repeaterIndexNum = parseInt(repeaterIndexAttr, 10);
+      if (!isNaN(repeaterIndexNum) && repeaterIndexNum === errorInfo.repeaterIndex) {
+        return el;
+      }
+    }
+  }
+  
+  // Если не нашли по индексу, но есть хотя бы одно поле с нужным именем - возвращаем его
+  // (для случаев, когда индекс не совпадает, но поле уникально)
+  if (imageUploadFields.length === 1) {
+    return imageUploadFields[0] as HTMLElement;
+  }
+  
+  // Запасной вариант - ищем по вложенному имени поля
+  fieldElement = targetItem.querySelector(`[data-field-name*="${errorInfo.nestedFieldName}"]`) as HTMLElement;
+  if (fieldElement) {
+    return fieldElement;
+  }
+  
+  // Последний вариант - ищем image-upload-field с частичным совпадением
+  const lastTry = targetItem.querySelector(`.image-upload-field[data-field-name*="${errorInfo.nestedFieldName}"]`) as HTMLElement;
+  if (lastTry) {
+    return lastTry;
+  }
+  
+  return null;
 }
 
 /**
@@ -163,6 +228,18 @@ function getScrollContainer(element: HTMLElement): HTMLElement | null {
  * Фокус на элементе (если это input/textarea/select)
  */
 export function focusElement(element: HTMLElement): void {
+  // Для image-upload-field - подсвечиваем контейнер с ошибкой, но не фокусируемся
+  if (element.classList.contains('image-upload-field')) {
+    setTimeout(() => {
+      element.classList.add('error');
+      element.classList.add('field-error-highlight');
+      setTimeout(() => {
+        element.classList.remove('field-error-highlight');
+      }, 2000);
+    }, 300);
+    return;
+  }
+
   // Если передана группа полей - ищем внутри неё input/textarea/select
   let targetElement = element;
 

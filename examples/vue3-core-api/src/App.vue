@@ -115,7 +115,6 @@ const logsContent = ref(null)
 let blockBuilder = null
 
 onMounted(async () => {
-  console.log('🚀 Инициализация BlockBuilder Core API...')
   addLog('🚀 Инициализация BlockBuilder Core API...', 'info')
 
   // Создаем экземпляр BlockBuilder БЕЗ UI (используем только core)
@@ -124,7 +123,6 @@ onMounted(async () => {
     autoInit: false // Не инициализируем UI (без containerId)
   })
 
-  console.log('✅ BlockBuilder Core API инициализирован')
   addLog('✅ BlockBuilder Core API инициализирован', 'success')
 
   // Загружаем сохранённые блоки
@@ -132,7 +130,6 @@ onMounted(async () => {
 
   // Добавляем примеры, если блоков нет
   if (blocks.value.length === 0) {
-    console.log('📝 Добавляю примеры блоков...')
     await addExampleBlocks()
   }
 
@@ -142,7 +139,6 @@ onMounted(async () => {
 // Загрузка блоков
 const loadBlocks = async () => {
   blocks.value = await blockBuilder.getAllBlocks()
-  console.log(`📦 Загружено блоков: ${blocks.value.length}`)
 }
 
 // Добавление примеров
