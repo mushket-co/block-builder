@@ -4,8 +4,6 @@
  * Следуем принципу Pure Function
  */
 
-import { ERROR_MESSAGES } from './constants';
-
 /**
  * Fallback метод для копирования в буфер обмена (для non-secure контекста)
  */

@@ -3,7 +3,7 @@
  */
 
 import { IFormFieldConfig, IBlockSpacingOptions, TSpacingType } from '../core/types/form';
-import { LicenseFeatureChecker, LicenseFeature } from '../core/services/LicenseFeatureChecker';
+import { LicenseFeatureChecker } from '../core/services/LicenseFeatureChecker';
 
 /**
  * Генерирует spacing поле на основе опций блока
