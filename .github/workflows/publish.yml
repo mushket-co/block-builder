@@ -47,9 +47,13 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "release" ]; then
             # Используем версию из тега релиза
-            VERSION=${GITHUB_REF#refs/tags/v}
+            # github.event.release.tag_name содержит тег типа "v1.0.3"
+            VERSION="${{ github.event.release.tag_name }}"
+            # Убираем префикс "v" если есть
+            VERSION=${VERSION#v}
             echo "version=$VERSION" >> $GITHUB_OUTPUT
             echo "Using version from release tag: $VERSION"
+            echo "Release tag: ${{ github.event.release.tag_name }}"
           else
             # Используем версию из workflow_dispatch input
             VERSION_INPUT="${{ inputs.version }}"
@@ -85,18 +89,24 @@ jobs:
           fi
 
       - name: Update package.json version
-        if: github.event_name == 'workflow_dispatch'
         run: |
           npm version ${{ steps.version.outputs.version }} --no-git-tag-version
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add package.json package-lock.json
-          git commit -m "chore: bump version to ${{ steps.version.outputs.version }}"
-          git push
+          git commit -m "chore: bump version to ${{ steps.version.outputs.version }}" || echo "No changes to commit"
+          git push || echo "Nothing to push"
+
+      - name: Debug info
+        run: |
+          echo "Package version after update:"
+          node -p "require('./package.json').version"
+          echo "Target version: ${{ steps.version.outputs.version }}"
+          echo "NPM_TOKEN is set: $([ -n '${{ secrets.NPM_TOKEN }}' ] && echo 'yes' || echo 'no')"
 
       - name: Publish to npm
         run: |
-          npm publish
+          npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
