@@ -31,7 +31,9 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          # Для workspaces с file: нужно использовать npm install
+          npm install --prefer-offline --no-audit
 
       - name: Type check
         run: npm run type-check
@@ -61,7 +63,9 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          # Для workspaces с file: нужно использовать npm install
+          npm install --prefer-offline --no-audit
 
       - name: Check bundle size
         run: |
