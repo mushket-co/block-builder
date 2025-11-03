@@ -5,6 +5,13 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/),
 и проект следует [Semantic Versioning](https://semver.org/lang/ru/).
 
+## [1.0.10] - 2025-11-03
+
+### Исправлено
+- **Добавлены `core/services` и `core/entities` в npm пакет**: Файлы из `src/core/services/` и `src/core/entities/` теперь включены в список файлов пакета, что позволяет Vue компонентам корректно резолвить импорты лицензионных сервисов
+
+---
+
 ## [1.0.9] - 2025-11-03
 
 ### Исправлено

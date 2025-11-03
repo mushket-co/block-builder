@@ -1,6 +1,6 @@
 {
   "name": "@mushket-co/block-builder",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "Блочный конструктор для no-code разработки (Beta)",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
@@ -37,6 +37,8 @@
     "src/core/types/**/*.ts",
     "src/core/use-cases/**/*.ts",
     "src/core/ports/**/*.ts",
+    "src/core/services/**/*.ts",
+    "src/core/entities/**/*.ts",
     "src/infrastructure/**/*.ts",
     "src/utils/**/*.ts",
     "!src/**/__tests__/**",
