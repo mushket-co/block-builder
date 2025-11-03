@@ -32,7 +32,7 @@ const blockBuilder = new BlockBuilder({
   initialBlocks: loadSavedBlocks(),
   // PRO лицензия
   license: {
-    key: 'BB-PRO-1234-5678-ABCD1'
+    key: 'BB-PRO-1234-5678-ABCD'
   },
   isEdit: true, // Режим редактирования (можно установить false для режима только просмотра)
   // Пример функции сохранения
