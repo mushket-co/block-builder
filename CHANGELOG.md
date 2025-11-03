@@ -5,6 +5,13 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/),
 и проект следует [Semantic Versioning](https://semver.org/lang/ru/).
 
+## [1.0.9] - 2025-11-03
+
+### Исправлено
+- **Добавлен `BlockBuilderFactory.ts` в npm пакет**: Файл `src/BlockBuilderFactory.ts` теперь включен в список файлов пакета, что позволяет корректно резолвить импорты при использовании `vue` entry point
+
+---
+
 ## [1.0.8] - 2025-11-03
 
 ### Исправлено

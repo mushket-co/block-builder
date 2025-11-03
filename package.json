@@ -1,6 +1,6 @@
 {
   "name": "@mushket-co/block-builder",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Блочный конструктор для no-code разработки (Beta)",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
@@ -31,6 +31,7 @@
   "files": [
     "dist",
     "src/vue.ts",
+    "src/BlockBuilderFactory.ts",
     "src/ui/components/**/*.vue",
     "src/ui/styles/**/*.scss",
     "src/core/types/**/*.ts",
