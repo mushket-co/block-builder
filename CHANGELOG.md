@@ -5,15 +5,19 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/),
 и проект следует [Semantic Versioning](https://semver.org/lang/ru/).
 
+## [1.0.13] - 2025-11-03
+
+### Добавлено
+- **Экспорты CSS в package.json**: Добавлены экспорты `./index.esm.css` и `./index.css` в `package.json`, что позволяет корректно импортировать стили через `import '@mushket-co/block-builder/index.esm.css'` без указания полного пути `dist/index.esm.css`
+
+---
+
 ## [1.0.12] - 2025-11-03
 
 ### Исправлено
 - **Исправлен `.npmignore`**: Убрано исключение всей директории `src/`, которое блокировало включение файлов из `src/ui/` в npm пакет. Теперь все файлы из `src/`, указанные в `files`, корректно включаются в пакет
 - **Убрана зависимость от SCSS в Vue компонентах**: Удалены импорты SCSS файлов из Vue компонентов (`@use '../styles/index.scss'` и подобные). Теперь пользователям не нужно устанавливать `sass` - стили уже скомпилированы в `dist/index.esm.css` и должны импортироваться отдельно
 - **Исключены SCSS файлы из npm пакета**: Директория `src/ui/styles/` теперь исключена из публикации пакета
-
-### Добавлено
-- **Экспорты CSS в package.json**: Добавлены экспорты `./index.esm.css` и `./index.css` в `package.json`, что позволяет корректно импортировать стили через `import '@mushket-co/block-builder/index.esm.css'` без указания полного пути `dist/index.esm.css`
 
 ---
 
