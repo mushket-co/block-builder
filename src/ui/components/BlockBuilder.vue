@@ -1733,9 +1733,11 @@ onBeforeUnmount(() => {
 });
 </script>
 
-<style lang="scss">
-/* Импортируем общие стили Block Builder */
-@use '../styles/index.scss';
+<style>
+/* 
+ * Стили уже включены в @mushket-co/block-builder/index.esm.css
+ * Импортируйте стили отдельно: import '@mushket-co/block-builder/index.esm.css'
+ */
 
 /* Стили для ошибок валидации */
 .block-builder-form-errors {
