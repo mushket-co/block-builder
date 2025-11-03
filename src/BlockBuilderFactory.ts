@@ -16,6 +16,15 @@ import { BlockManagementUseCase } from './core/use-cases/BlockManagementUseCase'
 import { ApiSelectUseCase } from './core/use-cases/ApiSelectUseCase';
 import { LocalStorageBlockRepositoryImpl } from './infrastructure/repositories/LocalStorageBlockRepositoryImpl';
 
+// Экспортируем ApiSelectUseCase и связанные типы для использования вне пакета
+export { ApiSelectUseCase } from './core/use-cases/ApiSelectUseCase';
+export type {
+  IHttpClient,
+  IHttpResponse,
+  IHttpRequestOptions
+} from './core/ports/HttpClient';
+export type { IApiRequestParams } from './core/types/form';
+
 export interface IBlockBuilderFactoryDependencies {
   repository?: IBlockRepository;
   componentRegistry?: IComponentRegistry;

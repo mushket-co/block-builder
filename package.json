@@ -27,6 +27,10 @@
     "./index.css": {
       "import": "./dist/index.esm.css",
       "require": "./dist/index.esm.css"
+    },
+    "./BlockBuilderFactory": {
+      "types": "./src/BlockBuilderFactory.ts",
+      "import": "./src/BlockBuilderFactory.ts"
     }
   },
   "workspaces": [
