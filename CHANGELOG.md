@@ -5,6 +5,16 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/),
 и проект следует [Semantic Versioning](https://semver.org/lang/ru/).
 
+## [1.0.8] - 2025-11-03
+
+### Исправлено
+- **Исправлена проблема с резолвингом импортов в `vue` entry point**: Теперь `createBlockManagementUseCase` корректно работает при установке пакета через npm, добавлен экспорт `BlockBuilderFactory` через `vue.ts` для внешнего использования
+
+### Изменено
+- **vue.ts**: Добавлен экспорт `BlockBuilderFactory` и его типов для удобного использования в Vue компонентах
+
+---
+
 ## [1.0.7] - 2025-11-03
 
 ### Исправлено
