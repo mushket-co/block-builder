@@ -37,6 +37,7 @@ export interface IUIRendererConfig {
     maxBlockTypes: number;
     currentTypesCount: number;
   };
+  isEdit?: boolean; // Режим редактирования (по умолчанию true)
 }
 
 interface IComponentRegistry {
@@ -49,10 +50,12 @@ export class UIRenderer {
   private config: IUIRendererConfig;
   private breakpointUnsubscribers: Map<string, () => void> = new Map();
   private eventDelegation: EventDelegation;
+  private isEdit: boolean; // Режим редактирования
 
   constructor(config: IUIRendererConfig) {
     this.config = config;
     this.eventDelegation = config.eventDelegation || new EventDelegation();
+    this.isEdit = config.isEdit !== undefined ? config.isEdit : true; // По умолчанию true
   }
 
   /**
@@ -109,11 +112,15 @@ export class UIRenderer {
   const bottomClass = this.config.controlsFixedPosition === 'bottom' ? ' has-bottom-controls' : '';
   const appClass = `block-builder-app${this.config.controlsFixedPosition ? ' has-fixed-controls' : ''}${positionClass}${bottomClass}`;
 
-  const licenseBanner = this.renderLicenseBanner();
+  // Управляем классом bb-is-edit-mode на body (используем classList.add/remove)
+  if (this.isEdit) {
+    document.body.classList.add('bb-is-edit-mode');
+  } else {
+    document.body.classList.remove('bb-is-edit-mode');
+  }
 
-  container.innerHTML = `
-    <div class="${appClass}">
-      ${licenseBanner}
+  const licenseBanner = this.renderLicenseBanner();
+  const controlsHTML = this.isEdit ? `
       <div class="${panelClass}" ${inlineStyles}>
         <div class="block-builder-controls-container${containerClass ? ` ${containerClass}` : ''}">
           <div class="block-builder-controls-inner">
@@ -125,6 +132,12 @@ export class UIRenderer {
           </div>
         </div>
       </div>
+  ` : '';
+
+  container.innerHTML = `
+    <div class="${appClass}">
+      ${licenseBanner}
+      ${controlsHTML}
       <div class="block-builder-blocks" id="block-builder-blocks"></div>
     </div>
   `;
@@ -141,7 +154,7 @@ export class UIRenderer {
           <div class="block-builder-license-banner__content">
             <span class="block-builder-license-banner__icon">⚠️</span>
             <span class="block-builder-license-banner__text">
-              Вы используете бесплатную версию Block Builder.
+              Вы используете бесплатную версию <a href="https://block-builder.ru/" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline;">Block Builder</a>.
               Доступно ${license.currentTypesCount} из ${license.maxBlockTypes} типов блоков.
             </span>
           </div>
@@ -155,7 +168,10 @@ export class UIRenderer {
    * Рендеринг кнопок управления
    */
   private renderControlButtons(): string {
-  return `
+    if (!this.isEdit) {
+      return ''; // Не показываем кнопки управления если режим редактирования выключен
+    }
+    return `
     <button data-action="saveAllBlocksUI" class="block-builder-btn block-builder-btn--success">
       ${saveIconHTML} Сохранить
     </button>
@@ -190,10 +206,112 @@ export class UIRenderer {
   }
 
   /**
+   * Обновление режима редактирования
+   */
+  updateEditMode(isEdit: boolean): void {
+    this.isEdit = isEdit;
+    this.config.isEdit = isEdit;
+    // Обновляем класс на body
+    if (isEdit) {
+      document.body.classList.add('bb-is-edit-mode');
+    } else {
+      document.body.classList.remove('bb-is-edit-mode');
+    }
+    // Перерендериваем панель управления
+    this.updateControlsPanel();
+  }
+
+  /**
+   * Обновление панели управления при смене режима редактирования
+   */
+  private updateControlsPanel(): void {
+    const container = document.getElementById(this.config.containerId);
+    if (!container) return;
+
+    const appContainer = container.querySelector('.block-builder-app');
+    if (!appContainer) return;
+
+    // Находим существующую панель управления
+    const existingControls = appContainer.querySelector('.block-builder-controls');
+    
+    // Формируем HTML для панели управления
+    const panelClass = `block-builder-controls${this.config.controlsFixedPosition ? ` block-builder-controls--fixed-${this.config.controlsFixedPosition}` : ''}`;
+    const containerClass = this.config.controlsContainerClass || '';
+    
+    // Формируем инлайн стили для offset
+    let inlineStyles = '';
+    if (this.config.controlsFixedPosition) {
+      const offset = this.config.controlsOffset || 0;
+      const offsetVar = this.config.controlsOffsetVar;
+
+      if (this.config.controlsFixedPosition === 'top') {
+        if (offsetVar) {
+          inlineStyles = `style="top: calc(var(${offsetVar}) + ${offset}px);"`;
+        } else {
+          inlineStyles = `style="top: ${offset}px;"`;
+        }
+      } else if (this.config.controlsFixedPosition === 'bottom') {
+        if (offsetVar) {
+          inlineStyles = `style="bottom: calc(var(${offsetVar}) + ${offset}px);"`;
+        } else {
+          inlineStyles = `style="bottom: ${offset}px;"`;
+        }
+      }
+    }
+
+    const controlsHTML = this.isEdit ? `
+      <div class="${panelClass}" ${inlineStyles}>
+        <div class="block-builder-controls-container${containerClass ? ` ${containerClass}` : ''}">
+          <div class="block-builder-controls-inner">
+            ${this.renderControlButtons()}
+            <div class="block-builder-stats">
+              <p>Всего блоков: <span id="blocks-count">${document.getElementById('blocks-count')?.textContent || '0'}</span></p>
+            </div>
+            ${this.renderLicenseBadge()}
+          </div>
+        </div>
+      </div>
+    ` : '';
+
+    // Если панель управления существует - заменяем её
+    if (existingControls) {
+      if (controlsHTML) {
+        // Заменяем существующую панель
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = controlsHTML.trim();
+        const newControls = tempDiv.firstChild;
+        if (newControls) {
+          existingControls.replaceWith(newControls);
+        }
+      } else {
+        // Удаляем панель, если режим просмотра
+        existingControls.remove();
+      }
+    } else if (controlsHTML) {
+      // Если панели нет, но нужно её показать - добавляем
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = controlsHTML.trim();
+      const newControls = tempDiv.firstChild;
+      if (newControls) {
+        const blocksContainer = appContainer.querySelector('.block-builder-blocks');
+        if (blocksContainer) {
+          appContainer.insertBefore(newControls, blocksContainer);
+        } else {
+          appContainer.appendChild(newControls);
+        }
+      }
+    }
+  }
+
+  /**
    * Обновление статуса лицензии в UI
    */
   updateLicenseStatus(licenseInfo: { isPro: boolean; maxBlockTypes: number; currentTypesCount: number }): void {
     this.config.license = licenseInfo;
+    // Также обновляем isEdit в конфиге если он был изменен
+    if (this.config.isEdit !== undefined) {
+      this.updateEditMode(this.config.isEdit);
+    }
 
     // Обновляем плашку лицензии
     const licenseBadge = this.renderLicenseBadge();
@@ -254,7 +372,10 @@ export class UIRenderer {
    * Рендеринг кнопки добавления блока
    */
   private renderAddBlockButton(position: number): string {
-  return `
+    if (!this.isEdit) {
+      return ''; // Не показываем кнопку добавления если режим редактирования выключен
+    }
+    return `
     <div class="block-builder-add-block-separator">
       <button
         data-action="showBlockTypeSelectionModal"
@@ -276,13 +397,15 @@ export class UIRenderer {
   const blocksContainer = document.getElementById('block-builder-blocks');
   const countElement = document.getElementById('blocks-count');
 
-  if (!blocksContainer || !countElement) return;
+  if (!blocksContainer) return;
 
   // Очищаем старые watchers перед перерендером
   this.cleanupBreakpointWatchers();
 
-  // Обновляем счетчик
-  countElement.textContent = blocks.length.toString();
+  // Обновляем счетчик (если элемент существует - он может отсутствовать в режиме просмотра)
+  if (countElement) {
+    countElement.textContent = blocks.length.toString();
+  }
 
   if (blocks.length === 0) {
     // Если блоков нет, показываем только одну кнопку добавления
@@ -333,9 +456,7 @@ export class UIRenderer {
     : '';
 
   const controlsContainerClass = this.config.controlsContainerClass || '';
-
-  return `
-    <div class="block-builder-block ${block.locked ? 'locked' : ''} ${!block.visible ? 'hidden' : ''}" data-block-id="${block.id}"${styleAttr}>
+  const blockControlsHTML = this.isEdit ? `
       <!-- Поп-апчик с контролами -->
       <div class="block-builder-block-controls">
         <div class="block-builder-block-controls-container ${controlsContainerClass}">
@@ -344,6 +465,11 @@ export class UIRenderer {
           </div>
         </div>
       </div>
+  ` : '';
+
+  return `
+    <div class="block-builder-block ${block.locked ? 'locked' : ''} ${!block.visible ? 'hidden' : ''}" data-block-id="${block.id}"${styleAttr}>
+      ${blockControlsHTML}
 
       <!-- Содержимое блока -->
       <div class="block-builder-block-content">
@@ -370,27 +496,34 @@ export class UIRenderer {
    * Рендеринг элементов управления блока
    */
   private renderBlockControls(block: IBlockDto, index?: number, totalBlocks?: number): string {
-  const lockIcon = block.locked ? unlockIconHTML : lockIconHTML;
-  const visibilityIcon = block.visible ? eyeIconHTML : eyeOffIconHTML;
+    if (!this.isEdit) {
+      // В режиме просмотра показываем только кнопку копирования ID
+      return `
+        <button data-action="copyBlockId" data-args='["${block.id}"]' class="block-builder-control-btn" title="Копировать ID: ${block.id}">${copyIconHTML}</button>
+      `;
+    }
 
-  // Определяем, должна ли быть кнопка вверх задизейблена (для первого блока)
-  const isFirst = index === 0;
-  const moveUpDisabled = isFirst ? ' disabled' : '';
+    const lockIcon = block.locked ? unlockIconHTML : lockIconHTML;
+    const visibilityIcon = block.visible ? eyeIconHTML : eyeOffIconHTML;
 
-  // Определяем, должна ли быть кнопка вниз задизейблена (для последнего блока)
-  const isLast = totalBlocks && index !== undefined ? index === totalBlocks - 1 : false;
-  const moveDownDisabled = isLast ? ' disabled' : '';
+    // Определяем, должна ли быть кнопка вверх задизейблена (для первого блока)
+    const isFirst = index === 0;
+    const moveUpDisabled = isFirst ? ' disabled' : '';
 
-  return `
-    <button data-action="copyBlockId" data-args='["${block.id}"]' class="block-builder-control-btn" title="Копировать ID: ${block.id}">${copyIconHTML}</button>
-    <button data-action="moveBlockUp" data-args='["${block.id}"]' class="block-builder-control-btn" title="Переместить вверх"${moveUpDisabled}>${arrowUpIconHTML}</button>
-    <button data-action="moveBlockDown" data-args='["${block.id}"]' class="block-builder-control-btn" title="Переместить вниз"${moveDownDisabled}>${arrowDownIconHTML}</button>
-    <button data-action="editBlock" data-args='["${block.id}"]' class="block-builder-control-btn" title="Редактировать">${editIconHTML}</button>
-    <button data-action="duplicateBlockUI" data-args='["${block.id}"]' class="block-builder-control-btn" title="Дублировать">${duplicateIconHTML}</button>
-    <button data-action="toggleBlockLock" data-args='["${block.id}"]' class="block-builder-control-btn" title="${block.locked ? 'Разблокировать' : 'Заблокировать'}">${lockIcon}</button>
-    <button data-action="toggleBlockVisibility" data-args='["${block.id}"]' class="block-builder-control-btn" title="${block.visible ? 'Скрыть' : 'Показать'}">${visibilityIcon}</button>
-    <button data-action="deleteBlockUI" data-args='["${block.id}"]' class="block-builder-control-btn" title="Удалить">${deleteIconHTML}</button>
-  `;
+    // Определяем, должна ли быть кнопка вниз задизейблена (для последнего блока)
+    const isLast = totalBlocks && index !== undefined ? index === totalBlocks - 1 : false;
+    const moveDownDisabled = isLast ? ' disabled' : '';
+
+    return `
+      <button data-action="copyBlockId" data-args='["${block.id}"]' class="block-builder-control-btn" title="Копировать ID: ${block.id}">${copyIconHTML}</button>
+      <button data-action="moveBlockUp" data-args='["${block.id}"]' class="block-builder-control-btn" title="Переместить вверх"${moveUpDisabled}>${arrowUpIconHTML}</button>
+      <button data-action="moveBlockDown" data-args='["${block.id}"]' class="block-builder-control-btn" title="Переместить вниз"${moveDownDisabled}>${arrowDownIconHTML}</button>
+      <button data-action="editBlock" data-args='["${block.id}"]' class="block-builder-control-btn" title="Редактировать">${editIconHTML}</button>
+      <button data-action="duplicateBlockUI" data-args='["${block.id}"]' class="block-builder-control-btn" title="Дублировать">${duplicateIconHTML}</button>
+      <button data-action="toggleBlockLock" data-args='["${block.id}"]' class="block-builder-control-btn" title="${block.locked ? 'Разблокировать' : 'Заблокировать'}">${lockIcon}</button>
+      <button data-action="toggleBlockVisibility" data-args='["${block.id}"]' class="block-builder-control-btn" title="${block.visible ? 'Скрыть' : 'Показать'}">${visibilityIcon}</button>
+      <button data-action="deleteBlockUI" data-args='["${block.id}"]' class="block-builder-control-btn" title="Удалить">${deleteIconHTML}</button>
+    `;
   }
 
   /**
@@ -583,6 +716,14 @@ export class UIRenderer {
     unsubscribe();
     this.breakpointUnsubscribers.delete(blockId);
   }
+  }
+
+  /**
+   * Очистка ресурсов (удаление класса с body)
+   */
+  destroy(): void {
+    document.body.classList.remove('bb-is-edit-mode');
+    this.cleanupBreakpointWatchers();
   }
 }
 

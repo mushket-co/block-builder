@@ -39,6 +39,7 @@ export interface IBlockUIControllerConfig {
   controlsOffsetVar?: string;
   licenseService: LicenseService;
   originalBlockConfigs?: Record<string, any>;
+  isEdit?: boolean; // Режим редактирования (по умолчанию true)
 }
 
 export class BlockUIController {
@@ -59,6 +60,7 @@ export class BlockUIController {
   private originalBlockConfigs?: Record<string, any>;
   private currentFormFields: Map<string, TFieldConfig> = new Map(); // Сохраняем конфигурацию полей для доступа к responseMapper
   private repeaterFieldConfigs: Map<string, Map<string, TFieldConfig>> = new Map(); // Сохраняем оригинальные конфигурации полей repeater для доступа к responseMapper
+  private isEdit: boolean; // Режим редактирования
 
   constructor(config: IBlockUIControllerConfig) {
     this.config = config;
@@ -67,6 +69,7 @@ export class BlockUIController {
     this.apiSelectUseCase = config.apiSelectUseCase;
     this.customFieldRendererRegistry = config.customFieldRendererRegistry;
     this.licenseService = config.licenseService;
+    this.isEdit = config.isEdit !== undefined ? config.isEdit : true; // По умолчанию true
 
     // Инициализация event delegation
     this.eventDelegation = new EventDelegation();
@@ -81,7 +84,8 @@ export class BlockUIController {
       controlsFixedPosition: config.controlsFixedPosition,
       controlsOffset: config.controlsOffset,
       controlsOffsetVar: config.controlsOffsetVar,
-      license: this.licenseService.getLicenseInfo(Object.keys(config.blockConfigs).length)
+      license: this.licenseService.getLicenseInfo(Object.keys(config.blockConfigs).length),
+      isEdit: this.isEdit
     });
     this.formBuilder = new FormBuilder();
     this.modalManager = new ModalManager();
@@ -113,6 +117,9 @@ export class BlockUIController {
    * Показать модалку выбора типа блока
    */
   showBlockTypeSelectionModal(position?: number): void {
+    if (!this.isEdit) {
+      return; // Блокируем если режим редактирования выключен
+    }
     // Используем LicenseService для получения информации о лицензии
     const currentBlockTypesCount = Object.keys(this.config.blockConfigs).length;
     const licenseInfo = this.licenseService.getLicenseInfo(currentBlockTypesCount);
@@ -122,7 +129,7 @@ export class BlockUIController {
       <div class="block-builder-license-warning">
         <div class="block-builder-license-warning__header">
           <span class="block-builder-license-warning__icon">⚠️</span>
-          <strong class="block-builder-license-warning__title">Бесплатная версия Block Builder</strong>
+          <strong class="block-builder-license-warning__title">Бесплатная версия <a href="https://block-builder.ru/" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline;">Block Builder</a></strong>
         </div>
         <p class="block-builder-license-warning__text">
           Вы используете ограниченную бесплатную версию.<br>
@@ -170,6 +177,9 @@ export class BlockUIController {
    * Показать форму добавления блока на определенной позиции
    */
   async showAddBlockFormAtPosition(type: string, position?: number): Promise<void> {
+    if (!this.isEdit) {
+      return; // Блокируем если режим редактирования выключен
+    }
     // Закрываем модалку выбора типа
     this.modalManager.closeModal();
 
@@ -990,6 +1000,9 @@ export class BlockUIController {
    * Редактирование блока
    */
   async editBlock(blockId: string): Promise<void> {
+    if (!this.isEdit) {
+      return; // Блокируем если режим редактирования выключен
+    }
     const block = this.blocks.find((b) => b.id === blockId);
     if (!block) return;
 
@@ -1082,6 +1095,9 @@ export class BlockUIController {
    * Переключение блокировки блока
    */
   async toggleBlockLock(blockId: string): Promise<void> {
+    if (!this.isEdit) {
+      return; // Блокируем если режим редактирования выключен
+    }
     const block = this.blocks.find((b) => b.id === blockId);
     if (!block) return;
 
@@ -1093,6 +1109,9 @@ export class BlockUIController {
    * Переключение видимости блока
    */
   async toggleBlockVisibility(blockId: string): Promise<void> {
+    if (!this.isEdit) {
+      return; // Блокируем если режим редактирования выключен
+    }
     const block = this.blocks.find((b) => b.id === blockId);
     if (!block) return;
 
@@ -1104,6 +1123,9 @@ export class BlockUIController {
    * Удаление блока
    */
   async deleteBlockUI(blockId: string): Promise<void> {
+    if (!this.isEdit) {
+      return; // Блокируем если режим редактирования выключен
+    }
     const confirmed = await this.modalManager.confirm(UI_STRINGS.deleteBlockConfirmTitle, UI_STRINGS.deleteBlockConfirmMessage);
     if (!confirmed) return;
 
@@ -1118,6 +1140,9 @@ export class BlockUIController {
    * Дублирование блока
    */
   async duplicateBlockUI(blockId: string): Promise<void> {
+    if (!this.isEdit) {
+      return; // Блокируем если режим редактирования выключен
+    }
     await this.config.useCase.duplicateBlock(blockId);
     await this.refreshBlocks();
   }
@@ -1126,6 +1151,9 @@ export class BlockUIController {
    * Очистка всех блоков
    */
   async clearAllBlocksUI(): Promise<void> {
+    if (!this.isEdit) {
+      return; // Блокируем если режим редактирования выключен
+    }
     const confirmed = await this.modalManager.confirm(UI_STRINGS.clearAllBlocksConfirmTitle, UI_STRINGS.clearAllBlocksConfirmMessage);
     if (!confirmed) return;
 
@@ -1164,6 +1192,9 @@ export class BlockUIController {
    * Перемещение блока вверх
    */
   async moveBlockUp(blockId: string): Promise<void> {
+    if (!this.isEdit) {
+      return; // Блокируем если режим редактирования выключен
+    }
     const currentIndex = this.blocks.findIndex((block) => block.id === blockId);
     if (currentIndex <= 0) return; // Уже наверху
 
@@ -1182,6 +1213,9 @@ export class BlockUIController {
    * Перемещение блока вниз
    */
   async moveBlockDown(blockId: string): Promise<void> {
+    if (!this.isEdit) {
+      return; // Блокируем если режим редактирования выключен
+    }
     const currentIndex = this.blocks.findIndex((block) => block.id === blockId);
     if (currentIndex >= this.blocks.length - 1) return; // Уже внизу
 
@@ -1547,6 +1581,26 @@ export class BlockUIController {
   }
 
   /**
+   * Установка режима редактирования
+   */
+  setIsEdit(isEdit: boolean): void {
+    this.isEdit = isEdit;
+    // Обновляем режим редактирования в UIRenderer
+    if (this.uiRenderer) {
+      this.uiRenderer.updateEditMode(isEdit);
+    }
+    // Перерендериваем блоки для отображения/скрытия контролов
+    this.refreshBlocks();
+  }
+
+  /**
+   * Получение текущего режима редактирования
+   */
+  getIsEdit(): boolean {
+    return this.isEdit;
+  }
+
+  /**
    * Очистка ресурсов
    */
   destroy(): void {
@@ -1556,5 +1610,7 @@ export class BlockUIController {
     this.cleanupCustomFieldControls();
     this.modalManager.closeModal();
     this.eventDelegation.destroy();
+    // Очистка UIRenderer (удаление класса с body)
+    this.uiRenderer.destroy();
   }
 }

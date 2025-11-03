@@ -39,6 +39,7 @@ export interface IBlockBuilderOptions {
   controlsOffset?: number; // Отступ от края в пикселях (по умолчанию 0)
   controlsOffsetVar?: string; // CSS переменная для учета высоты шапки/футера (например: '--header-height')
   license?: ILicenseConfig; // Конфигурация лицензии (по умолчанию FREE с 5 типами блоков)
+  isEdit?: boolean; // Режим редактирования (по умолчанию true)
 }
 
 /**
@@ -62,6 +63,7 @@ export class BlockBuilderFacade {
   private controlsOffset?: number;
   private controlsOffsetVar?: string;
   private originalInitialBlocks?: IBlockDto[]; // Сохраняем исходные блоки для перезагрузки
+  private isEdit: boolean; // Режим редактирования
 
   // Публичные настройки
   public readonly theme: string;
@@ -76,6 +78,7 @@ export class BlockBuilderFacade {
   this.controlsFixedPosition = options.controlsFixedPosition;
   this.controlsOffset = options.controlsOffset;
   this.controlsOffsetVar = options.controlsOffsetVar;
+  this.isEdit = options.isEdit !== undefined ? options.isEdit : true; // По умолчанию true
 
   // Инициализация сервиса лицензии (по умолчанию FREE с 5 типами блоков)
   this.licenseService = new LicenseService(options.license);
@@ -153,7 +156,8 @@ export class BlockBuilderFacade {
           controlsOffset: this.controlsOffset,
           controlsOffsetVar: this.controlsOffsetVar,
           licenseService: this.licenseService,
-          originalBlockConfigs: this.originalBlockConfigs
+          originalBlockConfigs: this.originalBlockConfigs,
+          isEdit: this.isEdit
       });
 
       await this.uiController.init();
@@ -741,6 +745,24 @@ export class BlockBuilderFacade {
   }
 
   // ===== УТИЛИТЫ =====
+
+  /**
+   * Установка режима редактирования
+   */
+  setIsEdit(isEdit: boolean): void {
+      this.isEdit = isEdit;
+      // Обновляем режим редактирования в UI контроллере
+      if (this.uiController) {
+          this.uiController.setIsEdit(isEdit);
+      }
+  }
+
+  /**
+   * Получение текущего режима редактирования
+   */
+  getIsEdit(): boolean {
+      return this.isEdit;
+  }
 
   /**
    * Очистка ресурсов

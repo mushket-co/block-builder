@@ -248,24 +248,22 @@
 }
 
 /* Контейнер блоков - добавляем отступ если есть зафиксированные элементы */
-.block-builder-app {
-  &.has-fixed-controls {
-    &.has-top-controls {
-      .block-builder-blocks {
-        padding-top: 100px;
+body.bb-is-edit-mode {
+  .block-builder-app {
+    &.has-fixed-controls {
+      &.has-top-controls {
+        .block-builder-blocks {
+          padding-top: 100px;
+        }
       }
-    }
 
-    &.has-bottom-controls {
-      .block-builder-blocks {
-        padding-bottom: 100px;
+      &.has-bottom-controls {
+        .block-builder-blocks {
+          padding-bottom: 100px;
+        }
       }
     }
   }
-}
-
-.block-builder-blocks {
-  padding-bottom: 20px; // Стандартный отступ
 }
 
 /* Кнопка добавления блока */

@@ -245,6 +245,7 @@
             controlsOffset: 20, // Отступ от края
             // Загружаем сохранённые блоки при инициализации
             initialBlocks: loadSavedBlocks(),
+            isEdit: true, // Режим редактирования (можно установить false для режима только просмотра)
             // Функция сохранения
             onSave: async (blocks) => {
                 try {

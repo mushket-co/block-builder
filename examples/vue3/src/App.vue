@@ -21,6 +21,7 @@
         controls-fixed-position="bottom"
         :controls-offset="20"
         license-key="BB-PRO-1234-5678-ABCD"
+        :is-edit="isEdit"
       />
     </div>
   </div>
@@ -69,6 +70,8 @@ const availableBlockTypes = ref(
     }, {}) || {}
   }))
 )
+
+const isEdit = ref(true)
 
 const loadSavedBlocks = () => {
   try {

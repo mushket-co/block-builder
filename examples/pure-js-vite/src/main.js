@@ -32,8 +32,9 @@ const blockBuilder = new BlockBuilder({
   initialBlocks: loadSavedBlocks(),
   // PRO лицензия
   license: {
-    key: 'BB-PRO-1234-5678-ABCD'
+    key: 'BB-PRO-1234-5678-ABCD1'
   },
+  isEdit: true, // Режим редактирования (можно установить false для режима только просмотра)
   // Пример функции сохранения
   onSave: async (blocks) => {
     try {
@@ -59,3 +60,15 @@ const blockBuilder = new BlockBuilder({
 
 // ✅ Регистрируем кастомный WYSIWYG редактор
 blockBuilder.registerCustomFieldRenderer(new WysiwygFieldRenderer())
+
+// Экспортируем в window для тестирования через консоль браузера
+window.blockBuilder = blockBuilder
+
+// Примеры использования через консоль:
+// window.blockBuilder.setIsEdit(false) - отключить редактирование
+// window.blockBuilder.setIsEdit(true) - включить редактирование
+// window.blockBuilder.getIsEdit() - получить текущий режим
+console.log('💡 Для тестирования режима редактирования используйте в консоли:')
+console.log('   window.blockBuilder.setIsEdit(false) - режим просмотра')
+console.log('   window.blockBuilder.setIsEdit(true) - режим редактирования')
+console.log('   window.blockBuilder.getIsEdit() - текущий режим')

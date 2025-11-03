@@ -5,7 +5,7 @@
     <div class="block-builder-license-banner__content">
       <span class="block-builder-license-banner__icon">⚠️</span>
       <span class="block-builder-license-banner__text">
-        Вы используете бесплатную версию Block Builder.
+        Вы используете бесплатную версию <a href="https://block-builder.ru/" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline;">Block Builder</a>.
         Доступно {{ limitedBlockTypes.length }} из {{ licenseInfoComputed.maxBlockTypes }} типов блоков.
       </span>
     </div>
@@ -13,6 +13,7 @@
 
   <!-- Панель управления -->
   <div
+    v-if="props.isEdit"
     :class="[
       'block-builder-controls',
       controlsFixedClass
@@ -22,12 +23,14 @@
     <div :class="['block-builder-controls-container', props.controlsContainerClass].filter(Boolean)">
       <div class="block-builder-controls-inner">
         <button
+          v-if="props.isEdit"
           @click="handleSave"
           class="block-builder-btn block-builder-btn--success"
         >
           <span v-html="saveIconHTML" style="display: inline-block; margin-right: 6px; vertical-align: middle;"></span> Сохранить
         </button>
         <button
+          v-if="props.isEdit"
           @click="handleClearAll"
           class="block-builder-btn block-builder-btn--danger"
         >
@@ -63,7 +66,7 @@
     <div class="block-builder-blocks">
       <!-- Пустое состояние -->
       <div v-if="blocks.length === 0" class="block-builder-empty-state">
-        <div class="block-builder-add-block-separator">
+        <div v-if="props.isEdit" class="block-builder-add-block-separator">
           <button
             @click="openBlockTypeSelectionModal(0)"
             class="block-builder-add-block-btn"
@@ -78,7 +81,7 @@
       <!-- Блоки с кнопками добавления -->
       <template v-else>
         <!-- Кнопка перед первым блоком -->
-        <div class="block-builder-add-block-separator">
+        <div v-if="props.isEdit" class="block-builder-add-block-separator">
           <button
             @click="openBlockTypeSelectionModal(0)"
             class="block-builder-add-block-btn"
@@ -97,7 +100,7 @@
             :style="getBlockSpacingStyles(block)"
           >
             <!-- Поп-апчик с контролами -->
-            <div class="block-builder-block-controls">
+            <div v-if="props.isEdit" class="block-builder-block-controls">
               <div
                 class="block-builder-block-controls-container"
                 :class="props.controlsContainerClass"
@@ -111,6 +114,7 @@
                     <Icon.default name="copy" />
                   </button>
                   <button
+                    v-if="props.isEdit"
                     @click="handleMoveUp(block.id)"
                     class="block-builder-control-btn"
                     title="Переместить вверх"
@@ -119,6 +123,7 @@
                     <Icon.default name="arrowUp" />
                   </button>
                   <button
+                    v-if="props.isEdit"
                     @click="handleMoveDown(block.id)"
                     class="block-builder-control-btn"
                     title="Переместить вниз"
@@ -127,6 +132,7 @@
                     <Icon.default name="arrowDown" />
                   </button>
                   <button
+                    v-if="props.isEdit"
                     @click="openEditModal(block)"
                     class="block-builder-control-btn"
                     title="Редактировать"
@@ -134,6 +140,7 @@
                     <Icon.default name="edit" />
                   </button>
                   <button
+                    v-if="props.isEdit"
                     @click="handleDuplicateBlock(block.id)"
                     class="block-builder-control-btn"
                     title="Дублировать"
@@ -141,6 +148,7 @@
                     <Icon.default name="duplicate" />
                   </button>
                   <button
+                    v-if="props.isEdit"
                     @click="handleToggleLock(block.id)"
                     class="block-builder-control-btn"
                     :title="getBlockLockTooltip(block)"
@@ -148,6 +156,7 @@
                     <Icon.default :name="block.locked ? 'unlock' : 'lock'" />
                   </button>
                   <button
+                    v-if="props.isEdit"
                     @click="handleToggleVisibility(block.id)"
                     class="block-builder-control-btn"
                     :title="getBlockVisibilityTooltip(block)"
@@ -155,6 +164,7 @@
                     <Icon.default :name="block.visible ? 'eye' : 'eyeOff'" />
                   </button>
                   <button
+                    v-if="props.isEdit"
                     @click="handleDeleteBlock(block.id)"
                     class="block-builder-control-btn"
                     title="Удалить"
@@ -180,7 +190,7 @@
           </div>
 
           <!-- Кнопка после каждого блока -->
-          <div class="block-builder-add-block-separator">
+          <div v-if="props.isEdit" class="block-builder-add-block-separator">
             <button
               @click="openBlockTypeSelectionModal(index + 1)"
               class="block-builder-add-block-btn"
@@ -207,7 +217,7 @@
           <div v-if="!licenseInfoComputed.isPro" class="block-builder-license-warning">
             <div class="block-builder-license-warning__header">
               <span class="block-builder-license-warning__icon">⚠️</span>
-              <strong class="block-builder-license-warning__title">Бесплатная версия Block Builder</strong>
+              <strong class="block-builder-license-warning__title">Бесплатная версия <a href="https://block-builder.ru/" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline;">Block Builder</a></strong>
             </div>
             <p class="block-builder-license-warning__text">
               Вы используете ограниченную бесплатную версию.<br>
@@ -449,7 +459,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, onBeforeUnmount, nextTick, toRaw } from 'vue';
+import { ref, reactive, computed, onMounted, onBeforeUnmount, nextTick, toRaw, watch } from 'vue';
 import { IBlock, TBlockId } from '../../core/types';
 import { BlockManagementUseCase } from '../../core/use-cases/BlockManagementUseCase';
 import type { ApiSelectUseCase } from '../../core/use-cases/ApiSelectUseCase';
@@ -516,10 +526,12 @@ interface IProps {
     maxBlockTypes: number;
     currentTypesCount: number;
   };
+  isEdit?: boolean; // Режим редактирования (по умолчанию true)
 }
 
 const props = withDefaults(defineProps<IProps>(), {
-  config: () => ({ availableBlockTypes: [] })
+  config: () => ({ availableBlockTypes: [] }),
+  isEdit: true // По умолчанию режим редактирования включен
 });
 
 const emit = defineEmits<{
@@ -968,6 +980,9 @@ const getVueComponent = (block: IBlock) => {
 };
 
 const openBlockTypeSelectionModal = (position?: number) => {
+  if (!props.isEdit) {
+    return; // Блокируем если режим редактирования выключен
+  }
   selectedPosition.value = position;
   showTypeSelectionModal.value = true;
 };
@@ -984,6 +999,9 @@ const selectBlockType = (type: string) => {
 };
 
 const openCreateModal = (type: string, position?: number) => {
+  if (!props.isEdit) {
+    return; // Блокируем если режим редактирования выключен
+  }
   modalMode.value = 'create';
   currentType.value = type;
   currentBlockId.value = null;
@@ -1009,6 +1027,9 @@ const openCreateModal = (type: string, position?: number) => {
 };
 
 const openEditModal = (block: IBlock) => {
+  if (!props.isEdit) {
+    return; // Блокируем если режим редактирования выключен
+  }
   modalMode.value = 'edit';
   currentType.value = block.type;
   currentBlockId.value = block.id;
@@ -1212,6 +1233,9 @@ const updateBlock = async (): Promise<boolean> => {
 
 // Дублирование блока
 const handleDuplicateBlock = async (id: TBlockId) => {
+  if (!props.isEdit) {
+    return; // Блокируем если режим редактирования выключен
+  }
   try {
     const duplicated = await blockService.duplicateBlock(id);
     blocks.value.push(duplicated as any);
@@ -1228,6 +1252,9 @@ const handleDuplicateBlock = async (id: TBlockId) => {
 
 // Удаление блока
 const handleDeleteBlock = async (id: TBlockId) => {
+  if (!props.isEdit) {
+    return; // Блокируем если режим редактирования выключен
+  }
   if (confirm('Удалить блок?')) {
     try {
       // Очищаем watcher для удаляемого блока
@@ -1249,6 +1276,9 @@ const handleDeleteBlock = async (id: TBlockId) => {
 
 // Перемещение блоков
 const handleMoveUp = async (id: TBlockId) => {
+  if (!props.isEdit) {
+    return; // Блокируем если режим редактирования выключен
+  }
   const index = blocks.value.findIndex((b: IBlock) => b.id === id);
   if (index > 0) {
     // Создаем новый массив с измененным порядком
@@ -1270,6 +1300,9 @@ const handleMoveUp = async (id: TBlockId) => {
 };
 
 const handleMoveDown = async (id: TBlockId) => {
+  if (!props.isEdit) {
+    return; // Блокируем если режим редактирования выключен
+  }
   const index = blocks.value.findIndex((b: IBlock) => b.id === id);
   if (index < blocks.value.length - 1) {
     // Создаем новый массив с измененным порядком
@@ -1292,6 +1325,9 @@ const handleMoveDown = async (id: TBlockId) => {
 
 // Переключить блокировку блока
 const handleToggleLock = async (blockId: TBlockId) => {
+  if (!props.isEdit) {
+    return; // Блокируем если режим редактирования выключен
+  }
   const block = blocks.value.find((b: IBlock) => b.id === blockId);
   if (!block) return;
 
@@ -1302,6 +1338,9 @@ const handleToggleLock = async (blockId: TBlockId) => {
 
 // Переключить видимость блока
 const handleToggleVisibility = async (blockId: TBlockId) => {
+  if (!props.isEdit) {
+    return; // Блокируем если режим редактирования выключен
+  }
   const block = blocks.value.find((b: IBlock) => b.id === blockId);
   if (!block) return;
 
@@ -1385,6 +1424,9 @@ const handleSave = async () => {
 
 // Очистка всех блоков
 const handleClearAll = async () => {
+  if (!props.isEdit) {
+    return; // Блокируем если режим редактирования выключен
+  }
   if (confirm('Удалить все блоки?')) {
     try {
       await blockService.clearAllBlocks();
@@ -1644,9 +1686,26 @@ const openRepeaterAccordion = async (repeaterFieldName: string, itemIndex: numbe
 };
 
 // Загрузка блоков
+// Управление классом bb-is-edit-mode на body
+const updateBodyEditModeClass = (isEdit: boolean) => {
+  if (isEdit) {
+    document.body.classList.add('bb-is-edit-mode');
+  } else {
+    document.body.classList.remove('bb-is-edit-mode');
+  }
+};
+
+// Отслеживаем изменения isEdit
+watch(() => props.isEdit, (newValue) => {
+  updateBodyEditModeClass(newValue);
+}, { immediate: true });
+
 onMounted(async () => {
   // Инициализируем SVG sprite для иконок
   initIcons();
+
+  // Устанавливаем начальный класс на body
+  updateBodyEditModeClass(props.isEdit);
 
   // Если передан внешний licenseService (не внутренний из licenseKey), подписываемся на изменения
   // Подписка для internalLicenseService уже установлена при создании выше
@@ -1668,6 +1727,8 @@ onMounted(async () => {
 // Очистка при размонтировании
 onBeforeUnmount(() => {
   cleanupBreakpointWatchers();
+  // Убираем класс с body при размонтировании
+  document.body.classList.remove('bb-is-edit-mode');
   // cleanupCustomFields(); // Удалено
 });
 </script>
