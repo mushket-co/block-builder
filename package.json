@@ -19,6 +19,14 @@
     "./vue": {
       "types": "./src/vue.ts",
       "import": "./src/vue.ts"
+    },
+    "./index.esm.css": {
+      "import": "./dist/index.esm.css",
+      "require": "./dist/index.esm.css"
+    },
+    "./index.css": {
+      "import": "./dist/index.esm.css",
+      "require": "./dist/index.esm.css"
     }
   },
   "workspaces": [
