@@ -5,6 +5,16 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/),
 и проект следует [Semantic Versioning](https://semver.org/lang/ru/).
 
+## [1.0.14] - 2025-11-03
+
+### Добавлено
+- **Экспорт `./BlockBuilderFactory` в package.json**: Добавлен новый entry point `./BlockBuilderFactory` для доступа к `ApiSelectUseCase` и связанным типам (`IHttpClient`, `IHttpResponse`, `IHttpRequestOptions`, `IApiRequestParams`) из Pure JS приложений без необходимости импортировать Vue-специфичные модули
+
+### Изменено
+- **BlockBuilderFactory.ts**: Добавлены экспорты `ApiSelectUseCase` и связанных типов для использования вне пакета через импорт `@mushket-co/block-builder/BlockBuilderFactory`
+
+---
+
 ## [1.0.13] - 2025-11-03
 
 ### Добавлено
