@@ -2,7 +2,8 @@
  * Базовые стили Block Builder
  */
 
-.block-builder {
+.block-builder,
+.block-builder-modal {
   font-family: var(--bb-font-family);
   color: var(--bb-text-primary);
   box-sizing: border-box;
