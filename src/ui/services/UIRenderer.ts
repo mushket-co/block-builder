@@ -109,7 +109,7 @@ export class UIRenderer {
   // Формируем классы для основного контейнера
   const positionClass = this.config.controlsFixedPosition === 'top' ? ' has-top-controls' : '';
   const bottomClass = this.config.controlsFixedPosition === 'bottom' ? ' has-bottom-controls' : '';
-  const appClass = `block-builder-app${this.config.controlsFixedPosition ? ' has-fixed-controls' : ''}${positionClass}${bottomClass}`;
+  const appClass = `block-builder block-builder-app${this.config.controlsFixedPosition ? ' has-fixed-controls' : ''}${positionClass}${bottomClass}`;
 
   // Управляем классом bb-is-edit-mode на body (используем classList.add/remove)
   if (this.isEdit) {

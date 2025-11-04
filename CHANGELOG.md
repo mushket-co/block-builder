@@ -5,6 +5,14 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/),
 и проект следует [Semantic Versioning](https://semver.org/lang/ru/).
 
+## [1.0.17] - 2025-01-04
+
+### Изменено
+- **BlockBuilder.vue и UIRenderer.ts**: Добавлен класс `block-builder` к основному контейнеру приложения для улучшения кастомизации стилей
+- **_forms.scss**: Удален жестко заданный цвет из `.block-builder-form-label` для лучшей адаптации к темам
+
+---
+
 ## [1.0.16] - 2025-01-04
 
 ### Исправлено

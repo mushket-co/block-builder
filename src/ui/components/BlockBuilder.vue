@@ -673,6 +673,7 @@ const controlsInlineStyles = computed(() => {
 const appClass = computed(() => {
   return {
     'block-builder-app': true,
+    'block-builder': true,
     'has-fixed-controls': !!props.controlsFixedPosition,
     'has-top-controls': props.controlsFixedPosition === 'top',
     'has-bottom-controls': props.controlsFixedPosition === 'bottom'
