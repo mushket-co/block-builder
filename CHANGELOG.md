@@ -61,6 +61,10 @@
 
 ---
 
+---
+
+## [1.0.14] - 2025-11-03
+
 ### Добавлено
 - **Экспорт `./BlockBuilderFactory` в package.json**: Добавлен новый entry point `./BlockBuilderFactory` для доступа к `ApiSelectUseCase` и связанным типам (`IHttpClient`, `IHttpResponse`, `IHttpRequestOptions`, `IApiRequestParams`) из Pure JS приложений без необходимости импортировать Vue-специфичные модули
 
