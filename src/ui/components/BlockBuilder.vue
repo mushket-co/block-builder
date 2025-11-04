@@ -458,8 +458,11 @@
                 </div>
               </div>
 
-              <!-- Ошибки валидации для radio -->
-              <div v-if="formErrors[field.field] && field.type === 'radio'" class="block-builder-form-errors">
+              <!-- Ошибки валидации -->
+              <div
+                v-if="formErrors[field.field] && field.type !== 'image' && field.type !== 'api-select' && field.type !== 'custom' && field.type !== 'repeater' && field.type !== 'spacing'"
+                class="block-builder-form-errors"
+              >
                 <span v-for="error in formErrors[field.field]" :key="error" :class="CSS_CLASSES.ERROR">{{ error }}</span>
               </div>
             </div>
