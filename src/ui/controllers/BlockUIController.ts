@@ -374,6 +374,8 @@ export class BlockUIController {
       containers.forEach((container) => {
         const placeholder = container.querySelector(".api-select-placeholder") as HTMLElement;
         if (placeholder) {
+          // Удаляем класс placeholder при показе предупреждения
+          placeholder.classList.remove('bb-placeholder-box');
           placeholder.innerHTML = `
             <div class="bb-warning-box">
               ⚠️ ${this.licenseService.getFeatureChecker().getFeatureRestrictionMessage(LicenseFeature.API_SELECT)}
@@ -450,6 +452,8 @@ export class BlockUIController {
         if (placeholder) {
           // Удаляем инлайн стили с placeholder
           placeholder.removeAttribute('style');
+          // Удаляем класс placeholder при показе предупреждения
+          placeholder.classList.remove('bb-placeholder-box');
           placeholder.innerHTML = `
             <div class="bb-warning-box">
               ⚠️ ${this.licenseService.getFeatureChecker().getFeatureRestrictionMessage(LicenseFeature.CUSTOM_FIELDS)}
@@ -884,6 +888,8 @@ export class BlockUIController {
     if (placeholder) {
       // Удаляем инлайн стили с placeholder
       placeholder.removeAttribute('style');
+      // Удаляем класс placeholder при ошибке
+      placeholder.classList.remove('bb-placeholder-box');
       // Безопасно создаем элементы через DOM API вместо innerHTML
       placeholder.innerHTML = '';
       const errorDiv = document.createElement('div');

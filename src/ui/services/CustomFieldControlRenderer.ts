@@ -81,6 +81,8 @@ export class CustomFieldControlRenderer {
     // Удаляем инлайн стили с placeholder после инициализации
     if (this.container.classList.contains('custom-field-placeholder')) {
       this.container.removeAttribute('style');
+      // Удаляем класс placeholder после инициализации
+      this.container.classList.remove('bb-placeholder-box');
     }
     } catch (error) {
     this.showError(`Ошибка инициализации поля: ${error}`);
@@ -136,6 +138,8 @@ export class CustomFieldControlRenderer {
     // Удаляем инлайн стили с placeholder, если контейнер - это placeholder
     if (this.container.classList.contains('custom-field-placeholder')) {
       this.container.removeAttribute('style');
+      // Удаляем класс placeholder при ошибке
+      this.container.classList.remove('bb-placeholder-box');
     }
     this.container.innerHTML = `
       <div class="bb-error-box">
