@@ -5,6 +5,13 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/),
 и проект следует [Semantic Versioning](https://semver.org/lang/ru/).
 
+## [1.0.16] - 2025-01-04
+
+### Исправлено
+- **BlockBuilder.vue**: Исправлено отображение ошибок валидации - теперь ошибки показываются для всех типов полей (text, textarea, number, color, url, select, checkbox, radio), а не только для radio полей
+
+---
+
 ## [1.0.15] - 2025-01-04
 
 ### Удалено
