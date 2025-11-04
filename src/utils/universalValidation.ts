@@ -42,7 +42,7 @@ export class UniversalValidator {
           break;
         case 'email':
           if (typeof value === 'string' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-            errors.push(rule.message);
+            errors.push(rule.message || 'Некорректный email адрес');
           }
           break;
         case 'url':
@@ -50,44 +50,44 @@ export class UniversalValidator {
             try {
               new URL(value);
             } catch {
-              errors.push(rule.message);
+              errors.push(rule.message || 'Некорректный URL');
             }
           }
           break;
         case 'min':
           if (typeof value === 'number' && value < rule.value) {
-            errors.push(rule.message);
+            errors.push(rule.message || `Значение должно быть не менее ${rule.value}`);
           }
           if (typeof value === 'string' && parseFloat(value) < rule.value) {
-            errors.push(rule.message);
+            errors.push(rule.message || `Значение должно быть не менее ${rule.value}`);
           }
           break;
         case 'max':
           if (typeof value === 'number' && value > rule.value) {
-            errors.push(rule.message);
+            errors.push(rule.message || `Значение должно быть не более ${rule.value}`);
           }
           if (typeof value === 'string' && parseFloat(value) > rule.value) {
-            errors.push(rule.message);
+            errors.push(rule.message || `Значение должно быть не более ${rule.value}`);
           }
           break;
         case 'minLength':
           if ((typeof value === 'string' || Array.isArray(value)) && value.length < rule.value) {
-            errors.push(rule.message);
+            errors.push(rule.message || `Длина должна быть не менее ${rule.value} символов`);
           }
           break;
         case 'maxLength':
           if ((typeof value === 'string' || Array.isArray(value)) && value.length > rule.value) {
-            errors.push(rule.message);
+            errors.push(rule.message || `Длина должна быть не более ${rule.value} символов`);
           }
           break;
         case 'pattern':
           if (typeof value === 'string' && value && !(new RegExp(rule.value).test(value))) {
-            errors.push(rule.message);
+            errors.push(rule.message || 'Значение не соответствует формату');
           }
           break;
         case 'custom':
           if (typeof rule.validator === 'function' && !rule.validator(value)) {
-            errors.push(rule.message);
+            errors.push(rule.message || 'Значение не прошло валидацию');
           }
           break;
       }

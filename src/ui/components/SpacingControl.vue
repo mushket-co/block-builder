@@ -12,10 +12,7 @@
     </div>
 
     <!-- Заглушка для продвинутых настроек spacing (кастомные брекпоинты) -->
-    <div
-      v-if="showAdvancedSpacingRestriction"
-      style="padding: 10px; border: 1px solid #ff9800; border-radius: 4px; background-color: #fff3cd; color: #856404; margin-bottom: 10px;"
-    >
+    <div v-if="showAdvancedSpacingRestriction" class="bb-warning-box bb-mb-sm">
       ⚠️ {{ getAdvancedSpacingRestrictionMessage() }}
     </div>
 

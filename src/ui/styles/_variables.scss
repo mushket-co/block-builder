@@ -15,9 +15,14 @@
   --bb-color-danger: #dc3545;
   --bb-color-danger-dark: #c82333;
   --bb-color-danger-light: #fee;
+  --bb-color-danger-border: #f5c6cb;
+  --bb-color-danger-bg: #fff5f5;
   --bb-color-success: #28a745;
   --bb-color-success-dark: #218838;
   --bb-color-warning: #ffc107;
+  --bb-color-warning-border: #ff9800;
+  --bb-color-warning-bg: #fff3cd;
+  --bb-color-warning-text: #856404;
   --bb-color-info: #17a2b8;
 
   /* Цвета фона */
@@ -32,11 +37,13 @@
   --bb-text-secondary: #495057;
   --bb-text-tertiary: #666;
   --bb-text-muted: #999;
+  --bb-text-white: #ffffff;
 
   /* Цвета границ */
   --bb-border-color: #ddd;
   --bb-border-color-light: #e9ecef;
   --bb-border-color-focus: var(--bb-color-primary);
+  --bb-border-color-dashed: #ced4da;
 
   /* Размеры */
   --bb-spacing-xs: 4px;
@@ -64,6 +71,7 @@
   --bb-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
   --bb-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
   --bb-shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.3);
+  --bb-shadow-sm-light: 0 2px 8px rgba(0, 0, 0, 0.08);
   --bb-shadow-primary: 0 4px 12px rgba(102, 126, 234, 0.4);
 
   /* Transitions */
@@ -75,5 +83,26 @@
   --bb-z-index-dropdown: 100;
   --bb-z-index-modal: 1000;
   --bb-z-index-tooltip: 1100;
+
+  /* Дополнительные цвета для специфических случаев */
+  --bb-color-primary-hover: rgba(102, 126, 234, 0.1);
+  --bb-color-primary-hover-dark: rgba(102, 126, 234, 0.15);
+  --bb-color-primary-shadow: rgba(102, 126, 234, 0.3);
+  --bb-color-primary-shadow-light: rgba(102, 126, 234, 0.1);
+  --bb-color-primary-shadow-medium: rgba(102, 126, 234, 0.2);
+  --bb-color-success-shadow: rgba(40, 167, 69, 0.3);
+  --bb-color-success-shadow-dark: rgba(16, 185, 129, 0.4);
+  --bb-color-error-shadow: rgba(220, 53, 69, 0.1);
+  --bb-color-dark-overlay: rgba(0, 0, 0, 0.7);
+  --bb-color-dark-overlay-hover: rgba(0, 0, 0, 0.9);
+  --bb-color-dark-overlay-light: rgba(0, 0, 0, 0.1);
+  --bb-color-code-bg: #282c34;
+  --bb-color-code-text: #abb2bf;
+  --bb-color-scrollbar: rgba(153, 153, 153, 0.3);
+  --bb-color-scrollbar-hover: rgba(153, 153, 153, 0.5);
+  --bb-color-gradient-start: #667eea;
+  --bb-color-gradient-end: #764ba2;
+  --bb-color-gradient-success-start: #10b981;
+  --bb-color-gradient-success-end: #059669;
 }
 

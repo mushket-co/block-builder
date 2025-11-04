@@ -11,6 +11,9 @@
 /* Базовые стили */
 @use './base';
 
+/* Утилиты */
+@use './utilities';
+
 /* Компоненты */
 @use './components/buttons';
 @use './components/blocks';

@@ -8,9 +8,6 @@ export const NOTIFICATION_DISPLAY_DURATION_MS = 12000; // 12 секунд
 export const ERROR_RENDER_DELAY_MS = 100; // 100 миллисекунд
 export const REPEATER_ACCORDION_ANIMATION_DELAY_MS = 350; // 350 миллисекунд для анимации раскрытия
 
-// LocalStorage ключи
-export const STORAGE_KEY_BLOCKS = 'naberika_blocks';
-
 // Идентификаторы элементов
 export const FORM_ID_PREFIX = 'block-builder-form';
 
@@ -20,7 +17,8 @@ export const CSS_CLASSES = {
   FORM_GROUP: 'block-builder-form-group',
   FORM_CONTROL: 'block-builder-form-control',
   FORM_ERRORS: 'block-builder-form-errors',
-  ERROR: 'error',
+  ERROR: 'block-builder-error',
+  HIDDEN: 'block-builder-hidden',
   SPACING_CONTROL_CONTAINER: 'spacing-control-container',
   REPEATER_CONTROL_CONTAINER: 'repeater-control-container',
   API_SELECT_CONTROL_CONTAINER: 'api-select-control-container',
@@ -36,9 +34,6 @@ export const ERROR_MESSAGES = {
   INVALID_SETTINGS: (key: string) => `Invalid setting value for key '${key}': must be primitive type`,
   INVALID_PROPS: (key: string) => `Invalid prop value for key '${key}': must be primitive type`,
   INVALID_STYLE: (key: string) => `Invalid style value for key '${key}': must be string or number`,
-  STORAGE_QUOTA_EXCEEDED: 'Превышен лимит хранилища localStorage. Попробуйте уменьшить количество блоков.',
-  FAILED_TO_LOAD_BLOCKS: 'Ошибка загрузки блоков из localStorage',
-  FAILED_TO_SAVE_BLOCKS: 'Ошибка сохранения блоков в localStorage',
   FAILED_TO_COPY_CLIPBOARD: 'Unable to copy to clipboard',
   LICENSE_VERIFICATION_FAILED: 'Ошибка проверки лицензии',
 } as const;

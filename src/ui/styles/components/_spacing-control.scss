@@ -64,14 +64,14 @@
 
   &:focus {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      box-shadow: 0 0 0 3px var(--bb-color-primary-shadow-light);
   }
 
   /* Модификатор: active */
   &--active {
     background-color: var(--bb-color-primary);
     border-color: var(--bb-color-primary);
-    color: #ffffff;
+    color: var(--bb-text-white);
     box-shadow: var(--bb-shadow-sm);
 
     &:hover {
@@ -147,7 +147,7 @@
     appearance: none;
     width: 20px;
     height: 20px;
-    background-color: #ffffff;
+    background-color: var(--bb-bg-primary);
     border: 3px solid var(--bb-color-primary);
     border-radius: 50%;
     box-shadow: var(--bb-shadow-sm);
@@ -167,7 +167,7 @@
   &::-moz-range-thumb {
     width: 20px;
     height: 20px;
-    background-color: #ffffff;
+    background-color: var(--bb-bg-primary);
     border: 3px solid var(--bb-color-primary);
     border-radius: 50%;
     box-shadow: var(--bb-shadow-sm);
@@ -197,11 +197,11 @@
     outline: none;
 
     &::-webkit-slider-thumb {
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+      box-shadow: 0 0 0 3px var(--bb-color-primary-shadow-medium);
     }
 
     &::-moz-range-thumb {
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+      box-shadow: 0 0 0 3px var(--bb-color-primary-shadow-medium);
     }
   }
 }
@@ -220,7 +220,7 @@
   &:focus {
     outline: none;
     border-color: var(--bb-border-color-focus);
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      box-shadow: 0 0 0 3px var(--bb-color-primary-shadow-light);
   }
 
   /* Убираем стрелки в Chrome, Safari, Edge, Opera */
@@ -265,8 +265,8 @@
 .spacing-control__preview-code {
   margin: 0;
   padding: var(--bb-spacing-md);
-  background-color: #282c34;
-  color: #abb2bf;
+  background-color: var(--bb-color-code-bg);
+  color: var(--bb-color-code-text);
   border-radius: var(--bb-radius-sm);
   font-size: var(--bb-font-size-xs);
   font-family: var(--bb-font-family-mono);

@@ -73,6 +73,12 @@ const availableBlockTypes = ref(
 
 const isEdit = ref(true)
 
+const toggleIsEdit = () => {
+  isEdit.value = !isEdit.value
+}
+
+window.toggleIsEdit = toggleIsEdit
+
 const loadSavedBlocks = () => {
   try {
     const savedData = localStorage.getItem('saved-blocks')

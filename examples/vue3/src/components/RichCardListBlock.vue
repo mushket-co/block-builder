@@ -197,7 +197,8 @@ export default {
 .rich-card-list {
   width: 100%;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 60px 0;
+  padding-top: var(--spacing-padding-top);
+  padding-bottom: var(--spacing-padding-bottom);
   border-radius: 12px;
 }
 

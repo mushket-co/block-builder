@@ -14,7 +14,6 @@ import { CustomFieldRendererRegistry } from './infrastructure/registries/CustomF
 import { FetchHttpClient } from './infrastructure/http/FetchHttpClient';
 import { BlockManagementUseCase } from './core/use-cases/BlockManagementUseCase';
 import { ApiSelectUseCase } from './core/use-cases/ApiSelectUseCase';
-import { LocalStorageBlockRepositoryImpl } from './infrastructure/repositories/LocalStorageBlockRepositoryImpl';
 
 // Экспортируем ApiSelectUseCase и связанные типы для использования вне пакета
 export { ApiSelectUseCase } from './core/use-cases/ApiSelectUseCase';
@@ -46,7 +45,6 @@ export class BlockBuilderFactory {
       componentRegistry?: IComponentRegistry;
       httpClient?: IHttpClient;
       customFieldRendererRegistry?: ICustomFieldRendererRegistry;
-      storageType?: 'memory' | 'localStorage';
     }
   ): {
     repository: IBlockRepository;
@@ -57,11 +55,9 @@ export class BlockBuilderFactory {
     apiSelectUseCase: ApiSelectUseCase;
   } {
     // 1. Создаем Repository (по умолчанию Memory, если не указан)
-    const repository =
-      options?.repository ||
-      (options?.storageType === 'localStorage'
-        ? new LocalStorageBlockRepositoryImpl()
-        : new MemoryBlockRepositoryImpl());
+    // Репозиторий используется только для работы в памяти во время сессии.
+    // Сохранение блоков реализовано через колбэк пользователя onSave.
+    const repository = options?.repository || new MemoryBlockRepositoryImpl();
 
     // 2. Создаем ComponentRegistry (по умолчанию Memory, если не указан)
     const componentRegistry = options?.componentRegistry || new MemoryComponentRegistry();

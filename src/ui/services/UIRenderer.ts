@@ -9,14 +9,13 @@ import { ISpacingData } from '../../utils/spacingHelpers';
 import { afterRender } from '../../utils/domReady';
 import { EventDelegation } from '../EventDelegation';
 import { initIcons } from '../icons/index';
+import { CSS_CLASSES } from '../../utils/constants';
 import {
   copyIconHTML,
   arrowUpIconHTML,
   arrowDownIconHTML,
   editIconHTML,
   duplicateIconHTML,
-  lockIconHTML,
-  unlockIconHTML,
   eyeIconHTML,
   eyeOffIconHTML,
   deleteIconHTML,
@@ -154,7 +153,7 @@ export class UIRenderer {
           <div class="block-builder-license-banner__content">
             <span class="block-builder-license-banner__icon">⚠️</span>
             <span class="block-builder-license-banner__text">
-              Вы используете бесплатную версию <a href="https://block-builder.ru/" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline;">Block Builder</a>.
+              Вы используете бесплатную версию <a href="https://block-builder.ru/" target="_blank" rel="noopener noreferrer" class="bb-link-inherit">Block Builder</a>.
               Доступно ${license.currentTypesCount} из ${license.maxBlockTypes} типов блоков.
             </span>
           </div>
@@ -233,11 +232,11 @@ export class UIRenderer {
 
     // Находим существующую панель управления
     const existingControls = appContainer.querySelector('.block-builder-controls');
-    
+
     // Формируем HTML для панели управления
     const panelClass = `block-builder-controls${this.config.controlsFixedPosition ? ` block-builder-controls--fixed-${this.config.controlsFixedPosition}` : ''}`;
     const containerClass = this.config.controlsContainerClass || '';
-    
+
     // Формируем инлайн стили для offset
     let inlineStyles = '';
     if (this.config.controlsFixedPosition) {
@@ -335,7 +334,7 @@ export class UIRenderer {
       // Ищем баннер в основном контейнере или внутри block-builder-app
       const appContainer = container.querySelector('.block-builder-app') || container;
       const existingBanner = appContainer.querySelector('.block-builder-license-banner');
-      
+
       if (!licenseInfo.isPro && licenseBanner) {
         // Показываем баннер для FREE версии
         if (existingBanner) {
@@ -346,7 +345,7 @@ export class UIRenderer {
           const tempDiv = document.createElement('div');
           tempDiv.innerHTML = licenseBanner.trim();
           const bannerNode = tempDiv.firstChild;
-          
+
           if (bannerNode) {
             // Вставляем в начало block-builder-app, или если его нет - в начало контейнера
             if (appContainer.firstChild) {
@@ -402,12 +401,17 @@ export class UIRenderer {
   // Очищаем старые watchers перед перерендером
   this.cleanupBreakpointWatchers();
 
+  // Фильтруем скрытые блоки в режиме просмотра (isEdit: false)
+  const blocksToRender = this.isEdit
+    ? blocks
+    : blocks.filter(block => block.visible !== false);
+
   // Обновляем счетчик (если элемент существует - он может отсутствовать в режиме просмотра)
   if (countElement) {
-    countElement.textContent = blocks.length.toString();
+    countElement.textContent = blocksToRender.length.toString();
   }
 
-  if (blocks.length === 0) {
+  if (blocksToRender.length === 0) {
     // Если блоков нет, показываем только одну кнопку добавления
     blocksContainer.innerHTML = `
       <div class="block-builder-empty-state">
@@ -424,8 +428,8 @@ export class UIRenderer {
   blocksHTML.push(this.renderAddBlockButton(0));
 
   // Блоки с кнопками после каждого
-  blocks.forEach((block, index) => {
-    blocksHTML.push(this.renderBlock(block, index, blocks.length));
+  blocksToRender.forEach((block, index) => {
+    blocksHTML.push(this.renderBlock(block, index, blocksToRender.length));
     blocksHTML.push(this.renderAddBlockButton(index + 1));
   });
 
@@ -433,9 +437,9 @@ export class UIRenderer {
 
   // Инициализируем custom блоки после рендеринга
   afterRender(() => {
-    this.initializeCustomBlocks(blocks);
+    this.initializeCustomBlocks(blocksToRender);
     // Настраиваем watchers для spacing после рендеринга DOM
-    this.setupBreakpointWatchers(blocks);
+    this.setupBreakpointWatchers(blocksToRender);
   });
 }
 
@@ -468,7 +472,7 @@ export class UIRenderer {
   ` : '';
 
   return `
-    <div class="block-builder-block ${block.locked ? 'locked' : ''} ${!block.visible ? 'hidden' : ''}" data-block-id="${block.id}"${styleAttr}>
+    <div class="block-builder-block ${!block.visible ? CSS_CLASSES.HIDDEN : ''}" data-block-id="${block.id}"${styleAttr}>
       ${blockControlsHTML}
 
       <!-- Содержимое блока -->
@@ -503,7 +507,6 @@ export class UIRenderer {
       `;
     }
 
-    const lockIcon = block.locked ? unlockIconHTML : lockIconHTML;
     const visibilityIcon = block.visible ? eyeIconHTML : eyeOffIconHTML;
 
     // Определяем, должна ли быть кнопка вверх задизейблена (для первого блока)
@@ -520,7 +523,6 @@ export class UIRenderer {
       <button data-action="moveBlockDown" data-args='["${block.id}"]' class="block-builder-control-btn" title="Переместить вниз"${moveDownDisabled}>${arrowDownIconHTML}</button>
       <button data-action="editBlock" data-args='["${block.id}"]' class="block-builder-control-btn" title="Редактировать">${editIconHTML}</button>
       <button data-action="duplicateBlockUI" data-args='["${block.id}"]' class="block-builder-control-btn" title="Дублировать">${duplicateIconHTML}</button>
-      <button data-action="toggleBlockLock" data-args='["${block.id}"]' class="block-builder-control-btn" title="${block.locked ? 'Разблокировать' : 'Заблокировать'}">${lockIcon}</button>
       <button data-action="toggleBlockVisibility" data-args='["${block.id}"]' class="block-builder-control-btn" title="${block.visible ? 'Скрыть' : 'Показать'}">${visibilityIcon}</button>
       <button data-action="deleteBlockUI" data-args='["${block.id}"]' class="block-builder-control-btn" title="Удалить">${deleteIconHTML}</button>
     `;
@@ -656,7 +658,7 @@ export class UIRenderer {
           container.setAttribute('data-custom-mounted', 'true');
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : String(error);
-          container.innerHTML = `<div style="color: red; padding: 10px; border: 1px solid red; border-radius: 4px;">
+          container.innerHTML = `<div class="bb-error-box">
             <strong>⚠️ Ошибка рендеринга:</strong><br>${errorMessage}
           </div>`;
         }

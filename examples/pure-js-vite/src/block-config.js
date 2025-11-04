@@ -554,7 +554,6 @@ export const blockConfigs = {
           removeButtonText: 'Удалить',
           min: 3, // ✅ РАБОТАЕТ! т.к. есть required в rules (минимум 3 слайда)
           max: 20,
-          collapsible: true,
           fields: [
             {
               field: 'image',
@@ -789,7 +788,6 @@ export const blockConfigs = {
           removeButtonText: 'Удалить',
           min: 1, // ⚠️ ИГНОРИРУЕТСЯ! т.к. нет required в rules (можно удалить все)
           max: 12,
-          collapsible: true,
           fields: [
             {
               field: 'title',
@@ -1235,7 +1233,6 @@ export const blockConfigs = {
           removeButtonText: 'Удалить',
           min: 1,
           max: 20,
-          collapsible: true,
           fields: [
             {
               field: 'title',
@@ -2145,7 +2142,6 @@ export const blockConfigs = {
           removeButtonText: 'Удалить',
           min: 1,
           max: 20,
-          collapsible: true,
           fields: [
             {
               field: 'name',
@@ -2173,6 +2169,100 @@ export const blockConfigs = {
             }
           ]
         }
+      }
+    ]
+  },
+
+  link: {
+    title: 'Блок ссылки',
+    icon: '🔗',
+    description: 'Блок с ссылкой, выбором открытия и фоном',
+    render: {
+      kind: 'html',
+      template: (props) => {
+        const blockStyle = props.hasBackground 
+          ? `background-color: ${props.backgroundColor || '#f0f0f0'}; padding: ${props.padding || '12px 24px'}; border-radius: 8px;`
+          : '';
+        const target = props.linkTarget || '_self';
+        const rel = target === '_blank' ? ' rel="noopener noreferrer"' : '';
+        
+        return `
+          <div class="link-block" style="${blockStyle} text-align: center; margin: 20px 0;">
+            <div class="container">
+              <a
+                href="${props.url || '#'}"
+                target="${target}"
+                ${rel}
+                style="
+                  color: var(--bb-color-primary);
+                  text-decoration: none;
+                  font-size: 16px;
+                  font-weight: 500;
+                  transition: color 0.2s ease;
+                "
+                onmouseover="this.style.color='var(--bb-color-primary-dark)'; this.style.textDecoration='underline';"
+                onmouseout="this.style.color='var(--bb-color-primary)'; this.style.textDecoration='none';"
+              >
+                ${props.text || 'Ссылка'}
+              </a>
+            </div>
+          </div>
+        `;
+      }
+    },
+    fields: [
+      {
+        field: 'text',
+        label: 'Текст ссылки',
+        type: 'text',
+        placeholder: 'Введите текст ссылки',
+        rules: [
+          { type: 'required', message: 'Текст ссылки обязателен' }
+        ],
+        defaultValue: 'Перейти'
+      },
+      {
+        field: 'url',
+        label: 'URL',
+        type: 'url',
+        placeholder: 'https://example.com',
+        rules: [
+          { type: 'required', message: 'URL обязателен' },
+          { type: 'url', message: 'Введите корректный URL' }
+        ],
+        defaultValue: 'https://example.com'
+      },
+      {
+        field: 'linkTarget',
+        label: 'Как открывать ссылку',
+        type: 'radio',
+        options: [
+          { value: '_self', label: 'В текущей вкладке' },
+          { value: '_blank', label: 'В новой вкладке' }
+        ],
+        rules: [
+          { type: 'required', message: 'Выберите способ открытия' }
+        ],
+        defaultValue: '_self'
+      },
+      {
+        field: 'hasBackground',
+        label: 'Добавить фон блока',
+        type: 'checkbox',
+        defaultValue: false
+      },
+      {
+        field: 'backgroundColor',
+        label: 'Цвет фона',
+        type: 'color',
+        defaultValue: '#f0f0f0'
+      },
+      {
+        field: 'padding',
+        label: 'Отступы',
+        type: 'text',
+        placeholder: '12px 24px',
+        defaultValue: '12px 24px'
       }
     ]
   }

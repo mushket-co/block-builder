@@ -77,6 +77,11 @@ export class CustomFieldControlRenderer {
       this.container.innerHTML = '';
       this.container.appendChild(result.element);
     }
+
+    // Удаляем инлайн стили с placeholder после инициализации
+    if (this.container.classList.contains('custom-field-placeholder')) {
+      this.container.removeAttribute('style');
+    }
     } catch (error) {
     this.showError(`Ошибка инициализации поля: ${error}`);
   }
@@ -128,11 +133,15 @@ export class CustomFieldControlRenderer {
    * Показ ошибки в контейнере
    */
   private showError(message: string): void {
-  this.container.innerHTML = `
-    <div style="padding: 10px; border: 1px solid #ff4444; border-radius: 4px; background-color: #fff5f5; color: #ff4444;">
-      ❌ ${message}
-    </div>
-  `;
+    // Удаляем инлайн стили с placeholder, если контейнер - это placeholder
+    if (this.container.classList.contains('custom-field-placeholder')) {
+      this.container.removeAttribute('style');
+    }
+    this.container.innerHTML = `
+      <div class="bb-error-box">
+        ❌ ${message}
+      </div>
+    `;
   }
 }
 

@@ -1,0 +1,89 @@
+/**
+ * Утилитарные классы для замены инлайн стилей
+ */
+
+/* Классы для блоков видимости */
+.bb-hidden {
+  display: none !important;
+}
+
+.bb-visible {
+  display: block !important;
+}
+
+.bb-inline-block {
+  display: inline-block !important;
+}
+
+/* Классы для стилей иконок */
+.bb-icon-wrapper {
+  display: inline-block;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+/* Классы для ссылок */
+.bb-link-inherit {
+  color: inherit;
+  text-decoration: underline;
+}
+
+/* Классы для предупреждений */
+.bb-warning-box {
+  padding: 10px;
+  border: 1px solid var(--bb-color-warning-border);
+  border-radius: var(--bb-radius-sm);
+  background-color: var(--bb-color-warning-bg);
+  color: var(--bb-color-warning-text);
+}
+
+.bb-error-box {
+  padding: 10px;
+  border: 1px solid var(--bb-color-danger);
+  border-radius: var(--bb-radius-sm);
+  background-color: var(--bb-color-danger-light);
+  color: var(--bb-color-danger);
+}
+
+/* Классы для placeholder блоков */
+.bb-placeholder-box {
+  padding: 10px;
+  border: 1px dashed var(--bb-border-color);
+  border-radius: var(--bb-radius-sm);
+  color: var(--bb-text-muted);
+}
+
+/* Классы для блоков с opacity */
+.bb-opacity-visible {
+  opacity: 1;
+}
+
+.bb-opacity-hidden {
+  opacity: 0.5;
+}
+
+.bb-opacity-locked {
+  opacity: 0.3;
+}
+
+/* Классы для pointer-events */
+.bb-pointer-none {
+  pointer-events: none;
+}
+
+.bb-pointer-auto {
+  pointer-events: auto;
+}
+
+/* Классы для margin */
+.bb-mb-sm {
+  margin-bottom: 10px;
+}
+.bb-position-top {
+  top: calc(var(--bb-controls-offset, 0px) + var(--bb-controls-offset-var, 0px));
+}
+
+.bb-position-bottom {
+  bottom: calc(var(--bb-controls-offset, 0px) + var(--bb-controls-offset-var, 0px));
+}
+

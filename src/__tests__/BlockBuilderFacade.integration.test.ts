@@ -37,7 +37,7 @@ describe('BlockBuilderFacade Integration Tests', () => {
     }).not.toThrow();
   });
 
-  test('должен использовать memory storage по умолчанию', async () => {
+  test('должен использовать memory repository по умолчанию', async () => {
     const options: IBlockBuilderOptions = {
       containerId: 'test-container',
       blockConfigs: {},

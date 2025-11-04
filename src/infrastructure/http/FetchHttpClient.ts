@@ -10,9 +10,10 @@ import {
   IHttpRequestOptions,
 } from '../../core/ports/HttpClient';
 import { IApiRequestParams } from '../../core/types/form';
+import { HTTP_DEFAULT_TIMEOUT_MS } from '../../utils/constants';
 
 export class FetchHttpClient implements IHttpClient {
-  private readonly defaultTimeout: number = 30000; // 30 секунд
+  private readonly defaultTimeout: number = HTTP_DEFAULT_TIMEOUT_MS;
 
   /**
    * Построить URL с query параметрами

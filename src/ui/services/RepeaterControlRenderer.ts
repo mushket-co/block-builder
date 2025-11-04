@@ -4,6 +4,7 @@
  */
 
 import { IRepeaterItemFieldConfig, IRepeaterFieldConfig } from '../../core/types/form';
+import { CSS_CLASSES } from '../../utils/constants';
 
 export interface IRepeaterControlOptions {
   fieldName: string;
@@ -219,13 +220,13 @@ export class RepeaterControlRenderer {
   const fieldId = `repeater-${this.fieldName}-${itemIndex}-${field.field}`;
   const required = this.isFieldRequired(field) ? 'required' : '';
   const hasError = this.hasFieldError(itemIndex, field.field);
-  const errorClass = hasError ? 'error' : '';
+  const errorClass = hasError ? CSS_CLASSES.ERROR : '';
   const errors = this.getFieldErrors(itemIndex, field.field);
 
   switch (field.type) {
     case 'textarea':
       return `
-        <div class="repeater-control__field ${hasError ? 'error' : ''}">
+        <div class="repeater-control__field ${hasError ? CSS_CLASSES.ERROR : ''}">
           <label for="${fieldId}" class="repeater-control__field-label">
             ${field.label}
             ${required ? '<span class="required">*</span>' : ''}
@@ -245,7 +246,7 @@ export class RepeaterControlRenderer {
 
     case 'select':
       return `
-        <div class="repeater-control__field ${hasError ? 'error' : ''}">
+        <div class="repeater-control__field ${hasError ? CSS_CLASSES.ERROR : ''}">
           <label for="${fieldId}" class="repeater-control__field-label">
             ${field.label}
             ${required ? '<span class="required">*</span>' : ''}
@@ -268,7 +269,7 @@ export class RepeaterControlRenderer {
 
     case 'number':
       return `
-        <div class="repeater-control__field ${hasError ? 'error' : ''}">
+        <div class="repeater-control__field ${hasError ? CSS_CLASSES.ERROR : ''}">
           <label for="${fieldId}" class="repeater-control__field-label">
             ${field.label}
             ${required ? '<span class="required">*</span>' : ''}
@@ -289,7 +290,7 @@ export class RepeaterControlRenderer {
 
     case 'color':
       return `
-        <div class="repeater-control__field ${hasError ? 'error' : ''}">
+        <div class="repeater-control__field ${hasError ? CSS_CLASSES.ERROR : ''}">
           <label for="${fieldId}" class="repeater-control__field-label">
             ${field.label}
             ${required ? '<span class="required">*</span>' : ''}
@@ -309,7 +310,7 @@ export class RepeaterControlRenderer {
 
     case 'checkbox':
       return `
-        <div class="repeater-control__field ${hasError ? 'error' : ''}">
+        <div class="repeater-control__field ${hasError ? CSS_CLASSES.ERROR : ''}">
           <label class="repeater-control__field-checkbox">
             <input
               type="checkbox"
@@ -326,7 +327,7 @@ export class RepeaterControlRenderer {
     case 'url':
     case 'email':
       return `
-        <div class="repeater-control__field ${hasError ? 'error' : ''}">
+        <div class="repeater-control__field ${hasError ? CSS_CLASSES.ERROR : ''}">
           <label for="${fieldId}" class="repeater-control__field-label">
             ${field.label}
             ${required ? '<span class="required">*</span>' : ''}
@@ -350,7 +351,7 @@ export class RepeaterControlRenderer {
 
     default: // text
       return `
-        <div class="repeater-control__field ${hasError ? 'error' : ''}">
+        <div class="repeater-control__field ${hasError ? CSS_CLASSES.ERROR : ''}">
           <label for="${fieldId}" class="repeater-control__field-label">
             ${field.label}
             ${required ? '<span class="required">*</span>' : ''}
@@ -425,7 +426,7 @@ export class RepeaterControlRenderer {
     }).replace(/"/g, '&quot;');
 
     const escapedLabel = this.escapeHtml(field.label);
-    const errorClass = hasError ? 'error' : '';
+    const errorClass = hasError ? CSS_CLASSES.ERROR : '';
     const fieldNamePath = `${this.fieldName}[${itemIndex}].${field.field}`;
 
     return `
@@ -435,7 +436,7 @@ export class RepeaterControlRenderer {
         </label>
 
         <!-- Preview изображения -->
-        <div class="image-upload-field__preview" ${hasImage ? '' : 'style="display: none;"'}>
+        <div class="image-upload-field__preview${hasImage ? '' : ' bb-hidden'}">
           <img src="${this.escapeHtml(imageUrl)}" alt="${escapedLabel}" class="image-upload-field__preview-img" />
           <button type="button" class="image-upload-field__preview-clear" data-item-index="${itemIndex}" data-field-name="${field.field}" data-repeater-field="${this.fieldName}" title="Удалить изображение">×</button>
         </div>
@@ -455,13 +456,13 @@ export class RepeaterControlRenderer {
           />
           <label for="${fieldId}" class="image-upload-field__file-label">
             <span class="image-upload-field__label-text">${hasImage ? 'Изменить файл' : 'Выберите изображение'}</span>
-            <span class="image-upload-field__loading-text" style="display: none;">⏳ Загрузка...</span>
+            <span class="image-upload-field__loading-text bb-hidden">⏳ Загрузка...</span>
           </label>
-          <span class="image-upload-field__error" style="display: none;"></span>
+          <span class="image-upload-field__error bb-hidden"></span>
         </div>
 
         <!-- Сообщение об ошибке валидации -->
-        <div class="image-upload-field__error" style="display: ${hasError ? 'block' : 'none'};">${hasError ? this.escapeHtml(errors[0]) : ''}</div>
+        <div class="image-upload-field__error${hasError ? '' : ' bb-hidden'}">${hasError ? this.escapeHtml(errors[0]) : ''}</div>
 
         <!-- Hidden input для хранения значения -->
         <input type="hidden" name="${fieldNamePath}" value="${typeof value === 'object' && value !== null ? JSON.stringify(value).replace(/"/g, '&quot;') : (this.escapeHtml(value || ''))}" data-image-value="true" data-item-index="${itemIndex}" data-field-name="${field.field}" data-repeater-field-name="${this.fieldName}" />
@@ -477,7 +478,6 @@ export class RepeaterControlRenderer {
   const isCollapsed = this.collapsedItems.has(index);
   const effectiveMin = this.getEffectiveMin();
   const canRemove = this.value.length > effectiveMin;
-  const collapsible = this.config.collapsible ?? false;
 
   const fieldsHTML = this.config.fields
     .map(field => this.generateFieldHTML(field, index, item[field.field]))
@@ -488,17 +488,15 @@ export class RepeaterControlRenderer {
       <div class="repeater-control__item-header">
         <span class="repeater-control__item-title">${itemTitle} #${index + 1}</span>
         <div class="repeater-control__item-actions">
-          ${collapsible ? `
-            <button
-              type="button"
-              class="repeater-control__item-btn repeater-control__item-btn--collapse"
-              data-action="collapse"
-              data-item-index="${index}"
-              title="${isCollapsed ? 'Развернуть' : 'Свернуть'}"
-            >
-              ${isCollapsed ? '▼' : '▲'}
-            </button>
-          ` : ''}
+          <button
+            type="button"
+            class="repeater-control__item-btn repeater-control__item-btn--collapse"
+            data-action="collapse"
+            data-item-index="${index}"
+            title="${isCollapsed ? 'Развернуть' : 'Свернуть'}"
+          >
+            ${isCollapsed ? '▼' : '▲'}
+          </button>
           ${index > 0 ? `
             <button
               type="button"

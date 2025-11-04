@@ -3,6 +3,8 @@
  * Принцип единой ответственности (SRP)
  */
 
+import { CSS_CLASSES } from '../../utils/constants';
+
 export interface IModalOptions {
   title: string;
   bodyHTML: string;
@@ -44,7 +46,7 @@ export class ModalManager {
           <h3>${options.title}</h3>
           <button data-action="closeModal" class="block-builder-modal-close">&times;</button>
         </div>
-        <div class="block-builder-modal-body">
+        <div class="${CSS_CLASSES.MODAL_BODY}">
           ${options.bodyHTML}
         </div>
         ${footerHTML}

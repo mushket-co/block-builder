@@ -8,7 +8,7 @@
   flex-direction: column;
   gap: 8px;
   width: 100%;
-  color: #333;
+  color: var(--bb-text-primary);
 
   &__label {
     display: block;
@@ -18,7 +18,7 @@
   }
 
   &__required {
-    color: #e74c3c;
+    color: var(--bb-color-danger);
     margin-left: 2px;
   }
 
@@ -35,21 +35,21 @@
   &__input {
     width: 100%;
     padding: 8px 72px 8px 12px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--bb-border-color);
     border-radius: 6px;
     font-size: 14px;
-    color: #333;
-    background-color: #fff;
+    color: var(--bb-text-primary);
+    background-color: var(--bb-bg-primary);
     transition: all 0.2s;
 
     &:focus {
       outline: none;
-      border-color: #667eea;
-      box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+      border-color: var(--bb-color-primary);
+      box-shadow: 0 0 0 2px var(--bb-color-primary-hover);
     }
 
     &::placeholder {
-      color: #999;
+      color: var(--bb-text-muted);
     }
   }
 
@@ -58,7 +58,7 @@
     position: absolute;
     right: 40px;
     font-size: 14px;
-    color: #999;
+    color: var(--bb-text-muted);
     cursor: pointer;
     user-select: none;
     transition: color 0.2s;
@@ -71,7 +71,7 @@
 
   &__clear {
     &:hover {
-      color: #e74c3c;
+      color: var(--bb-color-danger);
     }
   }
 
@@ -92,13 +92,13 @@
     border: none;
     padding: 4px 8px;
     font-size: 12px;
-    color: #666;
+    color: var(--bb-text-tertiary);
     cursor: pointer;
     user-select: none;
     transition: all 0.2s;
 
     &:hover {
-      color: #667eea;
+      color: var(--bb-color-primary);
     }
 
     &--open {
@@ -111,12 +111,12 @@
     top: calc(100% + 4px);
     left: 0;
     right: 0;
-    background: #fff;
-    border: 1px solid #ddd;
+    background: var(--bb-bg-primary);
+    border: 1px solid var(--bb-border-color);
     border-radius: 6px;
     max-height: 300px;
     overflow-y: auto;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--bb-shadow-md);
     z-index: 1000;
 
     /* Кастомный скроллбар */
@@ -129,11 +129,11 @@
     }
 
     &::-webkit-scrollbar-thumb {
-      background-color: rgba(153, 153, 153, 0.3);
+      background-color: var(--bb-color-scrollbar);
       border-radius: 4px;
 
       &:hover {
-        background-color: rgba(153, 153, 153, 0.5);
+        background-color: var(--bb-color-scrollbar-hover);
       }
     }
   }
@@ -141,11 +141,11 @@
   &__message {
     padding: 16px 12px;
     text-align: center;
-    color: #999;
+    color: var(--bb-text-muted);
     font-size: 14px;
 
     &--error {
-      color: #e74c3c;
+      color: var(--bb-color-danger);
     }
   }
 
@@ -163,12 +163,12 @@
     font-size: 14px;
 
     &:hover {
-      background-color: #f5f5f5;
+      background-color: var(--bb-bg-secondary);
     }
 
     &--selected {
-      background-color: rgba(102, 126, 234, 0.1);
-      color: #667eea;
+      background-color: var(--bb-color-primary-hover);
+      color: var(--bb-color-primary);
     }
   }
 
@@ -181,22 +181,22 @@
 
   &__item-check {
     margin-left: 8px;
-    color: #667eea;
+    color: var(--bb-color-primary);
     font-weight: bold;
   }
 
   &__load-more {
     padding: 10px 12px;
     text-align: center;
-    color: #667eea;
+    color: var(--bb-color-primary);
     cursor: pointer;
-    border-top: 1px solid #ddd;
+    border-top: 1px solid var(--bb-border-color);
     font-size: 14px;
     font-weight: 500;
     transition: background-color 0.2s;
 
     &:hover {
-      background-color: #f5f5f5;
+      background-color: var(--bb-bg-secondary);
     }
   }
 
@@ -212,14 +212,14 @@
     align-items: center;
     gap: 6px;
     padding: 4px 8px;
-    background-color: rgba(102, 126, 234, 0.1);
-    color: #667eea;
+    background-color: var(--bb-color-primary-hover);
+    color: var(--bb-color-primary);
     border-radius: 4px;
     font-size: 13px;
     transition: background-color 0.2s;
 
     &:hover {
-      background-color: rgba(102, 126, 234, 0.15);
+      background-color: var(--bb-color-primary-hover-dark);
     }
   }
 
@@ -233,16 +233,16 @@
   &__tag-remove {
     cursor: pointer;
     font-weight: bold;
-    color: #667eea;
+    color: var(--bb-color-primary);
     transition: color 0.2s;
 
     &:hover {
-      color: #e74c3c;
+      color: var(--bb-color-danger);
     }
   }
 
   &__error {
-    color: #e74c3c;
+    color: var(--bb-color-danger);
     font-size: 12px;
     margin-top: 4px;
   }

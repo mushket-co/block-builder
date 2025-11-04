@@ -3,6 +3,8 @@
  * Обработка скролла к первой ошибке и открытие аккордеонов
  */
 
+import { CSS_CLASSES } from './constants';
+
 export interface IFirstErrorInfo {
   fieldKey: string;
   isRepeaterField: boolean;
@@ -86,7 +88,7 @@ export function findFieldElement(containerElement: HTMLElement, errorInfo: IFirs
     if (element) return element;
     
     // Запасной вариант - ищем в block-builder-form-group
-    return containerElement.querySelector(`.block-builder-form-group[data-field-name="${errorInfo.fieldKey}"]`) as HTMLElement || null;
+    return containerElement.querySelector(`.${CSS_CLASSES.FORM_GROUP}[data-field-name="${errorInfo.fieldKey}"]`) as HTMLElement || null;
   }
   
   // Для repeater полей ищем контейнер репитера
@@ -231,7 +233,7 @@ export function focusElement(element: HTMLElement): void {
   // Для image-upload-field - подсвечиваем контейнер с ошибкой, но не фокусируемся
   if (element.classList.contains('image-upload-field')) {
     setTimeout(() => {
-      element.classList.add('error');
+      element.classList.add(CSS_CLASSES.ERROR);
       element.classList.add('field-error-highlight');
       setTimeout(() => {
         element.classList.remove('field-error-highlight');

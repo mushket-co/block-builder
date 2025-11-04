@@ -35,17 +35,6 @@
             Visible
           </label>
         </div>
-
-        <div class="property-group">
-          <label>
-            <input
-              type="checkbox"
-              :checked="block.locked"
-              @change="updateProperty('locked', $event.target.checked)"
-            />
-            Locked
-          </label>
-        </div>
       </div>
 
 
@@ -117,7 +106,6 @@ const updateProperty = (key: string, value: any) => {
   if (!props.block) return;
   emit('update', props.block.id, { [key]: value });
 };
-
 
 const updateProp = (key: string, value: string) => {
   if (!props.block) return;

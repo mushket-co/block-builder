@@ -4,6 +4,7 @@
  */
 
 import { IFormFieldConfig } from '../../core/types/form';
+import { CSS_CLASSES } from '../../utils/constants';
 
 /**
  * Алиас для конфигурации поля формы
@@ -63,6 +64,9 @@ export class FormBuilder {
     case 'checkbox':
       return this.generateCheckboxHTML(fieldId, field, value);
 
+    case 'radio':
+      return this.generateRadioHTML(fieldId, field, value, required);
+
     case 'image':
       return this.generateImagePlaceholderHTML(fieldId, field, value, required);
 
@@ -92,14 +96,14 @@ export class FormBuilder {
     const escapedLabel = this.escapeHtml(field.label);
 
     return `
-    <div class="block-builder-form-group" data-field-name="${field.field}">
+    <div class="${CSS_CLASSES.FORM_GROUP}" data-field-name="${field.field}">
       <label for="${fieldId}" class="block-builder-form-label">
         ${escapedLabel} ${required ? '<span class="required">*</span>' : ''}
       </label>
       <textarea
         id="${fieldId}"
         name="${field.field}"
-        class="block-builder-form-control"
+        class="${CSS_CLASSES.FORM_CONTROL}"
         placeholder="${escapedPlaceholder}"
         ${required}
         rows="3"
@@ -115,11 +119,11 @@ export class FormBuilder {
     const escapedLabel = this.escapeHtml(field.label);
 
     return `
-    <div class="block-builder-form-group" data-field-name="${field.field}">
+    <div class="${CSS_CLASSES.FORM_GROUP}" data-field-name="${field.field}">
       <label for="${fieldId}" class="block-builder-form-label">
         ${escapedLabel} ${required ? '<span class="required">*</span>' : ''}
       </label>
-      <select id="${fieldId}" name="${field.field}" class="block-builder-form-control" ${required}>
+      <select id="${fieldId}" name="${field.field}" class="${CSS_CLASSES.FORM_CONTROL}" ${required}>
         <option value="">Выберите...</option>
         ${field.options?.map(option => {
           const escapedLabel = this.escapeHtml(option.label);
@@ -139,7 +143,7 @@ export class FormBuilder {
     const escapedPlaceholder = field.placeholder ? this.escapeHtml(field.placeholder) : '';
 
     return `
-    <div class="block-builder-form-group" data-field-name="${field.field}">
+    <div class="${CSS_CLASSES.FORM_GROUP}" data-field-name="${field.field}">
       <label for="${fieldId}" class="block-builder-form-label">
         ${escapedLabel} ${required ? '<span class="required">*</span>' : ''}
       </label>
@@ -147,7 +151,7 @@ export class FormBuilder {
         type="number"
         id="${fieldId}"
         name="${field.field}"
-        class="block-builder-form-control"
+        class="${CSS_CLASSES.FORM_CONTROL}"
         placeholder="${escapedPlaceholder}"
         value="${value || ''}"
         ${required}
@@ -163,7 +167,7 @@ export class FormBuilder {
     const escapedLabel = this.escapeHtml(field.label);
 
     return `
-    <div class="block-builder-form-group" data-field-name="${field.field}">
+    <div class="${CSS_CLASSES.FORM_GROUP}" data-field-name="${field.field}">
       <label for="${fieldId}" class="block-builder-form-label">
         ${escapedLabel} ${required ? '<span class="required">*</span>' : ''}
       </label>
@@ -171,7 +175,7 @@ export class FormBuilder {
         type="color"
         id="${fieldId}"
         name="${field.field}"
-        class="block-builder-form-control"
+        class="${CSS_CLASSES.FORM_CONTROL}"
         value="${value || '#333333'}"
         ${required}
       />
@@ -188,7 +192,7 @@ export class FormBuilder {
     const escapedValue = typeof value === 'string' ? this.escapeHtml(value) : value || '';
 
     return `
-    <div class="block-builder-form-group" data-field-name="${field.field}">
+    <div class="${CSS_CLASSES.FORM_GROUP}" data-field-name="${field.field}">
       <label for="${fieldId}" class="block-builder-form-label">
         ${escapedLabel} ${required ? '<span class="required">*</span>' : ''}
       </label>
@@ -196,7 +200,7 @@ export class FormBuilder {
         type="url"
         id="${fieldId}"
         name="${field.field}"
-        class="block-builder-form-control"
+        class="${CSS_CLASSES.FORM_CONTROL}"
         placeholder="${escapedPlaceholder}"
         value="${escapedValue}"
         ${required}
@@ -212,7 +216,7 @@ export class FormBuilder {
     const escapedLabel = this.escapeHtml(field.label);
 
     return `
-    <div class="block-builder-form-group" data-field-name="${field.field}">
+    <div class="${CSS_CLASSES.FORM_GROUP}" data-field-name="${field.field}">
       <label class="block-builder-form-checkbox">
         <input
           type="checkbox"
@@ -223,6 +227,47 @@ export class FormBuilder {
         />
         <span class="block-builder-form-checkbox-label">${escapedLabel}</span>
       </label>
+    </div>
+  `;
+  }
+
+  /**
+   * Генерация radio поля
+   */
+  private generateRadioHTML(fieldId: string, field: TFieldConfig, value: any, required: string): string {
+    const escapedLabel = this.escapeHtml(field.label);
+    const options = field.options || [];
+
+    const radioOptionsHTML = options.map((option, index) => {
+      const optionId = `${fieldId}-${index}`;
+      const escapedOptionLabel = this.escapeHtml(option.label);
+      const escapedOptionValue = typeof option.value === 'string' ? this.escapeHtml(option.value) : option.value;
+      const isChecked = option.value === value ? 'checked' : '';
+
+      return `
+        <label class="block-builder-form-radio">
+          <input
+            type="radio"
+            id="${optionId}"
+            name="${field.field}"
+            value="${escapedOptionValue}"
+            class="block-builder-form-radio-input"
+            ${isChecked}
+            ${required}
+          />
+          <span class="block-builder-form-radio-label">${escapedOptionLabel}</span>
+        </label>
+      `;
+    }).join('');
+
+    return `
+    <div class="${CSS_CLASSES.FORM_GROUP}" data-field-name="${field.field}">
+      <label class="block-builder-form-label">
+        ${escapedLabel} ${required ? '<span class="required">*</span>' : ''}
+      </label>
+      <div class="block-builder-form-radio-group">
+        ${radioOptionsHTML}
+      </div>
     </div>
   `;
   }
@@ -266,13 +311,13 @@ export class FormBuilder {
     const uploadHeadersJson = JSON.stringify(config.uploadHeaders || {}).replace(/"/g, '&quot;');
     
     return `
-    <div class="block-builder-form-group image-upload-field" data-field-name="${field.field}">
+    <div class="${CSS_CLASSES.FORM_GROUP} image-upload-field" data-field-name="${field.field}">
       <label for="${fieldId}" class="image-upload-field__label">
         ${escapedLabel} ${required ? '<span class="image-upload-field__required">*</span>' : ''}
       </label>
       
       <!-- Preview изображения -->
-      <div class="image-upload-field__preview" ${hasImage ? '' : 'style="display: none;"'}>
+      <div class="image-upload-field__preview${hasImage ? '' : ' bb-hidden'}">
         <img src="${this.escapeHtml(imageUrl)}" alt="${escapedLabel}" class="image-upload-field__preview-img" />
         <button type="button" class="image-upload-field__preview-clear" title="Удалить изображение">×</button>
       </div>
@@ -290,13 +335,13 @@ export class FormBuilder {
         />
         <label for="${fieldId}" class="image-upload-field__file-label">
           <span class="image-upload-field__label-text">${hasImage ? 'Изменить файл' : 'Выберите изображение'}</span>
-          <span class="image-upload-field__loading-text" style="display: none;">⏳ Загрузка...</span>
+          <span class="image-upload-field__loading-text bb-hidden">⏳ Загрузка...</span>
         </label>
-        <span class="image-upload-field__error" style="display: none;"></span>
+        <span class="image-upload-field__error bb-hidden"></span>
       </div>
       
       <!-- Сообщение об ошибке валидации -->
-      <div class="image-upload-field__error" style="display: none;"></div>
+      <div class="image-upload-field__error bb-hidden"></div>
       
       <!-- Hidden input для хранения значения -->
       <input type="hidden" name="${field.field}" value="${this.escapeHtml(typeof value === 'object' ? JSON.stringify(value) : (value || ''))}" data-image-value="true" />
@@ -313,7 +358,7 @@ export class FormBuilder {
     const escapedValue = typeof value === 'string' ? this.escapeHtml(value) : value || '';
 
     return `
-    <div class="block-builder-form-group" data-field-name="${field.field}">
+    <div class="${CSS_CLASSES.FORM_GROUP}" data-field-name="${field.field}">
       <label for="${fieldId}" class="block-builder-form-label">
         ${escapedLabel} ${required ? '<span class="required">*</span>' : ''}
       </label>
@@ -321,7 +366,7 @@ export class FormBuilder {
         type="text"
         id="${fieldId}"
         name="${field.field}"
-        class="block-builder-form-control"
+        class="${CSS_CLASSES.FORM_CONTROL}"
         placeholder="${escapedPlaceholder}"
         value="${escapedValue}"
         ${required}
@@ -348,7 +393,7 @@ export class FormBuilder {
 
   return `
     <div
-      class="block-builder-form-group spacing-control-container"
+      class="${CSS_CLASSES.FORM_GROUP} ${CSS_CLASSES.SPACING_CONTROL_CONTAINER}"
       data-field-type="spacing"
       data-field-name="${field.field}"
       data-spacing-config="${configJson}"
@@ -374,7 +419,7 @@ export class FormBuilder {
 
   return `
     <div
-      class="block-builder-form-group repeater-control-container"
+      class="${CSS_CLASSES.FORM_GROUP} ${CSS_CLASSES.REPEATER_CONTROL_CONTAINER}"
       data-field-type="repeater"
       data-field-name="${field.field}"
       data-repeater-config="${configJson}"
@@ -400,13 +445,13 @@ export class FormBuilder {
 
   return `
     <div
-      class="block-builder-form-group api-select-control-container"
+      class="${CSS_CLASSES.FORM_GROUP} ${CSS_CLASSES.API_SELECT_CONTROL_CONTAINER}"
       data-field-type="api-select"
       data-field-name="${field.field}"
       data-api-select-config="${configJson}"
     >
       <!-- Лейбл и контрол будут отрендерены через ApiSelectControlRenderer -->
-      <div class="api-select-placeholder" style="padding: 10px; border: 1px dashed #ccc; border-radius: 4px; color: #999;">
+      <div class="api-select-placeholder bb-placeholder-box">
         ⏳ Инициализация API Select...
       </div>
     </div>
@@ -430,7 +475,7 @@ export class FormBuilder {
 
   return `
     <div
-      class="block-builder-form-group custom-field-control-container"
+      class="${CSS_CLASSES.FORM_GROUP} ${CSS_CLASSES.CUSTOM_FIELD_CONTROL_CONTAINER}"
       data-field-type="custom"
       data-field-name="${field.field}"
       data-custom-field-config="${configJson}"
@@ -438,7 +483,7 @@ export class FormBuilder {
       <label class="block-builder-form-label">
         ${field.label} ${required ? '<span class="required">*</span>' : ''}
       </label>
-      <div class="custom-field-placeholder" style="padding: 10px; border: 1px dashed #ccc; border-radius: 4px; color: #999;">
+      <div class="custom-field-placeholder bb-placeholder-box">
         ⏳ Инициализация кастомного поля...
       </div>
     </div>

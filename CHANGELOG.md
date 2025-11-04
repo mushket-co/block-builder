@@ -5,7 +5,61 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/),
 и проект следует [Semantic Versioning](https://semver.org/lang/ru/).
 
-## [1.0.14] - 2025-11-03
+## [1.0.15] - 2025-01-04
+
+### Удалено
+- **Свойство `storageType`**: Удалено свойство `storageType?: 'memory' | 'localStorage'` из `IBlockBuilderOptions` и `BlockBuilderFactory`. Сохранение блоков теперь реализовано исключительно через колбэк `onSave`, который пользователь передаёт в опциях
+- **LocalStorageBlockRepositoryImpl**: Удалена реализация репозитория с использованием localStorage. Репозиторий теперь используется только для работы в памяти во время сессии
+- **Свойство `collapsible`**: Удалено опциональное свойство `collapsible` из `IRepeaterFieldConfig`. Элементы repeater теперь всегда можно сворачивать/разворачивать (аккордеоны всегда включены)
+- **Свойство `locked`**: Удалена функциональность блокировки блоков ("Lock block"). Удалены связанные методы и UI элементы
+- **Методы `saveBlocks` и `loadBlocks`**: Удалены из документации как несуществующие публичные методы. Реальное сохранение происходит через колбэк `onSave`, загрузка - через `initialBlocks` prop
+
+### Изменено
+- **Валидация `message`**: Поле `message` в правилах валидации (`IValidationRule`, `IBaseValidationRule`) теперь опциональное. Добавлены fallback сообщения по умолчанию для всех типов правил валидации
+- **Фильтрация скрытых блоков**: Если блок скрыт (`visible: false`), он автоматически фильтруется и не отображается при `isEdit: false`
+- **Замена CSS классов**: Все использования CSS класса `hidden` и `is-hidden` заменены на `CSS_CLASSES.HIDDEN` из `block-builder/src/utils/constants.ts`
+- **Унификация стилей**: Все стили из `<style>` секций в `BlockBuilder.vue` и `BlockComponent.vue` перемещены в общие SCSS файлы (`_forms.scss` и `_blocks.scss`)
+- **RepeaterControl**: Элементы repeater теперь всегда можно сворачивать/разворачивать (аккордеоны всегда включены). Удалён prop `collapsible` из компонента
+
+### Исправлено
+- **RepeaterControl.vue**: Исправлена ошибка `TypeError: Cannot read properties of undefined (reading 'ERROR')` - добавлен `CSS_CLASSES` в возвращаемый объект `setup()` функции
+- **Документация**: Исправлена ошибочная информация о `containerId` для core версии - теперь явно указано, что `containerId` НЕ нужен для `@mushket-co/block-builder/core`
+- **Документация**: Удалены упоминания устаревших свойств `storage`, `autoRender` из документации. Исправлено на `autoInit`
+- **Документация**: Добавлены все пропсы `BlockBuilderComponent` в документацию, удалены расплывчатые формулировки "другие опции..."
+
+### Очистка кода
+- Удалены неиспользуемые импорты, комментарии и мусорный код
+- Удалена функция `handleCardClick` из `BlockComponent.vue`
+- Удалены константы связанные с localStorage (`STORAGE_KEY_BLOCKS`, `STORAGE_QUOTA_EXCEEDED`, `FAILED_TO_LOAD_BLOCKS`, `FAILED_TO_SAVE_BLOCKS`)
+
+---
+
+### Удалено
+- **Свойство `storageType`**: Удалено свойство `storageType?: 'memory' | 'localStorage'` из `IBlockBuilderOptions` и `BlockBuilderFactory`. Сохранение блоков теперь реализовано исключительно через колбэк `onSave`, который пользователь передаёт в опциях
+- **LocalStorageBlockRepositoryImpl**: Удалена реализация репозитория с использованием localStorage. Репозиторий теперь используется только для работы в памяти во время сессии
+- **Свойство `collapsible`**: Удалено опциональное свойство `collapsible` из `IRepeaterFieldConfig`. Элементы repeater теперь всегда можно сворачивать/разворачивать (аккордеоны всегда включены)
+- **Свойство `locked`**: Удалена функциональность блокировки блоков ("Lock block"). Удалены связанные методы и UI элементы
+- **Методы `saveBlocks` и `loadBlocks`**: Удалены из документации как несуществующие публичные методы. Реальное сохранение происходит через колбэк `onSave`, загрузка - через `initialBlocks` prop
+
+### Изменено
+- **Валидация `message`**: Поле `message` в правилах валидации (`IValidationRule`, `IBaseValidationRule`) теперь опциональное. Добавлены fallback сообщения по умолчанию для всех типов правил валидации
+- **Фильтрация скрытых блоков**: Если блок скрыт (`visible: false`), он автоматически фильтруется и не отображается при `isEdit: false`
+- **Замена CSS классов**: Все использования CSS класса `hidden` и `is-hidden` заменены на `CSS_CLASSES.HIDDEN` из `block-builder/src/utils/constants.ts`
+- **Унификация стилей**: Все стили из `<style>` секций в `BlockBuilder.vue` и `BlockComponent.vue` перемещены в общие SCSS файлы (`_forms.scss` и `_blocks.scss`)
+- **RepeaterControl**: Элементы repeater теперь всегда можно сворачивать/разворачивать (аккордеоны всегда включены). Удалён prop `collapsible` из компонента
+
+### Исправлено
+- **RepeaterControl.vue**: Исправлена ошибка `TypeError: Cannot read properties of undefined (reading 'ERROR')` - добавлен `CSS_CLASSES` в возвращаемый объект `setup()` функции
+- **Документация**: Исправлена ошибочная информация о `containerId` для core версии - теперь явно указано, что `containerId` НЕ нужен для `@mushket-co/block-builder/core`
+- **Документация**: Удалены упоминания устаревших свойств `storage`, `autoRender` из документации. Исправлено на `autoInit`
+- **Документация**: Добавлены все пропсы `BlockBuilderComponent` в документацию, удалены расплывчатые формулировки "другие опции..."
+
+### Очистка кода
+- Удалены неиспользуемые импорты, комментарии и мусорный код
+- Удалена функция `handleCardClick` из `BlockComponent.vue`
+- Удалены константы связанные с localStorage (`STORAGE_KEY_BLOCKS`, `STORAGE_QUOTA_EXCEEDED`, `FAILED_TO_LOAD_BLOCKS`, `FAILED_TO_SAVE_BLOCKS`)
+
+---
 
 ### Добавлено
 - **Экспорт `./BlockBuilderFactory` в package.json**: Добавлен новый entry point `./BlockBuilderFactory` для доступа к `ApiSelectUseCase` и связанным типам (`IHttpClient`, `IHttpResponse`, `IHttpRequestOptions`, `IApiRequestParams`) из Pure JS приложений без необходимости импортировать Vue-специфичные модули

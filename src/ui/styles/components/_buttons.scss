@@ -12,9 +12,12 @@
   font-weight: 500;
   transition: all var(--bb-transition-base);
   text-decoration: none;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   font-family: var(--bb-font-family);
+  gap: var(--bb-spacing-sm);
 
   &:hover {
     transform: translateY(-2px);
@@ -87,7 +90,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  
+
   /* Стили для SVG иконок */
   svg {
     width: 16px;
@@ -97,7 +100,7 @@
   }
 
   &:hover:not(:disabled) {
-    background: rgba(0, 0, 0, 0.1);
+    background: var(--bb-color-dark-overlay-light);
   }
 
   &:disabled {
@@ -116,10 +119,10 @@
     cursor: pointer;
     transition: all var(--bb-transition-base);
     background: var(--bb-color-danger-light);
-    color: #c00;
+    color: var(--bb-color-danger-dark);
 
     &:hover {
-      background: #fcc;
+      background: var(--bb-color-danger-light);
     }
   }
 
@@ -134,7 +137,7 @@
     color: var(--bb-color-primary);
 
     &:hover {
-      background: #c0e0ff;
+      background: var(--bb-color-primary-light);
     }
   }
 }

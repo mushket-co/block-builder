@@ -55,19 +55,19 @@
   &:focus {
     outline: none;
     border-color: var(--bb-border-color-focus);
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      box-shadow: 0 0 0 3px var(--bb-color-primary-hover);
   }
 
   &:invalid {
     border-color: var(--bb-color-danger);
   }
 
-  &.error {
+  &.block-builder-error {
     border-color: var(--bb-color-danger);
 
     &:focus {
       border-color: var(--bb-color-danger);
-      box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+      box-shadow: 0 0 0 3px var(--bb-color-error-shadow);
     }
   }
 }
@@ -77,6 +77,7 @@
   margin-top: 4px;
   font-size: 12px;
 
+  .block-builder-error,
   .error {
     display: block;
     color: var(--bb-color-danger);
@@ -84,8 +85,58 @@
   }
 }
 
+.block-builder-form-control.error,
+.block-builder-form-control.block-builder-error {
+  border-color: var(--bb-color-danger);
+
+  &:focus {
+    border-color: var(--bb-color-danger);
+    box-shadow: 0 0 0 3px var(--bb-color-error-shadow);
+  }
+}
+
+/* Анимация подсветки поля с ошибкой */
+.field-error-highlight {
+  animation: errorPulse 0.6s ease-in-out;
+}
+
+@keyframes errorPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(220, 53, 69, 0.3);
+  }
+}
+
 /* Checkbox */
 .block-builder-form-checkbox {
+  display: flex;
+  align-items: center;
+  gap: var(--bb-spacing-sm);
+  cursor: pointer;
+
+  &-input {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+  }
+
+  &-label {
+    font-size: var(--bb-font-size-sm);
+    color: var(--bb-text-primary);
+    cursor: pointer;
+  }
+}
+
+/* Radio */
+.block-builder-form-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bb-spacing-sm);
+}
+
+.block-builder-form-radio {
   display: flex;
   align-items: center;
   gap: var(--bb-spacing-sm);

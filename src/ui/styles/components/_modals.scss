@@ -98,13 +98,13 @@
 
 /* Предупреждение о бесплатной версии */
 .block-builder-license-warning {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--bb-color-gradient-start) 0%, var(--bb-color-gradient-end) 100%);
   color: white;
   padding: 16px 20px;
   border-radius: 8px;
   margin-bottom: 20px;
   font-size: 14px;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 4px 12px var(--bb-color-primary-shadow);
 
   &__header {
     display: flex;
@@ -129,11 +129,11 @@
 
 /* Баннер о бесплатной версии на странице */
 .block-builder-license-banner {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--bb-color-gradient-start) 0%, var(--bb-color-gradient-end) 100%);
   color: white;
   padding: 12px 20px;
   font-size: 14px;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  box-shadow: var(--bb-color-primary-shadow);
   position: relative;
   z-index: 100;
 
@@ -183,23 +183,23 @@
   }
 
   &.block-builder-license-badge--pro {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: white;
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+    background: linear-gradient(135deg, var(--bb-color-gradient-success-start) 0%, var(--bb-color-gradient-success-end) 100%);
+    color: var(--bb-text-white);
+      box-shadow: 0 2px 8px var(--bb-color-success-shadow);
 
     &:hover {
-      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+      box-shadow: 0 4px 12px var(--bb-color-success-shadow-dark);
       transform: translateY(-1px);
     }
   }
 
   &.block-builder-license-badge--free {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    background: linear-gradient(135deg, var(--bb-color-gradient-start) 0%, var(--bb-color-gradient-end) 100%);
+    color: var(--bb-text-white);
+    box-shadow: 0 2px 8px var(--bb-color-primary-shadow);
 
     &:hover {
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        box-shadow: 0 4px 12px var(--bb-color-primary-shadow);
       transform: translateY(-1px);
     }
   }

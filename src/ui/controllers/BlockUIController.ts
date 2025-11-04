@@ -24,7 +24,7 @@ import { EventDelegation } from "../EventDelegation";
 import { LicenseService, ILicenseInfo } from "../../core/services/LicenseService";
 import { LicenseFeature } from "../../core/services/LicenseFeatureChecker";
 import { parseJSONFromAttribute } from "../../utils/domSafe";
-import { ERROR_RENDER_DELAY_MS, NOTIFICATION_DISPLAY_DURATION_MS, REPEATER_ACCORDION_ANIMATION_DELAY_MS, UI_STRINGS } from "../../utils/constants";
+import { ERROR_RENDER_DELAY_MS, NOTIFICATION_DISPLAY_DURATION_MS, REPEATER_ACCORDION_ANIMATION_DELAY_MS, UI_STRINGS, CSS_CLASSES, FORM_ID_PREFIX } from "../../utils/constants";
 
 export interface IBlockUIControllerConfig {
   containerId: string;
@@ -129,7 +129,7 @@ export class BlockUIController {
       <div class="block-builder-license-warning">
         <div class="block-builder-license-warning__header">
           <span class="block-builder-license-warning__icon">⚠️</span>
-          <strong class="block-builder-license-warning__title">Бесплатная версия <a href="https://block-builder.ru/" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline;">Block Builder</a></strong>
+          <strong class="block-builder-license-warning__title">Бесплатная версия <a href="https://block-builder.ru/" target="_blank" rel="noopener noreferrer" class="bb-link-inherit">Block Builder</a></strong>
         </div>
         <p class="block-builder-license-warning__text">
           Вы используете ограниченную бесплатную версию.<br>
@@ -201,7 +201,7 @@ export class BlockUIController {
     // Заглушки отображаются через initializeApiSelectControls и initializeCustomFieldControls
 
     const formHTML = `
-    <form id="block-builder-form" class="block-builder-form">
+    <form id="${FORM_ID_PREFIX}" class="block-builder-form">
       ${this.formBuilder.generateCreateFormHTML(fields)}
     </form>
     `;
@@ -258,7 +258,7 @@ export class BlockUIController {
     this.cleanupSpacingControls();
 
     // Находим все контейнеры для spacing
-    const containers = document.querySelectorAll(".spacing-control-container");
+    const containers = document.querySelectorAll(`.${CSS_CLASSES.SPACING_CONTROL_CONTAINER}`);
 
     containers.forEach((container) => {
       const config = container.getAttribute("data-spacing-config");
@@ -311,7 +311,7 @@ export class BlockUIController {
     this.cleanupRepeaterControls();
 
     // Находим все контейнеры для repeater
-    const containers = document.querySelectorAll(".repeater-control-container");
+    const containers = document.querySelectorAll(`.${CSS_CLASSES.REPEATER_CONTROL_CONTAINER}`);
 
     containers.forEach((container) => {
       const config = container.getAttribute("data-repeater-config");
@@ -322,7 +322,7 @@ export class BlockUIController {
 
         // Сохраняем ссылку на this для использования в callback
         const self = this;
-        
+
         // Создаем рендерер
         const renderer = new RepeaterControlRenderer({
           fieldName: repeaterConfig.field,
@@ -370,12 +370,12 @@ export class BlockUIController {
     // Проверяем лицензию - в FREE версии api-select недоступен
     if (!this.licenseService.canUseApiSelect()) {
       // Показываем сообщение об ограничении для всех api-select полей
-      const containers = document.querySelectorAll(".api-select-control-container");
+      const containers = document.querySelectorAll(`.${CSS_CLASSES.API_SELECT_CONTROL_CONTAINER}`);
       containers.forEach((container) => {
         const placeholder = container.querySelector(".api-select-placeholder") as HTMLElement;
         if (placeholder) {
           placeholder.innerHTML = `
-            <div style="padding: 10px; border: 1px solid #ff9800; border-radius: 4px; background-color: #fff3cd; color: #856404;">
+            <div class="bb-warning-box">
               ⚠️ ${this.licenseService.getFeatureChecker().getFeatureRestrictionMessage(LicenseFeature.API_SELECT)}
             </div>
           `;
@@ -444,12 +444,14 @@ export class BlockUIController {
     // Проверяем лицензию - в FREE версии кастомные поля недоступны
     if (!this.licenseService.canUseCustomFields()) {
       // Показываем сообщение об ограничении для всех custom полей
-      const containers = document.querySelectorAll(".custom-field-control-container");
+      const containers = document.querySelectorAll(`.${CSS_CLASSES.CUSTOM_FIELD_CONTROL_CONTAINER}`);
       containers.forEach((container) => {
         const placeholder = container.querySelector(".custom-field-placeholder") as HTMLElement;
         if (placeholder) {
+          // Удаляем инлайн стили с placeholder
+          placeholder.removeAttribute('style');
           placeholder.innerHTML = `
-            <div style="padding: 10px; border: 1px solid #ff9800; border-radius: 4px; background-color: #fff3cd; color: #856404;">
+            <div class="bb-warning-box">
               ⚠️ ${this.licenseService.getFeatureChecker().getFeatureRestrictionMessage(LicenseFeature.CUSTOM_FIELDS)}
             </div>
           `;
@@ -534,7 +536,7 @@ export class BlockUIController {
     containers.forEach((container) => {
       const fieldName = container.getAttribute("data-field-name");
       if (!fieldName) return;
-      
+
       // Проверяем, не инициализирован ли уже этот контрол
       if (container.hasAttribute('data-image-initialized')) return;
       container.setAttribute('data-image-initialized', 'true');
@@ -564,10 +566,10 @@ export class BlockUIController {
       const repeaterField = container.getAttribute('data-repeater-field');
       const repeaterIndex = container.getAttribute('data-repeater-index');
       const repeaterItemField = container.getAttribute('data-repeater-item-field');
-      
+
       let imageUploadConfig: any = undefined;
       let responseMapper: any = undefined;
-      
+
       if (repeaterField && repeaterItemField !== null) {
         // Это поле внутри repeater'а - получаем оригинальную конфигурацию из сохраненных полей
         // (функции responseMapper не сохраняются в JSON, поэтому используем оригинальную конфигурацию)
@@ -591,7 +593,7 @@ export class BlockUIController {
       // Инициализация preview при загрузке (если есть значение)
       // Сначала пробуем получить значение из данных repeater, если это поле внутри repeater
       let currentValue: any = hiddenInput.value;
-      
+
       if (repeaterField && repeaterIndex !== null && repeaterItemField !== null) {
         // Если это поле внутри repeater, получаем значение из данных repeater
         const repeaterRenderer = this.repeaterRenderers.get(repeaterField);
@@ -616,7 +618,7 @@ export class BlockUIController {
           }
         }
       }
-      
+
       // Извлекаем URL для preview
       // Поддерживаем и src (правильное поле) и url (для обратной совместимости)
       if (currentValue) {
@@ -628,7 +630,7 @@ export class BlockUIController {
             // Приоритет src, затем url для обратной совместимости
             imageUrl = currentValue.src || currentValue.url || '';
           }
-          
+
           if (imageUrl && previewImg) {
             previewImg.src = imageUrl;
             previewImg.style.display = 'block';
@@ -656,7 +658,7 @@ export class BlockUIController {
           hiddenInput.value = '';
           if (preview) preview.style.display = 'none';
           if (labelText) labelText.textContent = 'Выберите изображение';
-          
+
           // Если это поле внутри repeater'а - обновляем данные repeater'а
           if (repeaterField && repeaterIndex !== null && repeaterItemField !== null) {
             const repeaterRenderer = self.repeaterRenderers.get(repeaterField);
@@ -672,7 +674,7 @@ export class BlockUIController {
           }
         });
       }
-      
+
       // Обработчик изменения файла
       fileInput.addEventListener('change', async (e) => {
         const file = (e.target as HTMLInputElement).files?.[0];
@@ -726,7 +728,7 @@ export class BlockUIController {
             }
 
             const responseData = await response.json();
-            
+
             // Применяем responseMapper, если он есть
             if (responseMapper && typeof responseMapper === 'function') {
               result = responseMapper(responseData);
@@ -756,7 +758,7 @@ export class BlockUIController {
               }
             }
           }
-          
+
           // Затем обновляем hidden input для синхронизации с формой
           hiddenInput.value = typeof result === 'object' && result !== null ? JSON.stringify(result) : (result || '');
 
@@ -771,7 +773,7 @@ export class BlockUIController {
             // Приоритет src, затем url для обратной совместимости
             imageUrl = result.src || result.url || '';
           }
-          
+
           if (imageUrl) {
             if (previewImg) {
               previewImg.src = imageUrl;
@@ -788,7 +790,7 @@ export class BlockUIController {
 
           // Удаляем класс ошибки и скрываем сообщение об ошибке валидации
           if (container) {
-            container.classList.remove('error');
+            container.classList.remove(CSS_CLASSES.ERROR);
             // Скрываем все сообщения об ошибках валидации
             const validationErrorDivs = container.querySelectorAll('.image-upload-field__error');
             validationErrorDivs.forEach((div: Element) => {
@@ -805,28 +807,28 @@ export class BlockUIController {
             const repeaterRenderer = self.repeaterRenderers.get(repeaterField);
             if (repeaterRenderer && self.currentFormFields.size > 0) {
               // Получаем текущие данные формы
-              const formData = self.getFormDataWithSpacing('block-builder-form');
+              const formData = self.getFormDataWithSpacing(FORM_ID_PREFIX);
               // Находим конфигурацию полей для текущего блока
               const fields = Array.from(self.currentFormFields.values());
               // Валидируем форму заново с обновленными данными (изображение теперь загружено)
               const validation = UniversalValidator.validateForm(formData, fields);
-              
+
               // Сохраняем новые ошибки для использования при следующем сохранении
               // Это важно, чтобы ошибки не показывались повторно при следующей попытке сохранения
-              
+
               // Обновляем ошибки в repeater renderer'е - это перерендерит контрол
               // и для загруженного изображения ошибка исчезнет
               if (repeaterRenderer.updateErrors) {
                 repeaterRenderer.updateErrors(validation.errors);
               }
-              
+
               // Также обновляем ошибки в остальных repeater renderer'ах, чтобы они были синхронизированы
               self.repeaterRenderers.forEach((renderer) => {
                 if (renderer !== repeaterRenderer && renderer.updateErrors) {
                   renderer.updateErrors(validation.errors);
                 }
               });
-              
+
               // Очищаем старые ошибки валидации для этого поля, чтобы класс error убрался
               const fieldNamePath = `${repeaterField}[${repeaterIndex}].${repeaterItemField}`;
               if (!validation.errors[fieldNamePath] || validation.errors[fieldNamePath].length === 0) {
@@ -834,7 +836,7 @@ export class BlockUIController {
                 setTimeout(() => {
                   const errorContainer = document.querySelector(`[data-field-name="${fieldNamePath}"]`) as HTMLElement;
                   if (errorContainer) {
-                    errorContainer.classList.remove('error');
+                    errorContainer.classList.remove(CSS_CLASSES.ERROR);
                     // Также убираем ошибки из DOM
                     const errorDivs = errorContainer.querySelectorAll('.image-upload-field__error');
                     errorDivs.forEach((div: Element) => {
@@ -845,7 +847,7 @@ export class BlockUIController {
                       }
                     });
                   }
-                }, 100);
+                }, ERROR_RENDER_DELAY_MS);
               }
             }
           }
@@ -880,6 +882,8 @@ export class BlockUIController {
   private showCustomFieldError(container: HTMLElement, message: string): void {
     const placeholder = container.querySelector(".custom-field-placeholder") as HTMLElement;
     if (placeholder) {
+      // Удаляем инлайн стили с placeholder
+      placeholder.removeAttribute('style');
       // Безопасно создаем элементы через DOM API вместо innerHTML
       placeholder.innerHTML = '';
       const errorDiv = document.createElement('div');
@@ -933,7 +937,7 @@ export class BlockUIController {
    * Обработка создания блока
    */
   private async handleCreateBlock(type: string, fields: TFieldConfig[], position?: number): Promise<void> {
-    const props = this.getFormDataWithSpacing("block-builder-form");
+    const props = this.getFormDataWithSpacing(FORM_ID_PREFIX);
 
     // Валидация с помощью UniversalValidator
     const validation = UniversalValidator.validateForm(props, fields);
@@ -1024,7 +1028,7 @@ export class BlockUIController {
     // Заглушки отображаются через initializeApiSelectControls и initializeCustomFieldControls
 
     const formHTML = `
-    <form id="block-builder-form" class="block-builder-form">
+    <form id="${FORM_ID_PREFIX}" class="block-builder-form">
       ${this.formBuilder.generateEditFormHTML(fields, block.props)}
     </form>
     `;
@@ -1070,7 +1074,7 @@ export class BlockUIController {
    * Обработка обновления блока
    */
   private async handleUpdateBlock(blockId: string, type: string, fields: TFieldConfig[]): Promise<void> {
-    const props = this.getFormDataWithSpacing("block-builder-form");
+    const props = this.getFormDataWithSpacing(FORM_ID_PREFIX);
 
     // Валидация с помощью UniversalValidator
     const validation = UniversalValidator.validateForm(props, fields);
@@ -1089,20 +1093,6 @@ export class BlockUIController {
       const errorMessage = error instanceof Error ? error.message : String(error);
       this.showError(UI_STRINGS.blockUpdateError);
     }
-  }
-
-  /**
-   * Переключение блокировки блока
-   */
-  async toggleBlockLock(blockId: string): Promise<void> {
-    if (!this.isEdit) {
-      return; // Блокируем если режим редактирования выключен
-    }
-    const block = this.blocks.find((b) => b.id === blockId);
-    if (!block) return;
-
-    await this.config.useCase.setBlockLocked(blockId, !block.locked);
-    await this.refreshBlocks();
   }
 
   /**
@@ -1269,11 +1259,11 @@ export class BlockUIController {
   `;
     document.body.appendChild(notification);
 
-    // Удаляем уведомление через 12 секунд
+    // Удаляем уведомление через указанное время
     setTimeout(() => {
       notification.style.animation = "fadeOut 0.3s ease-in-out";
       setTimeout(() => notification.remove(), 300);
-    }, 12000);
+    }, NOTIFICATION_DISPLAY_DURATION_MS);
   }
 
   /**
@@ -1298,22 +1288,22 @@ export class BlockUIController {
       const input = document.querySelector(`[name="${fieldName}"]`) as HTMLElement;
       if (input) {
         // Добавляем класс ошибки к полю
-        input.classList.add("error");
+        input.classList.add(CSS_CLASSES.ERROR);
 
         // Добавляем класс ошибки к группе поля
-        const formGroup = input.closest(".block-builder-form-group") as HTMLElement;
+        const formGroup = input.closest(`.${CSS_CLASSES.FORM_GROUP}`) as HTMLElement;
         if (formGroup) {
-          formGroup.classList.add("error");
+          formGroup.classList.add(CSS_CLASSES.ERROR);
         }
 
         // Создаем контейнер для ошибок
         const errorContainer = document.createElement("div");
-        errorContainer.className = "block-builder-form-errors";
+        errorContainer.className = CSS_CLASSES.FORM_ERRORS;
         errorContainer.setAttribute("data-field", fieldName);
 
         fieldErrors.forEach((error) => {
           const errorSpan = document.createElement("span");
-          errorSpan.className = "error";
+          errorSpan.className = CSS_CLASSES.ERROR;
           errorSpan.textContent = error;
           errorContainer.appendChild(errorSpan);
         });
@@ -1332,17 +1322,17 @@ export class BlockUIController {
    */
   private clearValidationErrors(): void {
     // Убираем класс error у всех полей
-    document.querySelectorAll(".block-builder-form-control.error").forEach((input) => {
-      input.classList.remove("error");
+    document.querySelectorAll(`.${CSS_CLASSES.FORM_CONTROL}.${CSS_CLASSES.ERROR}`).forEach((input) => {
+      input.classList.remove(CSS_CLASSES.ERROR);
     });
 
     // Убираем класс error у всех групп полей
-    document.querySelectorAll(".block-builder-form-group.error").forEach((group) => {
-      group.classList.remove("error");
+    document.querySelectorAll(`.${CSS_CLASSES.FORM_GROUP}.${CSS_CLASSES.ERROR}`).forEach((group) => {
+      group.classList.remove(CSS_CLASSES.ERROR);
     });
 
     // Удаляем все контейнеры с ошибками
-    document.querySelectorAll(".block-builder-form-errors").forEach((container) => {
+    document.querySelectorAll(`.${CSS_CLASSES.FORM_ERRORS}`).forEach((container) => {
       container.remove();
     });
   }
@@ -1353,7 +1343,7 @@ export class BlockUIController {
   private handleScrollToFirstError(errors: Record<string, string[]>): void {
     // Небольшая задержка, чтобы ошибки успели отрисоваться в DOM
     setTimeout(() => {
-      const modalBody = document.querySelector(".block-builder-modal-body") as HTMLElement;
+      const modalBody = document.querySelector(`.${CSS_CLASSES.MODAL_BODY}`) as HTMLElement;
 
       if (!modalBody) {
         return;
@@ -1377,7 +1367,7 @@ export class BlockUIController {
           autoFocus: true,
         });
       }
-    }, 100); // Увеличена задержка для стабильной отрисовки ошибок
+    }, ERROR_RENDER_DELAY_MS); // Увеличена задержка для стабильной отрисовки ошибок
   }
 
   /**
@@ -1396,12 +1386,12 @@ export class BlockUIController {
 
     // Получаем все ошибки для точного поиска поля
     const allErrors = this.getRepeaterErrors();
-    
+
     // Находим первую ошибку для этого repeater и элемента
     const firstErrorKey = Object.keys(allErrors).find(key => {
       const errorInfo = parseErrorKey(key);
-      return errorInfo.isRepeaterField && 
-             errorInfo.repeaterFieldName === repeaterFieldName && 
+      return errorInfo.isRepeaterField &&
+             errorInfo.repeaterFieldName === repeaterFieldName &&
              errorInfo.repeaterIndex === itemIndex;
     });
 
@@ -1441,7 +1431,7 @@ export class BlockUIController {
             autoFocus: true,
           });
         }
-      }, 350); // Увеличена задержка для завершения анимации раскрытия
+      }, REPEATER_ACCORDION_ANIMATION_DELAY_MS); // Увеличена задержка для завершения анимации раскрытия
     } else {
       // Элемент уже развернут - скроллим к полю сразу
       if (firstErrorKey) {
@@ -1487,10 +1477,10 @@ export class BlockUIController {
       let field: HTMLElement | null = null;
       let repeaterIndex: string | null = null;
       let fieldName: string | null = null;
-      
+
       // Проверяем, является ли это ошибкой image поля
       const isImageField = errorEl.classList.contains("image-upload-field__error");
-      
+
       if (isImageField) {
         // Для image полей ищем родительский контейнер image-upload-field
         const imageField = errorEl.closest(".image-upload-field") as HTMLElement;
@@ -1572,7 +1562,6 @@ export class BlockUIController {
     this.eventDelegation.register('copyBlockId', (blockId: string) => this.copyBlockId(blockId));
     this.eventDelegation.register('moveBlockUp', (blockId: string) => this.moveBlockUp(blockId));
     this.eventDelegation.register('moveBlockDown', (blockId: string) => this.moveBlockDown(blockId));
-    this.eventDelegation.register('toggleBlockLock', (blockId: string) => this.toggleBlockLock(blockId));
     this.eventDelegation.register('toggleBlockVisibility', (blockId: string) => this.toggleBlockVisibility(blockId));
     this.eventDelegation.register('duplicateBlockUI', (blockId: string) => this.duplicateBlockUI(blockId));
     this.eventDelegation.register('deleteBlockUI', (blockId: string) => this.deleteBlockUI(blockId));

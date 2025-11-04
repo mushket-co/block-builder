@@ -6,7 +6,7 @@ import { IValidationRule } from './validation';
 import { ICustomFieldConfig } from '../ports/CustomFieldRenderer';
 
 // Типы полей форм
-export type TFieldType = 'text' | 'number' | 'email' | 'url' | 'textarea' | 'select' | 'checkbox' | 'color' | 'file' | 'image' | 'spacing' | 'repeater' | 'api-select' | 'custom';
+export type TFieldType = 'text' | 'number' | 'email' | 'url' | 'textarea' | 'select' | 'checkbox' | 'radio' | 'color' | 'file' | 'image' | 'spacing' | 'repeater' | 'api-select' | 'custom';
 
 // Типы отступов
 export type TSpacingType = 'padding-top' | 'padding-bottom' | 'margin-top' | 'margin-bottom';
@@ -46,7 +46,7 @@ export interface IRepeaterItemFieldConfig {
   type: Exclude<TFieldType, 'repeater' | 'spacing'>; // Тип поля (repeater не может быть вложенным)
   placeholder?: string;
   defaultValue?: any;
-  options?: { value: string; label: string }[]; // Для типа 'select'
+  options?: { value: string; label: string }[]; // Для типов 'select' и 'radio'
   rules?: IValidationRule[];
 }
 
@@ -59,7 +59,6 @@ export interface IRepeaterFieldConfig {
   min?: number; // Минимальное количество элементов (если не указано, определяется по required: true = 1, false = 0)
   max?: number; // Максимальное количество элементов
   defaultItemValue?: Record<string, any>; // Значения по умолчанию для нового элемента
-  collapsible?: boolean; // Можно ли сворачивать элементы (по умолчанию false)
 }
 
 // Метод HTTP запроса
@@ -157,7 +156,7 @@ export interface IFormFieldConfig {
   type: TFieldType;
   placeholder?: string;
   defaultValue?: any;
-  options?: { value: string; label: string }[]; // Для типа 'select'
+  options?: { value: string; label: string }[]; // Для типов 'select' и 'radio'
   rules?: IValidationRule[];
   spacingConfig?: ISpacingFieldConfig; // Для типа 'spacing'
   repeaterConfig?: IRepeaterFieldConfig; // Для типа 'repeater'

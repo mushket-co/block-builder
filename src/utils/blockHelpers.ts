@@ -8,10 +8,6 @@ export type { TBlock, TBlockWithChildren, TBlockId } from '../core/types';
  * Утилиты для работы с блоками
  */
 
-
-
-
-
 /**
  * Создает копию блока с новым ID
  */

@@ -3,6 +3,8 @@
 /**
  * Генератор форм для чистого JavaScript
  */
+import { CSS_CLASSES } from './constants';
+
 export class JavaScriptFormGenerator {
   /**
    * Генерирует HTML форму
@@ -336,13 +338,13 @@ export class JavaScriptFormGenerator {
           const errorContainer = document.getElementById('errors_' + fieldName);
           if (errorContainer) {
             errorContainer.innerHTML = errors.map(error =>
-              '<div class="error">' + error + '</div>'
+              '<div class="' + CSS_CLASSES.ERROR + '">' + error + '</div>'
             ).join('');
           }
 
           const field = form.querySelector('[name="' + fieldName + '"]');
           if (field) {
-            field.classList.toggle('error', errors.length > 0);
+            field.classList.toggle(CSS_CLASSES.ERROR, errors.length > 0);
           }
         }
 
@@ -355,7 +357,7 @@ export class JavaScriptFormGenerator {
 
           const field = form.querySelector('[name="' + fieldName + '"]');
           if (field) {
-            field.classList.remove('error');
+            field.classList.remove(CSS_CLASSES.ERROR);
           }
         }
 

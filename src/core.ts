@@ -39,7 +39,6 @@ export type { ICustomFieldRenderer, ICustomFieldRendererRegistry } from './core/
 
 // Infrastructure для кастомизации (опционально)
 export { MemoryBlockRepositoryImpl } from './infrastructure/repositories/MemoryBlockRepositoryImpl';
-export { LocalStorageBlockRepositoryImpl } from './infrastructure/repositories/LocalStorageBlockRepositoryImpl';
 export { MemoryComponentRegistry } from './infrastructure/registries/MemoryComponentRegistry';
 export { FetchHttpClient } from './infrastructure/http/FetchHttpClient';
 

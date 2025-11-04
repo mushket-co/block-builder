@@ -20,7 +20,7 @@
   position: relative;
   min-height: 280px; /* Минимальная высота для контролов + отступы */
   transition: all var(--bb-transition-slow);
-  color: #333;
+  color: var(--bb-text-primary);
 
   /* Убираем все обводки и фоны */
   border: none;
@@ -33,7 +33,7 @@
     }
   }
 
-  &.hidden {
+  &.block-builder-hidden {
     .block-builder-block-content {
       opacity: 0.3;
       pointer-events: none;
@@ -158,8 +158,8 @@
   color: var(--bb-color-danger);
   font-size: var(--bb-font-size-xs);
   padding: 10px;
-  background: #f8d7da;
-  border: 1px solid #f5c6cb;
+  background: var(--bb-color-danger-border);
+  border: 1px solid var(--bb-color-danger-border);
   border-radius: var(--bb-radius-sm);
 }
 
@@ -217,7 +217,7 @@
     background: var(--bb-bg-secondary);
     border-radius: var(--bb-radius-lg);
     border: 1px solid var(--bb-border-color-light);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--bb-shadow-md);
   }
 }
 
@@ -383,6 +383,87 @@ body.bb-is-edit-mode {
   &:active {
     transform: translateY(0);
   }
+}
+
+/* Компонент блока (для BlockComponent.vue) */
+.block-component {
+  position: absolute;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  cursor: move;
+  user-select: none;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: var(--bb-color-primary);
+  }
+
+  &.is-selected {
+    border-color: var(--bb-color-primary);
+    box-shadow: 0 0 0 2px var(--bb-color-primary-shadow-light);
+  }
+
+  &.is-dragging {
+    opacity: 0.8;
+    transform: rotate(2deg);
+  }
+
+  &.block-builder-hidden {
+    opacity: 0.3;
+
+    &.bb-opacity-hidden {
+      opacity: 0.5;
+    }
+  }
+
+  &__content {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    border-radius: 2px;
+  }
+
+  &__controls {
+    position: absolute;
+    top: -30px;
+    right: 0;
+    display: flex;
+    gap: 4px;
+    background: var(--bb-bg-primary);
+    border: 1px solid var(--bb-border-color);
+    border-radius: 4px;
+    padding: 4px;
+    box-shadow: var(--bb-shadow-sm);
+  }
+}
+
+.control-button {
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background: var(--bb-bg-secondary);
+  }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}
+
+.delete-button:hover {
+  background: var(--bb-color-danger);
+  color: white;
 }
 
 /* Уведомления (для копирования ID и других действий) */

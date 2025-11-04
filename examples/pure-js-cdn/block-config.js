@@ -994,7 +994,6 @@ export const blockConfigs = {
           removeButtonText: 'Удалить',
           min: 1,
           max: 20,
-          collapsible: true,
           fields: [
             {
               field: 'name',

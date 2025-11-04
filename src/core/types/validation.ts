@@ -17,7 +17,7 @@ export type TValidationRuleType =
 // Базовый интерфейс правила валидации
 export interface IBaseValidationRule {
   type: TValidationRuleType;
-  message: string;
+  message?: string; // Сообщение об ошибке (опционально, есть fallback значения по умолчанию)
   field: string;
 }
 
@@ -81,7 +81,7 @@ export interface IValidationRule {
   type: TValidationRuleType;
   field: string;
   value?: any;
-  message: string;
+  message?: string; // Сообщение об ошибке (опционально, есть fallback значения по умолчанию)
   validator?: (value: any) => boolean; // Для кастомных правил
 }
 

@@ -1,5 +1,6 @@
 import { UIRenderer, IUIRendererConfig } from '../UIRenderer';
 import { IBlockDto } from '../../../core/types';
+import { CSS_CLASSES } from '../../../utils/constants';
 
 describe('UIRenderer', () => {
   let uiRenderer: UIRenderer;
@@ -259,7 +260,7 @@ describe('UIRenderer', () => {
     // Проверяем что блок отрендерен
     expect(blockElement).toBeTruthy();
     // UIRenderer рендерит все блоки, видимость управляется через класс hidden
-    expect(blockElement?.classList.contains('hidden')).toBe(true);
+    expect(blockElement?.classList.contains(CSS_CLASSES.HIDDEN)).toBe(true);
   });
 
   test('не должен рендерить блоки с неизвестным типом', () => {

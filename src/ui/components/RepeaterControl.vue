@@ -20,7 +20,7 @@
         v-for="(item, index) in items"
         :key="item._id"
         class="repeater-control__item"
-        :class="{ 'repeater-control__item--collapsed': collapsible && collapsedItems[item._id] }"
+        :class="{ 'repeater-control__item--collapsed': collapsedItems[item._id] }"
       >
         <!-- Заголовок элемента -->
         <div class="repeater-control__item-header">
@@ -29,7 +29,6 @@
           </span>
           <div class="repeater-control__item-actions">
             <button
-              v-if="collapsible"
               type="button"
               class="repeater-control__item-btn repeater-control__item-btn--collapse"
               @click="toggleCollapse(item._id)"
@@ -69,14 +68,14 @@
 
         <!-- Поля элемента -->
         <div
-          v-if="!collapsible || !collapsedItems[item._id]"
+          v-if="!collapsedItems[item._id]"
           class="repeater-control__item-fields"
         >
           <div
             v-for="field in fields"
             :key="field.field"
             class="repeater-control__field"
-            :class="{ 'error': hasFieldError(index, field.field) }"
+            :class="{ [CSS_CLASSES.ERROR]: hasFieldError(index, field.field) }"
           >
             <label
               :for="getFieldId(item._id, field.field)"
@@ -94,7 +93,7 @@
               v-model="item[field.field]"
               :placeholder="field.placeholder || ''"
               class="repeater-control__field-input"
-              :class="{ 'error': hasFieldError(index, field.field) }"
+              :class="{ [CSS_CLASSES.ERROR]: hasFieldError(index, field.field) }"
               @input="onFieldChange"
               :data-field-name="field.field"
             />
@@ -107,7 +106,7 @@
               v-model.number="item[field.field]"
               :placeholder="field.placeholder || ''"
               class="repeater-control__field-input"
-              :class="{ 'error': hasFieldError(index, field.field) }"
+              :class="{ [CSS_CLASSES.ERROR]: hasFieldError(index, field.field) }"
               @input="onFieldChange"
               :data-field-name="field.field"
             />
@@ -119,7 +118,7 @@
               v-model="item[field.field]"
               :placeholder="field.placeholder || ''"
               class="repeater-control__field-textarea"
-              :class="{ 'error': hasFieldError(index, field.field) }"
+              :class="{ [CSS_CLASSES.ERROR]: hasFieldError(index, field.field) }"
               rows="3"
               @input="onFieldChange"
               :data-field-name="field.field"
@@ -131,7 +130,7 @@
               :id="getFieldId(item._id, field.field)"
               v-model="item[field.field]"
               class="repeater-control__field-select"
-              :class="{ 'error': hasFieldError(index, field.field) }"
+              :class="{ [CSS_CLASSES.ERROR]: hasFieldError(index, field.field) }"
               @change="onFieldChange"
               :data-field-name="field.field"
             >
@@ -216,7 +215,7 @@
 
 <script>
 import { ref, computed, watch, onMounted } from 'vue';
-import { UI_STRINGS } from '../../utils/constants';
+import { UI_STRINGS, CSS_CLASSES } from '../../utils/constants';
 import ImageUploadField from './ImageUploadField.vue';
 
 export default {
@@ -269,10 +268,6 @@ export default {
     defaultItemValue: {
       type: Object,
       default: () => ({})
-    },
-    collapsible: {
-      type: Boolean,
-      default: false
     }
   },
   emits: ['update:modelValue'],
@@ -515,7 +510,8 @@ export default {
       isItemCollapsed,
       updateItemField,
       repeaterMinText,
-      repeaterMaxText
+      repeaterMaxText,
+      CSS_CLASSES
     };
   },
   components: {

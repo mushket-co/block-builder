@@ -2,7 +2,7 @@
   <div
     ref="containerRef"
     class="image-upload-field"
-    :class="{ 'error': error }"
+    :class="{ [CSS_CLASSES.ERROR]: error }"
     :data-field-name="fieldNamePath"
   >
     <label v-if="label" :for="inputId" class="image-upload-field__label">
@@ -52,6 +52,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, nextTick } from 'vue';
 import type { IImageUploadConfig } from '../../core/types/form';
+import { CSS_CLASSES } from '../../utils/constants';
 
 interface Props {
   modelValue?: any;

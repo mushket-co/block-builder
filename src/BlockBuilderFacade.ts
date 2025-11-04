@@ -28,7 +28,6 @@ export interface IBlockBuilderOptions {
   componentRegistry?: IComponentRegistry;
   httpClient?: IHttpClient;
   customFieldRendererRegistry?: ICustomFieldRendererRegistry;
-  storageType?: 'memory' | 'localStorage';
   theme?: 'light' | 'dark';
   locale?: string;
   autoInit?: boolean;
@@ -98,7 +97,6 @@ export class BlockBuilderFacade {
     componentRegistry: options.componentRegistry,
     httpClient: options.httpClient,
     customFieldRendererRegistry: options.customFieldRendererRegistry,
-    storageType: options.storageType,
   });
 
   this.repository = dependencies.repository;
