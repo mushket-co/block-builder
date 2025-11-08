@@ -1,6 +1,6 @@
 {
   "name": "@mushket-co/block-builder",
-  "version": "1.0.20",
+  "version": "1.0.21",
   "description": "Блочный конструктор для no-code разработки (Beta)",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
@@ -70,7 +70,9 @@
     "test:unit": "jest --testPathPattern=\".*\\.test\\.ts$\"",
     "test:integration": "jest --testPathPattern=\".*\\.integration\\.test\\.ts$\"",
     "test:ci": "jest --ci --coverage --maxWorkers=2",
-    "lint": "eslint src/**/*.ts",
+    "lint": "eslint src --ext .ts,.vue",
+    "lint:fix": "eslint src --ext .ts,.vue --fix",
+    "format": "prettier --write \"src/**/*.{ts,vue,scss,css}\"",
     "type-check": "tsc --noEmit",
     "start": "node dev-server.js",
     "clean": "rimraf dist",
@@ -89,10 +91,18 @@
     "no-code",
     "constructor",
     "vue3",
-    "typescript"
+    "typescript",
+    "clean-architecture",
+    "block-editor",
+    "page-builder",
+    "content-management",
+    "form-builder",
+    "ui-builder",
+    "component-library"
   ],
-  "author": "mushket-co",
+  "author": "Mushket & Co",
   "license": "MIT",
+  "licenseText": "FREE version: MIT License. PRO features require a commercial license. See LICENSE file for details.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mushket-co/block-builder.git"
@@ -114,12 +124,19 @@
     "@typescript-eslint/parser": "^6.12.0",
     "concurrently": "^9.0.1",
     "eslint": "^8.54.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-prettier": "^5.1.3",
+    "eslint-plugin-simple-import-sort": "^12.0.0",
+    "eslint-plugin-unicorn": "^50.0.1",
+    "eslint-plugin-vue": "^9.19.2",
     "express": "^4.18.2",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "postcss": "^8.5.6",
     "postcss-import": "^16.1.1",
+    "prettier": "^3.2.5",
     "rimraf": "^5.0.5",
     "rollup": "^4.6.1",
     "rollup-plugin-dts": "^6.1.0",
@@ -127,7 +144,8 @@
     "sass": "^1.83.4",
     "ts-jest": "^29.1.1",
     "tslib": "^2.8.1",
-    "typescript": "^5.3.2"
+    "typescript": "^5.3.2",
+    "vue-eslint-parser": "^9.4.2"
   },
   "peerDependencies": {
     "vue": "^3.0.0"

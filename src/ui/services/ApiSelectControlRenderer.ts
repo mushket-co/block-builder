@@ -3,7 +3,7 @@
  * Универсальная реализация для использования без фреймворков
  */
 
-import { IApiSelectConfig, IApiSelectItem, IApiRequestParams } from '../../core/types/form';
+import { IApiRequestParams, IApiSelectConfig, IApiSelectItem } from '../../core/types/form';
 import { ApiSelectUseCase } from '../../core/use-cases/ApiSelectUseCase';
 
 export interface IApiSelectControlOptions {
@@ -43,409 +43,443 @@ export class ApiSelectControlRenderer {
   private handleClickOutsideBound = this.handleClickOutside.bind(this);
 
   constructor(options: IApiSelectControlOptions) {
-  this.fieldName = options.fieldName;
-  this.label = options.label;
-  this.rules = options.rules || [];
-  this.errors = options.errors || {};
-  this.config = options.config || { url: '' };
-  this.value = options.value ?? (this.config.multiple ? [] : null);
-  this.apiSelectUseCase = options.apiSelectUseCase;
-  this.onChange = options.onChange;
+    this.fieldName = options.fieldName;
+    this.label = options.label;
+    this.rules = options.rules || [];
+    this.errors = options.errors || {};
+    this.config = options.config || { url: '' };
+    this.value = options.value ?? (this.config.multiple ? [] : null);
+    this.apiSelectUseCase = options.apiSelectUseCase;
+    this.onChange = options.onChange;
   }
 
-    private isRequired(): boolean {
-  return this.rules.some((rule) => rule.type === 'required');
+  private isRequired(): boolean {
+    return this.rules.some(rule => rule.type === 'required');
   }
 
-    private isMultiple(): boolean {
-  return this.config.multiple ?? false;
+  private isMultiple(): boolean {
+    return this.config.multiple ?? false;
   }
 
-    private hasValue(): boolean {
-  if (this.isMultiple()) {
-    return Array.isArray(this.value) && this.value.length > 0;
-  }
-  return this.value !== null && this.value !== undefined && this.value !== '';
-  }
-
-    private isSelected(id: string | number): boolean {
-  if (this.isMultiple()) {
-    const value = this.value as (string | number)[];
-    return Array.isArray(value) && value.includes(id);
-  }
-  return this.value === id;
+  private hasValue(): boolean {
+    if (this.isMultiple()) {
+      return Array.isArray(this.value) && this.value.length > 0;
+    }
+    return this.value !== null && this.value !== undefined && this.value !== '';
   }
 
-    private async fetchData(reset = false): Promise<void> {
-  if (!this.config.url) {
-    this.error = 'URL API не указан';
-    return;
+  private isSelected(id: string | number): boolean {
+    if (this.isMultiple()) {
+      const value = this.value as (string | number)[];
+      return Array.isArray(value) && value.includes(id);
+    }
+    return this.value === id;
   }
 
-  const minSearchLength = this.config.minSearchLength ?? 0;
-  if (this.searchQuery.length < minSearchLength && this.searchQuery.length > 0) {
-    return;
-  }
-
-  if (reset) {
-    this.currentPage = 1;
-  }
-
-  this.loading = true;
-  this.error = null;
-
-  this.updateLoadingState();
-
-  try {
-    const params: IApiRequestParams = {
-      search: this.searchQuery || undefined,
-      page: this.currentPage,
-      limit: this.config.limit || 20,
-    };
-
-    const response = await this.apiSelectUseCase.fetchItems(this.config, params);
-
-    if (reset) {
-      this.items = response.data;
-    } else {
-      this.items = [...this.items, ...response.data];
+  private async fetchData(reset = false): Promise<void> {
+    if (!this.config.url) {
+      this.error = 'URL API не указан';
+      return;
     }
 
-    this.hasMore = response.hasMore ?? false;
-  } catch (err: any) {
-    this.error = err.message || (this.config.errorText ?? 'Ошибка загрузки данных');
-    this.items = [];
-  } finally {
-    this.loading = false;
-    this.updateDropdownContent();
-  }
+    const minSearchLength = this.config.minSearchLength ?? 0;
+    if (this.searchQuery.length < minSearchLength && this.searchQuery.length > 0) {
+      return;
+    }
+
+    if (reset) {
+      this.currentPage = 1;
+    }
+
+    this.loading = true;
+    this.error = null;
+
+    this.updateLoadingState();
+
+    try {
+      const params: IApiRequestParams = {
+        search: this.searchQuery || undefined,
+        page: this.currentPage,
+        limit: this.config.limit || 20,
+      };
+
+      const response = await this.apiSelectUseCase.fetchItems(this.config, params);
+
+      this.items = reset ? response.data : [...this.items, ...response.data];
+      this.hasMore = response.hasMore ?? false;
+    } catch (error: any) {
+      this.error = error.message || (this.config.errorText ?? 'Ошибка загрузки данных');
+      this.items = [];
+    } finally {
+      this.loading = false;
+      this.updateDropdownContent();
+    }
   }
 
-    private onSearchInput(searchValue: string): void {
-  this.searchQuery = searchValue;
+  private onSearchInput(searchValue: string): void {
+    this.searchQuery = searchValue;
 
-  if (this.debounceTimer) {
-    clearTimeout(this.debounceTimer);
-  }
+    if (this.debounceTimer) {
+      clearTimeout(this.debounceTimer);
+    }
 
-  const debounceMs = this.config.debounceMs ?? 300;
-  this.debounceTimer = setTimeout(() => {
-    this.fetchData(true);
-  }, debounceMs);
+    const debounceMs = this.config.debounceMs ?? 300;
+    this.debounceTimer = setTimeout(() => {
+      this.fetchData(true);
+    }, debounceMs);
   }
 
   private openDropdown(): void {
-  if (!this.isDropdownOpen) {
-    this.isDropdownOpen = true;
+    if (!this.isDropdownOpen) {
+      this.isDropdownOpen = true;
 
-    if (!this.loading) {
+      if (!this.loading) {
+        this.fetchData(true);
+      } else {
+        this.updateDropdownContent();
+      }
+    }
+  }
+
+  private toggleDropdown(): void {
+    if (this.isDropdownOpen) {
+      this.closeDropdown();
+    } else {
+      this.openDropdown();
+    }
+  }
+
+  private closeDropdown(): void {
+    this.isDropdownOpen = false;
+
+    if (this.isMultiple()) {
+      this.searchQuery = '';
+      if (this.searchInputElement) {
+        this.searchInputElement.value = '';
+      }
+    } else if (this.selectedItems.length > 0) {
+      this.searchQuery = this.selectedItems[0].name;
+      if (this.searchInputElement) {
+        this.searchInputElement.value = this.searchQuery;
+      }
+    } else {
+      this.searchQuery = '';
+      if (this.searchInputElement) {
+        this.searchInputElement.value = '';
+      }
+    }
+
+    this.updateDropdownContent();
+  }
+
+  private handleClickOutside(event: MouseEvent): void {
+    if (!this.isDropdownOpen) {
+      return;
+    }
+
+    const target = event.target as HTMLElement;
+
+    if (this.container && !this.container.contains(target)) {
+      this.closeDropdown();
+    }
+  }
+
+  private selectItem(item: IApiSelectItem): void {
+    if (this.isMultiple()) {
+      const currentValue = (this.value as (string | number)[]) || [];
+
+      if (currentValue.includes(item.id)) {
+        this.value = currentValue.filter(id => id !== item.id);
+        this.selectedItems = this.selectedItems.filter(i => i.id !== item.id);
+      } else {
+        this.value = [...currentValue, item.id];
+        this.selectedItems.push(item);
+      }
+      this.updateDropdownContent();
+    } else {
+      this.value = item.id;
+      this.selectedItems = [item];
+      this.searchQuery = item.name;
+      this.isDropdownOpen = false;
+
+      if (this.searchInputElement) {
+        this.searchInputElement.value = item.name;
+      }
+      this.updateDropdownContent();
+    }
+
+    this.emitChange();
+  }
+
+  private removeItem(id: string | number): void {
+    if (!this.isMultiple()) {
+      return;
+    }
+
+    const currentValue = (this.value as (string | number)[]) || [];
+    this.value = currentValue.filter(itemId => itemId !== id);
+    this.selectedItems = this.selectedItems.filter(item => item.id !== id);
+
+    this.emitChange();
+    this.updateDropdownContent();
+  }
+
+  private clearSelection(): void {
+    if (this.isMultiple()) {
+      this.value = [];
+      this.selectedItems = [];
+    } else {
+      this.value = null;
+      this.selectedItems = [];
+      this.searchQuery = '';
+      if (this.searchInputElement) {
+        this.searchInputElement.value = '';
+      }
+    }
+
+    this.emitChange();
+
+    if (this.config.url && this.isDropdownOpen) {
       this.fetchData(true);
     } else {
       this.updateDropdownContent();
     }
   }
-  }
 
-  private toggleDropdown(): void {
-  if (this.isDropdownOpen) {
-    this.closeDropdown();
-  } else {
-    this.openDropdown();
-  }
-  }
-
-  private closeDropdown(): void {
-  this.isDropdownOpen = false;
-
-  if (this.isMultiple()) {
-    this.searchQuery = '';
-    if (this.searchInputElement) {
-      this.searchInputElement.value = '';
+  private loadMore(): void {
+    if (!this.hasMore || this.loading) {
+      return;
     }
-  } else if (this.selectedItems.length > 0) {
-    this.searchQuery = this.selectedItems[0].name;
-    if (this.searchInputElement) {
-      this.searchInputElement.value = this.searchQuery;
-    }
-  } else {
-    this.searchQuery = '';
-    if (this.searchInputElement) {
-      this.searchInputElement.value = '';
-    }
-  }
-
-  this.updateDropdownContent();
-  }
-
-  private handleClickOutside(event: MouseEvent): void {
-  if (!this.isDropdownOpen) return;
-
-  const target = event.target as HTMLElement;
-
-  if (this.container && !this.container.contains(target)) {
-    this.closeDropdown();
-  }
-  }
-
-  private selectItem(item: IApiSelectItem): void {
-  if (this.isMultiple()) {
-    const currentValue = (this.value as (string | number)[]) || [];
-
-    if (currentValue.includes(item.id)) {
-      this.value = currentValue.filter((id) => id !== item.id);
-      this.selectedItems = this.selectedItems.filter((i) => i.id !== item.id);
-    } else {
-      this.value = [...currentValue, item.id];
-      this.selectedItems.push(item);
-    }
-    this.updateDropdownContent();
-  } else {
-    this.value = item.id;
-    this.selectedItems = [item];
-    this.searchQuery = item.name;
-    this.isDropdownOpen = false;
-
-    if (this.searchInputElement) {
-      this.searchInputElement.value = item.name;
-    }
-    this.updateDropdownContent();
-  }
-
-  this.emitChange();
-  }
-
-    private removeItem(id: string | number): void {
-  if (!this.isMultiple()) return;
-
-  const currentValue = (this.value as (string | number)[]) || [];
-  this.value = currentValue.filter((itemId) => itemId !== id);
-  this.selectedItems = this.selectedItems.filter((item) => item.id !== id);
-
-  this.emitChange();
-  this.updateDropdownContent();
-  }
-
-    private clearSelection(): void {
-  if (this.isMultiple()) {
-    this.value = [];
-    this.selectedItems = [];
-  } else {
-    this.value = null;
-    this.selectedItems = [];
-    this.searchQuery = '';
-    if (this.searchInputElement) {
-      this.searchInputElement.value = '';
-    }
-  }
-
-  this.emitChange();
-  this.fetchData(true);
-  this.updateDropdownContent();
-  }
-
-    private loadMore(): void {
-  if (!this.hasMore || this.loading) return;
-  this.currentPage += 1;
-  this.fetchData(false);
+    this.currentPage += 1;
+    this.fetchData(false);
   }
 
   private emitChange(): void {
-  if (this.onChange) {
-    this.onChange(this.value);
-  }
-  }
-
-    private async loadInitialSelectedItems(): Promise<void> {
-  if (!this.hasValue() || !this.config.url) return;
-
-  try {
-    this.loading = true;
-    const response = await this.apiSelectUseCase.fetchItems(this.config, {
-      limit: 100,
-    });
-
-    if (this.isMultiple()) {
-      const ids = this.value as (string | number)[];
-      this.selectedItems = response.data.filter((item) => ids.includes(item.id));
-    } else {
-      const selectedItem = response.data.find((item) => item.id === this.value);
-      if (selectedItem) {
-        this.selectedItems = [selectedItem];
-        this.searchQuery = selectedItem.name;
-      }
+    if (this.onChange) {
+      this.onChange(this.value);
     }
-    } catch (err) {
-  } finally {
-    this.loading = false;
-  }
   }
 
-    private updateLoadingState(): void {
-  if (!this.container) return;
+  private async loadInitialSelectedItems(): Promise<void> {
+    if (!this.hasValue() || !this.config.url) {
+      return;
+    }
 
-  const wrapper = this.container.querySelector('.bb-api-select__search');
-  if (!wrapper) return;
+    try {
+      this.loading = true;
+      const limit = this.config.limit || 20;
 
-  const oldLoader = wrapper.querySelector('.bb-api-select__loader');
-  const oldClear = wrapper.querySelector('.bb-api-select__clear');
+      const response = await this.apiSelectUseCase.fetchItems(this.config, {
+        limit,
+      });
 
-  if (oldLoader) oldLoader.remove();
-  if (oldClear) oldClear.remove();
-
-  const toggleButton = wrapper.querySelector('.bb-api-select__toggle');
-
-  if (this.loading) {
-    const loader = document.createElement('span');
-    loader.className = 'bb-api-select__loader';
-    loader.textContent = '⏳';
-    wrapper.insertBefore(loader, toggleButton);
-  } else if (this.hasValue()) {
-    const clear = document.createElement('span');
-    clear.className = 'bb-api-select__clear';
-    clear.textContent = '✕';
-    clear.setAttribute('data-api-select-clear', '');
-    clear.addEventListener('click', (e) => {
-      e.stopPropagation();
-      this.clearSelection();
-    });
-    wrapper.insertBefore(clear, toggleButton);
-  }
+      if (this.isMultiple()) {
+        const ids = this.value as (string | number)[];
+        this.selectedItems = response.data.filter(item => ids.includes(item.id));
+      } else {
+        const selectedItem = response.data.find(item => item.id === this.value);
+        if (selectedItem) {
+          this.selectedItems = [selectedItem];
+          this.searchQuery = selectedItem.name;
+        }
+      }
+    } catch (error) {
+      // Игнорируем ошибки инициализации
+    } finally {
+      this.loading = false;
+    }
   }
 
-    private updateDropdownContent(): void {
-  if (!this.container) return;
+  private updateLoadingState(): void {
+    if (!this.container) {
+      return;
+    }
 
-  const wrapper = this.container.querySelector('.bb-api-select__wrapper');
-  if (!wrapper) return;
+    const wrapper = this.container.querySelector('.bb-api-select__search');
+    if (!wrapper) {
+      return;
+    }
 
-  const oldDropdown = wrapper.querySelector('.bb-api-select__dropdown');
-  if (oldDropdown) {
-    oldDropdown.remove();
+    const oldLoader = wrapper.querySelector('.bb-api-select__loader');
+    const oldClear = wrapper.querySelector('.bb-api-select__clear');
+
+    if (oldLoader) {
+      oldLoader.remove();
+    }
+    if (oldClear) {
+      oldClear.remove();
+    }
+
+    const toggleButton = wrapper.querySelector('.bb-api-select__toggle');
+
+    if (!toggleButton) {
+      return;
+    }
+    if (this.loading) {
+      const loader = document.createElement('span');
+      loader.className = 'bb-api-select__loader';
+      loader.textContent = '⏳';
+      toggleButton.before(loader);
+    } else if (this.hasValue()) {
+      const clear = document.createElement('span');
+      clear.className = 'bb-api-select__clear';
+      clear.textContent = '✕';
+      clear.dataset.apiSelectClear = '';
+      toggleButton.before(clear);
+    }
   }
 
-  this.updateLoadingState();
+  private updateDropdownContent(): void {
+    if (!this.container) {
+      return;
+    }
 
-  if (this.isDropdownOpen) {
-    const dropdown = this.createDropdownElement();
-    wrapper.appendChild(dropdown);
-    this.attachDropdownEvents(dropdown);
+    const wrapper = this.container.querySelector('.bb-api-select__wrapper');
+    if (!wrapper) {
+      return;
+    }
+
+    const oldDropdown = wrapper.querySelector('.bb-api-select__dropdown');
+    if (oldDropdown) {
+      oldDropdown.remove();
+    }
+
+    this.updateLoadingState();
+
+    const clearButton = this.container.querySelector('[data-api-select-clear]');
+    if (clearButton) {
+      const newClearButton = clearButton.cloneNode(true) as HTMLElement;
+      clearButton.parentNode?.replaceChild(newClearButton, clearButton);
+
+      newClearButton.addEventListener('click', e => {
+        e.stopPropagation();
+        e.preventDefault();
+        this.clearSelection();
+      });
+    }
+
+    if (this.isDropdownOpen) {
+      const dropdown = this.createDropdownElement();
+      wrapper.append(dropdown);
+      this.attachDropdownEvents(dropdown);
+    }
+
+    this.updateSelectedTags();
   }
 
-  this.updateSelectedTags();
-  }
+  private createDropdownElement(): HTMLElement {
+    const loadingText = this.config.loadingText ?? 'Загрузка...';
+    const noResultsText = this.config.noResultsText ?? 'Ничего не найдено';
 
-    private createDropdownElement(): HTMLElement {
-  const loadingText = this.config.loadingText ?? 'Загрузка...';
-  const noResultsText = this.config.noResultsText ?? 'Ничего не найдено';
+    const dropdown = document.createElement('div');
+    dropdown.className = 'bb-api-select__dropdown';
 
-  const dropdown = document.createElement('div');
-  dropdown.className = 'bb-api-select__dropdown';
+    if (this.loading) {
+      dropdown.innerHTML = `<div class="bb-api-select__message">${loadingText}</div>`;
+    } else if (this.error) {
+      dropdown.innerHTML = `<div class="bb-api-select__message bb-api-select__message--error">${this.error}</div>`;
+    } else if (this.items.length > 0) {
+      const list = document.createElement('div');
+      list.className = 'bb-api-select__list';
 
-  if (this.loading) {
-    dropdown.innerHTML = `<div class="bb-api-select__message">${loadingText}</div>`;
-  } else if (this.error) {
-    dropdown.innerHTML = `<div class="bb-api-select__message bb-api-select__message--error">${this.error}</div>`;
-  } else if (this.items.length > 0) {
-    const list = document.createElement('div');
-    list.className = 'bb-api-select__list';
-
-    this.items.forEach((item) => {
-      const itemEl = document.createElement('div');
-      itemEl.className = `bb-api-select__item ${this.isSelected(item.id) ? 'bb-api-select__item--selected' : ''}`;
-      itemEl.setAttribute('data-api-select-item', '');
-      itemEl.setAttribute('data-item-id', String(item.id));
-      itemEl.setAttribute('data-item-name', item.name);
-      itemEl.innerHTML = `
+      this.items.forEach(item => {
+        const itemEl = document.createElement('div');
+        itemEl.className = `bb-api-select__item ${this.isSelected(item.id) ? 'bb-api-select__item--selected' : ''}`;
+        itemEl.dataset.apiSelectItem = '';
+        itemEl.dataset.itemId = String(item.id);
+        itemEl.dataset.itemName = item.name;
+        itemEl.innerHTML = `
         <span class="bb-api-select__item-name">${item.name}</span>
         ${this.isSelected(item.id) ? '<span class="bb-api-select__item-check">✓</span>' : ''}
       `;
-      list.appendChild(itemEl);
-    });
+        list.append(itemEl);
+      });
 
-    if (this.hasMore) {
-      const loadMore = document.createElement('div');
-      loadMore.className = 'bb-api-select__load-more';
-      loadMore.setAttribute('data-api-select-load-more', '');
-      loadMore.textContent = 'Загрузить еще...';
-      list.appendChild(loadMore);
+      if (this.hasMore) {
+        const loadMore = document.createElement('div');
+        loadMore.className = 'bb-api-select__load-more';
+        loadMore.dataset.apiSelectLoadMore = '';
+        loadMore.textContent = 'Загрузить еще...';
+        list.append(loadMore);
+      }
+
+      dropdown.append(list);
+    } else {
+      dropdown.innerHTML = `<div class="bb-api-select__message">${noResultsText}</div>`;
     }
 
-    dropdown.appendChild(list);
-  } else {
-    dropdown.innerHTML = `<div class="bb-api-select__message">${noResultsText}</div>`;
-  }
-
-  return dropdown;
+    return dropdown;
   }
 
   private attachDropdownEvents(dropdown: HTMLElement): void {
-  const items = dropdown.querySelectorAll('[data-api-select-item]');
-  items.forEach((itemEl) => {
-    itemEl.addEventListener('click', () => {
-      const idStr = (itemEl as HTMLElement).dataset.itemId!;
-      const originalItem = this.items.find(item => String(item.id) === idStr);
-      if (originalItem) {
-        this.selectItem(originalItem);
+    const items = dropdown.querySelectorAll('[data-api-select-item]');
+    items.forEach(itemEl => {
+      itemEl.addEventListener('click', () => {
+        const idStr = (itemEl as HTMLElement).dataset.itemId;
+        if (!idStr) {
+          return;
+        }
+        const originalItem = this.items.find(item => String(item.id) === idStr);
+        if (originalItem) {
+          this.selectItem(originalItem);
+        }
+      });
+    });
+
+    const loadMoreButton = dropdown.querySelector('[data-api-select-load-more]');
+    if (loadMoreButton) {
+      loadMoreButton.addEventListener('click', () => {
+        this.loadMore();
+      });
+    }
+  }
+
+  private updateSelectedTags(): void {
+    if (!this.container) {
+      return;
+    }
+
+    const oldTags = this.container.querySelector('.bb-api-select__selected');
+    if (oldTags) {
+      oldTags.remove();
+    }
+
+    if (this.isMultiple() && this.selectedItems.length > 0) {
+      const wrapper = this.container.querySelector('.bb-api-select__wrapper');
+      if (!wrapper) {
+        return;
       }
-    });
-  });
 
-  const loadMoreButton = dropdown.querySelector('[data-api-select-load-more]');
-  if (loadMoreButton) {
-    loadMoreButton.addEventListener('click', () => {
-      this.loadMore();
-    });
-  }
-  }
+      const tagsContainer = document.createElement('div');
+      tagsContainer.className = 'bb-api-select__selected';
 
-    private updateSelectedTags(): void {
-  if (!this.container) return;
-
-  const oldTags = this.container.querySelector('.bb-api-select__selected');
-  if (oldTags) {
-    oldTags.remove();
-  }
-
-  if (this.isMultiple() && this.selectedItems.length > 0) {
-    const wrapper = this.container.querySelector('.bb-api-select__wrapper');
-    if (!wrapper) return;
-
-    const tagsContainer = document.createElement('div');
-    tagsContainer.className = 'bb-api-select__selected';
-
-    this.selectedItems.forEach((item) => {
-      const tag = document.createElement('div');
-      tag.className = 'bb-api-select__tag';
-      tag.innerHTML = `
+      this.selectedItems.forEach(item => {
+        const tag = document.createElement('div');
+        tag.className = 'bb-api-select__tag';
+        tag.innerHTML = `
         <span class="bb-api-select__tag-name">${item.name}</span>
         <span class="bb-api-select__tag-remove" data-api-select-remove="${item.id}">✕</span>
       `;
+        tagsContainer.append(tag);
+      });
 
-      const removeBtn = tag.querySelector('[data-api-select-remove]');
-      if (removeBtn) {
-        removeBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          this.removeItem(item.id);
-        });
-      }
+      wrapper.after(tagsContainer);
 
-      tagsContainer.appendChild(tag);
-    });
-
-    wrapper.insertAdjacentElement('afterend', tagsContainer);
-  }
+      // Прикрепляем события к новым тегам
+      this.attachRemoveTagEvents(this.container);
+    }
   }
 
   render(container: HTMLElement): void {
-  this.container = container;
+    this.container = container;
 
-  const placeholder = this.config.placeholder ?? 'Начните вводить для поиска...';
-  const loadingText = this.config.loadingText ?? 'Загрузка...';
-  const noResultsText = this.config.noResultsText ?? 'Ничего не найдено';
+    const placeholder = this.config.placeholder ?? 'Начните вводить для поиска...';
+    const loadingText = this.config.loadingText ?? 'Загрузка...';
+    const noResultsText = this.config.noResultsText ?? 'Ничего не найдено';
 
-  const placeholderElement = container.querySelector('.api-select-placeholder');
-  if (placeholderElement) {
-    placeholderElement.outerHTML = `
+    const placeholderElement = container.querySelector('.api-select-placeholder');
+    if (placeholderElement) {
+      placeholderElement.outerHTML = `
       <div class="bb-api-select">
         <label class="bb-api-select__label">
           ${this.label}
@@ -454,8 +488,8 @@ export class ApiSelectControlRenderer {
         ${this.generateControlHTML(placeholder, loadingText, noResultsText)}
       </div>
     `;
-  } else {
-    container.innerHTML = `
+    } else {
+      container.innerHTML = `
       <div class="bb-api-select">
         <label class="bb-api-select__label">
           ${this.label}
@@ -464,11 +498,14 @@ export class ApiSelectControlRenderer {
         ${this.generateControlHTML(placeholder, loadingText, noResultsText)}
       </div>
     `;
+    }
   }
 
-  }
-
-  private generateControlHTML(placeholder: string, loadingText: string, noResultsText: string): string {
+  private generateControlHTML(
+    placeholder: string,
+    loadingText: string,
+    noResultsText: string
+  ): string {
     return `
       <div class="bb-api-select__wrapper">
         <div class="bb-api-select__search">
@@ -504,7 +541,7 @@ export class ApiSelectControlRenderer {
                 <div class="bb-api-select__list">
                   ${this.items
                     .map(
-                      (item) => `
+                      item => `
                     <div class="bb-api-select__item ${this.isSelected(item.id) ? 'bb-api-select__item--selected' : ''}" data-api-select-item data-item-id="${item.id}" data-item-name="${item.name}">
                       <span class="bb-api-select__item-name">${item.name}</span>
                       ${this.isSelected(item.id) ? '<span class="bb-api-select__item-check">✓</span>' : ''}
@@ -533,7 +570,7 @@ export class ApiSelectControlRenderer {
         <div class="bb-api-select__selected">
           ${this.selectedItems
             .map(
-              (item) => `
+              item => `
             <div class="bb-api-select__tag">
               <span class="bb-api-select__tag-name">${item.name}</span>
               <span class="bb-api-select__tag-remove" data-api-select-remove="${item.id}">✕</span>
@@ -553,99 +590,116 @@ export class ApiSelectControlRenderer {
       }
 
       <input type="hidden" name="${this.fieldName}" value="${
-        this.isMultiple() && Array.isArray(this.value) ? JSON.stringify(this.value) : this.value ?? ''
+        this.isMultiple() && Array.isArray(this.value)
+          ? JSON.stringify(this.value)
+          : (this.value ?? '')
       }" />
     </div>
   `;
   }
 
   private attachEvents(container: HTMLElement): void {
-  const searchInput = container.querySelector('[data-api-select-search]') as HTMLInputElement;
-  if (searchInput) {
-    this.searchInputElement = searchInput;
+    const searchInput = container.querySelector('[data-api-select-search]') as HTMLInputElement;
+    if (searchInput) {
+      const currentValue = searchInput.value || this.searchQuery || '';
 
-    searchInput.addEventListener('input', (e) => {
-      const target = e.target as HTMLInputElement;
-      this.onSearchInput(target.value);
-    });
+      const newSearchInput = searchInput.cloneNode(true) as HTMLInputElement;
+      newSearchInput.value = currentValue;
+      searchInput.parentNode?.replaceChild(newSearchInput, searchInput);
+      this.searchInputElement = newSearchInput;
 
-    searchInput.addEventListener('click', () => {
-      this.openDropdown();
+      newSearchInput.addEventListener('input', e => {
+        const target = e.target as HTMLInputElement;
+        this.onSearchInput(target.value);
+      });
+
+      newSearchInput.addEventListener('click', () => {
+        this.openDropdown();
+      });
+
+      newSearchInput.addEventListener('focus', () => {
+        if (!this.isDropdownOpen) {
+          this.openDropdown();
+        }
+      });
+    }
+
+    const toggleButton = container.querySelector('[data-api-select-toggle]');
+    if (toggleButton) {
+      const newToggleButton = toggleButton.cloneNode(true) as HTMLElement;
+      toggleButton.parentNode?.replaceChild(newToggleButton, toggleButton);
+
+      newToggleButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.toggleDropdown();
+      });
+    }
+
+    const clearButton = container.querySelector('[data-api-select-clear]');
+    if (clearButton) {
+      const newClearButton = clearButton.cloneNode(true) as HTMLElement;
+      clearButton.parentNode?.replaceChild(newClearButton, clearButton);
+
+      newClearButton.addEventListener('click', e => {
+        e.stopPropagation();
+        e.preventDefault();
+        this.clearSelection();
+      });
+    }
+
+    this.attachRemoveTagEvents(container);
+  }
+
+  private attachRemoveTagEvents(container: HTMLElement): void {
+    const removeTags = container.querySelectorAll('[data-api-select-remove]');
+    removeTags.forEach(removeTag => {
+      // Удаляем старые обработчики
+      const newRemoveTag = removeTag.cloneNode(true) as HTMLElement;
+      removeTag.parentNode?.replaceChild(newRemoveTag, removeTag);
+
+      newRemoveTag.addEventListener('click', e => {
+        e.preventDefault();
+        e.stopPropagation();
+        const idStr = newRemoveTag.dataset.apiSelectRemove;
+        if (!idStr) {
+          return;
+        }
+
+        const originalItem = this.selectedItems.find(item => String(item.id) === idStr);
+        if (originalItem) {
+          this.removeItem(originalItem.id);
+        }
+      });
     });
   }
 
-  const toggleButton = container.querySelector('[data-api-select-toggle]');
-  if (toggleButton) {
-    toggleButton.addEventListener('click', () => {
-      this.toggleDropdown();
-    });
-  }
+  async init(container: HTMLElement): Promise<void> {
+    await this.loadInitialSelectedItems();
+    this.render(container);
 
-  const clearButton = container.querySelector('[data-api-select-clear]');
-  if (clearButton) {
-    clearButton.addEventListener('click', (e) => {
-      e.stopPropagation();
-      this.clearSelection();
-    });
-  }
+    this.attachEvents(container);
 
-  const items = container.querySelectorAll('[data-api-select-item]');
-  items.forEach((itemEl) => {
-    itemEl.addEventListener('click', () => {
-      const idStr = (itemEl as HTMLElement).dataset.itemId!;
+    if (this.searchInputElement && this.searchQuery) {
+      this.searchInputElement.value = this.searchQuery;
+    }
 
-      const originalItem = this.items.find(item => String(item.id) === idStr);
-      if (originalItem) {
-        this.selectItem(originalItem);
-      }
-    });
-  });
+    this.updateDropdownContent();
+    this.updateSelectedTags();
 
-  const loadMoreButton = container.querySelector('[data-api-select-load-more]');
-  if (loadMoreButton) {
-    loadMoreButton.addEventListener('click', () => {
-      this.loadMore();
-    });
-  }
-
-  const removeTags = container.querySelectorAll('[data-api-select-remove]');
-  removeTags.forEach((removeTag) => {
-    removeTag.addEventListener('click', (e) => {
-      e.preventDefault();
-      const idStr = (removeTag as HTMLElement).dataset.apiSelectRemove!;
-
-      const originalItem = this.selectedItems.find(item => String(item.id) === idStr);
-      if (originalItem) {
-        this.removeItem(originalItem.id);
-      }
-    });
-  });
-  }
-
-    async init(container: HTMLElement): Promise<void> {
-  await this.loadInitialSelectedItems();
-  this.render(container);
-
-  this.attachEvents(this.container!);
-
-  this.updateDropdownContent();
-  this.updateSelectedTags();
-
-  setTimeout(() => {
-    document.addEventListener('mousedown', this.handleClickOutsideBound, true);
-  }, 0);
+    setTimeout(() => {
+      document.addEventListener('mousedown', this.handleClickOutsideBound, true);
+    }, 0);
   }
 
   destroy(): void {
-  document.removeEventListener('mousedown', this.handleClickOutsideBound, true);
+    document.removeEventListener('mousedown', this.handleClickOutsideBound, true);
 
-  if (this.debounceTimer) {
-    clearTimeout(this.debounceTimer);
-  }
+    if (this.debounceTimer) {
+      clearTimeout(this.debounceTimer);
+    }
   }
 
   getValue(): string | number | (string | number)[] | null {
-  return this.value;
+    return this.value;
   }
 }
-

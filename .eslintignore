@@ -1,0 +1,13 @@
+dist/
+node_modules/
+*.js
+rollup.config.cjs
+rollup.dev.cjs
+dev-server.js
+**/*.d.ts
+**/__tests__/**
+**/*.test.ts
+**/*.spec.ts
+examples/
+coverage/
+

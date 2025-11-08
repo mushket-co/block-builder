@@ -1,9 +1,11 @@
+import { logger } from '../utils/logger';
+
 /**
  * Event Delegation для обработки onclick событий
  * Альтернатива глобальным переменным
  */
 
-
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type TEventHandler = (...args: any[]) => void | Promise<void>;
 
 /**
@@ -14,7 +16,7 @@ export class EventDelegation {
   private registered: boolean = false;
   private boundClickHandler: ((event: MouseEvent) => void) | null = null;
 
-    register(action: string, handler: TEventHandler): void {
+  register(action: string, handler: TEventHandler): void {
     this.handlers.set(action, handler);
 
     if (!this.registered) {
@@ -23,7 +25,7 @@ export class EventDelegation {
     }
   }
 
-    unregister(action: string): void {
+  unregister(action: string): void {
     this.handlers.delete(action);
     if (this.handlers.size === 0 && this.registered) {
       this.destroy();
@@ -45,49 +47,54 @@ export class EventDelegation {
     const target = event.target as HTMLElement;
     const button = target.closest('[data-action]');
 
-    if (!button) return;
+    if (!button) {
+      return;
+    }
 
-    const action = button.getAttribute('data-action');
-    const argsAttr = button.getAttribute('data-args');
+    const htmlButton = button as HTMLElement;
+    const action = htmlButton.dataset.action;
+    const argsAttr = htmlButton.dataset.args;
 
-    if (!action) return;
+    if (!action) {
+      return;
+    }
 
     const handler = this.handlers.get(action);
     if (handler) {
       try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let args: any[] = [];
         if (argsAttr) {
-          if (argsAttr.length > 10000) {
-            console.warn('EventDelegation: args слишком большие, игнорируем');
+          if (argsAttr.length > 10_000) {
+            logger.warn('EventDelegation: args слишком большие, игнорируем');
             return;
           }
           try {
             args = JSON.parse(argsAttr);
             if (!Array.isArray(args)) {
-              console.warn('EventDelegation: args должен быть массивом');
+              logger.warn('EventDelegation: args должен быть массивом');
               args = [];
             }
           } catch (error) {
-            console.warn('EventDelegation: ошибка парсинга args:', error);
+            logger.warn('EventDelegation: ошибка парсинга args:', error);
             return;
           }
         }
         handler(...args);
       } catch (error) {
-        console.error('EventDelegation: ошибка выполнения обработчика:', error);
+        logger.error('EventDelegation: ошибка выполнения обработчика:', error);
       }
     }
   }
 
-    destroy(): void {
+  destroy(): void {
     this.handlers.clear();
-    
+
     if (this.boundClickHandler && this.registered) {
       document.removeEventListener('click', this.boundClickHandler, true);
       this.boundClickHandler = null;
     }
-    
+
     this.registered = false;
   }
 }
-

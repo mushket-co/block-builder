@@ -1,5 +1,6 @@
-import { THttpMethod, IApiRequestParams } from '../types/form';
-export interface IHttpResponse<T = any> {
+import { IApiRequestParams, THttpMethod } from '../types/form';
+
+export interface IHttpResponse<T = unknown> {
   data: T;
   status: number;
   statusText: string;
@@ -16,22 +17,21 @@ export interface IHttpRequestOptions {
   method?: THttpMethod;
   headers?: Record<string, string>;
   params?: IApiRequestParams;
-  data?: any;
+  data?: unknown;
   timeout?: number;
 }
 export interface IHttpClient {
-  
-  request<T = any>(options: IHttpRequestOptions): Promise<IHttpResponse<T>>;
-  
-  get<T = any>(
-  url: string,
-  params?: IApiRequestParams,
-  headers?: Record<string, string>
+  request<T = unknown>(options: IHttpRequestOptions): Promise<IHttpResponse<T>>;
+
+  get<T = unknown>(
+    url: string,
+    params?: IApiRequestParams,
+    headers?: Record<string, string>
   ): Promise<IHttpResponse<T>>;
-  
-  post<T = any>(
-  url: string,
-  data?: any,
-  headers?: Record<string, string>
+
+  post<T = unknown>(
+    url: string,
+    data?: unknown,
+    headers?: Record<string, string>
   ): Promise<IHttpResponse<T>>;
 }

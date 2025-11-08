@@ -11,15 +11,17 @@ export function setSafeHTML(element: HTMLElement, html: string): void {
   const temp = document.createElement('div');
   temp.innerHTML = html;
   while (temp.firstChild) {
-    element.appendChild(temp.firstChild);
+    element.append(temp.firstChild);
   }
 }
-export function parseJSONFromAttribute(attrValue: string): any {
+export function parseJSONFromAttribute(attrValue: string): unknown {
   try {
     const decoded = decodeHTMLEntities(attrValue);
     return JSON.parse(decoded);
   } catch (error) {
-    throw new Error(`Failed to parse JSON from attribute: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Failed to parse JSON from attribute: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
   }
 }
 export function escapeHTML(text: string): string {

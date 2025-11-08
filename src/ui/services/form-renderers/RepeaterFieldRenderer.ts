@@ -5,15 +5,15 @@ import { BaseFieldRenderer } from './BaseFieldRenderer';
 export class RepeaterFieldRenderer extends BaseFieldRenderer {
   readonly fieldType = 'repeater';
 
-  render(fieldId: string, field: IFormFieldConfig, value: any, required: string): string {
+  render(_fieldId: string, field: IFormFieldConfig, value: any, _required: string): string {
     const repeaterConfig = field.repeaterConfig || { fields: [] };
     const configJson = JSON.stringify({
       field: field.field,
       label: field.label,
       rules: field.rules || [],
       value: value || [],
-      ...repeaterConfig
-    }).replace(/"/g, '&quot;');
+      ...repeaterConfig,
+    }).replaceAll('"', '&quot;');
 
     return `
       <div
@@ -26,8 +26,12 @@ export class RepeaterFieldRenderer extends BaseFieldRenderer {
     `;
   }
 
-  protected renderInput(fieldId: string, field: IFormFieldConfig, value: any, required: string): string {
+  protected renderInput(
+    _fieldId: string,
+    _field: IFormFieldConfig,
+    _value: any,
+    _required: string
+  ): string {
     return '';
   }
 }
-

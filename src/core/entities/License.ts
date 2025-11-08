@@ -1,6 +1,6 @@
 export enum TLicenseType {
   FREE = 'free',
-  PRO = 'pro'
+  PRO = 'pro',
 }
 const DEFAULT_LICENSE_SERVER_URL = 'https://api.block-builder.ru';
 export interface ILicenseConfig {
@@ -18,7 +18,7 @@ export class License {
     this.licenseType = config.type || TLicenseType.FREE;
     this.validateConfig();
   }
-    private validateConfig(): void {
+  private validateConfig(): void {
     if (this.licenseType === TLicenseType.FREE && !this.config.maxBlockTypes) {
       this.config.maxBlockTypes = 5;
     }
@@ -26,7 +26,7 @@ export class License {
       throw new Error('maxBlockTypes must be greater than 0');
     }
   }
-  
+
   async verifyKey(key: string): Promise<TLicenseType> {
     if (this.isVerifying && this.verificationPromise) {
       return this.verificationPromise;
@@ -39,7 +39,7 @@ export class License {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ key })
+          body: JSON.stringify({ key }),
         });
         if (!response.ok) {
           this.updateType(TLicenseType.FREE);
@@ -53,7 +53,7 @@ export class License {
           this.updateType(TLicenseType.FREE);
           return TLicenseType.FREE;
         }
-      } catch (error) {
+      } catch {
         this.updateType(TLicenseType.FREE);
         return TLicenseType.FREE;
       } finally {
@@ -62,33 +62,33 @@ export class License {
     })();
     return this.verificationPromise;
   }
-  
+
   hasKey(): boolean {
     return !!this.config.key;
   }
-  
+
   updateType(type: TLicenseType): void {
     this.licenseType = type;
     if (type === TLicenseType.FREE && !this.config.maxBlockTypes) {
       this.config.maxBlockTypes = 5;
     }
   }
-  
+
   getType(): TLicenseType {
     return this.licenseType;
   }
-  
+
   isPro(): boolean {
     return this.licenseType === TLicenseType.PRO;
   }
-  
+
   getMaxBlockTypes(): number {
     if (this.isPro()) {
-      return Infinity;
+      return Number.POSITIVE_INFINITY;
     }
     return this.config.maxBlockTypes || 0;
   }
-  
+
   canAddBlockType(currentCount: number): boolean {
     if (this.isPro()) {
       return true;
@@ -96,21 +96,20 @@ export class License {
     const maxBlockTypes = this.getMaxBlockTypes();
     return currentCount < maxBlockTypes;
   }
-  
+
   getRemainingBlockTypeSlots(currentCount: number): number {
     if (this.isPro()) {
-      return Infinity;
+      return Number.POSITIVE_INFINITY;
     }
     const maxBlockTypes = this.getMaxBlockTypes();
     return Math.max(0, maxBlockTypes - currentCount);
   }
-  
+
   getLimitErrorMessage(currentCount: number, blockType: string): string {
     const maxBlockTypes = this.getMaxBlockTypes();
-    const remaining = this.getRemainingBlockTypeSlots(currentCount);
     return `Вы достигли лимита в ${maxBlockTypes} типов блоков. Нельзя добавить "${blockType}". Для снятия ограничений приобретите PRO версию.`;
   }
-  
+
   getLicenseInfo(): string {
     if (this.isPro()) {
       return 'PRO Лицензия - Без ограничений';
@@ -118,20 +117,20 @@ export class License {
     const maxBlockTypes = this.getMaxBlockTypes();
     return `FREE Лицензия - Максимум ${maxBlockTypes} типов блоков`;
   }
-  
+
   static createFree(maxBlockTypes: number = 5): License {
     return new License({
       type: TLicenseType.FREE,
-      maxBlockTypes
+      maxBlockTypes,
     });
   }
-  
+
   static createPro(): License {
     return new License({
-      type: TLicenseType.PRO
+      type: TLicenseType.PRO,
     });
   }
-  
+
   static fromConfig(config: ILicenseConfig): License {
     return new License(config);
   }

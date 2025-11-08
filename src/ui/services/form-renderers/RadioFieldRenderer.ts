@@ -1,5 +1,4 @@
 import { IFormFieldConfig } from '../../../core/types/form';
-import { CSS_CLASSES } from '../../../utils/constants';
 import { BaseFieldRenderer } from './BaseFieldRenderer';
 
 export class RadioFieldRenderer extends BaseFieldRenderer {
@@ -10,13 +9,15 @@ export class RadioFieldRenderer extends BaseFieldRenderer {
     const requiredMark = required ? '<span class="required">*</span>' : '';
     const options = field.options || [];
 
-    const radioOptionsHTML = options.map((option, index) => {
-      const optionId = `${fieldId}-${index}`;
-      const escapedOptionLabel = this.escapeHtml(option.label);
-      const escapedOptionValue = typeof option.value === 'string' ? this.escapeHtml(option.value) : option.value;
-      const isChecked = option.value === value ? 'checked' : '';
+    const radioOptionsHTML = options
+      .map((option, index) => {
+        const optionId = `${fieldId}-${index}`;
+        const escapedOptionLabel = this.escapeHtml(option.label);
+        const escapedOptionValue =
+          typeof option.value === 'string' ? this.escapeHtml(option.value) : option.value;
+        const isChecked = option.value === value ? 'checked' : '';
 
-      return `
+        return `
         <label class="block-builder-form-radio">
           <input
             type="radio"
@@ -30,7 +31,8 @@ export class RadioFieldRenderer extends BaseFieldRenderer {
           <span class="block-builder-form-radio-label">${escapedOptionLabel}</span>
         </label>
       `;
-    }).join('');
+      })
+      .join('');
 
     const content = `
       <label class="block-builder-form-label">
@@ -44,8 +46,12 @@ export class RadioFieldRenderer extends BaseFieldRenderer {
     return this.wrapInFormGroup(field, content);
   }
 
-  protected renderInput(fieldId: string, field: IFormFieldConfig, value: any, required: string): string {
+  protected renderInput(
+    _fieldId: string,
+    _field: IFormFieldConfig,
+    _value: any,
+    _required: string
+  ): string {
     return '';
   }
 }
-

@@ -1,76 +1,84 @@
 <template>
   <div :class="appClass">
-  
-  <div v-if="!licenseInfoComputed.isPro" class="block-builder-license-banner">
-    <div class="block-builder-license-banner__content">
-      <span class="block-builder-license-banner__icon">⚠️</span>
-      <span class="block-builder-license-banner__text">
-        Вы используете бесплатную версию <a href="https://block-builder.ru/" target="_blank" rel="noopener noreferrer" class="bb-link-inherit">Block Builder</a>.
-        Доступно {{ limitedBlockTypes.length }} из {{ licenseInfoComputed.maxBlockTypes }} типов блоков.
-      </span>
+    <div v-if="!licenseInfoComputed.isPro" class="block-builder-license-banner">
+      <div class="block-builder-license-banner__content">
+        <span class="block-builder-license-banner__icon">⚠️</span>
+        <span class="block-builder-license-banner__text">
+          Вы используете бесплатную версию
+          <a
+            href="https://block-builder.ru/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="bb-link-inherit"
+            >Block Builder</a
+          >. Доступно {{ limitedBlockTypes.length }} из
+          {{ licenseInfoComputed.maxBlockTypes }} типов блоков.
+        </span>
+      </div>
     </div>
-  </div>
 
-  
-  <div
-    v-if="props.isEdit"
-    :class="[
-      'block-builder-controls',
-      controlsFixedClass
-    ]"
-    :style="controlsInlineStyles"
-  >
-    <div :class="['block-builder-controls-container', props.controlsContainerClass].filter(Boolean)">
-      <div class="block-builder-controls-inner">
-        <button
-          v-if="props.isEdit"
-          @click="handleSave"
-          class="block-builder-btn block-builder-btn--success"
-        >
-          <span v-html="saveIconHTML" class="bb-icon-wrapper"></span> Сохранить
-        </button>
-        <button
-          v-if="props.isEdit"
-          @click="handleClearAll"
-          class="block-builder-btn block-builder-btn--danger"
-        >
-          <span v-html="deleteIconHTML" class="bb-icon-wrapper"></span> Очистить все
-        </button>
+    <div
+      v-if="props.isEdit"
+      :class="['block-builder-controls', controlsFixedClass]"
+      :style="controlsInlineStyles"
+    >
+      <div
+        :class="['block-builder-controls-container', props.controlsContainerClass].filter(Boolean)"
+      >
+        <div class="block-builder-controls-inner">
+          <button
+            v-if="props.isEdit"
+            class="block-builder-btn block-builder-btn--success"
+            @click="handleSave"
+          >
+            <span class="bb-icon-wrapper" v-html="saveIconHTML" /> Сохранить
+          </button>
+          <button
+            v-if="props.isEdit"
+            class="block-builder-btn block-builder-btn--danger"
+            @click="handleClearAll"
+          >
+            <span class="bb-icon-wrapper" v-html="deleteIconHTML" /> Очистить все
+          </button>
 
-        
-        <div class="block-builder-stats">
-          <p>Всего блоков: <span>{{ props.isEdit ? blocks.length : visibleBlocks.length }}</span></p>
-        </div>
+          <div class="block-builder-stats">
+            <p>
+              Всего блоков: <span>{{ props.isEdit ? blocks.length : visibleBlocks.length }}</span>
+            </p>
+          </div>
 
-        
-        <div
-          v-if="licenseInfoComputed"
-          :class="[
-            'block-builder-license-badge',
-            licenseInfoComputed.isPro ? 'block-builder-license-badge--pro' : 'block-builder-license-badge--free'
-          ]"
-          :title="licenseInfoComputed.isPro ? 'PRO лицензия - Без ограничений' : `FREE лицензия - Ограничено ${licenseInfoComputed.maxBlockTypes} типами блоков`"
-        >
-          <span class="block-builder-license-badge__icon">
-            {{ licenseInfoComputed.isPro ? '✓' : 'ℹ' }}
-          </span>
-          <span class="block-builder-license-badge__text">
-            {{ licenseInfoComputed.isPro ? 'PRO' : 'FREE' }}
-          </span>
+          <div
+            v-if="licenseInfoComputed"
+            :class="[
+              'block-builder-license-badge',
+              licenseInfoComputed.isPro
+                ? 'block-builder-license-badge--pro'
+                : 'block-builder-license-badge--free',
+            ]"
+            :title="
+              licenseInfoComputed.isPro
+                ? 'PRO лицензия - Без ограничений'
+                : `FREE лицензия - Ограничено ${licenseInfoComputed.maxBlockTypes} типами блоков`
+            "
+          >
+            <span class="block-builder-license-badge__icon">
+              {{ licenseInfoComputed.isPro ? '✓' : 'ℹ' }}
+            </span>
+            <span class="block-builder-license-badge__text">
+              {{ licenseInfoComputed.isPro ? 'PRO' : 'FREE' }}
+            </span>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-    
     <div class="block-builder-blocks">
-      
       <div v-if="visibleBlocks.length === 0" class="block-builder-empty-state">
         <div v-if="props.isEdit" class="block-builder-add-block-separator">
           <button
-            @click="openBlockTypeSelectionModal(0)"
             class="block-builder-add-block-btn"
             title="Добавить блок"
+            @click="openBlockTypeSelectionModal(0)"
           >
             <span class="block-builder-add-block-btn__icon">+</span>
             <span class="block-builder-add-block-btn__text">Добавить блок</span>
@@ -78,14 +86,12 @@
         </div>
       </div>
 
-      
       <template v-else>
-        
         <div v-if="props.isEdit" class="block-builder-add-block-separator">
           <button
-            @click="openBlockTypeSelectionModal(0)"
             class="block-builder-add-block-btn"
             title="Добавить блок"
+            @click="openBlockTypeSelectionModal(0)"
           >
             <span class="block-builder-add-block-btn__icon">+</span>
             <span class="block-builder-add-block-btn__text">Добавить блок</span>
@@ -99,7 +105,6 @@
             :data-block-id="block.id"
             :style="getBlockSpacingStyles(block)"
           >
-            
             <div v-if="props.isEdit" class="block-builder-block-controls">
               <div
                 class="block-builder-block-controls-container"
@@ -107,71 +112,70 @@
               >
                 <div class="block-builder-block-controls-inner">
                   <button
-                    @click="handleCopyId(block.id)"
                     class="block-builder-control-btn"
                     title="Копировать ID: {{ block.id }}"
+                    @click="handleCopyId(block.id)"
                   >
-                    <Icon.default name="copy" />
+                    <Icon name="copy" />
                   </button>
                   <button
                     v-if="props.isEdit"
-                    @click="handleMoveUp(block.id)"
                     class="block-builder-control-btn"
                     title="Переместить вверх"
                     :disabled="index === 0"
+                    @click="handleMoveUp(block.id)"
                   >
-                    <Icon.default name="arrowUp" />
+                    <Icon name="arrowUp" />
                   </button>
                   <button
                     v-if="props.isEdit"
-                    @click="handleMoveDown(block.id)"
                     class="block-builder-control-btn"
                     title="Переместить вниз"
                     :disabled="index === visibleBlocks.length - 1"
+                    @click="handleMoveDown(block.id)"
                   >
-                    <Icon.default name="arrowDown" />
+                    <Icon name="arrowDown" />
                   </button>
                   <button
                     v-if="props.isEdit"
-                    @click="openEditModal(block)"
                     class="block-builder-control-btn"
                     title="Редактировать"
+                    @click="openEditModal(block)"
                   >
-                    <Icon.default name="edit" />
+                    <Icon name="edit" />
                   </button>
                   <button
                     v-if="props.isEdit"
-                    @click="handleDuplicateBlock(block.id)"
                     class="block-builder-control-btn"
                     title="Дублировать"
+                    @click="handleDuplicateBlock(block.id)"
                   >
-                    <Icon.default name="duplicate" />
+                    <Icon name="duplicate" />
                   </button>
                   <button
                     v-if="props.isEdit"
-                    @click="handleToggleVisibility(block.id)"
                     class="block-builder-control-btn"
                     :title="getBlockVisibilityTooltip(block)"
+                    @click="handleToggleVisibility(block.id)"
                   >
-                    <Icon.default :name="block.visible ? 'eye' : 'eyeOff'" />
+                    <Icon :name="block.visible ? 'eye' : 'eyeOff'" />
                   </button>
                   <button
                     v-if="props.isEdit"
-                    @click="handleDeleteBlock(block.id)"
                     class="block-builder-control-btn"
                     title="Удалить"
+                    @click="handleDeleteBlock(block.id)"
                   >
-                    <Icon.default name="delete" />
+                    <Icon name="delete" />
                   </button>
                 </div>
               </div>
             </div>
 
-            
             <div class="block-builder-block-content">
               <component
-                v-if="isVueComponent(block)"
                 :is="getVueComponent(block)"
+                v-if="isVueComponent(block)"
                 v-bind="getUserComponentProps(block)"
               />
               <div v-else class="block-content-fallback">
@@ -181,12 +185,11 @@
             </div>
           </div>
 
-          
           <div v-if="props.isEdit" class="block-builder-add-block-separator">
             <button
-              @click="openBlockTypeSelectionModal(index + 1)"
               class="block-builder-add-block-btn"
               title="Добавить блок"
+              @click="openBlockTypeSelectionModal(index + 1)"
             >
               <span class="block-builder-add-block-btn__icon">+</span>
               <span class="block-builder-add-block-btn__text">Добавить блок</span>
@@ -196,24 +199,39 @@
       </template>
     </div>
 
-    
-    <div v-if="showTypeSelectionModal" class="block-builder-modal" @mousedown="closeTypeSelectionModal">
+    <div
+      v-if="showTypeSelectionModal"
+      class="block-builder-modal"
+      @mousedown="closeTypeSelectionModal"
+    >
       <div class="block-builder-modal-content" @mousedown.stop>
         <div class="block-builder-modal-header">
           <h3>Выберите тип блока</h3>
-          <button @click="closeTypeSelectionModal" class="block-builder-modal-close">×</button>
+          <button class="block-builder-modal-close" @click="closeTypeSelectionModal">×</button>
         </div>
 
         <div class="block-builder-modal-body">
-          
           <div v-if="!licenseInfoComputed.isPro" class="block-builder-license-warning">
             <div class="block-builder-license-warning__header">
               <span class="block-builder-license-warning__icon">⚠️</span>
-              <strong class="block-builder-license-warning__title">Бесплатная версия <a href="https://block-builder.ru/" target="_blank" rel="noopener noreferrer" class="bb-link-inherit">Block Builder</a></strong>
+              <strong class="block-builder-license-warning__title"
+                >Бесплатная версия
+                <a
+                  href="https://block-builder.ru/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="bb-link-inherit"
+                  >Block Builder</a
+                ></strong
+              >
             </div>
             <p class="block-builder-license-warning__text">
-              Вы используете ограниченную бесплатную версию.<br>
-              Доступно <strong>{{ limitedBlockTypes.length }} из {{ licenseInfoComputed.maxBlockTypes }}</strong> типов блоков.
+              Вы используете ограниченную бесплатную версию.<br />
+              Доступно
+              <strong
+                >{{ limitedBlockTypes.length }} из {{ licenseInfoComputed.maxBlockTypes }}</strong
+              >
+              типов блоков.
             </p>
           </div>
 
@@ -221,8 +239,8 @@
             <button
               v-for="blockType in limitedBlockTypes"
               :key="blockType.type"
-              @click="selectBlockType(blockType.type)"
               class="block-builder-block-type-card"
+              @click="selectBlockType(blockType.type)"
             >
               <span class="block-builder-block-type-card__icon">
                 {{ getBlockConfig(blockType.type)?.icon || '📦' }}
@@ -236,16 +254,17 @@
       </div>
     </div>
 
-    
     <div v-if="showModal" class="block-builder-modal" @mousedown="handleOverlayClick">
       <div class="block-builder-modal-content" @mousedown.stop>
         <div class="block-builder-modal-header">
-          <h3>{{ modalMode === 'create' ? 'Создать' : 'Редактировать' }} {{ currentBlockType?.label }}</h3>
-          <button @click="closeModal" class="block-builder-modal-close">×</button>
+          <h3>
+            {{ modalMode === 'create' ? 'Создать' : 'Редактировать' }} {{ currentBlockType?.label }}
+          </h3>
+          <button class="block-builder-modal-close" @click="closeModal">×</button>
         </div>
 
         <div class="block-builder-modal-body">
-          <form @submit.prevent="handleSubmit" class="block-builder-form">
+          <form class="block-builder-form" @submit.prevent="handleSubmit">
             <div
               v-for="field in currentBlockFields"
               :key="field.field"
@@ -253,7 +272,6 @@
               :data-field-name="field.field"
               :class="{ [CSS_CLASSES.ERROR]: formErrors[field.field] && field.type !== 'image' }"
             >
-              
               <label
                 v-if="isRegularInputField(field)"
                 :for="'field-' + field.field"
@@ -263,61 +281,55 @@
                 <span v-if="isFieldRequired(field)" class="required">*</span>
               </label>
 
-              
               <input
                 v-if="field.type === 'text'"
+                :id="'field-' + field.field"
                 v-model="formData[field.field]"
                 type="text"
-                :id="'field-' + field.field"
                 :placeholder="field.placeholder"
                 class="block-builder-form-control"
                 :class="{ [CSS_CLASSES.ERROR]: formErrors[field.field] }"
               />
 
-              
               <textarea
                 v-else-if="field.type === 'textarea'"
-                v-model="formData[field.field]"
                 :id="'field-' + field.field"
+                v-model="formData[field.field]"
                 :placeholder="field.placeholder"
                 rows="4"
                 class="block-builder-form-control"
                 :class="{ [CSS_CLASSES.ERROR]: formErrors[field.field] }"
-              ></textarea>
+              />
 
-              
               <input
                 v-else-if="field.type === 'number'"
+                :id="'field-' + field.field"
                 v-model.number="formData[field.field]"
                 type="number"
-                :id="'field-' + field.field"
                 :placeholder="field.placeholder"
                 class="block-builder-form-control"
                 :class="{ [CSS_CLASSES.ERROR]: formErrors[field.field] }"
               />
 
-              
               <input
                 v-else-if="field.type === 'color'"
+                :id="'field-' + field.field"
                 v-model="formData[field.field]"
                 type="color"
-                :id="'field-' + field.field"
                 class="block-builder-form-control"
                 :class="{ [CSS_CLASSES.ERROR]: formErrors[field.field] }"
               />
 
-              
               <input
                 v-else-if="field.type === 'url'"
+                :id="'field-' + field.field"
                 v-model="formData[field.field]"
                 type="url"
-                :id="'field-' + field.field"
                 :placeholder="field.placeholder"
                 class="block-builder-form-control"
                 :class="{ [CSS_CLASSES.ERROR]: formErrors[field.field] }"
               />
 
-              
               <ImageUploadField
                 v-else-if="field.type === 'image'"
                 v-model="formData[field.field]"
@@ -328,36 +340,29 @@
                 :image-upload-config="field.imageUploadConfig"
               />
 
-              
               <select
                 v-else-if="field.type === 'select'"
-                v-model="formData[field.field]"
                 :id="'field-' + field.field"
+                v-model="formData[field.field]"
                 class="block-builder-form-control"
                 :class="{ [CSS_CLASSES.ERROR]: formErrors[field.field] }"
               >
                 <option value="">Выберите...</option>
-                <option
-                  v-for="option in field.options"
-                  :key="option.value"
-                  :value="option.value"
-                >
+                <option v-for="option in field.options" :key="option.value" :value="option.value">
                   {{ option.label }}
                 </option>
               </select>
 
-              
               <label v-else-if="field.type === 'checkbox'" class="block-builder-form-checkbox">
                 <input
+                  :id="'field-' + field.field"
                   v-model="formData[field.field]"
                   type="checkbox"
-                  :id="'field-' + field.field"
                   class="block-builder-form-checkbox-input"
                 />
                 <span class="block-builder-form-checkbox-label">{{ field.label }}</span>
               </label>
 
-              
               <div v-else-if="field.type === 'radio'" class="block-builder-form-group">
                 <label class="block-builder-form-label">
                   {{ field.label }}
@@ -370,11 +375,11 @@
                     class="block-builder-form-radio"
                   >
                     <input
+                      :id="'field-' + field.field + '-' + option.value"
                       v-model="formData[field.field]"
                       type="radio"
                       :name="'field-' + field.field"
                       :value="option.value"
-                      :id="'field-' + field.field + '-' + option.value"
                       class="block-builder-form-radio-input"
                     />
                     <span class="block-builder-form-radio-label">{{ option.label }}</span>
@@ -382,12 +387,11 @@
                 </div>
               </div>
 
-              
               <SpacingControl
                 v-else-if="field.type === 'spacing'"
+                v-model="formData[field.field]"
                 :label="field.label"
                 :field-name="field.field"
-                v-model="formData[field.field]"
                 :spacing-types="field.spacingConfig?.spacingTypes"
                 :min="field.spacingConfig?.min"
                 :max="field.spacingConfig?.max"
@@ -398,13 +402,12 @@
                 :license-feature-checker="getLicenseFeatureChecker"
               />
 
-              
               <RepeaterControl
                 v-else-if="field.type === 'repeater'"
                 :ref="createRepeaterRefCallback(field.field)"
+                v-model="formData[field.field]"
                 :field-name="field.field"
                 :label="field.label"
-                v-model="formData[field.field]"
                 :fields="field.repeaterConfig?.fields || []"
                 :rules="field.rules || []"
                 :errors="formErrors"
@@ -416,39 +419,30 @@
                 :default-item-value="field.repeaterConfig?.defaultItemValue"
               />
 
-              
               <div v-else-if="field.type === 'api-select'" class="block-builder-form-group">
-                
-                
                 <ApiSelectField
                   v-if="isApiSelectAvailable(field) && props.apiSelectUseCase"
-                  :config="field"
                   v-model="formData[field.field]"
+                  :config="field"
                   :validation-error="formErrors[field.field]?.[0]"
                   :api-select-use-case="props.apiSelectUseCase"
                 />
-                
-                <div v-else class="bb-warning-box">
-                  ⚠️ {{ getApiSelectRestrictionMessage() }}
-                </div>
+
+                <div v-else class="bb-warning-box">⚠️ {{ getApiSelectRestrictionMessage() }}</div>
               </div>
 
-              
-              <div
-                v-else-if="field.type === 'custom'"
-                class="block-builder-form-group"
-              >
-                <label
-                  :for="'field-' + field.field"
-                  class="block-builder-form-label"
-                >
+              <div v-else-if="field.type === 'custom'" class="block-builder-form-group">
+                <label :for="'field-' + field.field" class="block-builder-form-label">
                   {{ field.label }}
                   <span v-if="isFieldRequired(field)" class="required">*</span>
                 </label>
                 <CustomField
-                  v-if="isCustomFieldAvailable(field) && props.customFieldRendererRegistry?.get(field.customFieldConfig?.rendererId)"
-                  :field="field"
+                  v-if="
+                    isCustomFieldAvailable(field) &&
+                    props.customFieldRendererRegistry?.get(field.customFieldConfig?.rendererId)
+                  "
                   v-model="formData[field.field]"
+                  :field="field"
                   :form-errors="formErrors"
                   :custom-field-renderer-registry="props.customFieldRendererRegistry"
                   :is-field-required="isFieldRequired"
@@ -458,22 +452,41 @@
                 </div>
               </div>
 
-              
               <div
-                v-if="formErrors[field.field] && field.type !== 'image' && field.type !== 'api-select' && field.type !== 'custom' && field.type !== 'repeater' && field.type !== 'spacing'"
+                v-if="
+                  formErrors[field.field] &&
+                  field.type !== 'image' &&
+                  field.type !== 'api-select' &&
+                  field.type !== 'custom' &&
+                  field.type !== 'repeater' &&
+                  field.type !== 'spacing'
+                "
                 class="block-builder-form-errors"
               >
-                <span v-for="error in formErrors[field.field]" :key="error" :class="CSS_CLASSES.ERROR">{{ error }}</span>
+                <span
+                  v-for="error in formErrors[field.field]"
+                  :key="error"
+                  :class="CSS_CLASSES.ERROR"
+                  >{{ error }}</span
+                >
               </div>
             </div>
           </form>
         </div>
 
         <div class="block-builder-modal-footer">
-          <button type="button" @click="closeModal" class="block-builder-btn block-builder-btn--secondary">
+          <button
+            type="button"
+            class="block-builder-btn block-builder-btn--secondary"
+            @click="closeModal"
+          >
             Отмена
           </button>
-          <button type="submit" @click="handleSubmit" class="block-builder-btn block-builder-btn--primary">
+          <button
+            type="submit"
+            class="block-builder-btn block-builder-btn--primary"
+            @click="handleSubmit"
+          >
             {{ modalMode === 'create' ? 'Создать' : 'Сохранить' }}
           </button>
         </div>
@@ -483,39 +496,40 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, onBeforeUnmount, nextTick, toRaw, watch } from 'vue';
-import { IBlock, TBlockId } from '../../core/types';
-import { BlockManagementUseCase } from '../../core/use-cases/BlockManagementUseCase';
-import type { ApiSelectUseCase } from '../../core/use-cases/ApiSelectUseCase';
-import { copyToClipboard } from '../../utils/copyToClipboard';
-import { UniversalValidator } from '../../utils/universalValidation';
-import { addSpacingFieldToFields } from '../../utils/blockSpacingHelpers';
-import { getBlockInlineStyles, watchBreakpointChanges } from '../../utils/breakpointHelpers';
-import { ISpacingData } from '../../utils/spacingHelpers';
-import { scrollToFirstError, parseErrorKey, findFieldElement, scrollToElement, focusElement } from '../../utils/formErrorHelpers';
-import { LicenseService } from '../../core/services/LicenseService';
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, toRaw, watch } from 'vue';
+
 import type { LicenseFeatureChecker } from '../../core/services/LicenseFeatureChecker';
 import { LicenseFeature } from '../../core/services/LicenseFeatureChecker';
-import SpacingControl from './SpacingControl.vue';
-import RepeaterControl from './RepeaterControl.vue';
-import ApiSelectField from './ApiSelectField.vue';
-import ImageUploadField from './ImageUploadField.vue';
-import CustomField from './CustomField.vue';
-
-import * as Icon from '../icons/Icon.vue';
-import { initIcons } from '../icons/index';
-import { NOTIFICATION_DISPLAY_DURATION_MS, REPEATER_ACCORDION_ANIMATION_DELAY_MS, CSS_CLASSES } from '../../utils/constants';
+import { LicenseService } from '../../core/services/LicenseService';
+import { IBlock, TBlockId } from '../../core/types';
+import type { ApiSelectUseCase } from '../../core/use-cases/ApiSelectUseCase';
+import { BlockManagementUseCase } from '../../core/use-cases/BlockManagementUseCase';
+import { addSpacingFieldToFields } from '../../utils/blockSpacingHelpers';
+import { getBlockInlineStyles, watchBreakpointChanges } from '../../utils/breakpointHelpers';
 import {
-  copyIconHTML,
-  arrowUpIconHTML,
-  arrowDownIconHTML,
-  editIconHTML,
-  duplicateIconHTML,
-  eyeIconHTML,
-  eyeOffIconHTML,
-  deleteIconHTML,
-  saveIconHTML
-} from '../icons/iconHelpers';
+  CSS_CLASSES,
+  NOTIFICATION_DISPLAY_DURATION_MS,
+  REPEATER_ACCORDION_ANIMATION_DELAY_MS,
+} from '../../utils/constants';
+import { copyToClipboard } from '../../utils/copyToClipboard';
+import {
+  findFieldElement,
+  focusElement,
+  parseErrorKey,
+  scrollToElement,
+  scrollToFirstError,
+} from '../../utils/formErrorHelpers';
+import { logger } from '../../utils/logger';
+import { ISpacingData } from '../../utils/spacingHelpers';
+import { UniversalValidator } from '../../utils/universalValidation';
+import Icon from '../icons/Icon.vue';
+import { saveIconHTML } from '../icons/iconHelpers';
+import { initIcons } from '../icons/index';
+import ApiSelectField from './ApiSelectField.vue';
+import CustomField from './CustomField.vue';
+import ImageUploadField from './ImageUploadField.vue';
+import RepeaterControl from './RepeaterControl.vue';
+import SpacingControl from './SpacingControl.vue';
 
 interface IBlockType {
   type: string;
@@ -553,7 +567,7 @@ interface IProps {
 
 const props = withDefaults(defineProps<IProps>(), {
   config: () => ({ availableBlockTypes: [] }),
-  isEdit: true // По умолчанию режим редактирования включен
+  isEdit: true, // По умолчанию режим редактирования включен
 });
 
 const emit = defineEmits<{
@@ -578,13 +592,17 @@ const repeaterRefs = new Map<string, any>();
 const originalInitialBlocks = ref(props.initialBlocks ? [...props.initialBlocks] : []);
 
 const internalLicenseService = ref<LicenseService | null>(null);
-const licenseState = ref<{ isPro: boolean; maxBlockTypes: number; currentTypesCount: number } | null>(null);
+const licenseState = ref<{
+  isPro: boolean;
+  maxBlockTypes: number;
+  currentTypesCount: number;
+} | null>(null);
 
 if (props.licenseKey && !props.licenseService) {
   const service = new LicenseService({ key: props.licenseKey });
   internalLicenseService.value = service;
   licenseState.value = service.getLicenseInfo(0);
-  service.onLicenseChange(async (info) => {
+  service.onLicenseChange(async info => {
     licenseState.value = info;
     await reloadBlocksAfterLicenseChange();
   });
@@ -613,7 +631,9 @@ const limitedBlockTypes = computed(() => {
 });
 
 const currentBlockType = computed(() => {
-  if (!currentType.value) return null;
+  if (!currentType.value) {
+    return null;
+  }
   return limitedBlockTypes.value.find((bt: IBlockType) => bt.type === currentType.value) || null;
 });
 
@@ -627,7 +647,7 @@ const licenseInfoComputed = computed(() => {
   if (licenseState.value) {
     return {
       ...licenseState.value,
-      currentTypesCount: availableBlockTypes.value.length
+      currentTypesCount: availableBlockTypes.value.length,
     };
   }
   const internalService = internalLicenseService.value;
@@ -637,33 +657,31 @@ const licenseInfoComputed = computed(() => {
   return {
     isPro: false,
     maxBlockTypes: 5,
-    currentTypesCount: availableBlockTypes.value.length
+    currentTypesCount: availableBlockTypes.value.length,
   };
 });
 
 const controlsFixedClass = computed(() => {
-  if (!props.controlsFixedPosition) return '';
+  if (!props.controlsFixedPosition) {
+    return '';
+  }
   return `block-builder-controls--fixed-${props.controlsFixedPosition}`;
 });
 
 const controlsInlineStyles = computed(() => {
-  if (!props.controlsFixedPosition) return {};
+  if (!props.controlsFixedPosition) {
+    return {};
+  }
 
   const offset = props.controlsOffset || 0;
   const offsetVar = props.controlsOffsetVar;
 
   if (props.controlsFixedPosition === 'top') {
-    if (offsetVar) {
-      return { top: `calc(var(${offsetVar}) + ${offset}px)` };
-    } else {
-      return { top: `${offset}px` };
-    }
+    return offsetVar ? { top: `calc(var(${offsetVar}) + ${offset}px)` } : { top: `${offset}px` };
   } else if (props.controlsFixedPosition === 'bottom') {
-    if (offsetVar) {
-      return { bottom: `calc(var(${offsetVar}) + ${offset}px)` };
-    } else {
-      return { bottom: `${offset}px` };
-    }
+    return offsetVar
+      ? { bottom: `calc(var(${offsetVar}) + ${offset}px)` }
+      : { bottom: `${offset}px` };
   }
 
   return {};
@@ -675,12 +693,14 @@ const appClass = computed(() => {
     'block-builder': true,
     'has-fixed-controls': !!props.controlsFixedPosition,
     'has-top-controls': props.controlsFixedPosition === 'top',
-    'has-bottom-controls': props.controlsFixedPosition === 'bottom'
+    'has-bottom-controls': props.controlsFixedPosition === 'bottom',
   };
 });
 
 const currentBlockFields = computed(() => {
-  if (!currentBlockType.value) return [];
+  if (!currentBlockType.value) {
+    return [];
+  }
   const blockType = currentBlockType.value;
   const licenseService = props.licenseService || internalLicenseService.value;
   let fields = addSpacingFieldToFields(
@@ -727,7 +747,7 @@ const getCustomFieldsRestrictionMessage = (): string => {
   return 'Кастомные поля доступны только в PRO версии. Для снятия ограничений приобретите PRO версию.';
 };
 
-const isApiSelectAvailable = (field: any): boolean => {
+const isApiSelectAvailable = (_field: any): boolean => {
   const checker = getLicenseFeatureChecker.value;
   if (!checker || !checker.canUseApiSelect()) {
     return false;
@@ -735,7 +755,7 @@ const isApiSelectAvailable = (field: any): boolean => {
   return !!props.apiSelectUseCase;
 };
 
-const isCustomFieldAvailable = (field: any): boolean => {
+const isCustomFieldAvailable = (_field: any): boolean => {
   const checker = getLicenseFeatureChecker.value;
   if (!checker || !checker.canUseCustomFields()) {
     return false;
@@ -760,13 +780,15 @@ const getSpacingBreakpoints = (field: any): any[] | undefined => {
 };
 
 const isRegularInputField = (field: any): boolean => {
-  return field.type !== 'spacing' &&
-         field.type !== 'repeater' &&
-         field.type !== 'checkbox' &&
-         field.type !== 'radio' &&
-         field.type !== 'api-select' &&
-         field.type !== 'custom' &&
-         field.type !== 'image';
+  return (
+    field.type !== 'spacing' &&
+    field.type !== 'repeater' &&
+    field.type !== 'checkbox' &&
+    field.type !== 'radio' &&
+    field.type !== 'api-select' &&
+    field.type !== 'custom' &&
+    field.type !== 'image'
+  );
 };
 
 const isFieldRequired = (field: any): boolean => {
@@ -775,9 +797,9 @@ const isFieldRequired = (field: any): boolean => {
 
 const loadBlocks = async () => {
   try {
-    blocks.value = await blockService.getAllBlocks() as any;
+    blocks.value = (await blockService.getAllBlocks()) as any;
   } catch (error) {
-    alert(`Ошибка загрузки блоков: ${error}`)
+    alert(`Ошибка загрузки блоков: ${error}`);
   }
 };
 
@@ -808,11 +830,14 @@ const loadInitialBlocks = async () => {
     }
 
     for (const block of filteredBlocks) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await blockService.createBlock(block as any);
     }
   } catch (error) {
-    console.error('Ошибка загрузки начальных блоков:', error);
-    alert(`Ошибка загрузки начальных блоков: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    logger.error('Ошибка загрузки начальных блоков:', error);
+    alert(
+      `Ошибка загрузки начальных блоков: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
   }
 };
 
@@ -820,7 +845,7 @@ const reloadBlocksAfterLicenseChange = async () => {
   try {
     const licenseService = props.licenseService || internalLicenseService.value;
 
-    const currentBlocks = await blockService.getAllBlocks() as any[];
+    const currentBlocks = (await blockService.getAllBlocks()) as any[];
 
     const initialBlocksFromProps = originalInitialBlocks.value || [];
 
@@ -836,12 +861,10 @@ const reloadBlocksAfterLicenseChange = async () => {
 
       if (props.config?.availableBlockTypes && props.config.availableBlockTypes.length > 0) {
         allBlockTypes = props.config.availableBlockTypes.map(bt => bt.type);
-      }
-      else if (componentRegistry) {
+      } else if (componentRegistry) {
         const registeredComponents = componentRegistry.getAll();
         allBlockTypes = Object.keys(registeredComponents);
-      }
-      else {
+      } else {
         allBlockTypes = [...new Set(allBlocksToReload.map(block => block.type))];
       }
 
@@ -850,9 +873,10 @@ const reloadBlocksAfterLicenseChange = async () => {
 
       for (const block of filteredBlocks) {
         try {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           await blockService.createBlock(block as any);
         } catch (error) {
-          console.warn(`⚠️ Не удалось создать блок ${block.id}:`, error);
+          logger.warn(`⚠️ Не удалось создать блок ${block.id}:`, error);
         }
       }
     } else if (allBlocksToReload.length > 0) {
@@ -862,12 +886,10 @@ const reloadBlocksAfterLicenseChange = async () => {
 
       if (props.config?.availableBlockTypes && props.config.availableBlockTypes.length > 0) {
         allBlockTypes = props.config.availableBlockTypes.map(bt => bt.type);
-      }
-      else if (componentRegistry) {
+      } else if (componentRegistry) {
         const registeredComponents = componentRegistry.getAll();
         allBlockTypes = Object.keys(registeredComponents);
-      }
-      else {
+      } else {
         allBlockTypes = [...new Set(allBlocksToReload.map(block => block.type))];
       }
 
@@ -879,9 +901,10 @@ const reloadBlocksAfterLicenseChange = async () => {
 
       for (const block of filteredBlocks) {
         try {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           await blockService.createBlock(block as any);
         } catch (error) {
-          console.warn(`⚠️ Не удалось создать блок ${block.id}:`, error);
+          logger.warn(`⚠️ Не удалось создать блок ${block.id}:`, error);
         }
       }
     }
@@ -890,7 +913,7 @@ const reloadBlocksAfterLicenseChange = async () => {
 
     await setupBreakpointWatchers();
   } catch (error) {
-    console.error('Ошибка перезагрузки блоков:', error);
+    logger.error('Ошибка перезагрузки блоков:', error);
   }
 };
 
@@ -899,7 +922,9 @@ const isVueComponent = (block: IBlock) => {
 };
 
 const getVueComponent = (block: IBlock) => {
-  if (!componentRegistry) return null;
+  if (!componentRegistry) {
+    return null;
+  }
   return componentRegistry.get(block.type);
 };
 
@@ -979,11 +1004,7 @@ const closeModal = () => {
 const handleSubmit = async () => {
   let success = false;
 
-  if (modalMode.value === 'create') {
-    success = await createBlock();
-  } else {
-    success = await updateBlock();
-  }
+  success = await (modalMode.value === 'create' ? createBlock() : updateBlock());
 
   if (success) {
     closeModal();
@@ -991,10 +1012,14 @@ const handleSubmit = async () => {
 };
 
 const createBlock = async (): Promise<boolean> => {
-  if (!currentType.value) return false;
+  if (!currentType.value) {
+    return false;
+  }
 
   const blockType = currentBlockType.value;
-  if (!blockType) return false;
+  if (!blockType) {
+    return false;
+  }
 
   const fields = currentBlockFields.value;
   const validation = UniversalValidator.validateForm(formData, fields);
@@ -1014,11 +1039,11 @@ const createBlock = async (): Promise<boolean> => {
       type: currentType.value,
       props: { ...formData },
       settings: blockType.defaultSettings || {},
-      render: blockType.render
+      render: blockType.render,
     } as any);
 
     if (selectedPosition.value !== undefined) {
-      const allBlocks = await blockService.getAllBlocks() as any[];
+      const allBlocks = (await blockService.getAllBlocks()) as any[];
 
       const blockIds = allBlocks.map((b: any) => b.id);
 
@@ -1029,7 +1054,7 @@ const createBlock = async (): Promise<boolean> => {
 
       blockIds.splice(selectedPosition.value, 0, newBlock.id);
 
-      const reorderResult = await blockService.reorderBlocks(blockIds);
+      await blockService.reorderBlocks(blockIds);
     }
 
     await loadBlocks();
@@ -1045,7 +1070,9 @@ const createBlock = async (): Promise<boolean> => {
 };
 
 const updateBlock = async (): Promise<boolean> => {
-  if (!currentBlockId.value) return false;
+  if (!currentBlockId.value) {
+    return false;
+  }
 
   const fields = currentBlockFields.value;
   const validation = UniversalValidator.validateForm(formData, fields);
@@ -1062,7 +1089,7 @@ const updateBlock = async (): Promise<boolean> => {
 
   try {
     const updated = await blockService.updateBlock(currentBlockId.value, {
-      props: { ...formData }
+      props: { ...formData },
     } as any);
 
     const index = blocks.value.findIndex((b: IBlock) => b.id === currentBlockId.value);
@@ -1086,14 +1113,18 @@ const handleDuplicateBlock = async (id: TBlockId) => {
   }
   try {
     const duplicated = await blockService.duplicateBlock(id);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     blocks.value.push(duplicated as any);
 
     await setupBreakpointWatchers();
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (emit as any)('block-added', duplicated as any);
   } catch (error) {
-    console.error('Ошибка дублирования блока:', error);
-    alert('Ошибка дублирования блока: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    logger.error('Ошибка дублирования блока:', error);
+    alert(
+      'Ошибка дублирования блока: ' + (error instanceof Error ? error.message : 'Unknown error')
+    );
   }
 };
 
@@ -1111,9 +1142,10 @@ const handleDeleteBlock = async (id: TBlockId) => {
 
       await blockService.deleteBlock(id);
       blocks.value = blocks.value.filter((b: IBlock) => b.id !== id);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (emit as any)('block-deleted', id);
     } catch (error) {
-      console.error('Ошибка удаления блока:', error);
+      logger.error('Ошибка удаления блока:', error);
       alert('Ошибка удаления блока: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
   }
@@ -1164,7 +1196,9 @@ const handleToggleVisibility = async (blockId: TBlockId) => {
     return; // Блокируем если режим редактирования выключен
   }
   const block = blocks.value.find((b: IBlock) => b.id === blockId);
-  if (!block) return;
+  if (!block) {
+    return;
+  }
 
   await blockService.setBlockVisible(blockId, !block.visible);
   await loadBlocks();
@@ -1181,7 +1215,7 @@ const handleCopyId = async (blockId: TBlockId) => {
     if (success !== false) {
       showNotification(`ID скопирован: ${blockId}`, 'success');
     }
-  } catch (e) {
+  } catch {
     showNotification('Ошибка копирования ID', 'error');
   }
 };
@@ -1194,7 +1228,7 @@ const showNotification = (message: string, type: 'success' | 'error' | 'info' = 
   const colors = {
     success: '#4caf50',
     error: '#dc3545',
-    info: '#007bff'
+    info: '#007bff',
   };
 
   notification.style.cssText = `
@@ -1210,7 +1244,7 @@ const showNotification = (message: string, type: 'success' | 'error' | 'info' = 
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     animation: fadeIn 0.3s ease-in-out;
   `;
-  document.body.appendChild(notification);
+  document.body.append(notification);
 
   setTimeout(() => {
     notification.style.animation = 'fadeOut 0.3s ease-in-out';
@@ -1220,7 +1254,10 @@ const showNotification = (message: string, type: 'success' | 'error' | 'info' = 
 
 const handleSave = async () => {
   if (!props.onSave) {
-    showNotification('Функция сохранения не настроена. Передайте onSave в пропсы компонента.', 'error');
+    showNotification(
+      'Функция сохранения не настроена. Передайте onSave в пропсы компонента.',
+      'error'
+    );
     return;
   }
 
@@ -1233,7 +1270,7 @@ const handleSave = async () => {
       showNotification('Произошла ошибка при сохранении', 'error');
     }
   } catch (error) {
-    console.error('Ошибка сохранения блоков:', error);
+    logger.error('Ошибка сохранения блоков:', error);
     showNotification('Произошла ошибка при сохранении', 'error');
   }
 };
@@ -1247,12 +1284,11 @@ const handleClearAll = async () => {
       await blockService.clearAllBlocks();
       blocks.value = [];
     } catch (error) {
-      console.error('Ошибка очистки блоков:', error);
+      logger.error('Ошибка очистки блоков:', error);
       alert(`Ошибка очистки блоков: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 };
-
 
 const getBlockSpacingStyles = (block: IBlock): Record<string, string> => {
   const spacing = block.props?.spacing as ISpacingData | undefined;
@@ -1268,8 +1304,10 @@ const getBlockSpacingStyles = (block: IBlock): Record<string, string> => {
 };
 
 const getUserComponentProps = (block: IBlock): Record<string, any> => {
-  if (!block.props) return {};
-  const { spacing, ...userProps } = block.props;
+  if (!block.props) {
+    return {};
+  }
+  const { spacing: _spacing, ...userProps } = block.props;
   return userProps;
 };
 
@@ -1314,7 +1352,9 @@ const handleValidationErrors = async () => {
 
   setTimeout(async () => {
     const firstErrorKey = Object.keys(formErrors)[0];
-    if (!firstErrorKey) return;
+    if (!firstErrorKey) {
+      return;
+    }
 
     const errorInfo = parseErrorKey(firstErrorKey);
 
@@ -1324,7 +1364,7 @@ const handleValidationErrors = async () => {
       scrollToFirstError(modalContent, formErrors, {
         offset: 40,
         behavior: 'smooth',
-        autoFocus: true
+        autoFocus: true,
       });
     }
   }, 50); // Небольшая задержка для завершения отрисовки ошибок
@@ -1333,7 +1373,10 @@ const handleValidationErrors = async () => {
 /**
  * Открытие аккордеона в repeater для конкретного элемента
  */
-const openRepeaterAccordion = async (repeaterFieldName: string, itemIndex: number): Promise<void> => {
+const openRepeaterAccordion = async (
+  repeaterFieldName: string,
+  itemIndex: number
+): Promise<void> => {
   await nextTick();
 
   const repeaterComponent = repeaterRefs.get(repeaterFieldName);
@@ -1343,7 +1386,6 @@ const openRepeaterAccordion = async (repeaterFieldName: string, itemIndex: numbe
   }
 
   if (repeaterComponent.isItemCollapsed && repeaterComponent.isItemCollapsed(itemIndex)) {
-
     if (repeaterComponent.expandItem) {
       repeaterComponent.expandItem(itemIndex);
 
@@ -1358,9 +1400,11 @@ const openRepeaterAccordion = async (repeaterFieldName: string, itemIndex: numbe
       if (modalContent) {
         const errorKey = Object.keys(formErrors).find(key => {
           const errorInfo = parseErrorKey(key);
-          return errorInfo.isRepeaterField &&
-                 errorInfo.repeaterFieldName === repeaterFieldName &&
-                 errorInfo.repeaterIndex === itemIndex;
+          return (
+            errorInfo.isRepeaterField &&
+            errorInfo.repeaterFieldName === repeaterFieldName &&
+            errorInfo.repeaterIndex === itemIndex
+          );
         });
 
         if (errorKey) {
@@ -1371,21 +1415,21 @@ const openRepeaterAccordion = async (repeaterFieldName: string, itemIndex: numbe
           if (fieldElement) {
             scrollToElement(fieldElement, {
               offset: 40,
-              behavior: 'smooth'
+              behavior: 'smooth',
             });
             focusElement(fieldElement);
           } else {
             scrollToFirstError(modalContent, formErrors, {
               offset: 40,
               behavior: 'smooth',
-              autoFocus: true
+              autoFocus: true,
             });
           }
         } else {
           scrollToFirstError(modalContent, formErrors, {
             offset: 40,
             behavior: 'smooth',
-            autoFocus: true
+            autoFocus: true,
           });
         }
       }
@@ -1395,9 +1439,11 @@ const openRepeaterAccordion = async (repeaterFieldName: string, itemIndex: numbe
     if (modalContent) {
       const errorKey = Object.keys(formErrors).find(key => {
         const errorInfo = parseErrorKey(key);
-        return errorInfo.isRepeaterField &&
-               errorInfo.repeaterFieldName === repeaterFieldName &&
-               errorInfo.repeaterIndex === itemIndex;
+        return (
+          errorInfo.isRepeaterField &&
+          errorInfo.repeaterFieldName === repeaterFieldName &&
+          errorInfo.repeaterIndex === itemIndex
+        );
       });
 
       if (errorKey) {
@@ -1408,21 +1454,21 @@ const openRepeaterAccordion = async (repeaterFieldName: string, itemIndex: numbe
         if (fieldElement) {
           scrollToElement(fieldElement, {
             offset: 40,
-            behavior: 'smooth'
+            behavior: 'smooth',
           });
           focusElement(fieldElement);
         } else {
           scrollToFirstError(modalContent, formErrors, {
             offset: 40,
             behavior: 'smooth',
-            autoFocus: true
+            autoFocus: true,
           });
         }
       } else {
         scrollToFirstError(modalContent, formErrors, {
           offset: 40,
           behavior: 'smooth',
-          autoFocus: true
+          autoFocus: true,
         });
       }
     }
@@ -1437,9 +1483,13 @@ const updateBodyEditModeClass = (isEdit: boolean) => {
   }
 };
 
-watch(() => props.isEdit, (newValue) => {
-  updateBodyEditModeClass(newValue);
-}, { immediate: true });
+watch(
+  () => props.isEdit,
+  newValue => {
+    updateBodyEditModeClass(newValue);
+  },
+  { immediate: true }
+);
 
 onMounted(async () => {
   initIcons();

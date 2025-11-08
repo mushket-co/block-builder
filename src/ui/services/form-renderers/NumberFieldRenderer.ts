@@ -5,7 +5,12 @@ import { BaseFieldRenderer } from './BaseFieldRenderer';
 export class NumberFieldRenderer extends BaseFieldRenderer {
   readonly fieldType = 'number';
 
-  protected renderInput(fieldId: string, field: IFormFieldConfig, value: any, required: string): string {
+  protected renderInput(
+    fieldId: string,
+    field: IFormFieldConfig,
+    value: any,
+    required: string
+  ): string {
     const escapedPlaceholder = this.getEscapedPlaceholder(field.placeholder);
     const numericValue = value !== null && value !== undefined ? value : '';
 
@@ -22,4 +27,3 @@ export class NumberFieldRenderer extends BaseFieldRenderer {
     `;
   }
 }
-

@@ -1,17 +1,18 @@
-import { IFormFieldConfig, IBlockSpacingOptions, TSpacingType } from '../core/types/form';
 import { LicenseFeatureChecker } from '../core/services/LicenseFeatureChecker';
+import { IBlockSpacingOptions, IFormFieldConfig, TSpacingType } from '../core/types/form';
+
 export function generateSpacingField(
   options?: IBlockSpacingOptions,
-  licenseFeatureChecker?: LicenseFeatureChecker
+  _licenseFeatureChecker?: LicenseFeatureChecker
 ): IFormFieldConfig | null {
   if (options?.enabled === false) {
-  return null;
+    return null;
   }
   const spacingTypes: TSpacingType[] = options?.spacingTypes || [
-  'padding-top',
-  'padding-bottom',
-  'margin-top',
-  'margin-bottom'
+    'padding-top',
+    'padding-bottom',
+    'margin-top',
+    'margin-bottom',
   ];
   const breakpoints = options?.config?.breakpoints;
   const spacingConfig = {
@@ -19,28 +20,29 @@ export function generateSpacingField(
     min: options?.config?.min ?? 0,
     max: options?.config?.max ?? 200,
     step: options?.config?.step ?? 4,
-    breakpoints
+    breakpoints,
   };
   const defaultValue: Record<string, Record<TSpacingType, number>> = {};
   const hasCustomBreakpoints = spacingConfig.breakpoints && spacingConfig.breakpoints.length > 0;
   const defaultBreakpoints = ['desktop', 'tablet', 'mobile'];
-  const breakpointsToInit = hasCustomBreakpoints
-  ? spacingConfig.breakpoints!.map(bp => bp.name)
-  : defaultBreakpoints;
+  const breakpointsToInit =
+    hasCustomBreakpoints && spacingConfig.breakpoints
+      ? spacingConfig.breakpoints.map(bp => bp.name)
+      : defaultBreakpoints;
   breakpointsToInit.forEach(bpName => {
-  defaultValue[bpName] = {
-    'padding-top': 0,
-    'padding-bottom': 0,
-    'margin-top': 0,
-    'margin-bottom': 0
-  };
+    defaultValue[bpName] = {
+      'padding-top': 0,
+      'padding-bottom': 0,
+      'margin-top': 0,
+      'margin-bottom': 0,
+    };
   });
   return {
-  field: 'spacing',
-  label: 'Отступы блока',
-  type: 'spacing',
-  spacingConfig,
-  defaultValue
+    field: 'spacing',
+    label: 'Отступы блока',
+    type: 'spacing',
+    spacingConfig,
+    defaultValue,
   };
 }
 export function addSpacingFieldToFields(
@@ -58,32 +60,39 @@ export function addSpacingFieldToFields(
   }
   return [...fieldsWithoutSpacing, spacingField];
 }
-export function processBlockConfigWithSpacing(
-  blockConfig: {
+export function processBlockConfigWithSpacing(blockConfig: {
   fields?: IFormFieldConfig[];
   spacingOptions?: IBlockSpacingOptions;
-  [key: string]: any;
-  }
-): typeof blockConfig {
+  [key: string]: unknown;
+}): typeof blockConfig {
   if (!blockConfig.fields) {
-  return blockConfig;
+    return blockConfig;
   }
   return {
-  ...blockConfig,
-  fields: addSpacingFieldToFields(blockConfig.fields, blockConfig.spacingOptions)
+    ...blockConfig,
+    fields: addSpacingFieldToFields(blockConfig.fields, blockConfig.spacingOptions),
   };
 }
 export function applySpacingToAllBlockConfigs(
-  blockConfigs: Record<string, any>,
+  blockConfigs: Record<
+    string,
+    { fields?: IFormFieldConfig[]; spacingOptions?: IBlockSpacingOptions; [key: string]: unknown }
+  >,
   globalSpacingOptions?: IBlockSpacingOptions
-): Record<string, any> {
-  const result: Record<string, any> = {};
+): Record<
+  string,
+  { fields?: IFormFieldConfig[]; spacingOptions?: IBlockSpacingOptions; [key: string]: unknown }
+> {
+  const result: Record<
+    string,
+    { fields?: IFormFieldConfig[]; spacingOptions?: IBlockSpacingOptions; [key: string]: unknown }
+  > = {};
   for (const [key, config] of Object.entries(blockConfigs)) {
-  const spacingOptions = config.spacingOptions ?? globalSpacingOptions;
-  result[key] = processBlockConfigWithSpacing({
-    ...config,
-    spacingOptions
-  });
+    const spacingOptions = config.spacingOptions ?? globalSpacingOptions;
+    result[key] = processBlockConfigWithSpacing({
+      ...config,
+      spacingOptions,
+    });
   }
   return result;
 }

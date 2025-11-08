@@ -1,19 +1,20 @@
-import { IBlockDto, ICreateBlockDto } from '../types';
 import { IBlockRepository } from '../ports/BlockRepository';
+import { IBlockDto, ICreateBlockDto } from '../types';
+
 export class CreateBlockUseCase {
   constructor(private blockRepository: IBlockRepository) {}
   async execute(blockData: ICreateBlockDto): Promise<IBlockDto> {
-  this.validateBlockData(blockData);
-  const blockDataWithMetadata: ICreateBlockDto = {
-    ...blockData,
-    metadata: blockData.metadata || {
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      version: 1
-    }
-  };
-  const createdBlock = await this.blockRepository.create(blockDataWithMetadata);
-  return createdBlock;
+    this.validateBlockData(blockData);
+    const blockDataWithMetadata: ICreateBlockDto = {
+      ...blockData,
+      metadata: blockData.metadata || {
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        version: 1,
+      },
+    };
+    const createdBlock = await this.blockRepository.create(blockDataWithMetadata);
+    return createdBlock;
   }
   private validateBlockData(blockData: ICreateBlockDto): void {
     if (!blockData.type || typeof blockData.type !== 'string') {
@@ -31,7 +32,10 @@ export class CreateBlockUseCase {
     if (blockData.style && typeof blockData.style !== 'object') {
       throw new Error('Block style must be an object');
     }
-    if (blockData.order !== undefined && (!Number.isInteger(blockData.order) || blockData.order < 0)) {
+    if (
+      blockData.order !== undefined &&
+      (!Number.isInteger(blockData.order) || blockData.order < 0)
+    ) {
       throw new Error('Block order must be a non-negative integer');
     }
     if (blockData.visible !== undefined && typeof blockData.visible !== 'boolean') {

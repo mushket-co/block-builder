@@ -44,7 +44,7 @@ export interface IPatternRule extends IBaseValidationRule {
 }
 export interface ICustomRule extends IBaseValidationRule {
   type: 'custom';
-  validator: (value: any) => boolean | Promise<boolean>;
+  validator: (value: unknown) => boolean | Promise<boolean>;
 }
 export type TValidationRule =
   | IRequiredRule
@@ -59,9 +59,9 @@ export type TValidationRule =
 export interface IValidationRule {
   type: TValidationRuleType;
   field: string;
-  value?: any;
+  value?: unknown;
   message?: string;
-  validator?: (value: any) => boolean;
+  validator?: (value: unknown) => boolean;
 }
 export interface IValidationResult {
   isValid: boolean;

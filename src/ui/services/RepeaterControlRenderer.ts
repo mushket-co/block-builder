@@ -1,4 +1,4 @@
-import { IRepeaterItemFieldConfig, IRepeaterFieldConfig } from '../../core/types/form';
+import { IRepeaterFieldConfig, IRepeaterItemFieldConfig } from '../../core/types/form';
 import { CSS_CLASSES } from '../../utils/constants';
 
 export interface IRepeaterControlOptions {
@@ -26,25 +26,25 @@ export class RepeaterControlRenderer {
   private itemIdCounter = 0;
 
   constructor(options: IRepeaterControlOptions) {
-  this.fieldName = options.fieldName;
-  this.label = options.label;
-  this.rules = options.rules || [];
-  this.errors = options.errors || {};
-  this.config = options.config || { fields: [] };
-  this.value = options.value || [];
-  this.onChange = options.onChange;
-  this.onAfterRender = options.onAfterRender;
+    this.fieldName = options.fieldName;
+    this.label = options.label;
+    this.rules = options.rules || [];
+    this.errors = options.errors || {};
+    this.config = options.config || { fields: [] };
+    this.value = options.value || [];
+    this.onChange = options.onChange;
+    this.onAfterRender = options.onAfterRender;
 
-  const effectiveMin = this.getEffectiveMin();
-  if (this.value.length === 0 && effectiveMin > 0) {
-    for (let i = 0; i < effectiveMin; i++) {
-      this.value.push(this.createNewItem());
+    const effectiveMin = this.getEffectiveMin();
+    if (this.value.length === 0 && effectiveMin > 0) {
+      for (let i = 0; i < effectiveMin; i++) {
+        this.value.push(this.createNewItem());
+      }
     }
-  }
   }
 
   private isRequired(): boolean {
-  return this.rules.some(rule => rule.type === 'required');
+    return this.rules.some(rule => rule.type === 'required');
   }
 
   /**
@@ -55,127 +55,137 @@ export class RepeaterControlRenderer {
    * 3. Есть required, но min не задан → min = 1 (по умолчанию)
    */
   private getEffectiveMin(): number {
-  if (!this.isRequired()) {
-    return 0;
-  }
-  if (this.config.min !== undefined) {
-    return this.config.min;
-  }
-  return 1;
-  }
-
-    private createNewItem(): Record<string, any> {
-  const newItem: Record<string, any> = {};
-
-  this.config.fields.forEach(field => {
-    if (this.config.defaultItemValue && this.config.defaultItemValue[field.field] !== undefined) {
-      newItem[field.field] = this.config.defaultItemValue[field.field];
-    } else if (field.defaultValue !== undefined) {
-      newItem[field.field] = field.defaultValue;
-    } else {
-      switch (field.type) {
-        case 'checkbox':
-          newItem[field.field] = false;
-          break;
-        case 'number':
-          newItem[field.field] = 0;
-          break;
-        default:
-          newItem[field.field] = '';
-      }
+    if (!this.isRequired()) {
+      return 0;
     }
-  });
+    if (this.config.min !== undefined) {
+      return this.config.min;
+    }
+    return 1;
+  }
 
-  return newItem;
+  private createNewItem(): Record<string, any> {
+    const newItem: Record<string, any> = {};
+
+    this.config.fields.forEach(field => {
+      if (this.config.defaultItemValue && this.config.defaultItemValue[field.field] !== undefined) {
+        newItem[field.field] = this.config.defaultItemValue[field.field];
+      } else if (field.defaultValue !== undefined) {
+        newItem[field.field] = field.defaultValue;
+      } else {
+        switch (field.type) {
+          case 'checkbox':
+            newItem[field.field] = false;
+            break;
+          case 'number':
+            newItem[field.field] = 0;
+            break;
+          default:
+            newItem[field.field] = '';
+        }
+      }
+    });
+
+    return newItem;
   }
 
   private addItem(): void {
-  if (this.config.max && this.value.length >= this.config.max) {
-    return;
+    if (this.config.max && this.value.length >= this.config.max) {
+      return;
+    }
+
+    this.value.push(this.createNewItem());
+    this.emitChange();
+    this.safeRender();
   }
 
-  this.value.push(this.createNewItem());
-  this.emitChange();
-  this.render(this.container!);
+  private removeItem(index: number): void {
+    const effectiveMin = this.getEffectiveMin();
+    if (this.value.length <= effectiveMin) {
+      return;
+    }
+
+    this.value.splice(index, 1);
+    this.collapsedItems.delete(index);
+    this.emitChange();
+    this.safeRender();
   }
 
-    private removeItem(index: number): void {
-  const effectiveMin = this.getEffectiveMin();
-  if (this.value.length <= effectiveMin) {
-    return;
-  }
-
-  this.value.splice(index, 1);
-  this.collapsedItems.delete(index);
-  this.emitChange();
-  this.render(this.container!);
-  }
-
-    private moveItem(fromIndex: number, toIndex: number): void {
-  const item = this.value[fromIndex];
-  this.value.splice(fromIndex, 1);
-  this.value.splice(toIndex, 0, item);
-  this.emitChange();
-  this.render(this.container!);
+  private moveItem(fromIndex: number, toIndex: number): void {
+    const item = this.value[fromIndex];
+    this.value.splice(fromIndex, 1);
+    this.value.splice(toIndex, 0, item);
+    this.emitChange();
+    this.safeRender();
   }
 
   private toggleCollapse(index: number): void {
-  if (this.collapsedItems.has(index)) {
-    this.collapsedItems.delete(index);
-  } else {
-    this.collapsedItems.add(index);
-  }
-  this.render(this.container!);
+    if (this.collapsedItems.has(index)) {
+      this.collapsedItems.delete(index);
+    } else {
+      this.collapsedItems.add(index);
+    }
+    this.safeRender();
   }
 
   private onFieldChange(itemIndex: number, fieldName: string, value: any): void {
-  this.value[itemIndex][fieldName] = value;
-  this.emitChange();
+    this.value[itemIndex][fieldName] = value;
+    this.emitChange();
   }
 
   private emitChange(): void {
-  if (this.onChange) {
-    this.onChange(this.value);
-  }
-  }
-
-    private isFieldRequired(field: IRepeaterItemFieldConfig): boolean {
-  return field.rules?.some(rule => rule.type === 'required') ?? false;
+    if (this.onChange) {
+      this.onChange(this.value);
+    }
   }
 
-    private getFieldErrors(index: number, fieldName: string): string[] {
-  const errorKey = `${this.fieldName}[${index}].${fieldName}`;
-  return this.errors[errorKey] || [];
+  private safeRender(): void {
+    if (this.container) {
+      this.render(this.container);
+    }
   }
 
-    private hasFieldError(index: number, fieldName: string): boolean {
-  return this.getFieldErrors(index, fieldName).length > 0;
+  private isFieldRequired(field: IRepeaterItemFieldConfig): boolean {
+    return field.rules?.some(rule => rule.type === 'required') ?? false;
   }
 
-    private getItemCountLabel(count: number): string {
-  const itemTitle = this.config.itemTitle || 'Элемент';
-  const mod10 = count % 10;
-  const mod100 = count % 100;
-
-  if (mod10 === 1 && mod100 !== 11) {
-    return itemTitle.toLowerCase();
-  } else if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) {
-    return itemTitle.toLowerCase() + 'а';
-  } else {
-    return itemTitle.toLowerCase() + 'ов';
-  }
+  private getFieldErrors(index: number, fieldName: string): string[] {
+    const errorKey = `${this.fieldName}[${index}].${fieldName}`;
+    return this.errors[errorKey] || [];
   }
 
-  private generateFieldHTML(field: IRepeaterItemFieldConfig, itemIndex: number, value: any): string {
-  const fieldId = `repeater-${this.fieldName}-${itemIndex}-${field.field}`;
-  const required = this.isFieldRequired(field) ? 'required' : '';
-  const hasError = this.hasFieldError(itemIndex, field.field);
-  const errorClass = hasError ? CSS_CLASSES.ERROR : '';
-  const errors = this.getFieldErrors(itemIndex, field.field);
+  private hasFieldError(index: number, fieldName: string): boolean {
+    return this.getFieldErrors(index, fieldName).length > 0;
+  }
 
-  switch (field.type) {
-    case 'textarea':
-      return `
+  private getItemCountLabel(count: number): string {
+    const itemTitle = this.config.itemTitle || 'Элемент';
+    const mod10 = count % 10;
+    const mod100 = count % 100;
+
+    if (mod10 === 1 && mod100 !== 11) {
+      return itemTitle.toLowerCase();
+    } else if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) {
+      return itemTitle.toLowerCase() + 'а';
+    } else {
+      return itemTitle.toLowerCase() + 'ов';
+    }
+  }
+
+  private generateFieldHTML(
+    field: IRepeaterItemFieldConfig,
+    itemIndex: number,
+    value: any
+  ): string {
+    const fieldId = `repeater-${this.fieldName}-${itemIndex}-${field.field}`;
+    const required = this.isFieldRequired(field) ? 'required' : '';
+    const hasError = this.hasFieldError(itemIndex, field.field);
+    const errorClass = hasError ? CSS_CLASSES.ERROR : '';
+    const errors = this.getFieldErrors(itemIndex, field.field);
+
+    switch (field.type) {
+      case 'textarea':
+        return `
         <div class="repeater-control__field ${hasError ? CSS_CLASSES.ERROR : ''}">
           <label for="${fieldId}" class="repeater-control__field-label">
             ${field.label}
@@ -194,8 +204,8 @@ export class RepeaterControlRenderer {
         </div>
       `;
 
-    case 'select':
-      return `
+      case 'select':
+        return `
         <div class="repeater-control__field ${hasError ? CSS_CLASSES.ERROR : ''}">
           <label for="${fieldId}" class="repeater-control__field-label">
             ${field.label}
@@ -209,16 +219,21 @@ export class RepeaterControlRenderer {
             ${required}
           >
             <option value="">Выберите...</option>
-            ${field.options?.map(option =>
-              `<option value="${option.value}" ${option.value === value ? 'selected' : ''}>${option.label}</option>`
-            ).join('') || ''}
+            ${
+              field.options
+                ?.map(
+                  option =>
+                    `<option value="${option.value}" ${option.value === value ? 'selected' : ''}>${option.label}</option>`
+                )
+                .join('') || ''
+            }
           </select>
           ${hasError ? `<div class="repeater-control__field-error">${errors[0]}</div>` : ''}
         </div>
       `;
 
-    case 'number':
-      return `
+      case 'number':
+        return `
         <div class="repeater-control__field ${hasError ? CSS_CLASSES.ERROR : ''}">
           <label for="${fieldId}" class="repeater-control__field-label">
             ${field.label}
@@ -238,8 +253,8 @@ export class RepeaterControlRenderer {
         </div>
       `;
 
-    case 'color':
-      return `
+      case 'color':
+        return `
         <div class="repeater-control__field ${hasError ? CSS_CLASSES.ERROR : ''}">
           <label for="${fieldId}" class="repeater-control__field-label">
             ${field.label}
@@ -258,8 +273,8 @@ export class RepeaterControlRenderer {
         </div>
       `;
 
-    case 'checkbox':
-      return `
+      case 'checkbox':
+        return `
         <div class="repeater-control__field ${hasError ? CSS_CLASSES.ERROR : ''}">
           <label class="repeater-control__field-checkbox">
             <input
@@ -274,9 +289,9 @@ export class RepeaterControlRenderer {
         </div>
       `;
 
-    case 'url':
-    case 'email':
-      return `
+      case 'url':
+      case 'email':
+        return `
         <div class="repeater-control__field ${hasError ? CSS_CLASSES.ERROR : ''}">
           <label for="${fieldId}" class="repeater-control__field-label">
             ${field.label}
@@ -296,11 +311,19 @@ export class RepeaterControlRenderer {
         </div>
       `;
 
-    case 'image':
-      return this.generateImageFieldHTML(field, itemIndex, value, fieldId, required, hasError, errors);
+      case 'image':
+        return this.generateImageFieldHTML(
+          field,
+          itemIndex,
+          value,
+          fieldId,
+          required,
+          hasError,
+          errors
+        );
 
-    default: // text
-      return `
+      default: // text
+        return `
         <div class="repeater-control__field ${hasError ? CSS_CLASSES.ERROR : ''}">
           <label for="${fieldId}" class="repeater-control__field-label">
             ${field.label}
@@ -319,11 +342,13 @@ export class RepeaterControlRenderer {
           ${hasError ? `<div class="repeater-control__field-error">${errors[0]}</div>` : ''}
         </div>
       `;
-  }
+    }
   }
 
   private escapeHtml(text: string): string {
-    if (!text) return '';
+    if (!text) {
+      return '';
+    }
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
@@ -339,8 +364,12 @@ export class RepeaterControlRenderer {
     errors: string[]
   ): string {
     const getImageUrl = (val: any): string => {
-      if (!val) return '';
-      if (typeof val === 'string') return val;
+      if (!val) {
+        return '';
+      }
+      if (typeof val === 'string') {
+        return val;
+      }
       if (typeof val === 'object' && val !== null) {
         return val.src || val.url || '';
       }
@@ -352,7 +381,7 @@ export class RepeaterControlRenderer {
 
     const config = (field as any).imageUploadConfig || {};
     const uploadUrl = config.uploadUrl || '';
-    const maxFileSize = config.maxFileSize || (10 * 1024 * 1024);
+    const maxFileSize = config.maxFileSize || 10 * 1024 * 1024;
     const fileParamName = config.fileParamName || 'file';
 
     const configJson = JSON.stringify({
@@ -361,8 +390,8 @@ export class RepeaterControlRenderer {
       maxFileSize,
       uploadHeaders: config.uploadHeaders || {},
       responseMapper: config.responseMapper ? 'CUSTOM' : null,
-      onUploadError: config.onUploadError ? 'CUSTOM' : null
-    }).replace(/"/g, '&quot;');
+      onUploadError: config.onUploadError ? 'CUSTOM' : null,
+    }).replaceAll('"', '&quot;');
 
     const escapedLabel = this.escapeHtml(field.label);
     const errorClass = hasError ? CSS_CLASSES.ERROR : '';
@@ -404,22 +433,22 @@ export class RepeaterControlRenderer {
         <div class="image-upload-field__error${hasError ? '' : ' bb-hidden'}">${hasError ? this.escapeHtml(errors[0]) : ''}</div>
 
         <!-- Hidden input для хранения значения -->
-        <input type="hidden" name="${fieldNamePath}" value="${typeof value === 'object' && value !== null ? JSON.stringify(value).replace(/"/g, '&quot;') : (this.escapeHtml(value || ''))}" data-image-value="true" data-item-index="${itemIndex}" data-field-name="${field.field}" data-repeater-field-name="${this.fieldName}" />
+        <input type="hidden" name="${fieldNamePath}" value="${typeof value === 'object' && value !== null ? JSON.stringify(value).replaceAll('"', '&quot;') : this.escapeHtml(value || '')}" data-image-value="true" data-item-index="${itemIndex}" data-field-name="${field.field}" data-repeater-field-name="${this.fieldName}" />
       </div>
     `;
   }
 
   private generateItemHTML(item: Record<string, any>, index: number): string {
-  const itemTitle = this.config.itemTitle || 'Элемент';
-  const isCollapsed = this.collapsedItems.has(index);
-  const effectiveMin = this.getEffectiveMin();
-  const canRemove = this.value.length > effectiveMin;
+    const itemTitle = this.config.itemTitle || 'Элемент';
+    const isCollapsed = this.collapsedItems.has(index);
+    const effectiveMin = this.getEffectiveMin();
+    const canRemove = this.value.length > effectiveMin;
 
-  const fieldsHTML = this.config.fields
-    .map(field => this.generateFieldHTML(field, index, item[field.field]))
-    .join('');
+    const fieldsHTML = this.config.fields
+      .map(field => this.generateFieldHTML(field, index, item[field.field]))
+      .join('');
 
-  return `
+    return `
     <div class="repeater-control__item ${isCollapsed ? 'repeater-control__item--collapsed' : ''}" data-item-index="${index}">
       <div class="repeater-control__item-header">
         <span class="repeater-control__item-title">${itemTitle} #${index + 1}</span>
@@ -433,7 +462,9 @@ export class RepeaterControlRenderer {
           >
             ${isCollapsed ? '▼' : '▲'}
           </button>
-          ${index > 0 ? `
+          ${
+            index > 0
+              ? `
             <button
               type="button"
               class="repeater-control__item-btn repeater-control__item-btn--move"
@@ -443,8 +474,12 @@ export class RepeaterControlRenderer {
             >
               ↑
             </button>
-          ` : ''}
-          ${index < this.value.length - 1 ? `
+          `
+              : ''
+          }
+          ${
+            index < this.value.length - 1
+              ? `
             <button
               type="button"
               class="repeater-control__item-btn repeater-control__item-btn--move"
@@ -454,7 +489,9 @@ export class RepeaterControlRenderer {
             >
               ↓
             </button>
-          ` : ''}
+          `
+              : ''
+          }
           <button
             type="button"
             class="repeater-control__item-btn repeater-control__item-btn--remove"
@@ -467,35 +504,43 @@ export class RepeaterControlRenderer {
           </button>
         </div>
       </div>
-      ${!isCollapsed ? `
+      ${
+        !isCollapsed
+          ? `
         <div class="repeater-control__item-fields">
           ${fieldsHTML}
         </div>
-      ` : ''}
+      `
+          : ''
+      }
     </div>
   `;
   }
 
   public generateHTML(): string {
-  const itemCount = this.value.length;
-  const canAdd = !this.config.max || itemCount < this.config.max;
-  const effectiveMin = this.getEffectiveMin();
-  const max = this.config.max;
+    const itemCount = this.value.length;
+    const canAdd = !this.config.max || itemCount < this.config.max;
+    const effectiveMin = this.getEffectiveMin();
+    const max = this.config.max;
 
-  const itemsHTML = this.value.map((item, index) => this.generateItemHTML(item, index)).join('');
+    const itemsHTML = this.value.map((item, index) => this.generateItemHTML(item, index)).join('');
 
-  return `
+    return `
     <div class="repeater-control" data-field-name="${this.fieldName}">
       <div class="repeater-control__header">
         <label class="repeater-control__label">
           ${this.label}
           ${this.isRequired() ? '<span class="required">*</span>' : ''}
         </label>
-        ${itemCount > 0 ? `
+        ${
+          itemCount > 0
+            ? `
           <span class="repeater-control__count">
             ${itemCount} ${this.getItemCountLabel(itemCount)}
           </span>
-        ` : ''}
+        `
+            : ''
+        }
       </div>
 
       <div class="repeater-control__items">
@@ -511,121 +556,137 @@ export class RepeaterControlRenderer {
         + ${this.config.addButtonText || 'Добавить'}
       </button>
 
-      ${effectiveMin || max ? `
+      ${
+        effectiveMin || max
+          ? `
         <div class="repeater-control__hint">
-          ${effectiveMin && itemCount < effectiveMin ? `
+          ${
+            effectiveMin && itemCount < effectiveMin
+              ? `
             <span class="repeater-control__hint--error">Минимум: ${effectiveMin}</span>
-          ` : ''}
-          ${max && itemCount >= max ? `
+          `
+              : ''
+          }
+          ${
+            max && itemCount >= max
+              ? `
             <span class="repeater-control__hint--warning">Максимум: ${max}</span>
-          ` : ''}
+          `
+              : ''
+          }
         </div>
-      ` : ''}
+      `
+          : ''
+      }
     </div>
   `;
   }
 
   public render(container: HTMLElement): void {
-  this.container = container;
-  container.querySelectorAll('[data-image-initialized]').forEach(el => {
-    el.removeAttribute('data-image-initialized');
-  });
-  container.innerHTML = this.generateHTML();
-  this.attachEventListeners();
+    this.container = container;
+    container.querySelectorAll('[data-image-initialized]').forEach(el => {
+      const htmlEl = el as HTMLElement;
+      delete htmlEl.dataset.imageInitialized;
+    });
+    container.innerHTML = this.generateHTML();
+    this.attachEventListeners();
 
-  if (this.onAfterRender) {
-    this.onAfterRender();
-  }
+    if (this.onAfterRender) {
+      this.onAfterRender();
+    }
   }
 
   private attachEventListeners(): void {
-  if (!this.container) return;
+    if (!this.container) {
+      return;
+    }
 
-  const addButton = this.container.querySelector('[data-action="add"]');
-  addButton?.addEventListener('click', () => this.addItem());
+    const addButton = this.container.querySelector('[data-action="add"]');
+    addButton?.addEventListener('click', () => this.addItem());
 
-  const actionButtons = this.container.querySelectorAll('.repeater-control__item-btn');
-  actionButtons.forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const target = e.currentTarget as HTMLElement;
-      const action = target.dataset.action;
-      const index = parseInt(target.dataset.itemIndex || '0', 10);
+    const actionButtons = this.container.querySelectorAll('.repeater-control__item-btn');
+    actionButtons.forEach(btn => {
+      btn.addEventListener('click', e => {
+        const target = e.currentTarget as HTMLElement;
+        const action = target.dataset.action;
+        const index = Number.parseInt(target.dataset.itemIndex || '0', 10);
 
-      switch (action) {
-        case 'remove':
-          this.removeItem(index);
-          break;
-        case 'move-up':
-          this.moveItem(index, index - 1);
-          break;
-        case 'move-down':
-          this.moveItem(index, index + 1);
-          break;
-        case 'collapse':
-          this.toggleCollapse(index);
-          break;
-      }
+        switch (action) {
+          case 'remove':
+            this.removeItem(index);
+            break;
+          case 'move-up':
+            this.moveItem(index, index - 1);
+            break;
+          case 'move-down':
+            this.moveItem(index, index + 1);
+            break;
+          case 'collapse':
+            this.toggleCollapse(index);
+            break;
+        }
+      });
     });
-  });
 
-  const inputs = this.container.querySelectorAll('input[data-item-index], textarea[data-item-index], select[data-item-index]');
-  inputs.forEach(input => {
-    const eventType = input.tagName === 'SELECT' ? 'change' : 'input';
-    input.addEventListener(eventType, (e) => {
-      const target = e.target as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
-      const itemIndex = parseInt(target.dataset.itemIndex || '0', 10);
-      const fieldName = target.dataset.fieldName || '';
+    const inputs = this.container.querySelectorAll(
+      'input[data-item-index], textarea[data-item-index], select[data-item-index]'
+    );
+    inputs.forEach(input => {
+      const eventType = input.tagName === 'SELECT' ? 'change' : 'input';
+      input.addEventListener(eventType, e => {
+        const target = e.target as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
+        const itemIndex = Number.parseInt(target.dataset.itemIndex || '0', 10);
+        const fieldName = target.dataset.fieldName || '';
 
-      let value: any;
-      if (target.type === 'checkbox') {
-        value = (target as HTMLInputElement).checked;
-      } else if (target.type === 'number') {
-        value = parseFloat(target.value) || 0;
-      } else {
-        value = target.value;
-      }
+        let value: any;
+        if (target.type === 'checkbox') {
+          value = (target as HTMLInputElement).checked;
+        } else if (target.type === 'number') {
+          value = Number.parseFloat(target.value) || 0;
+        } else {
+          value = target.value;
+        }
 
-      this.onFieldChange(itemIndex, fieldName, value);
+        this.onFieldChange(itemIndex, fieldName, value);
+      });
     });
-  });
   }
 
   public getValue(): any[] {
-  return this.value;
+    return this.value;
   }
 
   public updateErrors(errors: Record<string, string[]>): void {
-  this.errors = errors;
-  if (this.container) {
-    this.render(this.container);
-  }
-  }
-
-  public setValue(value: any[]): void {
-  this.value = value;
-  if (this.container) {
-    this.render(this.container);
-  }
-  }
-
-  public destroy(): void {
-  if (this.container) {
-    this.container.innerHTML = '';
-    this.container = undefined;
-  }
-  }
-
-  public expandItem(index: number): void {
-  if (this.collapsedItems.has(index)) {
-    this.collapsedItems.delete(index);
+    this.errors = errors;
     if (this.container) {
       this.render(this.container);
     }
   }
+
+  public setValue(value: any[]): void {
+    this.value = value;
+    if (this.container) {
+      this.render(this.container);
+    }
+  }
+
+  public destroy(): void {
+    if (this.container) {
+      this.container.innerHTML = '';
+      this.container = undefined;
+    }
+  }
+
+  public expandItem(index: number): void {
+    if (this.collapsedItems.has(index)) {
+      this.collapsedItems.delete(index);
+      if (this.container) {
+        this.render(this.container);
+      }
+    }
   }
 
   public isItemCollapsed(index: number): boolean {
-  return this.collapsedItems.has(index);
+    return this.collapsedItems.has(index);
   }
 }
-

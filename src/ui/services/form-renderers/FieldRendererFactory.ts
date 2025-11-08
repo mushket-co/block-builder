@@ -1,20 +1,20 @@
 import { TFieldType } from '../../../core/types/form';
-import { IFieldRenderer } from './IFieldRenderer';
-import { TextFieldRenderer } from './TextFieldRenderer';
-import { TextareaFieldRenderer } from './TextareaFieldRenderer';
-import { NumberFieldRenderer } from './NumberFieldRenderer';
+import { ApiSelectFieldRenderer } from './ApiSelectFieldRenderer';
+import { CheckboxFieldRenderer } from './CheckboxFieldRenderer';
 import { ColorFieldRenderer } from './ColorFieldRenderer';
-import { UrlFieldRenderer } from './UrlFieldRenderer';
+import { CustomFieldRenderer } from './CustomFieldRenderer';
 import { EmailFieldRenderer } from './EmailFieldRenderer';
 import { FileFieldRenderer } from './FileFieldRenderer';
-import { CheckboxFieldRenderer } from './CheckboxFieldRenderer';
-import { SelectFieldRenderer } from './SelectFieldRenderer';
-import { RadioFieldRenderer } from './RadioFieldRenderer';
+import { IFieldRenderer } from './IFieldRenderer';
 import { ImageFieldRenderer } from './ImageFieldRenderer';
-import { SpacingFieldRenderer } from './SpacingFieldRenderer';
+import { NumberFieldRenderer } from './NumberFieldRenderer';
+import { RadioFieldRenderer } from './RadioFieldRenderer';
 import { RepeaterFieldRenderer } from './RepeaterFieldRenderer';
-import { ApiSelectFieldRenderer } from './ApiSelectFieldRenderer';
-import { CustomFieldRenderer } from './CustomFieldRenderer';
+import { SelectFieldRenderer } from './SelectFieldRenderer';
+import { SpacingFieldRenderer } from './SpacingFieldRenderer';
+import { TextareaFieldRenderer } from './TextareaFieldRenderer';
+import { TextFieldRenderer } from './TextFieldRenderer';
+import { UrlFieldRenderer } from './UrlFieldRenderer';
 
 export class FieldRendererFactory {
   private static instance: FieldRendererFactory;
@@ -56,7 +56,11 @@ export class FieldRendererFactory {
   getRenderer(fieldType: TFieldType): IFieldRenderer {
     const renderer = this.renderers.get(fieldType);
     if (!renderer) {
-      return this.renderers.get('text')!;
+      const textRenderer = this.renderers.get('text');
+      if (!textRenderer) {
+        throw new Error('Text renderer не найден. Это внутренняя ошибка конфигурации.');
+      }
+      return textRenderer;
     }
     return renderer;
   }
@@ -69,4 +73,3 @@ export class FieldRendererFactory {
     return Array.from(this.renderers.keys()) as TFieldType[];
   }
 }
-

@@ -5,7 +5,7 @@ import { BaseFieldRenderer } from './BaseFieldRenderer';
 export class CustomFieldRenderer extends BaseFieldRenderer {
   readonly fieldType = 'custom';
 
-  render(fieldId: string, field: IFormFieldConfig, value: any, required: string): string {
+  render(_fieldId: string, field: IFormFieldConfig, value: any, required: string): string {
     const customFieldConfig = field.customFieldConfig || { rendererId: '' };
     const configJson = JSON.stringify({
       field: field.field,
@@ -13,8 +13,8 @@ export class CustomFieldRenderer extends BaseFieldRenderer {
       rules: field.rules || [],
       value: value || field.defaultValue || '',
       required: !!required,
-      ...customFieldConfig
-    }).replace(/"/g, '&quot;');
+      ...customFieldConfig,
+    }).replaceAll('"', '&quot;');
 
     const escapedLabel = this.escapeHtml(field.label);
     const requiredMark = required ? '<span class="required">*</span>' : '';
@@ -40,8 +40,12 @@ export class CustomFieldRenderer extends BaseFieldRenderer {
     `;
   }
 
-  protected renderInput(fieldId: string, field: IFormFieldConfig, value: any, required: string): string {
+  protected renderInput(
+    _fieldId: string,
+    _field: IFormFieldConfig,
+    _value: any,
+    _required: string
+  ): string {
     return '';
   }
 }
-

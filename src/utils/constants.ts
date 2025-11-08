@@ -1,5 +1,5 @@
-export const HTTP_DEFAULT_TIMEOUT_MS = 30000;
-export const NOTIFICATION_DISPLAY_DURATION_MS = 12000;
+export const HTTP_DEFAULT_TIMEOUT_MS = 30_000;
+export const NOTIFICATION_DISPLAY_DURATION_MS = 12_000;
 export const ERROR_RENDER_DELAY_MS = 100;
 export const REPEATER_ACCORDION_ANIMATION_DELAY_MS = 350;
 export const FORM_ID_PREFIX = 'block-builder-form';
@@ -20,7 +20,8 @@ export const ERROR_MESSAGES = {
   COMPONENT_NOT_REGISTERED: (name: string) => `Component '${name}' is not registered`,
   BLOCK_TYPE_REQUIRED: 'Block type is required and must be a string',
   BLOCK_TYPE_EMPTY: 'Block type cannot be empty',
-  INVALID_SETTINGS: (key: string) => `Invalid setting value for key '${key}': must be primitive type`,
+  INVALID_SETTINGS: (key: string) =>
+    `Invalid setting value for key '${key}': must be primitive type`,
   INVALID_PROPS: (key: string) => `Invalid prop value for key '${key}': must be primitive type`,
   INVALID_STYLE: (key: string) => `Invalid style value for key '${key}': must be string or number`,
   FAILED_TO_COPY_CLIPBOARD: 'Unable to copy to clipboard',

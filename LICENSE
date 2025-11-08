@@ -1,6 +1,6 @@
-MIT License
+MIT License (FREE Version)
 
-Copyright (c) 2024 block-builder
+Copyright (c) 2024 Mushket & Co
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,3 +20,25 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
+---
+
+COMMERCIAL LICENSE (PRO Version)
+
+The following PRO features require a commercial license:
+
+- Custom Fields (Кастомные поля)
+- API Select fields (API Select поля)
+- Unlimited Block Types (Неограниченное количество типов блоков)
+- Advanced Spacing (Продвинутые настройки spacing)
+
+PRO features are licensed under a proprietary license. Unauthorized use,
+modification, or distribution of PRO features is strictly prohibited.
+
+To obtain a PRO license, please contact:
+- Website: https://block-builder.ru
+
+The FREE version of this software is licensed under the MIT License above.
+The PRO version and PRO features are subject to separate commercial licensing terms.
+
+By using PRO features without a valid commercial license, you are in violation
+of copyright laws and may be subject to legal action.

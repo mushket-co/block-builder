@@ -1,0 +1,397 @@
+﻿
+> @mushket-co/block-builder@1.0.20 lint
+> eslint src --ext .ts,.vue
+
+
+D:\dev\bb\block-builder\src\BlockBuilderFacade.ts
+   17:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   46:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   47:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   49:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  148:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  156:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  273:11  warning  Unexpected console statement              no-console
+  285:7   warning  Unexpected console statement              no-console
+  329:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  333:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  341:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  349:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  356:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  357:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  365:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  370:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  374:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  541:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\dev\bb\block-builder\src\core\ports\CustomFieldRenderer.ts
+   4:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  11:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  15:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  17:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  26:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  28:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\dev\bb\block-builder\src\core\ports\HttpClient.ts
+   3:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  20:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  24:15  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  26:11  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  32:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  34:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\dev\bb\block-builder\src\core\services\LicenseFeatureChecker.ts
+  64:66  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\dev\bb\block-builder\src\core\services\LicenseService.ts
+  88:66  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\dev\bb\block-builder\src\core\types\block.ts
+  4:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  5:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\dev\bb\block-builder\src\core\types\common.ts
+   2:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   6:50  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  12:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  13:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  18:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  22:61  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  26:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\dev\bb\block-builder\src\core\types\form.ts
+   46:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   57:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   68:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   86:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  107:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  107:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  116:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  131:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  138:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  140:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\dev\bb\block-builder\src\core\types\validation.ts
+  47:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  62:11  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  64:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\dev\bb\block-builder\src\core\use-cases\ApiSelectUseCase.ts
+  24:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  54:62  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  77:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  89:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  89:51  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\dev\bb\block-builder\src\core\use-cases\BlockManagementUseCase.ts
+   69:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   72:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   78:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   84:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   93:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   94:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  117:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\dev\bb\block-builder\src\core\use-cases\UpdateBlockUseCase.ts
+  26:61  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  38:55  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\dev\bb\block-builder\src\infrastructure\http\FetchHttpClient.ts
+   26:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   56:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   72:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   92:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  105:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  107:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\dev\bb\block-builder\src\infrastructure\repositories\MemoryBlockRepositoryImpl.ts
+  62:12  warning  Forbidden non-null assertion  @typescript-eslint/no-non-null-assertion
+
+D:\dev\bb\block-builder\src\ui\EventDelegation.ts
+   6:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  61:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  64:13  warning  Unexpected console statement              no-console
+  70:15  warning  Unexpected console statement              no-console
+  74:13  warning  Unexpected console statement              no-console
+  80:9   warning  Unexpected console statement              no-console
+
+D:\dev\bb\block-builder\src\ui\components\ApiSelectField.vue
+  176:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\dev\bb\block-builder\src\ui\components\BlockBuilder.vue
+   538:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   539:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   540:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   541:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   576:9   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   588:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   590:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   610:48  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   619:15  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   707:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   749:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   757:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   765:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   765:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   768:51  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   781:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   793:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   794:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   799:59  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   832:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   835:5   warning  Unexpected console statement              no-console
+   846:66  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   850:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   874:51  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   876:11  warning  Unexpected console statement              no-console
+   901:51  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   903:11  warning  Unexpected console statement              no-console
+   912:5   warning  Unexpected console statement              no-console
+   957:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1039:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1042:64  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1044:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1060:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1060:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1089:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1093:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1098:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1098:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1112:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1116:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1116:48  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1118:5   warning  Unexpected console statement              no-console
+  1139:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1141:7   warning  Unexpected console statement              no-console
+  1266:5   warning  Unexpected console statement              no-console
+  1280:7   warning  Unexpected console statement              no-console
+  1293:53  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1299:63  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1325:55  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\dev\bb\block-builder\src\ui\components\BlockComponent.vue
+  71:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\dev\bb\block-builder\src\ui\components\BlockProperties.vue
+  84:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\dev\bb\block-builder\src\ui\components\CustomField.vue
+  11:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  12:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  15:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  26:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  30:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  53:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  66:5   warning  Unexpected console statement              no-console
+
+D:\dev\bb\block-builder\src\ui\components\ImageUploadField.vue
+   60:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  117:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  234:84  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  235:21  warning  Forbidden non-null assertion              @typescript-eslint/no-non-null-assertion
+
+D:\dev\bb\block-builder\src\ui\controllers\BlockUIController.ts
+   38:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   48:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   67:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  487:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  491:9   warning  Unexpected console statement              no-console
+  498:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  499:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  523:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  529:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  569:11  warning  Unexpected console statement              no-console
+  593:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  596:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  646:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  681:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  684:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  777:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  778:11  warning  Unexpected console statement              no-console
+  825:66  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\dev\bb\block-builder\src\ui\services\ApiSelectControlRenderer.ts
+   12:59  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   23:66  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  111:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  402:23  warning  Forbidden non-null assertion              @typescript-eslint/no-non-null-assertion
+  621:23  warning  Forbidden non-null assertion              @typescript-eslint/no-non-null-assertion
+  641:23  warning  Forbidden non-null assertion              @typescript-eslint/no-non-null-assertion
+  655:23  warning  Forbidden non-null assertion              @typescript-eslint/no-non-null-assertion
+
+D:\dev\bb\block-builder\src\ui\services\CustomFieldControlRenderer.ts
+  10:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  13:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  14:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  22:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  23:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  41:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  72:15  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  79:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\dev\bb\block-builder\src\ui\services\FormBuilder.ts
+  17:77  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  26:57  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  38:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  67:61  warning  Forbidden non-null assertion              @typescript-eslint/no-non-null-assertion
+  74:61  warning  Forbidden non-null assertion              @typescript-eslint/no-non-null-assertion
+  81:66  warning  Forbidden non-null assertion              @typescript-eslint/no-non-null-assertion
+  88:66  warning  Forbidden non-null assertion              @typescript-eslint/no-non-null-assertion
+
+D:\dev\bb\block-builder\src\ui\services\ModalManager.ts
+  107:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  114:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\dev\bb\block-builder\src\ui\services\RepeaterControlRenderer.ts
+    7:59  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   10:11  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   11:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   18:66  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   21:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   22:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   67:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   68:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   99:17  warning  Forbidden non-null assertion              @typescript-eslint/no-non-null-assertion
+  111:17  warning  Forbidden non-null assertion              @typescript-eslint/no-non-null-assertion
+  119:17  warning  Forbidden non-null assertion              @typescript-eslint/no-non-null-assertion
+  128:17  warning  Forbidden non-null assertion              @typescript-eslint/no-non-null-assertion
+  131:70  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  172:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  354:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  360:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  376:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  435:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  634:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  648:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  659:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\dev\bb\block-builder\src\ui\services\SpacingControlRenderer.ts
+  170:17  warning  Forbidden non-null assertion  @typescript-eslint/no-non-null-assertion
+
+D:\dev\bb\block-builder\src\ui\services\UIRenderer.ts
+   22:32  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+   38:22  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+   40:28  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+   48:32  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+   56:55  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+   56:77  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  372:18  warning  Do not call `Array#push()` multiple times  unicorn/no-array-push-push
+  458:56  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  497:56  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  523:27  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  532:20  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  544:30  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  571:9   warning  Unexpected console statement               no-console
+
+D:\dev\bb\block-builder\src\ui\services\form-renderers\ApiSelectFieldRenderer.ts
+   8:60  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  35:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\dev\bb\block-builder\src\ui\services\form-renderers\BaseFieldRenderer.ts
+   8:59  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  18:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  50:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\dev\bb\block-builder\src\ui\services\form-renderers\CheckboxFieldRenderer.ts
+   7:59  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  30:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\dev\bb\block-builder\src\ui\services\form-renderers\ColorFieldRenderer.ts
+  11:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\dev\bb\block-builder\src\ui\services\form-renderers\CustomFieldRenderer.ts
+   8:60  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  46:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\dev\bb\block-builder\src\ui\services\form-renderers\EmailFieldRenderer.ts
+  11:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\dev\bb\block-builder\src\ui\services\form-renderers\FieldRendererFactory.ts
+  59:14  warning  Forbidden non-null assertion  @typescript-eslint/no-non-null-assertion
+
+D:\dev\bb\block-builder\src\ui\services\form-renderers\FileFieldRenderer.ts
+  11:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\dev\bb\block-builder\src\ui\services\form-renderers\IFieldRenderer.ts
+  13:59  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\dev\bb\block-builder\src\ui\services\form-renderers\ImageFieldRenderer.ts
+   8:59  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  11:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  79:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\dev\bb\block-builder\src\ui\services\form-renderers\NumberFieldRenderer.ts
+  11:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\dev\bb\block-builder\src\ui\services\form-renderers\RadioFieldRenderer.ts
+   7:59  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  52:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\dev\bb\block-builder\src\ui\services\form-renderers\RepeaterFieldRenderer.ts
+   8:60  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  32:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\dev\bb\block-builder\src\ui\services\form-renderers\SelectFieldRenderer.ts
+  11:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\dev\bb\block-builder\src\ui\services\form-renderers\SpacingFieldRenderer.ts
+   8:60  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  32:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\dev\bb\block-builder\src\ui\services\form-renderers\TextFieldRenderer.ts
+  11:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\dev\bb\block-builder\src\ui\services\form-renderers\TextareaFieldRenderer.ts
+  11:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\dev\bb\block-builder\src\ui\services\form-renderers\UrlFieldRenderer.ts
+  11:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\dev\bb\block-builder\src\utils\blockHelpers.ts
+  22:31  warning  Forbidden non-null assertion  @typescript-eslint/no-non-null-assertion
+
+D:\dev\bb\block-builder\src\utils\blockSpacingHelpers.ts
+  29:7   warning  Forbidden non-null assertion              @typescript-eslint/no-non-null-assertion
+  65:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  76:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  78:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  79:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\dev\bb\block-builder\src\utils\domSafe.ts
+  17:60  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\dev\bb\block-builder\src\utils\formErrorHelpers.ts
+  42:16  warning  Forbidden non-null assertion  @typescript-eslint/no-non-null-assertion
+  42:55  warning  Forbidden non-null assertion  @typescript-eslint/no-non-null-assertion
+
+D:\dev\bb\block-builder\src\utils\logger.ts
+  14:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  24:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  26:7   warning  Unexpected console statement              no-console
+  29:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  31:7   warning  Unexpected console statement              no-console
+  34:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  36:7   warning  Unexpected console statement              no-console
+  39:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  41:7   warning  Unexpected console statement              no-console
+  45:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  47:7   warning  Unexpected console statement              no-console
+
+D:\dev\bb\block-builder\src\utils\renderHelpers.ts
+   5:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  16:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  16:61  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  58:52  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\dev\bb\block-builder\src\utils\safeDOM.ts
+  33:59  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\dev\bb\block-builder\src\utils\universalValidation.ts
+  127:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\dev\bb\block-builder\src\utils\validation.ts
+    2:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   32:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  225:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+тЬЦ 278 problems (0 errors, 278 warnings)
+

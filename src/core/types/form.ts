@@ -1,6 +1,22 @@
-import { IValidationRule } from './validation';
 import { ICustomFieldConfig } from '../ports/CustomFieldRenderer';
-export type TFieldType = 'text' | 'number' | 'email' | 'url' | 'textarea' | 'select' | 'checkbox' | 'radio' | 'color' | 'file' | 'image' | 'spacing' | 'repeater' | 'api-select' | 'custom';
+import { IValidationRule } from './validation';
+
+export type TFieldType =
+  | 'text'
+  | 'number'
+  | 'email'
+  | 'url'
+  | 'textarea'
+  | 'select'
+  | 'checkbox'
+  | 'radio'
+  | 'color'
+  | 'file'
+  | 'image'
+  | 'spacing'
+  | 'repeater'
+  | 'api-select'
+  | 'custom';
 export type TSpacingType = 'padding-top' | 'padding-bottom' | 'margin-top' | 'margin-bottom';
 export interface IBreakpoint {
   name: string;
@@ -27,7 +43,7 @@ export interface IRepeaterItemFieldConfig {
   label: string;
   type: Exclude<TFieldType, 'repeater' | 'spacing'>;
   placeholder?: string;
-  defaultValue?: any;
+  defaultValue?: unknown;
   options?: { value: string; label: string }[];
   rules?: IValidationRule[];
 }
@@ -38,7 +54,7 @@ export interface IRepeaterFieldConfig {
   itemTitle?: string;
   min?: number;
   max?: number;
-  defaultItemValue?: Record<string, any>;
+  defaultItemValue?: Record<string, unknown>;
 }
 export type THttpMethod = 'GET' | 'POST';
 export interface IApiSelectItem {
@@ -49,7 +65,7 @@ export interface IApiRequestParams {
   search?: string;
   page?: number;
   limit?: number;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 export interface IApiSelectResponse {
   data: IApiSelectItem[];
@@ -67,7 +83,7 @@ export interface IApiSelectConfig {
   limit?: number;
   debounceMs?: number;
   multiple?: boolean;
-  responseMapper?: (response: any) => IApiSelectResponse;
+  responseMapper?: (response: unknown) => IApiSelectResponse;
   dataPath?: string;
   idField?: string;
   nameField?: string;
@@ -78,7 +94,6 @@ export interface IApiSelectConfig {
   errorText?: string;
 }
 export interface IImageUploadConfig {
-
   uploadUrl?: string;
 
   fileParamName?: string;
@@ -89,7 +104,7 @@ export interface IImageUploadConfig {
 
   accept?: string;
 
-  responseMapper?: (response: any) => any;
+  responseMapper?: (response: unknown) => unknown;
 
   onUploadError?: (error: Error) => void;
 }
@@ -98,7 +113,7 @@ export interface IFormFieldConfig {
   label: string;
   type: TFieldType;
   placeholder?: string;
-  defaultValue?: any;
+  defaultValue?: unknown;
   options?: { value: string; label: string }[];
   rules?: IValidationRule[];
   spacingConfig?: ISpacingFieldConfig;
@@ -113,16 +128,16 @@ export interface IBlockConfigWithSpacing {
   description?: string;
   fields?: IFormFieldConfig[];
   spacingOptions?: IBlockSpacingOptions;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 export interface IFieldValidationConfig {
   field: string;
   label: string;
   type: TFieldType;
   placeholder?: string;
-  options?: Array<{ value: any; label: string }>;
+  options?: Array<{ value: unknown; label: string }>;
   rules: IValidationRule[];
-  defaultValue?: any;
+  defaultValue?: unknown;
 }
 export interface IFormGenerationConfig {
   title: string;

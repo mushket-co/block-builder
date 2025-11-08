@@ -12,7 +12,12 @@ export abstract class BaseFieldRenderer implements IFieldRenderer {
     return this.wrapInFormGroup(field, labelHTML + inputHTML);
   }
 
-  protected abstract renderInput(fieldId: string, field: IFormFieldConfig, value: any, required: string): string;
+  protected abstract renderInput(
+    fieldId: string,
+    field: IFormFieldConfig,
+    value: any,
+    required: string
+  ): string;
 
   protected renderLabel(fieldId: string, field: IFormFieldConfig, required: string): string {
     const escapedLabel = this.escapeHtml(field.label);
@@ -53,4 +58,3 @@ export abstract class BaseFieldRenderer implements IFieldRenderer {
     return placeholder ? this.escapeHtml(placeholder) : '';
   }
 }
-

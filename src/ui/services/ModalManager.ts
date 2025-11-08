@@ -11,22 +11,22 @@ export interface IModalOptions {
 }
 
 export class ModalManager {
-  private static readonly MODAL_ID = 'block-builder-modal'
-  private static readonly MODAL_CONTENT_ID = 'block-builder-modal-content'
-  private boundHandleOverlayClick: ((event: MouseEvent) => void) | null = null;
-  private boundHandleModalContentClick: ((event: MouseEvent) => void) | null = null;
+  private static readonly MODAL_ID = 'block-builder-modal';
+  private static readonly MODAL_CONTENT_ID = 'block-builder-modal-content';
+  private boundHandleOverlayClick: ((event: Event) => void) | null = null;
+  private boundHandleModalContentClick: ((event: Event) => void) | null = null;
   private modalHandlers: { onSubmit?: () => void; onCancel?: () => void } | null = null;
 
   showModal(options: IModalOptions): void {
-  this.closeModal();
+    this.closeModal();
 
-  const escapedTitle = this.escapeHtml(options.title);
-  const escapedCancelText = this.escapeHtml(options.cancelButtonText || 'Отмена');
-  const escapedSubmitText = this.escapeHtml(options.submitButtonText || 'Сохранить');
+    const escapedTitle = this.escapeHtml(options.title);
+    const escapedCancelText = this.escapeHtml(options.cancelButtonText || 'Отмена');
+    const escapedSubmitText = this.escapeHtml(options.submitButtonText || 'Сохранить');
 
-  const footerHTML = options.hideSubmitButton
-    ? ''
-    : `
+    const footerHTML = options.hideSubmitButton
+      ? ''
+      : `
       <div class="block-builder-modal-footer">
         <button data-action="closeModal" class="block-builder-btn block-builder-btn--secondary">
           ${escapedCancelText}
@@ -37,7 +37,7 @@ export class ModalManager {
       </div>
     `;
 
-  const modalHTML = `
+    const modalHTML = `
     <div id="${ModalManager.MODAL_ID}" class="block-builder-modal">
       <div class="block-builder-modal-content" id="${ModalManager.MODAL_CONTENT_ID}">
         <div class="block-builder-modal-header">
@@ -52,92 +52,92 @@ export class ModalManager {
     </div>
   `;
 
-  document.body.insertAdjacentHTML('beforeend', modalHTML);
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
 
-  this.modalHandlers = {
-    onSubmit: options.onSubmit,
-    onCancel: options.onCancel
-  };
-
-  requestAnimationFrame(() => {
-    this.boundHandleOverlayClick = (event: MouseEvent) => {
-      if (event.target === event.currentTarget) {
-        this.closeModal();
-      }
+    this.modalHandlers = {
+      onSubmit: options.onSubmit,
+      onCancel: options.onCancel,
     };
-    this.boundHandleModalContentClick = (e: MouseEvent) => e.stopPropagation();
 
-    const modal = document.getElementById(ModalManager.MODAL_ID);
-    if (modal) {
-      modal.addEventListener('mousedown', this.boundHandleOverlayClick);
-    }
+    requestAnimationFrame(() => {
+      this.boundHandleOverlayClick = (event: Event) => {
+        if (event.target === event.currentTarget) {
+          this.closeModal();
+        }
+      };
+      this.boundHandleModalContentClick = (e: Event) => e.stopPropagation();
 
-    const modalContent = document.getElementById(ModalManager.MODAL_CONTENT_ID);
-    if (modalContent && this.boundHandleModalContentClick) {
-      modalContent.addEventListener('mousedown', this.boundHandleModalContentClick);
-    }
-  });
+      const modal = document.querySelector(`#${ModalManager.MODAL_ID}`);
+      if (modal) {
+        modal.addEventListener('mousedown', this.boundHandleOverlayClick);
+      }
+
+      const modalContent = document.querySelector(`#${ModalManager.MODAL_CONTENT_ID}`);
+      if (modalContent && this.boundHandleModalContentClick) {
+        modalContent.addEventListener('mousedown', this.boundHandleModalContentClick);
+      }
+    });
   }
 
   closeModal(): void {
-  const modal = document.getElementById(ModalManager.MODAL_ID);
-  if (modal) {
-    if (this.boundHandleOverlayClick) {
-      modal.removeEventListener('mousedown', this.boundHandleOverlayClick);
-      this.boundHandleOverlayClick = null;
+    const modal = document.querySelector(`#${ModalManager.MODAL_ID}`);
+    if (modal) {
+      if (this.boundHandleOverlayClick) {
+        modal.removeEventListener('mousedown', this.boundHandleOverlayClick);
+        this.boundHandleOverlayClick = null;
+      }
+      modal.remove();
     }
-    modal.remove();
-  }
 
-  const modalContent = document.getElementById(ModalManager.MODAL_CONTENT_ID);
-  if (modalContent && this.boundHandleModalContentClick) {
-    modalContent.removeEventListener('mousedown', this.boundHandleModalContentClick);
-    this.boundHandleModalContentClick = null;
-  }
+    const modalContent = document.querySelector(`#${ModalManager.MODAL_CONTENT_ID}`);
+    if (modalContent && this.boundHandleModalContentClick) {
+      modalContent.removeEventListener('mousedown', this.boundHandleModalContentClick);
+      this.boundHandleModalContentClick = null;
+    }
 
-  this.modalHandlers = null;
+    this.modalHandlers = null;
   }
 
   submitModal(): void {
-  if (this.modalHandlers?.onSubmit) {
-    this.modalHandlers.onSubmit();
+    if (this.modalHandlers?.onSubmit) {
+      this.modalHandlers.onSubmit();
+    }
   }
-  }
 
-  getFormData(formId: string): Record<string, any> {
-  const form = document.getElementById(formId) as HTMLFormElement;
-  if (!form) return {};
-
-  const formData = new FormData(form);
-  const props: Record<string, any> = {};
-
-  for (const [key, value] of formData.entries()) {
-    if (key.includes('[') && key.includes('].')) {
-      continue;
+  getFormData(formId: string): Record<string, unknown> {
+    const form = document.querySelector(`#${formId}`) as HTMLFormElement;
+    if (!form) {
+      return {};
     }
 
-    const hiddenInput = form.querySelector(`input[type="hidden"][name="${key}"][data-image-value="true"]`);
-    if (hiddenInput && typeof value === 'string') {
-      try {
-        const parsed = JSON.parse(value);
-        if (typeof parsed === 'object' && parsed !== null) {
-          props[key] = parsed;
-        } else {
+    const formData = new FormData(form);
+    const props: Record<string, unknown> = {};
+
+    for (const [key, value] of formData.entries()) {
+      if (key.includes('[') && key.includes('].')) {
+        continue;
+      }
+
+      const hiddenInput = form.querySelector(
+        `input[type="hidden"][name="${key}"][data-image-value="true"]`
+      );
+      if (hiddenInput && typeof value === 'string') {
+        try {
+          const parsed = JSON.parse(value);
+          props[key] = typeof parsed === 'object' && parsed !== null ? parsed : value;
+        } catch {
           props[key] = value;
         }
-      } catch {
+      } else {
         props[key] = value;
       }
-    } else {
-      props[key] = value;
     }
-  }
 
-  return props;
+    return props;
   }
 
   isModalOpen(): boolean {
-  return document.getElementById(ModalManager.MODAL_ID) !== null;
+    return document.querySelector(`#${ModalManager.MODAL_ID}`) !== null;
   }
 
   /**
@@ -147,7 +147,7 @@ export class ModalManager {
    * @returns Promise<boolean> - true если подтверждено, false если отменено
    */
   confirm(message: string, title: string = 'Подтверждение'): Promise<boolean> {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       const escapedMessage = this.escapeHtml(message);
       const escapedTitle = this.escapeHtml(title);
       const bodyHTML = `<p>${escapedMessage}</p>`;
@@ -175,4 +175,3 @@ export class ModalManager {
     return div.innerHTML;
   }
 }
-

@@ -1,6 +1,7 @@
-import { IBlockDto, ICreateBlockDto, IUpdateBlockDto } from '../../core/types';
 import { IBlockRepository } from '../../core/ports/BlockRepository';
+import { IBlockDto, ICreateBlockDto, IUpdateBlockDto } from '../../core/types';
 import { deepClone } from '../../utils/deepClone';
+
 export class MemoryBlockRepositoryImpl implements IBlockRepository {
   private blocks: Map<string, IBlockDto> = new Map();
   async create(blockData: ICreateBlockDto & { id?: string }): Promise<IBlockDto> {
@@ -14,8 +15,8 @@ export class MemoryBlockRepositoryImpl implements IBlockRepository {
         createdAt: new Date(),
         updatedAt: new Date(),
         version: 1,
-        ...blockData.metadata
-      }
+        ...blockData.metadata,
+      },
     };
     this.blocks.set(id, block);
     return deepClone(block);
@@ -54,12 +55,15 @@ export class MemoryBlockRepositoryImpl implements IBlockRepository {
     const updatedBlock: IBlockDto = {
       ...existingBlock,
       ...updates,
-      style: updates.style ? { ...existingBlock.style, ...updates.style } as Record<string, string | number> : existingBlock.style,
+      style: updates.style
+        ? ({ ...existingBlock.style, ...updates.style } as Record<string, string | number>)
+        : existingBlock.style,
       metadata: {
-        ...existingBlock.metadata!,
+        createdAt: existingBlock.metadata?.createdAt || new Date(),
         updatedAt: new Date(),
-        version: (existingBlock.metadata?.version || 1) + 1
-      }
+        version: (existingBlock.metadata?.version || 1) + 1,
+        author: existingBlock.metadata?.author,
+      },
     };
     this.blocks.set(id, updatedBlock);
     return deepClone(updatedBlock);
@@ -76,11 +80,11 @@ export class MemoryBlockRepositoryImpl implements IBlockRepository {
   async clear(): Promise<void> {
     this.blocks.clear();
   }
-  
+
   private generateId(): string {
     if (typeof crypto !== 'undefined' && crypto.randomUUID) {
       return crypto.randomUUID();
     }
-    return `block_${Date.now()}_${Math.random().toString(36).substring(2, 11)}_${Math.random().toString(36).substring(2, 11)}`;
+    return `block_${Date.now()}_${Math.random().toString(36).slice(2, 11)}_${Math.random().toString(36).slice(2, 11)}`;
   }
 }

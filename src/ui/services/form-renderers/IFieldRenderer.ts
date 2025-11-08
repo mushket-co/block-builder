@@ -12,4 +12,3 @@ export interface IFieldRenderer {
    */
   render(fieldId: string, field: IFormFieldConfig, value: any, required: string): string;
 }
-

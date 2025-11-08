@@ -1,4 +1,3 @@
-
 <template>
   <div class="spacing-control">
     <div class="spacing-control__header">
@@ -8,12 +7,10 @@
       </label>
     </div>
 
-    
     <div v-if="showAdvancedSpacingRestriction" class="bb-warning-box bb-mb-sm">
       ⚠️ {{ getAdvancedSpacingRestrictionMessage() }}
     </div>
 
-    
     <div class="spacing-control__breakpoints">
       <button
         v-for="bp in allBreakpoints"
@@ -27,7 +24,6 @@
       </button>
     </div>
 
-    
     <div class="spacing-control__groups">
       <div
         v-for="spacingType in availableSpacingTypes"
@@ -63,7 +59,6 @@
       </div>
     </div>
 
-    
     <div v-if="showPreview" class="spacing-control__preview">
       <div class="spacing-control__preview-title">CSS переменные:</div>
       <pre class="spacing-control__preview-code">{{ getCSSVariablesPreview() }}</pre>
@@ -72,13 +67,14 @@
 </template>
 
 <script>
-import { ref, computed, watch, onMounted } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
+
 import { LicenseFeature } from '../../core/services/LicenseFeatureChecker';
 
 const DEFAULT_BREAKPOINTS = [
   { name: 'desktop', label: 'Десктоп', maxWidth: undefined },
   { name: 'tablet', label: 'Таблет', maxWidth: 1199 },
-  { name: 'mobile', label: 'Моб', maxWidth: 767 }
+  { name: 'mobile', label: 'Моб', maxWidth: 767 },
 ];
 
 const ALL_SPACING_TYPES = ['padding-top', 'padding-bottom', 'margin-top', 'margin-bottom'];
@@ -88,49 +84,60 @@ export default {
   props: {
     label: {
       type: String,
-      default: 'Отступы'
+      default: 'Отступы',
     },
+
     fieldName: {
       type: String,
-      required: true
+      required: true,
     },
+
     modelValue: {
       type: Object,
-      default: () => ({})
+      default: () => ({}),
     },
+
     spacingTypes: {
       type: Array,
-      default: () => ALL_SPACING_TYPES
+      default: () => ALL_SPACING_TYPES,
     },
+
     min: {
       type: Number,
-      default: 0
+      default: 0,
     },
+
     max: {
       type: Number,
-      default: 200
+      default: 200,
     },
+
     step: {
       type: Number,
-      default: 1
+      default: 1,
     },
+
     breakpoints: {
       type: Array,
-      default: null
+      default: null,
     },
+
     licenseFeatureChecker: {
       type: Object,
-      default: null
+      default: null,
     },
+
     required: {
       type: Boolean,
-      default: false
+      default: false,
     },
+
     showPreview: {
       type: Boolean,
-      default: true
-    }
+      default: true,
+    },
   },
+
   emits: ['update:modelValue'],
   setup(props, { emit }) {
     const spacingData = ref({});
@@ -140,14 +147,18 @@ export default {
     });
 
     const showAdvancedSpacingRestriction = computed(() => {
-      return hasCustomBreakpoints.value &&
-             props.licenseFeatureChecker &&
-             !props.licenseFeatureChecker.hasAdvancedSpacing();
+      return (
+        hasCustomBreakpoints.value &&
+        props.licenseFeatureChecker &&
+        !props.licenseFeatureChecker.hasAdvancedSpacing()
+      );
     });
 
     const getAdvancedSpacingRestrictionMessage = () => {
       if (props.licenseFeatureChecker) {
-        return props.licenseFeatureChecker.getFeatureRestrictionMessage(LicenseFeature.ADVANCED_SPACING);
+        return props.licenseFeatureChecker.getFeatureRestrictionMessage(
+          LicenseFeature.ADVANCED_SPACING
+        );
       }
       return 'Продвинутые настройки spacing доступны только в PRO версии. Для снятия ограничений приобретите PRO версию.';
     };
@@ -194,35 +205,41 @@ export default {
       spacingData.value = initialData;
     };
 
-    const getFieldId = (spacingType) => {
+    const getFieldId = spacingType => {
       return `${props.fieldName}-${spacingType}-${currentBreakpoint.value}`;
     };
 
-    const getSpacingLabel = (spacingType) => {
+    const getSpacingLabel = spacingType => {
       const labels = {
         'padding-top': 'Внутренний верх',
         'padding-bottom': 'Внутренний низ',
         'margin-top': 'Внешний верх',
-        'margin-bottom': 'Внешний низ'
+        'margin-bottom': 'Внешний низ',
       };
       return labels[spacingType] || spacingType;
     };
 
-    const getSpacingValue = (spacingType) => {
+    const getSpacingValue = spacingType => {
       return spacingData.value?.[currentBreakpoint.value]?.[spacingType] || 0;
     };
 
     const handleSpacingChange = (spacingType, event) => {
-      const value = parseInt(event.target.value, 10);
+      const value = Number.parseInt(event.target.value, 10);
       updateSpacingValue(spacingType, value);
     };
 
     const handleValueInputChange = (spacingType, event) => {
-      let value = parseInt(event.target.value, 10);
+      let value = Number.parseInt(event.target.value, 10);
 
-      if (isNaN(value)) value = 0;
-      if (value < minValue.value) value = minValue.value;
-      if (value > maxValue.value) value = maxValue.value;
+      if (Number.isNaN(value)) {
+        value = 0;
+      }
+      if (value < minValue.value) {
+        value = minValue.value;
+      }
+      if (value > maxValue.value) {
+        value = maxValue.value;
+      }
 
       updateSpacingValue(spacingType, value);
     };
@@ -243,7 +260,9 @@ export default {
         const bpData = spacingData.value[bp.name] || {};
         const hasValues = Object.values(bpData).some(v => v > 0);
 
-        if (!hasValues) return;
+        if (!hasValues) {
+          return;
+        }
 
         if (bp.maxWidth) {
           lines.push(`@media (max-width: ${bp.maxWidth}px) {`);
@@ -273,13 +292,17 @@ export default {
       initializeSpacingData();
     });
 
-    watch(() => props.modelValue, (newValue) => {
-      if (newValue && Object.keys(newValue).length > 0) {
-        spacingData.value = { ...newValue };
-      }
-    }, { deep: true });
+    watch(
+      () => props.modelValue,
+      newValue => {
+        if (newValue && Object.keys(newValue).length > 0) {
+          spacingData.value = { ...newValue };
+        }
+      },
+      { deep: true }
+    );
 
-    watch(allBreakpoints, (newBreakpoints) => {
+    watch(allBreakpoints, newBreakpoints => {
       const currentExists = newBreakpoints.some(bp => bp.name === currentBreakpoint.value);
 
       if (!currentExists && newBreakpoints.length > 0) {
@@ -304,7 +327,7 @@ export default {
       showAdvancedSpacingRestriction,
       getAdvancedSpacingRestrictionMessage,
     };
-  }
+  },
 };
 </script>
 
@@ -314,4 +337,3 @@ export default {
  * Импортируйте стили отдельно: import '@mushket-co/block-builder/index.esm.css'
  */
 </style>
-

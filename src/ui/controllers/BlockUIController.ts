@@ -1,28 +1,56 @@
-import { IBlockDto, ICreateBlockDto } from "../../core/types";
-import { BlockManagementUseCase } from "../../core/use-cases/BlockManagementUseCase";
-import { ApiSelectUseCase } from "../../core/use-cases/ApiSelectUseCase";
-import { UIRenderer } from "../services/UIRenderer";
-import { FormBuilder, TFieldConfig } from "../services/FormBuilder";
-import { ModalManager } from "../services/ModalManager";
-import { SpacingControlRenderer } from "../services/SpacingControlRenderer";
-import { RepeaterControlRenderer } from "../services/RepeaterControlRenderer";
-import { ApiSelectControlRenderer } from "../services/ApiSelectControlRenderer";
-import { CustomFieldControlRenderer } from "../services/CustomFieldControlRenderer";
-import { ICustomFieldRendererRegistry } from "../../core/ports/CustomFieldRenderer";
-import { copyToClipboard } from "../../utils/copyToClipboard";
-import { UniversalValidator } from "../../utils/universalValidation";
-import { addSpacingFieldToFields } from "../../utils/blockSpacingHelpers";
-import { scrollToFirstError, parseErrorKey, findFieldElement, scrollToElement, focusElement } from "../../utils/formErrorHelpers";
-import { afterRender } from "../../utils/domReady";
-import { EventDelegation } from "../EventDelegation";
-import { LicenseService, ILicenseInfo } from "../../core/services/LicenseService";
-import { LicenseFeature } from "../../core/services/LicenseFeatureChecker";
-import { parseJSONFromAttribute } from "../../utils/domSafe";
-import { ERROR_RENDER_DELAY_MS, NOTIFICATION_DISPLAY_DURATION_MS, REPEATER_ACCORDION_ANIMATION_DELAY_MS, UI_STRINGS, CSS_CLASSES, FORM_ID_PREFIX } from "../../utils/constants";
+import { ICustomFieldRendererRegistry } from '../../core/ports/CustomFieldRenderer';
+import { LicenseFeature } from '../../core/services/LicenseFeatureChecker';
+import { LicenseService } from '../../core/services/LicenseService';
+import { IBlockDto, ICreateBlockDto } from '../../core/types';
+import { TRenderRef } from '../../core/types/common';
+import {
+  IApiSelectConfig,
+  IApiSelectResponse,
+  IBlockSpacingOptions,
+  IFormFieldConfig,
+  IRepeaterFieldConfig,
+  IRepeaterItemFieldConfig,
+  ISpacingFieldConfig,
+  THttpMethod,
+} from '../../core/types/form';
+import { ApiSelectUseCase } from '../../core/use-cases/ApiSelectUseCase';
+import { BlockManagementUseCase } from '../../core/use-cases/BlockManagementUseCase';
+import { addSpacingFieldToFields } from '../../utils/blockSpacingHelpers';
+import {
+  CSS_CLASSES,
+  ERROR_RENDER_DELAY_MS,
+  FORM_ID_PREFIX,
+  NOTIFICATION_DISPLAY_DURATION_MS,
+  REPEATER_ACCORDION_ANIMATION_DELAY_MS,
+  UI_STRINGS,
+} from '../../utils/constants';
+import { copyToClipboard } from '../../utils/copyToClipboard';
+import { afterRender } from '../../utils/domReady';
+import { parseJSONFromAttribute } from '../../utils/domSafe';
+import {
+  findFieldElement,
+  focusElement,
+  parseErrorKey,
+  scrollToElement,
+  scrollToFirstError,
+} from '../../utils/formErrorHelpers';
+import { logger } from '../../utils/logger';
+import { UniversalValidator } from '../../utils/universalValidation';
+import { EventDelegation } from '../EventDelegation';
+import { ApiSelectControlRenderer } from '../services/ApiSelectControlRenderer';
+import { CustomFieldControlRenderer } from '../services/CustomFieldControlRenderer';
+import { FormBuilder, TFieldConfig } from '../services/FormBuilder';
+import { ModalManager } from '../services/ModalManager';
+import { RepeaterControlRenderer } from '../services/RepeaterControlRenderer';
+import { SpacingControlRenderer } from '../services/SpacingControlRenderer';
+import { UIRenderer } from '../services/UIRenderer';
 
 export interface IBlockUIControllerConfig {
   containerId: string;
-  blockConfigs: Record<string, any>;
+  blockConfigs: Record<
+    string,
+    { fields?: unknown[]; spacingOptions?: unknown; [key: string]: unknown }
+  >;
   useCase: BlockManagementUseCase;
   apiSelectUseCase: ApiSelectUseCase;
   customFieldRendererRegistry?: ICustomFieldRendererRegistry;
@@ -32,7 +60,10 @@ export interface IBlockUIControllerConfig {
   controlsOffset?: number;
   controlsOffsetVar?: string;
   licenseService: LicenseService;
-  originalBlockConfigs?: Record<string, any>;
+  originalBlockConfigs?: Record<
+    string,
+    { fields?: unknown[]; spacingOptions?: unknown; [key: string]: unknown }
+  >;
   isEdit?: boolean;
 }
 
@@ -51,7 +82,10 @@ export class BlockUIController {
   private customFieldRenderers: Map<string, CustomFieldControlRenderer> = new Map();
   private eventDelegation: EventDelegation;
   private licenseService: LicenseService;
-  private originalBlockConfigs?: Record<string, any>;
+  private originalBlockConfigs?: Record<
+    string,
+    { fields?: unknown[]; spacingOptions?: unknown; [key: string]: unknown }
+  >;
   private currentFormFields: Map<string, TFieldConfig> = new Map();
   private repeaterFieldConfigs: Map<string, Map<string, TFieldConfig>> = new Map();
   private isEdit: boolean;
@@ -77,7 +111,7 @@ export class BlockUIController {
       controlsOffset: config.controlsOffset,
       controlsOffsetVar: config.controlsOffsetVar,
       license: this.licenseService.getLicenseInfo(Object.keys(config.blockConfigs).length),
-      isEdit: this.isEdit
+      isEdit: this.isEdit,
     });
     this.formBuilder = new FormBuilder();
     this.modalManager = new ModalManager();
@@ -85,25 +119,26 @@ export class BlockUIController {
     this.registerEventHandlers();
   }
 
-    async init(): Promise<void> {
+  async init(): Promise<void> {
     this.uiRenderer.renderContainer();
 
     await this.refreshBlocks();
   }
 
-    async refreshBlocks(): Promise<void> {
+  async refreshBlocks(): Promise<void> {
     this.blocks = await this.config.useCase.getAllBlocks();
     this.uiRenderer.renderBlocks(this.blocks);
   }
 
-    showBlockTypeSelectionModal(position?: number): void {
+  showBlockTypeSelectionModal(position?: number): void {
     if (!this.isEdit) {
       return;
     }
     const currentBlockTypesCount = Object.keys(this.config.blockConfigs).length;
     const licenseInfo = this.licenseService.getLicenseInfo(currentBlockTypesCount);
 
-    const licenseWarningHTML = !licenseInfo.isPro ? `
+    const licenseWarningHTML = !licenseInfo.isPro
+      ? `
       <div class="block-builder-license-warning">
         <div class="block-builder-license-warning__header">
           <span class="block-builder-license-warning__icon">⚠️</span>
@@ -114,13 +149,17 @@ export class BlockUIController {
           Доступно <strong>${currentBlockTypesCount} из ${licenseInfo.maxBlockTypes}</strong> типов блоков.
         </p>
       </div>
-    ` : '';
+    `
+      : '';
 
     const blockTypesHTML = Object.entries(this.config.blockConfigs)
       .map(([type, config]) => {
         const title = config.title || type;
-        const icon = config.icon || "📦";
-        const args = position !== undefined ? JSON.stringify([type, position]) : JSON.stringify([type, undefined]);
+        const icon = config.icon || '📦';
+        const args =
+          position !== undefined
+            ? JSON.stringify([type, position])
+            : JSON.stringify([type, undefined]);
         return `
         <button
           data-action="showAddBlockFormAtPosition"
@@ -132,7 +171,7 @@ export class BlockUIController {
         </button>
       `;
       })
-      .join("");
+      .join('');
 
     const bodyHTML = `
     <div class="block-builder-block-type-selection">
@@ -151,7 +190,7 @@ export class BlockUIController {
     });
   }
 
-    async showAddBlockFormAtPosition(type: string, position?: number): Promise<void> {
+  async showAddBlockFormAtPosition(type: string, position?: number): Promise<void> {
     if (!this.isEdit) {
       return;
     }
@@ -163,12 +202,11 @@ export class BlockUIController {
       return;
     }
 
-    let fields: TFieldConfig[] = addSpacingFieldToFields(
-      config.fields || [],
-      config.spacingOptions,
+    const fields: TFieldConfig[] = addSpacingFieldToFields(
+      (config.fields || []) as IFormFieldConfig[],
+      config.spacingOptions as IBlockSpacingOptions | undefined,
       this.licenseService.getFeatureChecker()
     );
-
 
     const formHTML = `
     <form id="${FORM_ID_PREFIX}" class="block-builder-form">
@@ -210,97 +248,146 @@ export class BlockUIController {
     });
   }
 
-    showAddBlockForm(type: string): void {
+  showAddBlockForm(type: string): void {
     this.showAddBlockFormAtPosition(type);
   }
 
-    private initializeSpacingControls(): void {
+  private initializeSpacingControls(): void {
     this.cleanupSpacingControls();
 
     const containers = document.querySelectorAll(`.${CSS_CLASSES.SPACING_CONTROL_CONTAINER}`);
 
-    containers.forEach((container) => {
-      const config = container.getAttribute("data-spacing-config");
-      if (!config) return;
+    containers.forEach(container => {
+      const htmlContainer = container as HTMLElement;
+      const config = htmlContainer.dataset.spacingConfig;
+      if (!config) {
+        return;
+      }
 
       try {
-        const spacingConfig = parseJSONFromAttribute(config);
+        const spacingConfig = parseJSONFromAttribute(config) as {
+          field: string;
+          label: string;
+          required?: boolean;
+          config?: ISpacingFieldConfig;
+          value?: unknown;
+        };
 
         const renderer = new SpacingControlRenderer({
           fieldName: spacingConfig.field,
           label: spacingConfig.label,
           required: spacingConfig.required,
-          config: spacingConfig,
-          value: spacingConfig.value || {},
+          config: spacingConfig.config,
+          value: (spacingConfig.value as Record<string, Record<string, number>>) || {},
           licenseFeatureChecker: this.licenseService.getFeatureChecker(),
-          onChange: (value) => {
-            container.setAttribute("data-spacing-value", JSON.stringify(value));
+          onChange: value => {
+            htmlContainer.dataset.spacingValue = JSON.stringify(value);
           },
         });
 
-        renderer.render(container as HTMLElement);
+        renderer.render(htmlContainer);
 
         this.spacingRenderers.set(spacingConfig.field, renderer);
-      } catch (error) {
+      } catch {
+        // Игнорируем ошибки инициализации spacing контролов
       }
     });
   }
 
-    private cleanupSpacingControls(): void {
-    this.spacingRenderers.forEach((renderer) => {
+  private cleanupSpacingControls(): void {
+    this.spacingRenderers.forEach(renderer => {
       renderer.destroy();
     });
     this.spacingRenderers.clear();
   }
 
-    private initializeRepeaterControls(): void {
+  private initializeRepeaterControls(): void {
     this.cleanupRepeaterControls();
 
     const containers = document.querySelectorAll(`.${CSS_CLASSES.REPEATER_CONTROL_CONTAINER}`);
 
-    containers.forEach((container) => {
-      const config = container.getAttribute("data-repeater-config");
-      if (!config) return;
+    containers.forEach(container => {
+      const htmlContainer = container as HTMLElement;
+      const config = htmlContainer.dataset.repeaterConfig;
+      if (!config) {
+        return;
+      }
 
       try {
-        const repeaterConfig = parseJSONFromAttribute(config);
+        const parsed = parseJSONFromAttribute(config) as {
+          field: string;
+          label: string;
+          rules?: unknown[];
+          value?: unknown[];
+          fields?: IRepeaterItemFieldConfig[];
+          addButtonText?: string;
+          removeButtonText?: string;
+          itemTitle?: string;
+          min?: number;
+          max?: number;
+          defaultItemValue?: Record<string, unknown>;
+        };
+
+        if (!parsed.field || !parsed.label) {
+          logger.warn('Repeater config missing required fields (field, label)');
+          return;
+        }
 
         const self = this;
 
+        // Создаем config из развернутых полей repeaterConfig
+        // Важно: сохраняем все поля из parsed.fields, включая дополнительные (imageUploadConfig и т.д.)
+        const repeaterFieldConfig: IRepeaterFieldConfig = {
+          fields: (parsed.fields || []) as IRepeaterItemFieldConfig[],
+          addButtonText: parsed.addButtonText,
+          removeButtonText: parsed.removeButtonText,
+          itemTitle: parsed.itemTitle,
+          min: parsed.min,
+          max: parsed.max,
+          defaultItemValue: parsed.defaultItemValue,
+        };
+
         const renderer = new RepeaterControlRenderer({
-          fieldName: repeaterConfig.field,
-          label: repeaterConfig.label,
-          rules: repeaterConfig.rules || [],
-          config: repeaterConfig,
-          value: repeaterConfig.value || [],
-          onChange: (value) => {
-            container.setAttribute("data-repeater-value", JSON.stringify(value));
+          fieldName: parsed.field,
+          label: parsed.label,
+          rules:
+            (parsed.rules as Array<{ type: string; message?: string; value?: unknown }>) ||
+            [],
+          config: repeaterFieldConfig,
+          value: (parsed.value as unknown[]) || [],
+          onChange: value => {
+            htmlContainer.dataset.repeaterValue = JSON.stringify(value);
           },
           onAfterRender: () => {
             self.initializeImageUploadControls();
-          }
+          },
         });
 
         renderer.render(container as HTMLElement);
 
-        this.repeaterRenderers.set(repeaterConfig.field, renderer);
+        this.repeaterRenderers.set(parsed.field, renderer);
       } catch (error) {
+        // Логируем ошибки инициализации repeater контролов для отладки
+        logger.error('Ошибка инициализации repeater контрола:', error);
+        if (error instanceof Error) {
+          logger.error('Детали ошибки:', error.message, error.stack);
+        }
       }
     });
   }
 
-    private cleanupRepeaterControls(): void {
-    this.repeaterRenderers.forEach((renderer) => {
+  private cleanupRepeaterControls(): void {
+    this.repeaterRenderers.forEach(renderer => {
       renderer.destroy();
     });
     this.repeaterRenderers.clear();
   }
 
-    private async initializeApiSelectControls(): Promise<void> {
+  private async initializeApiSelectControls(): Promise<void> {
     if (!this.licenseService.canUseApiSelect()) {
       const containers = document.querySelectorAll(`.${CSS_CLASSES.API_SELECT_CONTROL_CONTAINER}`);
-      containers.forEach((container) => {
-        const placeholder = container.querySelector(".api-select-placeholder") as HTMLElement;
+      containers.forEach(container => {
+        const placeholder = container.querySelector('.api-select-placeholder') as HTMLElement;
         if (placeholder) {
           placeholder.classList.remove('bb-placeholder-box');
           placeholder.innerHTML = `
@@ -315,49 +402,104 @@ export class BlockUIController {
 
     this.cleanupApiSelectControls();
 
-    const containers = document.querySelectorAll(".api-select-control-container");
+    const containers = document.querySelectorAll('.api-select-control-container');
 
     for (const container of Array.from(containers)) {
-      const config = container.getAttribute("data-api-select-config");
+      const htmlContainer = container as HTMLElement;
+      const config = htmlContainer.dataset.apiSelectConfig;
       if (!config) {
         continue;
       }
 
       try {
-        const apiSelectConfig = parseJSONFromAttribute(config);
+        const parsedData = parseJSONFromAttribute(config) as {
+          field: string;
+          label: string;
+          rules?: unknown[];
+          config?: IApiSelectConfig;
+          value?: unknown;
+          multiple?: boolean;
+          url?: string;
+          method?: string;
+          headers?: Record<string, string>;
+          searchParam?: string;
+          pageParam?: string;
+          limitParam?: string;
+          limit?: number;
+          debounceMs?: number;
+          responseMapper?: unknown;
+          dataPath?: string;
+          idField?: string;
+          nameField?: string;
+          minSearchLength?: number;
+          placeholder?: string;
+          noResultsText?: string;
+          loadingText?: string;
+          errorText?: string;
+        };
+
+        const apiConfig: IApiSelectConfig = parsedData.config || {
+          url: parsedData.url || '',
+          method: parsedData.method as THttpMethod | undefined,
+          headers: parsedData.headers,
+          searchParam: parsedData.searchParam,
+          pageParam: parsedData.pageParam,
+          limitParam: parsedData.limitParam,
+          limit: parsedData.limit,
+          debounceMs: parsedData.debounceMs,
+          responseMapper: parsedData.responseMapper as
+            | ((response: unknown) => IApiSelectResponse)
+            | undefined,
+          dataPath: parsedData.dataPath,
+          idField: parsedData.idField,
+          nameField: parsedData.nameField,
+          minSearchLength: parsedData.minSearchLength,
+          placeholder: parsedData.placeholder,
+          noResultsText: parsedData.noResultsText,
+          loadingText: parsedData.loadingText,
+          errorText: parsedData.errorText,
+          multiple: parsedData.multiple,
+        };
 
         const renderer = new ApiSelectControlRenderer({
-          fieldName: apiSelectConfig.field,
-          label: apiSelectConfig.label,
-          rules: apiSelectConfig.rules || [],
-          config: apiSelectConfig,
-          value: apiSelectConfig.value || (apiSelectConfig.multiple ? [] : null),
+          fieldName: parsedData.field,
+          label: parsedData.label,
+          rules:
+            (parsedData.rules as Array<{ type: string; message?: string; value?: unknown }>) ||
+            [],
+          config: apiConfig,
+          value:
+            (parsedData.value as string | number | (string | number)[] | null | undefined) ||
+            (parsedData.multiple ? [] : null),
           apiSelectUseCase: this.apiSelectUseCase,
-          onChange: (value) => {
-            container.setAttribute("data-api-select-value", JSON.stringify(value));
+          onChange: value => {
+            htmlContainer.dataset.apiSelectValue = JSON.stringify(value);
           },
         });
 
-        await renderer.init(container as HTMLElement);
+        await renderer.init(htmlContainer);
 
-        this.apiSelectRenderers.set(apiSelectConfig.field, renderer);
+        this.apiSelectRenderers.set(parsedData.field, renderer);
       } catch (error) {
+        // Игнорируем ошибки инициализации api select контролов
       }
     }
   }
 
-    private cleanupApiSelectControls(): void {
-    this.apiSelectRenderers.forEach((renderer) => {
+  private cleanupApiSelectControls(): void {
+    this.apiSelectRenderers.forEach(renderer => {
       renderer.destroy();
     });
     this.apiSelectRenderers.clear();
   }
 
-    private async initializeCustomFieldControls(): Promise<void> {
+  private async initializeCustomFieldControls(): Promise<void> {
     if (!this.licenseService.canUseCustomFields()) {
-      const containers = document.querySelectorAll(`.${CSS_CLASSES.CUSTOM_FIELD_CONTROL_CONTAINER}`);
-      containers.forEach((container) => {
-        const placeholder = container.querySelector(".custom-field-placeholder") as HTMLElement;
+      const containers = document.querySelectorAll(
+        `.${CSS_CLASSES.CUSTOM_FIELD_CONTROL_CONTAINER}`
+      );
+      containers.forEach(container => {
+        const placeholder = container.querySelector('.custom-field-placeholder') as HTMLElement;
         if (placeholder) {
           placeholder.removeAttribute('style');
           placeholder.classList.remove('bb-placeholder-box');
@@ -377,16 +519,24 @@ export class BlockUIController {
 
     this.cleanupCustomFieldControls();
 
-    const containers = document.querySelectorAll(".custom-field-control-container");
+    const containers = document.querySelectorAll('.custom-field-control-container');
 
     for (const container of Array.from(containers)) {
-      const config = container.getAttribute("data-custom-field-config");
+      const htmlContainer = container as HTMLElement;
+      const config = htmlContainer.dataset.customFieldConfig;
       if (!config) {
         continue;
       }
 
       try {
-        const customFieldConfig = parseJSONFromAttribute(config);
+        const customFieldConfig = parseJSONFromAttribute(config) as {
+          field: string;
+          label: string;
+          value?: unknown;
+          required?: boolean;
+          rendererId?: string;
+          options?: unknown;
+        };
 
         if (!customFieldConfig.rendererId) {
           continue;
@@ -395,15 +545,17 @@ export class BlockUIController {
         const renderer = this.customFieldRendererRegistry.get(customFieldConfig.rendererId);
         if (!renderer) {
           this.showCustomFieldError(
-            container as HTMLElement,
-            `Рендерер "${customFieldConfig.rendererId}" не зарегистрирован`,
+            htmlContainer,
+            `Рендерер "${customFieldConfig.rendererId}" не зарегистрирован`
           );
           continue;
         }
 
-        let renderContainer = container.querySelector(".custom-field-placeholder") as HTMLElement;
+        let renderContainer = htmlContainer.querySelector(
+          '.custom-field-placeholder'
+        ) as HTMLElement;
         if (!renderContainer) {
-          renderContainer = container as HTMLElement;
+          renderContainer = htmlContainer;
         }
 
         const fieldRenderer = new CustomFieldControlRenderer(renderContainer, renderer, {
@@ -412,58 +564,69 @@ export class BlockUIController {
           value: customFieldConfig.value,
           required: customFieldConfig.required || false,
           rendererId: customFieldConfig.rendererId,
-          options: customFieldConfig.options,
-          onChange: (value) => {
-            container.setAttribute("data-custom-field-value", JSON.stringify(value));
+          options: customFieldConfig.options as Record<string, unknown> | undefined,
+          onChange: value => {
+            htmlContainer.dataset.customFieldValue = JSON.stringify(value);
           },
-          onError: (error) => {
+          onError: _error => {
+            // Ошибки обрабатываются в renderer
           },
         });
 
         this.customFieldRenderers.set(customFieldConfig.field, fieldRenderer);
       } catch (error) {
-        this.showCustomFieldError(container as HTMLElement, `Ошибка: ${error}`);
+        this.showCustomFieldError(htmlContainer, `Ошибка: ${error}`);
       }
     }
   }
 
-    private initializeImageUploadControls(): void {
-    const containers = document.querySelectorAll(".image-upload-field");
+  private initializeImageUploadControls(): void {
+    const containers = document.querySelectorAll('.image-upload-field');
 
-    containers.forEach((container) => {
-      const fieldName = container.getAttribute("data-field-name");
-      if (!fieldName) return;
-
-      if (container.hasAttribute('data-image-initialized')) return;
-      container.setAttribute('data-image-initialized', 'true');
-
-      const fileInput = container.querySelector('input[type="file"]') as HTMLInputElement;
-      const hiddenInput = container.querySelector('input[type="hidden"][data-image-value="true"]') as HTMLInputElement;
-      const preview = container.querySelector('.image-upload-field__preview') as HTMLElement;
-      const previewImg = preview?.querySelector('img') as HTMLImageElement;
-      const label = container.querySelector('label[for]') as HTMLLabelElement;
-      const labelText = label?.querySelector('.image-upload-field__label-text') as HTMLElement;
-      const loadingText = label?.querySelector('.image-upload-field__loading-text') as HTMLElement;
-      const errorDiv = container.querySelector('.image-upload-field__error') as HTMLElement;
-
-      if (!fileInput || !hiddenInput) return;
-
-      const configStr = fileInput.getAttribute('data-config') || '{}';
-      let config: any = {};
-      try {
-        config = JSON.parse(configStr.replace(/&quot;/g, '"'));
-      } catch (e) {
-        console.error('Ошибка парсинга конфига изображения:', e);
+    containers.forEach(container => {
+      const htmlContainer = container as HTMLElement;
+      const fieldName = htmlContainer.dataset.fieldName;
+      if (!fieldName) {
+        return;
       }
 
-      const repeaterField = container.getAttribute('data-repeater-field');
-      const repeaterIndex = container.getAttribute('data-repeater-index');
-      const repeaterItemField = container.getAttribute('data-repeater-item-field');
+      if (Object.hasOwn(htmlContainer.dataset, 'imageInitialized')) {
+        return;
+      }
+      htmlContainer.dataset.imageInitialized = 'true';
+
+      const fileInput = htmlContainer.querySelector('input[type="file"]') as HTMLInputElement;
+      const hiddenInput = htmlContainer.querySelector(
+        'input[type="hidden"][data-image-value="true"]'
+      ) as HTMLInputElement;
+      const preview = htmlContainer.querySelector('.image-upload-field__preview') as HTMLElement;
+      const previewImg = preview?.querySelector('img') as HTMLImageElement;
+      const label = htmlContainer.querySelector('label[for]') as HTMLLabelElement;
+      const labelText = label?.querySelector('.image-upload-field__label-text') as HTMLElement;
+      const loadingText = label?.querySelector('.image-upload-field__loading-text') as HTMLElement;
+      const errorDiv = htmlContainer.querySelector('.image-upload-field__error') as HTMLElement;
+
+      if (!fileInput || !hiddenInput) {
+        return;
+      }
+
+      const configStr = fileInput.dataset.config || '{}';
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let config: any = {};
+      try {
+        config = JSON.parse(configStr.replaceAll('&quot;', '"'));
+      } catch (error) {
+        logger.error('Ошибка парсинга конфига изображения:', error);
+      }
+
+      const repeaterField = htmlContainer.dataset.repeaterField;
+      const repeaterIndex = htmlContainer.dataset.repeaterIndex;
+      const repeaterItemField = htmlContainer.dataset.repeaterItemField;
 
       let imageUploadConfig: any = undefined;
       let responseMapper: any = undefined;
 
-      if (repeaterField && repeaterItemField !== null) {
+      if (repeaterField && repeaterItemField) {
         const repeaterFieldsMap = this.repeaterFieldConfigs.get(repeaterField);
         if (repeaterFieldsMap) {
           const itemFieldConfig = repeaterFieldsMap.get(repeaterItemField);
@@ -481,16 +644,16 @@ export class BlockUIController {
       const finalConfig = {
         uploadUrl: imageUploadConfig?.uploadUrl || config.uploadUrl || '',
         fileParamName: imageUploadConfig?.fileParamName || config.fileParamName || 'file',
-        maxFileSize: imageUploadConfig?.maxFileSize || config.maxFileSize || (10 * 1024 * 1024),
+        maxFileSize: imageUploadConfig?.maxFileSize || config.maxFileSize || 10 * 1024 * 1024,
         uploadHeaders: imageUploadConfig?.uploadHeaders || config.uploadHeaders || {},
       };
 
       let currentValue: any = hiddenInput.value;
 
-      if (repeaterField && repeaterIndex !== null && repeaterItemField !== null) {
+      if (repeaterField && repeaterIndex && repeaterItemField) {
         const repeaterRenderer = this.repeaterRenderers.get(repeaterField);
         if (repeaterRenderer) {
-          const index = parseInt(repeaterIndex, 10);
+          const index = Number.parseInt(repeaterIndex, 10);
           const rendererValue = (repeaterRenderer as any).value;
           if (rendererValue && rendererValue[index] !== undefined) {
             currentValue = rendererValue[index][repeaterItemField];
@@ -499,11 +662,12 @@ export class BlockUIController {
       } else {
         if (currentValue) {
           try {
-            const parsed = JSON.parse(currentValue.replace(/&quot;/g, '"'));
+            const parsed = JSON.parse(currentValue.replaceAll('&quot;', '"'));
             if (typeof parsed === 'object' && parsed !== null) {
               currentValue = parsed;
             }
           } catch {
+            // Игнорируем ошибки парсинга JSON
           }
         }
       }
@@ -525,27 +689,35 @@ export class BlockUIController {
               preview.style.position = 'relative';
               preview.style.marginBottom = '12px';
             }
-            if (labelText) labelText.textContent = 'Изменить файл';
+            if (labelText) {
+              labelText.textContent = 'Изменить файл';
+            }
           }
-        } catch (e) {
-          console.error('Ошибка инициализации preview:', e);
+        } catch (error) {
+          logger.error('Ошибка инициализации preview:', error);
         }
       }
 
       const self = this;
 
-      const clearBtn = container.querySelector('.image-upload-field__preview-clear') as HTMLButtonElement;
+      const clearBtn = container.querySelector(
+        '.image-upload-field__preview-clear'
+      ) as HTMLButtonElement;
       if (clearBtn) {
         clearBtn.addEventListener('click', () => {
           fileInput.value = '';
           hiddenInput.value = '';
-          if (preview) preview.style.display = 'none';
-          if (labelText) labelText.textContent = 'Выберите изображение';
+          if (preview) {
+            preview.style.display = 'none';
+          }
+          if (labelText) {
+            labelText.textContent = 'Выберите изображение';
+          }
 
-          if (repeaterField && repeaterIndex !== null && repeaterItemField !== null) {
+          if (repeaterField && repeaterIndex && repeaterItemField) {
             const repeaterRenderer = self.repeaterRenderers.get(repeaterField);
             if (repeaterRenderer) {
-              const index = parseInt(repeaterIndex, 10);
+              const index = Number.parseInt(repeaterIndex, 10);
               const rendererValue = (repeaterRenderer as any).value;
               if (rendererValue && rendererValue[index] !== undefined) {
                 rendererValue[index][repeaterItemField] = '';
@@ -556,9 +728,11 @@ export class BlockUIController {
         });
       }
 
-      fileInput.addEventListener('change', async (e) => {
+      fileInput.addEventListener('change', async e => {
         const file = (e.target as HTMLInputElement).files?.[0];
-        if (!file) return;
+        if (!file) {
+          return;
+        }
 
         if (!file.type.startsWith('image/')) {
           if (errorDiv) {
@@ -606,7 +780,7 @@ export class BlockUIController {
             const response = await fetch(finalConfig.uploadUrl, {
               method: 'POST',
               headers: finalConfig.uploadHeaders,
-              body: formData
+              body: formData,
             });
 
             if (!response.ok) {
@@ -615,24 +789,23 @@ export class BlockUIController {
 
             const responseData = await response.json();
 
-            if (responseMapper && typeof responseMapper === 'function') {
-              result = responseMapper(responseData);
-            } else {
-              result = responseData;
-            }
+            result =
+              responseMapper && typeof responseMapper === 'function'
+                ? responseMapper(responseData)
+                : responseData;
           } else {
             result = await new Promise<string>((resolve, reject) => {
               const reader = new FileReader();
-              reader.onload = (e) => resolve(e.target?.result as string);
-              reader.onerror = reject;
+              reader.addEventListener('load', e => resolve(e.target?.result as string));
+              reader.addEventListener('error', reject);
               reader.readAsDataURL(file);
             });
           }
 
-          if (repeaterField && repeaterIndex !== null && repeaterItemField !== null) {
+          if (repeaterField && repeaterIndex && repeaterItemField) {
             const repeaterRenderer = self.repeaterRenderers.get(repeaterField);
             if (repeaterRenderer) {
-              const index = parseInt(repeaterIndex, 10);
+              const index = Number.parseInt(repeaterIndex, 10);
               const rendererValue = (repeaterRenderer as any).value;
               if (rendererValue && rendererValue[index] !== undefined) {
                 rendererValue[index][repeaterItemField] = result;
@@ -641,7 +814,8 @@ export class BlockUIController {
             }
           }
 
-          hiddenInput.value = typeof result === 'object' && result !== null ? JSON.stringify(result) : (result || '');
+          hiddenInput.value =
+            typeof result === 'object' && result !== null ? JSON.stringify(result) : result || '';
 
           let imageUrl = '';
           if (typeof result === 'string') {
@@ -674,59 +848,23 @@ export class BlockUIController {
             }
           }
 
+          // Очищаем только визуальные ошибки текущего поля изображения
+          // Валидация всей формы должна срабатывать только при сохранении формы
           if (container) {
             container.classList.remove(CSS_CLASSES.ERROR);
-            const validationErrorDivs = container.querySelectorAll('.image-upload-field__error');
-            validationErrorDivs.forEach((div: Element) => {
-              const errorEl = div as HTMLElement;
-              errorEl.style.display = 'none';
-              errorEl.textContent = '';
-            });
-          }
-
-          if (repeaterField && repeaterIndex !== null && repeaterItemField !== null) {
-            const repeaterRenderer = self.repeaterRenderers.get(repeaterField);
-            if (repeaterRenderer && self.currentFormFields.size > 0) {
-              const formData = self.getFormDataWithSpacing(FORM_ID_PREFIX);
-              const fields = Array.from(self.currentFormFields.values());
-              const validation = UniversalValidator.validateForm(formData, fields);
-
-
-              if (repeaterRenderer.updateErrors) {
-                repeaterRenderer.updateErrors(validation.errors);
-              }
-
-              self.repeaterRenderers.forEach((renderer) => {
-                if (renderer !== repeaterRenderer && renderer.updateErrors) {
-                  renderer.updateErrors(validation.errors);
-                }
-              });
-
-              const fieldNamePath = `${repeaterField}[${repeaterIndex}].${repeaterItemField}`;
-              if (!validation.errors[fieldNamePath] || validation.errors[fieldNamePath].length === 0) {
-                setTimeout(() => {
-                  const errorContainer = document.querySelector(`[data-field-name="${fieldNamePath}"]`) as HTMLElement;
-                  if (errorContainer) {
-                    errorContainer.classList.remove(CSS_CLASSES.ERROR);
-                    const errorDivs = errorContainer.querySelectorAll('.image-upload-field__error');
-                    errorDivs.forEach((div: Element) => {
-                      const errorEl = div as HTMLElement;
-                      if (errorEl.textContent) {
-                        errorEl.style.display = 'none';
-                        errorEl.textContent = '';
-                      }
-                    });
-                  }
-                }, ERROR_RENDER_DELAY_MS);
-              }
+            // Очищаем только ошибки загрузки файла, не ошибки валидации
+            const fileErrorDiv = container.querySelector('.image-upload-field__file .image-upload-field__error') as HTMLElement;
+            if (fileErrorDiv) {
+              fileErrorDiv.style.display = 'none';
+              fileErrorDiv.textContent = '';
             }
           }
 
           const changeEvent = new Event('change', { bubbles: true });
           hiddenInput.dispatchEvent(changeEvent);
-
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
-          console.error('ImageUpload error:', error);
+          logger.error('ImageUpload error:', error);
           if (errorDiv) {
             errorDiv.textContent = error.message || 'Ошибка при загрузке файла';
             errorDiv.style.display = 'block';
@@ -753,26 +891,27 @@ export class BlockUIController {
   }
 
   private showCustomFieldError(container: HTMLElement, message: string): void {
-    const placeholder = container.querySelector(".custom-field-placeholder") as HTMLElement;
+    const placeholder = container.querySelector('.custom-field-placeholder') as HTMLElement;
     if (placeholder) {
       placeholder.removeAttribute('style');
       placeholder.classList.remove('bb-placeholder-box');
       placeholder.innerHTML = '';
       const errorDiv = document.createElement('div');
-      errorDiv.style.cssText = 'padding: 10px; border: 1px solid #ff4444; border-radius: 4px; background-color: #fff5f5; color: #ff4444;';
+      errorDiv.style.cssText =
+        'padding: 10px; border: 1px solid #ff4444; border-radius: 4px; background-color: #fff5f5; color: #ff4444;';
       errorDiv.textContent = `❌ ${message}`;
-      placeholder.appendChild(errorDiv);
+      placeholder.append(errorDiv);
     }
   }
 
-    private cleanupCustomFieldControls(): void {
-    this.customFieldRenderers.forEach((renderer) => {
+  private cleanupCustomFieldControls(): void {
+    this.customFieldRenderers.forEach(renderer => {
       renderer.destroy();
     });
     this.customFieldRenderers.clear();
   }
 
-    private getFormDataWithSpacing(formId: string): Record<string, any> {
+  private getFormDataWithSpacing(formId: string): Record<string, any> {
     const props = this.modalManager.getFormData(formId);
 
     this.spacingRenderers.forEach((renderer, fieldName) => {
@@ -794,7 +933,11 @@ export class BlockUIController {
     return props;
   }
 
-    private async handleCreateBlock(type: string, fields: TFieldConfig[], position?: number): Promise<void> {
+  private async handleCreateBlock(
+    type: string,
+    fields: TFieldConfig[],
+    position?: number
+  ): Promise<void> {
     const props = this.getFormDataWithSpacing(FORM_ID_PREFIX);
 
     const validation = UniversalValidator.validateForm(props, fields);
@@ -815,7 +958,7 @@ export class BlockUIController {
       };
 
       if (blockConfig?.render) {
-        createData.render = blockConfig.render;
+        createData.render = blockConfig.render as TRenderRef;
       }
 
       const newBlock = await this.config.useCase.createBlock(createData);
@@ -826,15 +969,14 @@ export class BlockUIController {
 
       this.modalManager.closeModal();
       await this.refreshBlocks();
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+    } catch {
       this.showError(UI_STRINGS.blockCreationError);
     }
   }
 
-    private async insertBlockAtPosition(blockId: string, position: number): Promise<void> {
+  private async insertBlockAtPosition(blockId: string, position: number): Promise<void> {
     const allBlocks = await this.config.useCase.getAllBlocks();
-    const blockIds = allBlocks.map((b) => b.id);
+    const blockIds = allBlocks.map(b => b.id);
 
     const newBlockIndex = blockIds.indexOf(blockId);
     if (newBlockIndex !== -1) {
@@ -850,8 +992,10 @@ export class BlockUIController {
     if (!this.isEdit) {
       return;
     }
-    const block = this.blocks.find((b) => b.id === blockId);
-    if (!block) return;
+    const block = this.blocks.find(b => b.id === blockId);
+    if (!block) {
+      return;
+    }
 
     const config = this.config.blockConfigs[block.type];
     if (!config) {
@@ -859,12 +1003,11 @@ export class BlockUIController {
       return;
     }
 
-    let fields: TFieldConfig[] = addSpacingFieldToFields(
-      config.fields || [],
-      config.spacingOptions,
+    const fields: TFieldConfig[] = addSpacingFieldToFields(
+      (config.fields || []) as IFormFieldConfig[],
+      config.spacingOptions as IBlockSpacingOptions | undefined,
       this.licenseService.getFeatureChecker()
     );
-
 
     const formHTML = `
     <form id="${FORM_ID_PREFIX}" class="block-builder-form">
@@ -906,7 +1049,11 @@ export class BlockUIController {
     });
   }
 
-    private async handleUpdateBlock(blockId: string, type: string, fields: TFieldConfig[]): Promise<void> {
+  private async handleUpdateBlock(
+    blockId: string,
+    type: string,
+    fields: TFieldConfig[]
+  ): Promise<void> {
     const props = this.getFormDataWithSpacing(FORM_ID_PREFIX);
 
     const validation = UniversalValidator.validateForm(props, fields);
@@ -920,29 +1067,35 @@ export class BlockUIController {
 
       this.modalManager.closeModal();
       await this.refreshBlocks();
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+    } catch {
       this.showError(UI_STRINGS.blockUpdateError);
     }
   }
 
-    async toggleBlockVisibility(blockId: string): Promise<void> {
+  async toggleBlockVisibility(blockId: string): Promise<void> {
     if (!this.isEdit) {
       return;
     }
-    const block = this.blocks.find((b) => b.id === blockId);
-    if (!block) return;
+    const block = this.blocks.find(b => b.id === blockId);
+    if (!block) {
+      return;
+    }
 
     await this.config.useCase.setBlockVisible(blockId, !block.visible);
     await this.refreshBlocks();
   }
 
-    async deleteBlockUI(blockId: string): Promise<void> {
+  async deleteBlockUI(blockId: string): Promise<void> {
     if (!this.isEdit) {
       return;
     }
-    const confirmed = await this.modalManager.confirm(UI_STRINGS.deleteBlockConfirmTitle, UI_STRINGS.deleteBlockConfirmMessage);
-    if (!confirmed) return;
+    const confirmed = await this.modalManager.confirm(
+      UI_STRINGS.deleteBlockConfirmTitle,
+      UI_STRINGS.deleteBlockConfirmMessage
+    );
+    if (!confirmed) {
+      return;
+    }
 
     this.uiRenderer.cleanupBlockWatcher(blockId);
 
@@ -950,7 +1103,7 @@ export class BlockUIController {
     await this.refreshBlocks();
   }
 
-    async duplicateBlockUI(blockId: string): Promise<void> {
+  async duplicateBlockUI(blockId: string): Promise<void> {
     if (!this.isEdit) {
       return;
     }
@@ -958,12 +1111,17 @@ export class BlockUIController {
     await this.refreshBlocks();
   }
 
-    async clearAllBlocksUI(): Promise<void> {
+  async clearAllBlocksUI(): Promise<void> {
     if (!this.isEdit) {
       return;
     }
-    const confirmed = await this.modalManager.confirm(UI_STRINGS.clearAllBlocksConfirmTitle, UI_STRINGS.clearAllBlocksConfirmMessage);
-    if (!confirmed) return;
+    const confirmed = await this.modalManager.confirm(
+      UI_STRINGS.clearAllBlocksConfirmTitle,
+      UI_STRINGS.clearAllBlocksConfirmMessage
+    );
+    if (!confirmed) {
+      return;
+    }
 
     const allBlocks = await this.config.useCase.getAllBlocks();
     for (const block of allBlocks) {
@@ -972,9 +1130,9 @@ export class BlockUIController {
     await this.refreshBlocks();
   }
 
-    async saveAllBlocksUI(): Promise<void> {
+  async saveAllBlocksUI(): Promise<void> {
     if (!this.onSave) {
-      this.showNotification(UI_STRINGS.saveNotEnabled, "error");
+      this.showNotification(UI_STRINGS.saveNotEnabled, 'error');
       return;
     }
 
@@ -983,63 +1141,73 @@ export class BlockUIController {
       const result = await Promise.resolve(this.onSave(blocks));
 
       if (result === true) {
-        this.showNotification(UI_STRINGS.successSaved, "success");
+        this.showNotification(UI_STRINGS.successSaved, 'success');
       } else {
-        this.showNotification(UI_STRINGS.errorSaveFailed, "error");
+        this.showNotification(UI_STRINGS.errorSaveFailed, 'error');
       }
-    } catch (error) {
-      this.showNotification(UI_STRINGS.errorSaveFailed, "error");
+    } catch {
+      this.showNotification(UI_STRINGS.errorSaveFailed, 'error');
     }
   }
 
-    async moveBlockUp(blockId: string): Promise<void> {
+  async moveBlockUp(blockId: string): Promise<void> {
     if (!this.isEdit) {
       return;
     }
-    const currentIndex = this.blocks.findIndex((block) => block.id === blockId);
-    if (currentIndex <= 0) return; // Уже наверху
+    const currentIndex = this.blocks.findIndex(block => block.id === blockId);
+    if (currentIndex <= 0) {
+      return;
+    } // Уже наверху
 
     const newBlocks = [...this.blocks];
-    [newBlocks[currentIndex], newBlocks[currentIndex - 1]] = [newBlocks[currentIndex - 1], newBlocks[currentIndex]];
+    [newBlocks[currentIndex], newBlocks[currentIndex - 1]] = [
+      newBlocks[currentIndex - 1],
+      newBlocks[currentIndex],
+    ];
 
-    const blockIds = newBlocks.map((block) => block.id);
+    const blockIds = newBlocks.map(block => block.id);
     await this.config.useCase.reorderBlocks(blockIds);
 
     await this.refreshBlocks();
   }
 
-    async moveBlockDown(blockId: string): Promise<void> {
+  async moveBlockDown(blockId: string): Promise<void> {
     if (!this.isEdit) {
       return;
     }
-    const currentIndex = this.blocks.findIndex((block) => block.id === blockId);
-    if (currentIndex >= this.blocks.length - 1) return;
+    const currentIndex = this.blocks.findIndex(block => block.id === blockId);
+    if (currentIndex >= this.blocks.length - 1) {
+      return;
+    }
 
     const newBlocks = [...this.blocks];
-    [newBlocks[currentIndex], newBlocks[currentIndex + 1]] = [newBlocks[currentIndex + 1], newBlocks[currentIndex]];
+    [newBlocks[currentIndex], newBlocks[currentIndex + 1]] = [
+      newBlocks[currentIndex + 1],
+      newBlocks[currentIndex],
+    ];
 
-    const blockIds = newBlocks.map((block) => block.id);
+    const blockIds = newBlocks.map(block => block.id);
     await this.config.useCase.reorderBlocks(blockIds);
 
     await this.refreshBlocks();
   }
 
-    async copyBlockId(blockId: string): Promise<void> {
+  async copyBlockId(blockId: string): Promise<void> {
     const success = await copyToClipboard(blockId);
     if (success) {
-      this.showNotification(`${UI_STRINGS.blockIdCopied} ${blockId}`, "success");
+      this.showNotification(`${UI_STRINGS.blockIdCopied} ${blockId}`, 'success');
     }
   }
 
-    private showNotification(message: string, type: "success" | "error" | "info" = "info"): void {
-    const notification = document.createElement("div");
-    notification.className = "block-builder-notification";
+  private showNotification(message: string, type: 'success' | 'error' | 'info' = 'info'): void {
+    const notification = document.createElement('div');
+    notification.className = 'block-builder-notification';
     notification.textContent = message;
 
     const colors = {
-      success: "#4caf50",
-      error: "#dc3545",
-      info: "#007bff",
+      success: '#4caf50',
+      error: '#dc3545',
+      info: '#007bff',
     };
 
     notification.style.cssText = `
@@ -1055,23 +1223,26 @@ export class BlockUIController {
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     animation: fadeIn 0.3s ease-in-out;
   `;
-    document.body.appendChild(notification);
+    document.body.append(notification);
 
     setTimeout(() => {
-      notification.style.animation = "fadeOut 0.3s ease-in-out";
+      notification.style.animation = 'fadeOut 0.3s ease-in-out';
       setTimeout(() => notification.remove(), 300);
     }, NOTIFICATION_DISPLAY_DURATION_MS);
   }
 
-    private showValidationErrors(errors: Record<string, string[]>, skipScroll: boolean = false): void {
+  private showValidationErrors(
+    errors: Record<string, string[]>,
+    skipScroll: boolean = false
+  ): void {
     this.clearValidationErrors();
 
-    this.repeaterRenderers.forEach((renderer) => {
+    this.repeaterRenderers.forEach(renderer => {
       renderer.updateErrors(errors);
     });
 
     Object.entries(errors).forEach(([fieldName, fieldErrors]) => {
-      if (fieldName.includes("[") && fieldName.includes("]")) {
+      if (fieldName.includes('[') && fieldName.includes(']')) {
         return;
       }
 
@@ -1084,18 +1255,18 @@ export class BlockUIController {
           formGroup.classList.add(CSS_CLASSES.ERROR);
         }
 
-        const errorContainer = document.createElement("div");
+        const errorContainer = document.createElement('div');
         errorContainer.className = CSS_CLASSES.FORM_ERRORS;
-        errorContainer.setAttribute("data-field", fieldName);
+        errorContainer.dataset.field = fieldName;
 
-        fieldErrors.forEach((error) => {
-          const errorSpan = document.createElement("span");
+        fieldErrors.forEach(error => {
+          const errorSpan = document.createElement('span');
           errorSpan.className = CSS_CLASSES.ERROR;
           errorSpan.textContent = error;
-          errorContainer.appendChild(errorSpan);
+          errorContainer.append(errorSpan);
         });
 
-        input.parentElement?.appendChild(errorContainer);
+        input.parentElement?.append(errorContainer);
       }
     });
 
@@ -1105,22 +1276,26 @@ export class BlockUIController {
   }
 
   private clearValidationErrors(): void {
-    document.querySelectorAll(`.${CSS_CLASSES.FORM_CONTROL}.${CSS_CLASSES.ERROR}`).forEach((input) => {
-      input.classList.remove(CSS_CLASSES.ERROR);
-    });
+    document
+      .querySelectorAll(`.${CSS_CLASSES.FORM_CONTROL}.${CSS_CLASSES.ERROR}`)
+      .forEach(input => {
+        input.classList.remove(CSS_CLASSES.ERROR);
+      });
 
-    document.querySelectorAll(`.${CSS_CLASSES.FORM_GROUP}.${CSS_CLASSES.ERROR}`).forEach((group) => {
+    document.querySelectorAll(`.${CSS_CLASSES.FORM_GROUP}.${CSS_CLASSES.ERROR}`).forEach(group => {
       group.classList.remove(CSS_CLASSES.ERROR);
     });
 
-    document.querySelectorAll(`.${CSS_CLASSES.FORM_ERRORS}`).forEach((container) => {
+    document.querySelectorAll(`.${CSS_CLASSES.FORM_ERRORS}`).forEach(container => {
       container.remove();
     });
   }
 
-    private handleScrollToFirstError(errors: Record<string, string[]>): void {
+  private handleScrollToFirstError(errors: Record<string, string[]>): void {
     const firstErrorKey = Object.keys(errors)[0];
-    if (!firstErrorKey) return;
+    if (!firstErrorKey) {
+      return;
+    }
 
     const errorInfo = parseErrorKey(firstErrorKey);
 
@@ -1134,30 +1309,38 @@ export class BlockUIController {
         }
         scrollToFirstError(modalBody, errors, {
           offset: 40,
-          behavior: "smooth",
+          behavior: 'smooth',
           autoFocus: true,
         });
       }, ERROR_RENDER_DELAY_MS);
     }
   }
 
-  private openRepeaterAccordion(repeaterFieldName: string, itemIndex: number, errors?: Record<string, string[]>): void {
+  private openRepeaterAccordion(
+    repeaterFieldName: string,
+    itemIndex: number,
+    errors?: Record<string, string[]>
+  ): void {
     const renderer = this.repeaterRenderers.get(repeaterFieldName);
 
     if (!renderer) {
       return;
     }
 
-    const modalBody = document.querySelector(".block-builder-modal-body") as HTMLElement;
-    if (!modalBody) return;
+    const modalBody = document.querySelector('.block-builder-modal-body') as HTMLElement;
+    if (!modalBody) {
+      return;
+    }
 
     const allErrors = errors || this.getRepeaterErrors();
 
     const firstErrorKey = Object.keys(allErrors).find(key => {
       const errorInfo = parseErrorKey(key);
-      return errorInfo.isRepeaterField &&
-             errorInfo.repeaterFieldName === repeaterFieldName &&
-             errorInfo.repeaterIndex === itemIndex;
+      return (
+        errorInfo.isRepeaterField &&
+        errorInfo.repeaterFieldName === repeaterFieldName &&
+        errorInfo.repeaterIndex === itemIndex
+      );
     });
 
     if (renderer.isItemCollapsed(itemIndex)) {
@@ -1173,20 +1356,20 @@ export class BlockUIController {
             if (fieldElement) {
               scrollToElement(fieldElement, {
                 offset: 40,
-                behavior: "smooth"
+                behavior: 'smooth',
               });
               focusElement(fieldElement);
             } else {
               scrollToFirstError(modalBody, allErrors, {
                 offset: 40,
-                behavior: "smooth",
+                behavior: 'smooth',
                 autoFocus: true,
               });
             }
           } else {
             scrollToFirstError(modalBody, allErrors, {
               offset: 40,
-              behavior: "smooth",
+              behavior: 'smooth',
               autoFocus: true,
             });
           }
@@ -1200,20 +1383,20 @@ export class BlockUIController {
           if (fieldElement) {
             scrollToElement(fieldElement, {
               offset: 40,
-              behavior: "smooth"
+              behavior: 'smooth',
             });
             focusElement(fieldElement);
           } else {
             scrollToFirstError(modalBody, allErrors, {
               offset: 40,
-              behavior: "smooth",
+              behavior: 'smooth',
               autoFocus: true,
             });
           }
         } else {
           scrollToFirstError(modalBody, allErrors, {
             offset: 40,
-            behavior: "smooth",
+            behavior: 'smooth',
             autoFocus: true,
           });
         }
@@ -1224,48 +1407,50 @@ export class BlockUIController {
   private getRepeaterErrors(): Record<string, string[]> {
     const errors: Record<string, string[]> = {};
 
-    document.querySelectorAll(".repeater-control__field-error, .image-upload-field__error").forEach((errorEl) => {
-      let field: HTMLElement | null = null;
-      let repeaterIndex: string | null = null;
-      let fieldName: string | null = null;
+    document
+      .querySelectorAll('.repeater-control__field-error, .image-upload-field__error')
+      .forEach(errorEl => {
+        let field: HTMLElement | null = null;
+        let repeaterIndex: string | null = null;
+        let fieldName: string | null = null;
 
-      const isImageField = errorEl.classList.contains("image-upload-field__error");
+        const isImageField = errorEl.classList.contains('image-upload-field__error');
 
-      if (isImageField) {
-        const imageField = errorEl.closest(".image-upload-field") as HTMLElement;
-        if (imageField) {
-          field = imageField;
-          repeaterIndex = imageField.getAttribute("data-repeater-index");
-          fieldName = imageField.getAttribute("data-repeater-item-field");
-        }
-      } else {
-        field = errorEl.closest(".repeater-control__field") as HTMLElement;
-        if (field) {
-          const input = field.querySelector("input, textarea, select") as HTMLElement;
-          if (input) {
-            repeaterIndex = input.getAttribute("data-item-index");
-            fieldName = input.getAttribute("data-field-name");
+        if (isImageField) {
+          const imageField = errorEl.closest('.image-upload-field') as HTMLElement;
+          if (imageField) {
+            field = imageField;
+            repeaterIndex = imageField.dataset.repeaterIndex || null;
+            fieldName = imageField.dataset.repeaterItemField || null;
+          }
+        } else {
+          field = errorEl.closest('.repeater-control__field') as HTMLElement;
+          if (field) {
+            const input = field.querySelector('input, textarea, select') as HTMLElement;
+            if (input) {
+              repeaterIndex = input.dataset.itemIndex || null;
+              fieldName = input.dataset.fieldName || null;
+            }
           }
         }
-      }
 
-      if (repeaterIndex !== null && fieldName) {
-        const repeaterControl = field?.closest(".repeater-control") as HTMLElement;
-        if (repeaterControl) {
-          const repeaterFieldName = repeaterControl.getAttribute("data-field-name");
-          if (repeaterFieldName) {
-            const errorKey = `${repeaterFieldName}[${repeaterIndex}].${fieldName}`;
-            errors[errorKey] = [errorEl.textContent || ""];
+        if (repeaterIndex !== null && fieldName) {
+          const repeaterControl = field?.closest('.repeater-control') as HTMLElement;
+          if (repeaterControl) {
+            const repeaterFieldName = repeaterControl.dataset.fieldName;
+            if (repeaterFieldName) {
+              const errorKey = `${repeaterFieldName}[${repeaterIndex}].${fieldName}`;
+              errors[errorKey] = [errorEl.textContent || ''];
+            }
           }
         }
-      }
-    });
+      });
 
     return errors;
   }
 
-    private showError(message: string): void {
-    this.showNotification(message, "error");
+  private showError(message: string): void {
+    this.showNotification(message, 'error');
   }
 
   private closeModalWithCleanup(): void {
@@ -1285,23 +1470,35 @@ export class BlockUIController {
     this.modalManager.submitModal();
   }
 
-    private registerEventHandlers(): void {
+  private registerEventHandlers(): void {
     this.eventDelegation.register('saveAllBlocksUI', () => this.saveAllBlocksUI());
     this.eventDelegation.register('clearAllBlocksUI', () => this.clearAllBlocksUI());
-    this.eventDelegation.register('showBlockTypeSelectionModal', (position?: number) => this.showBlockTypeSelectionModal(position));
-    this.eventDelegation.register('showAddBlockFormAtPosition', (type: string, position?: number) => this.showAddBlockFormAtPosition(type, position));
+    this.eventDelegation.register('showBlockTypeSelectionModal', (position?: number) =>
+      this.showBlockTypeSelectionModal(position)
+    );
+    this.eventDelegation.register('showAddBlockFormAtPosition', (type: string, position?: number) =>
+      this.showAddBlockFormAtPosition(type, position)
+    );
     this.eventDelegation.register('editBlock', (blockId: string) => this.editBlock(blockId));
     this.eventDelegation.register('copyBlockId', (blockId: string) => this.copyBlockId(blockId));
     this.eventDelegation.register('moveBlockUp', (blockId: string) => this.moveBlockUp(blockId));
-    this.eventDelegation.register('moveBlockDown', (blockId: string) => this.moveBlockDown(blockId));
-    this.eventDelegation.register('toggleBlockVisibility', (blockId: string) => this.toggleBlockVisibility(blockId));
-    this.eventDelegation.register('duplicateBlockUI', (blockId: string) => this.duplicateBlockUI(blockId));
-    this.eventDelegation.register('deleteBlockUI', (blockId: string) => this.deleteBlockUI(blockId));
+    this.eventDelegation.register('moveBlockDown', (blockId: string) =>
+      this.moveBlockDown(blockId)
+    );
+    this.eventDelegation.register('toggleBlockVisibility', (blockId: string) =>
+      this.toggleBlockVisibility(blockId)
+    );
+    this.eventDelegation.register('duplicateBlockUI', (blockId: string) =>
+      this.duplicateBlockUI(blockId)
+    );
+    this.eventDelegation.register('deleteBlockUI', (blockId: string) =>
+      this.deleteBlockUI(blockId)
+    );
     this.eventDelegation.register('closeModal', () => this.closeModal());
     this.eventDelegation.register('submitModal', () => this.submitModal());
   }
 
-    setIsEdit(isEdit: boolean): void {
+  setIsEdit(isEdit: boolean): void {
     this.isEdit = isEdit;
     if (this.uiRenderer) {
       this.uiRenderer.updateEditMode(isEdit);
@@ -1309,11 +1506,11 @@ export class BlockUIController {
     this.refreshBlocks();
   }
 
-    getIsEdit(): boolean {
+  getIsEdit(): boolean {
     return this.isEdit;
   }
 
-    destroy(): void {
+  destroy(): void {
     this.cleanupSpacingControls();
     this.cleanupRepeaterControls();
     this.cleanupApiSelectControls();

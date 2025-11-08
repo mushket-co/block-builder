@@ -5,7 +5,12 @@ import { BaseFieldRenderer } from './BaseFieldRenderer';
 export class ColorFieldRenderer extends BaseFieldRenderer {
   readonly fieldType = 'color';
 
-  protected renderInput(fieldId: string, field: IFormFieldConfig, value: any, required: string): string {
+  protected renderInput(
+    fieldId: string,
+    field: IFormFieldConfig,
+    value: any,
+    required: string
+  ): string {
     const colorValue = value || '#333333';
 
     return `
@@ -20,4 +25,3 @@ export class ColorFieldRenderer extends BaseFieldRenderer {
     `;
   }
 }
-

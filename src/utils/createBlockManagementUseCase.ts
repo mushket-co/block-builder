@@ -1,7 +1,8 @@
-import { BlockManagementUseCase } from '../core/use-cases/BlockManagementUseCase';
+import { BlockBuilderFactory } from '../BlockBuilderFactory';
 import { IBlockRepository } from '../core/ports/BlockRepository';
 import { IComponentRegistry } from '../core/ports/ComponentRegistry';
-import { BlockBuilderFactory } from '../BlockBuilderFactory';
+import { BlockManagementUseCase } from '../core/use-cases/BlockManagementUseCase';
+
 export interface ICreateBlockManagementUseCaseOptions {
   repository?: IBlockRepository;
   componentRegistry?: IComponentRegistry;

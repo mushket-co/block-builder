@@ -8,32 +8,34 @@
 
 import './ui/styles/index.scss';
 
-export { BlockBuilderFacade as BlockBuilder } from './BlockBuilderFacade';
 export type { IBlockBuilderOptions } from './BlockBuilderFacade';
-
-export { License, TLicenseType } from './core/entities/License';
+export { BlockBuilderFacade as BlockBuilder } from './BlockBuilderFacade';
 export type { ILicenseConfig } from './core/entities/License';
-export { LicenseService } from './core/services/LicenseService';
+export { License, TLicenseType } from './core/entities/License';
+export { LicenseFeature, LicenseFeatureChecker } from './core/services/LicenseFeatureChecker';
 export type { ILicenseInfo } from './core/services/LicenseService';
-export { LicenseFeatureChecker, LicenseFeature } from './core/services/LicenseFeatureChecker';
-
+export { LicenseService } from './core/services/LicenseService';
 export type {
   IBlock,
-  IBlockMetadata,
   IBlockDto,
+  IBlockMetadata,
   ICreateBlockDto,
-  IUpdateBlockDto
+  IUpdateBlockDto,
 } from './core/types/block';
 export type { TBlockId } from './core/types/common';
 export type {
-  IFormFieldConfig,
-  IFieldValidationConfig,
-  IFormGenerationConfig,
-  TFieldType,
+  IApiRequestParams,
   IApiSelectConfig,
   IApiSelectItem,
   IApiSelectResponse,
-  IApiRequestParams,
-  THttpMethod
+  IFieldValidationConfig,
+  IFormFieldConfig,
+  IFormGenerationConfig,
+  TFieldType,
+  THttpMethod,
 } from './core/types/form';
-export type { IValidationRule, TValidationRuleType, IValidationResult } from './core/types/validation';
+export type {
+  IValidationResult,
+  IValidationRule,
+  TValidationRuleType,
+} from './core/types/validation';

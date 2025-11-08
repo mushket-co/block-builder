@@ -5,7 +5,21 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/),
 и проект следует [Semantic Versioning](https://semver.org/lang/ru/).
 
-## [1.0.20] - 2025-01-XX
+
+## [1.0.21] - 2025-11-08
+
+### Добавлено
+- **ESLint и Prettier**: Добавлена конфигурация ESLint и Prettier для обеспечения единообразия кода и автоматического форматирования. Добавлены скрипты `lint`, `lint:fix` и `format` в package.json
+- **LICENSE-PRO.md**: Добавлен файл с описанием PRO лицензии для коммерческого использования расширенных функций
+
+### Изменено
+- **LICENSE**: Обновлен файл лицензии с указанием на PRO версию для коммерческого использования
+- **Форматирование кода**: Весь код отформатирован в соответствии с правилами Prettier для единообразия стиля
+- **Код-стайл**: Применены правила ESLint для улучшения качества кода и предотвращения потенциальных ошибок
+
+---
+
+## [1.0.20] - 2025-11-08
 
 ### Добавлено
 - **Система рендереров полей формы**: Реализована новая архитектура рендеринга полей формы с использованием паттерна Factory и базового класса `BaseFieldRenderer`. Все типы полей теперь имеют отдельные классы-рендереры (TextFieldRenderer, TextareaFieldRenderer, NumberFieldRenderer, ColorFieldRenderer, UrlFieldRenderer, EmailFieldRenderer, FileFieldRenderer, CheckboxFieldRenderer, SelectFieldRenderer, RadioFieldRenderer, ImageFieldRenderer, SpacingFieldRenderer, RepeaterFieldRenderer, ApiSelectFieldRenderer, CustomFieldRenderer)
@@ -35,21 +49,21 @@
 
 ---
 
-## [1.0.19] - 2025-01-XX
+## [1.0.19] - 2025-11-05
 
 ### Исправлено
 - -fix
 
 ---
 
-## [1.0.18] - 2025-01-XX
+## [1.0.18] - 2025-11-05
 
 ### Исправлено
 - -fix
 
 ---
 
-## [1.0.17] - 2025-01-04
+## [1.0.17] - 2025-11-05
 
 ### Изменено
 - **BlockBuilder.vue и UIRenderer.ts**: Добавлен класс `block-builder` к основному контейнеру приложения для улучшения кастомизации стилей
@@ -57,14 +71,14 @@
 
 ---
 
-## [1.0.16] - 2025-01-04
+## [1.0.16] - 2025-11-04
 
 ### Исправлено
 - **BlockBuilder.vue**: Исправлено отображение ошибок валидации - теперь ошибки показываются для всех типов полей (text, textarea, number, color, url, select, checkbox, radio), а не только для radio полей
 
 ---
 
-## [1.0.15] - 2025-01-04
+## [1.0.15] - 2025-11-04
 
 ### Удалено
 - **Свойство `storageType`**: Удалено свойство `storageType?: 'memory' | 'localStorage'` из `IBlockBuilderOptions` и `BlockBuilderFactory`. Сохранение блоков теперь реализовано исключительно через колбэк `onSave`, который пользователь передаёт в опциях

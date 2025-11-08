@@ -1,4 +1,8 @@
-import { ICustomFieldRenderer, ICustomFieldContext, ICustomFieldRenderResult } from '../../core/ports/CustomFieldRenderer';
+import {
+  ICustomFieldContext,
+  ICustomFieldRenderer,
+  ICustomFieldRenderResult,
+} from '../../core/ports/CustomFieldRenderer';
 
 export interface ICustomFieldControlOptions {
   fieldName: string;
@@ -19,79 +23,78 @@ export class CustomFieldControlRenderer {
   private onChange: (value: any) => void;
 
   constructor(
-  container: HTMLElement,
-  renderer: ICustomFieldRenderer,
-  options: ICustomFieldControlOptions
+    container: HTMLElement,
+    renderer: ICustomFieldRenderer,
+    options: ICustomFieldControlOptions
   ) {
-  this.container = container;
-  this.renderer = renderer;
-  this.currentValue = options.value;
-  this.onChange = options.onChange;
+    this.container = container;
+    this.renderer = renderer;
+    this.currentValue = options.value;
+    this.onChange = options.onChange;
 
-  const context: ICustomFieldContext = {
-    fieldName: options.fieldName,
-    label: options.label,
-    value: options.value,
-    required: options.required,
-    options: options.options,
-    onChange: (newValue: any) => {
-      this.currentValue = newValue;
-      this.onChange(newValue);
-    },
-    onError: options.onError
-  };
+    const context: ICustomFieldContext = {
+      fieldName: options.fieldName,
+      label: options.label,
+      value: options.value,
+      required: options.required,
+      options: options.options,
+      onChange: (newValue: any) => {
+        this.currentValue = newValue;
+        this.onChange(newValue);
+      },
+      onError: options.onError,
+    };
 
-  this.initRenderer(context);
+    this.initRenderer(context);
   }
 
-    private async initRenderer(context: ICustomFieldContext): Promise<void> {
-  try {
-    const result = await this.renderer.render(this.container, context);
-    this.renderResult = result;
+  private async initRenderer(context: ICustomFieldContext): Promise<void> {
+    try {
+      const result = await this.renderer.render(this.container, context);
+      this.renderResult = result;
 
-    if (typeof result.element === 'string') {
-      this.container.innerHTML = result.element;
-    }
-    else if (result.element instanceof HTMLElement) {
-      this.container.innerHTML = '';
-      this.container.appendChild(result.element);
-    }
+      if (typeof result.element === 'string') {
+        this.container.innerHTML = result.element;
+      } else if (result.element instanceof HTMLElement) {
+        this.container.innerHTML = '';
+        this.container.append(result.element);
+      }
 
-    if (this.container.classList.contains('custom-field-placeholder')) {
-      this.container.removeAttribute('style');
-      this.container.classList.remove('bb-placeholder-box');
-    }
+      if (this.container.classList.contains('custom-field-placeholder')) {
+        this.container.removeAttribute('style');
+        this.container.classList.remove('bb-placeholder-box');
+      }
     } catch (error) {
-    this.showError(`Ошибка инициализации поля: ${error}`);
-  }
-  }
-
-    getValue(): any {
-  if (this.renderResult?.getValue) {
-    return this.renderResult.getValue();
-  }
-  return this.currentValue;
+      this.showError(`Ошибка инициализации поля: ${error}`);
+    }
   }
 
-    setValue(value: any): void {
-  this.currentValue = value;
-  if (this.renderResult?.setValue) {
-    this.renderResult.setValue(value);
+  getValue(): any {
+    if (this.renderResult?.getValue) {
+      return this.renderResult.getValue();
+    }
+    return this.currentValue;
   }
+
+  setValue(value: any): void {
+    this.currentValue = value;
+    if (this.renderResult?.setValue) {
+      this.renderResult.setValue(value);
+    }
   }
 
   validate(): string | null {
-  if (this.renderResult?.validate) {
-    return this.renderResult.validate();
-  }
-  return null;
+    if (this.renderResult?.validate) {
+      return this.renderResult.validate();
+    }
+    return null;
   }
 
-    destroy(): void {
-  if (this.renderResult?.destroy) {
-    this.renderResult.destroy();
-  }
-  this.container.innerHTML = '';
+  destroy(): void {
+    if (this.renderResult?.destroy) {
+      this.renderResult.destroy();
+    }
+    this.container.innerHTML = '';
   }
 
   private showError(message: string): void {
@@ -106,4 +109,3 @@ export class CustomFieldControlRenderer {
     `;
   }
 }
-

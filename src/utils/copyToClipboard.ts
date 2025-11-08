@@ -2,35 +2,36 @@ const unsecuredCopyToClipboard = (text: string): void => {
   const element = document.createElement('div');
   element.textContent = text;
   element.style.cssText =
-  'position: fixed; opacity: 0; left: 50%; top: 50%; height: 1px; width: 1px; pointer-events: none; touch-action: none;';
+    'position: fixed; opacity: 0; left: 50%; top: 50%; height: 1px; width: 1px; pointer-events: none; touch-action: none;';
   document.body.append(element);
   const range = document.createRange();
   range.selectNode(element);
   const selection = window.getSelection();
   if (!selection) {
-  element.remove();
-  return;
+    element.remove();
+    return;
   }
   selection.removeAllRanges();
   selection.addRange(range);
   try {
-  document.execCommand('copy');
-  } catch (error) {
+    document.execCommand('copy');
+  } catch {
+    // Игнорируем ошибки копирования
   } finally {
-  selection.removeAllRanges();
-  element.remove();
+    selection.removeAllRanges();
+    element.remove();
   }
 };
 export const copyToClipboard = async (content: string): Promise<boolean> => {
   try {
-  if (window.isSecureContext && navigator.clipboard) {
-    await navigator.clipboard.writeText(content);
-    return true;
-  } else {
-    unsecuredCopyToClipboard(content);
-    return true;
-  }
-  } catch (error) {
+    if (window.isSecureContext && navigator.clipboard) {
+      await navigator.clipboard.writeText(content);
+      return true;
+    } else {
+      unsecuredCopyToClipboard(content);
+      return true;
+    }
+  } catch {
     return false;
   }
 };

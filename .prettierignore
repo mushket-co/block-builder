@@ -1,0 +1,12 @@
+dist/
+node_modules/
+*.js
+rollup.config.cjs
+rollup.dev.cjs
+dev-server.js
+**/*.d.ts
+examples/
+coverage/
+package-lock.json
+*.tgz
+

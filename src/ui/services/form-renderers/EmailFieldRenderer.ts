@@ -5,7 +5,12 @@ import { BaseFieldRenderer } from './BaseFieldRenderer';
 export class EmailFieldRenderer extends BaseFieldRenderer {
   readonly fieldType = 'email';
 
-  protected renderInput(fieldId: string, field: IFormFieldConfig, value: any, required: string): string {
+  protected renderInput(
+    fieldId: string,
+    field: IFormFieldConfig,
+    value: any,
+    required: string
+  ): string {
     const escapedValue = this.getEscapedValue(value);
     const escapedPlaceholder = this.getEscapedPlaceholder(field.placeholder);
 
@@ -22,4 +27,3 @@ export class EmailFieldRenderer extends BaseFieldRenderer {
     `;
   }
 }
-

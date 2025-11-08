@@ -1,25 +1,31 @@
 import { IBlockDto } from '../../core/types';
+import { TRenderRef } from '../../core/types/common';
+import { IBreakpoint } from '../../core/types/form';
 import { getBlockInlineStyles, watchBreakpointChanges } from '../../utils/breakpointHelpers';
-import { ISpacingData } from '../../utils/spacingHelpers';
-import { afterRender } from '../../utils/domReady';
-import { EventDelegation } from '../EventDelegation';
-import { initIcons } from '../icons/index';
 import { CSS_CLASSES } from '../../utils/constants';
+import { afterRender } from '../../utils/domReady';
+import { logger } from '../../utils/logger';
+import { ISpacingData } from '../../utils/spacingHelpers';
+import { EventDelegation } from '../EventDelegation';
 import {
-  copyIconHTML,
-  arrowUpIconHTML,
   arrowDownIconHTML,
-  editIconHTML,
+  arrowUpIconHTML,
+  copyIconHTML,
+  deleteIconHTML,
   duplicateIconHTML,
+  editIconHTML,
   eyeIconHTML,
   eyeOffIconHTML,
-  deleteIconHTML,
-  saveIconHTML
+  saveIconHTML,
 } from '../icons/iconHelpers';
+import { initIcons } from '../icons/index';
 
 export interface IUIRendererConfig {
   containerId: string;
-  blockConfigs: Record<string, any>;
+  blockConfigs: Record<
+    string,
+    { fields?: unknown[]; spacingOptions?: unknown; [key: string]: unknown }
+  >;
   componentRegistry: IComponentRegistry;
   eventDelegation?: EventDelegation;
   controlsContainerClass?: string;
@@ -35,8 +41,10 @@ export interface IUIRendererConfig {
 }
 
 interface IComponentRegistry {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   get(name: string): any;
   has(name: string): boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getAll(): Record<string, any>;
 }
 
@@ -45,6 +53,7 @@ export class UIRenderer {
   private breakpointUnsubscribers: Map<string, () => void> = new Map();
   private eventDelegation: EventDelegation;
   private isEdit: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private vueApps: Map<string, any> = new Map();
 
   constructor(config: IUIRendererConfig) {
@@ -53,57 +62,57 @@ export class UIRenderer {
     this.isEdit = config.isEdit !== undefined ? config.isEdit : true;
   }
 
-    private getUserComponentProps(props: Record<string, any>): Record<string, any> {
-  if (!props) return {};
+  private getUserComponentProps(props: Record<string, unknown>): Record<string, unknown> {
+    if (!props) {
+      return {};
+    }
 
-  const { spacing, ...userProps } = props;
+    const { spacing: _spacing, ...userProps } = props;
 
-  return userProps;
+    return userProps;
   }
 
   renderContainer(): void {
-  initIcons();
+    initIcons();
 
-  const container = document.getElementById(this.config.containerId);
-  if (!container) {
-    return;
-  }
+    const container = document.querySelector(`#${this.config.containerId}`);
+    if (!container) {
+      return;
+    }
 
-  const panelClass = `block-builder-controls${this.config.controlsFixedPosition ? ` block-builder-controls--fixed-${this.config.controlsFixedPosition}` : ''}`;
-  const containerClass = this.config.controlsContainerClass || '';
+    const panelClass = `block-builder-controls${this.config.controlsFixedPosition ? ` block-builder-controls--fixed-${this.config.controlsFixedPosition}` : ''}`;
+    const containerClass = this.config.controlsContainerClass || '';
 
-  let inlineStyles = '';
-  if (this.config.controlsFixedPosition) {
-    const offset = this.config.controlsOffset || 0;
-    const offsetVar = this.config.controlsOffsetVar;
+    let inlineStyles = '';
+    if (this.config.controlsFixedPosition) {
+      const offset = this.config.controlsOffset || 0;
+      const offsetVar = this.config.controlsOffsetVar;
 
-    if (this.config.controlsFixedPosition === 'top') {
-      if (offsetVar) {
-        inlineStyles = `style="top: calc(var(${offsetVar}) + ${offset}px);"`;
-      } else {
-        inlineStyles = `style="top: ${offset}px;"`;
-      }
-    } else if (this.config.controlsFixedPosition === 'bottom') {
-      if (offsetVar) {
-        inlineStyles = `style="bottom: calc(var(${offsetVar}) + ${offset}px);"`;
-      } else {
-        inlineStyles = `style="bottom: ${offset}px;"`;
+      if (this.config.controlsFixedPosition === 'top') {
+        inlineStyles = offsetVar
+          ? `style="top: calc(var(${offsetVar}) + ${offset}px);"`
+          : `style="top: ${offset}px;"`;
+      } else if (this.config.controlsFixedPosition === 'bottom') {
+        inlineStyles = offsetVar
+          ? `style="bottom: calc(var(${offsetVar}) + ${offset}px);"`
+          : `style="bottom: ${offset}px;"`;
       }
     }
-  }
 
-  const positionClass = this.config.controlsFixedPosition === 'top' ? ' has-top-controls' : '';
-  const bottomClass = this.config.controlsFixedPosition === 'bottom' ? ' has-bottom-controls' : '';
-  const appClass = `block-builder block-builder-app${this.config.controlsFixedPosition ? ' has-fixed-controls' : ''}${positionClass}${bottomClass}`;
+    const positionClass = this.config.controlsFixedPosition === 'top' ? ' has-top-controls' : '';
+    const bottomClass =
+      this.config.controlsFixedPosition === 'bottom' ? ' has-bottom-controls' : '';
+    const appClass = `block-builder block-builder-app${this.config.controlsFixedPosition ? ' has-fixed-controls' : ''}${positionClass}${bottomClass}`;
 
-  if (this.isEdit) {
-    document.body.classList.add('bb-is-edit-mode');
-  } else {
-    document.body.classList.remove('bb-is-edit-mode');
-  }
+    if (this.isEdit) {
+      document.body.classList.add('bb-is-edit-mode');
+    } else {
+      document.body.classList.remove('bb-is-edit-mode');
+    }
 
-  const licenseBanner = this.renderLicenseBanner();
-  const controlsHTML = this.isEdit ? `
+    const licenseBanner = this.renderLicenseBanner();
+    const controlsHTML = this.isEdit
+      ? `
       <div class="${panelClass}" ${inlineStyles}>
         <div class="block-builder-controls-container${containerClass ? ` ${containerClass}` : ''}">
           <div class="block-builder-controls-inner">
@@ -115,9 +124,10 @@ export class UIRenderer {
           </div>
         </div>
       </div>
-  ` : '';
+  `
+      : '';
 
-  container.innerHTML = `
+    container.innerHTML = `
     <div class="${appClass}">
       ${licenseBanner}
       ${controlsHTML}
@@ -160,26 +170,26 @@ export class UIRenderer {
 
   private renderLicenseBadge(): string {
     const license = this.config.license;
-    if (!license) return '';
+    if (!license) {
+      return '';
+    }
 
-    if (license.isPro) {
-      return `
+    return license.isPro
+      ? `
         <div class="block-builder-license-badge block-builder-license-badge--pro" title="PRO лицензия - Без ограничений">
           <span class="block-builder-license-badge__icon">✓</span>
           <span class="block-builder-license-badge__text">PRO</span>
         </div>
-      `;
-    } else {
-      return `
+      `
+      : `
         <div class="block-builder-license-badge block-builder-license-badge--free" title="FREE лицензия - Ограничено ${license.maxBlockTypes} типами блоков">
           <span class="block-builder-license-badge__icon">ℹ</span>
           <span class="block-builder-license-badge__text">FREE</span>
         </div>
       `;
-    }
   }
 
-    updateEditMode(isEdit: boolean): void {
+  updateEditMode(isEdit: boolean): void {
     this.isEdit = isEdit;
     this.config.isEdit = isEdit;
     if (isEdit) {
@@ -190,12 +200,16 @@ export class UIRenderer {
     this.updateControlsPanel();
   }
 
-    private updateControlsPanel(): void {
-    const container = document.getElementById(this.config.containerId);
-    if (!container) return;
+  private updateControlsPanel(): void {
+    const container = document.querySelector(`#${this.config.containerId}`);
+    if (!container) {
+      return;
+    }
 
     const appContainer = container.querySelector('.block-builder-app');
-    if (!appContainer) return;
+    if (!appContainer) {
+      return;
+    }
 
     const existingControls = appContainer.querySelector('.block-builder-controls');
 
@@ -208,33 +222,31 @@ export class UIRenderer {
       const offsetVar = this.config.controlsOffsetVar;
 
       if (this.config.controlsFixedPosition === 'top') {
-        if (offsetVar) {
-          inlineStyles = `style="top: calc(var(${offsetVar}) + ${offset}px);"`;
-        } else {
-          inlineStyles = `style="top: ${offset}px;"`;
-        }
+        inlineStyles = offsetVar
+          ? `style="top: calc(var(${offsetVar}) + ${offset}px);"`
+          : `style="top: ${offset}px;"`;
       } else if (this.config.controlsFixedPosition === 'bottom') {
-        if (offsetVar) {
-          inlineStyles = `style="bottom: calc(var(${offsetVar}) + ${offset}px);"`;
-        } else {
-          inlineStyles = `style="bottom: ${offset}px;"`;
-        }
+        inlineStyles = offsetVar
+          ? `style="bottom: calc(var(${offsetVar}) + ${offset}px);"`
+          : `style="bottom: ${offset}px;"`;
       }
     }
 
-    const controlsHTML = this.isEdit ? `
+    const controlsHTML = this.isEdit
+      ? `
       <div class="${panelClass}" ${inlineStyles}>
         <div class="block-builder-controls-container${containerClass ? ` ${containerClass}` : ''}">
           <div class="block-builder-controls-inner">
             ${this.renderControlButtons()}
             <div class="block-builder-stats">
-              <p>Всего блоков: <span id="blocks-count">${document.getElementById('blocks-count')?.textContent || '0'}</span></p>
+              <p>Всего блоков: <span id="blocks-count">${document.querySelector('#blocks-count')?.textContent || '0'}</span></p>
             </div>
             ${this.renderLicenseBadge()}
           </div>
         </div>
       </div>
-    ` : '';
+    `
+      : '';
 
     if (existingControls) {
       if (controlsHTML) {
@@ -254,15 +266,19 @@ export class UIRenderer {
       if (newControls) {
         const blocksContainer = appContainer.querySelector('.block-builder-blocks');
         if (blocksContainer) {
-          appContainer.insertBefore(newControls, blocksContainer);
+          blocksContainer.before(newControls);
         } else {
-          appContainer.appendChild(newControls);
+          appContainer.append(newControls);
         }
       }
     }
   }
 
-    updateLicenseStatus(licenseInfo: { isPro: boolean; maxBlockTypes: number; currentTypesCount: number }): void {
+  updateLicenseStatus(licenseInfo: {
+    isPro: boolean;
+    maxBlockTypes: number;
+    currentTypesCount: number;
+  }): void {
     this.config.license = licenseInfo;
     if (this.config.isEdit !== undefined) {
       this.updateEditMode(this.config.isEdit);
@@ -283,7 +299,7 @@ export class UIRenderer {
     }
 
     const licenseBanner = this.renderLicenseBanner();
-    const container = document.getElementById(this.config.containerId);
+    const container = document.querySelector(`#${this.config.containerId}`);
     if (container) {
       const appContainer = container.querySelector('.block-builder-app') || container;
       const existingBanner = appContainer.querySelector('.block-builder-license-banner');
@@ -300,7 +316,7 @@ export class UIRenderer {
             if (appContainer.firstChild) {
               appContainer.insertBefore(bannerNode, appContainer.firstChild);
             } else {
-              appContainer.appendChild(bannerNode);
+              appContainer.append(bannerNode);
             }
           }
         }
@@ -309,8 +325,7 @@ export class UIRenderer {
       }
     }
 
-    if (licenseInfo.isPro) {
-    }
+    // PRO лицензия активна
   }
 
   private renderAddBlockButton(position: number): string {
@@ -333,60 +348,66 @@ export class UIRenderer {
   }
 
   renderBlocks(blocks: IBlockDto[]): void {
-  const blocksContainer = document.getElementById('block-builder-blocks');
-  const countElement = document.getElementById('blocks-count');
+    const blocksContainer = document.querySelector('#block-builder-blocks');
+    const countElement = document.querySelector('#blocks-count');
 
-  if (!blocksContainer) return;
+    if (!blocksContainer) {
+      return;
+    }
 
-  this.cleanupBreakpointWatchers();
+    this.cleanupBreakpointWatchers();
 
-  const blocksToRender = this.isEdit
-    ? blocks
-    : blocks.filter(block => block.visible !== false);
+    const blocksToRender = this.isEdit ? blocks : blocks.filter(block => block.visible !== false);
 
-  if (countElement) {
-    countElement.textContent = blocksToRender.length.toString();
-  }
+    if (countElement) {
+      countElement.textContent = blocksToRender.length.toString();
+    }
 
-  if (blocksToRender.length === 0) {
-    blocksContainer.innerHTML = `
+    if (blocksToRender.length === 0) {
+      blocksContainer.innerHTML = `
       <div class="block-builder-empty-state">
         ${this.renderAddBlockButton(0)}
       </div>
     `;
-    return;
+      return;
+    }
+
+    const blocksHTML = [
+      this.renderAddBlockButton(0),
+      ...blocksToRender.flatMap((block, index) => [
+        this.renderBlock(block, index, blocksToRender.length),
+        this.renderAddBlockButton(index + 1),
+      ]),
+    ];
+
+    blocksContainer.innerHTML = blocksHTML.join('');
+
+    afterRender(() => {
+      this.initializeCustomBlocks(blocksToRender);
+      this.setupBreakpointWatchers(blocksToRender);
+    });
   }
 
-  const blocksHTML: string[] = [];
-
-  blocksHTML.push(this.renderAddBlockButton(0));
-
-  blocksToRender.forEach((block, index) => {
-    blocksHTML.push(this.renderBlock(block, index, blocksToRender.length));
-    blocksHTML.push(this.renderAddBlockButton(index + 1));
-  });
-
-  blocksContainer.innerHTML = blocksHTML.join('');
-
-  afterRender(() => {
-    this.initializeCustomBlocks(blocksToRender);
-    this.setupBreakpointWatchers(blocksToRender);
-  });
-}
-
   private renderBlock(block: IBlockDto, index: number, totalBlocks: number): string {
-  const config = this.config.blockConfigs[block.type];
-  if (!config) return '';
+    const config = this.config.blockConfigs[block.type];
+    if (!config) {
+      return '';
+    }
 
-  const blockContent = this.renderBlockContent(block, config);
+    const blockContent = this.renderBlockContent(block, config);
 
-  const spacingStylesObj = getBlockInlineStyles(block.props.spacing || {}, 'spacing');
-  const styleAttr = Object.keys(spacingStylesObj).length > 0
-    ? ` style="${this.objectToStyleString(spacingStylesObj)}"`
-    : '';
+    const spacingStylesObj = getBlockInlineStyles(
+      (block.props.spacing || {}) as ISpacingData,
+      'spacing'
+    );
+    const styleAttr =
+      Object.keys(spacingStylesObj).length > 0
+        ? ` style="${this.objectToStyleString(spacingStylesObj)}"`
+        : '';
 
-  const controlsContainerClass = this.config.controlsContainerClass || '';
-  const blockControlsHTML = this.isEdit ? `
+    const controlsContainerClass = this.config.controlsContainerClass || '';
+    const blockControlsHTML = this.isEdit
+      ? `
       <!-- Поп-апчик с контролами -->
       <div class="block-builder-block-controls">
         <div class="block-builder-block-controls-container ${controlsContainerClass}">
@@ -395,9 +416,10 @@ export class UIRenderer {
           </div>
         </div>
       </div>
-  ` : '';
+  `
+      : '';
 
-  return `
+    return `
     <div class="block-builder-block ${!block.visible ? CSS_CLASSES.HIDDEN : ''}" data-block-id="${block.id}"${styleAttr}>
       ${blockControlsHTML}
 
@@ -410,12 +432,12 @@ export class UIRenderer {
   }
 
   private objectToStyleString(styles: Record<string, string>): string {
-  return Object.entries(styles)
-    .map(([key, value]) => {
-      const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
-      return `${cssKey}: ${value}`;
-    })
-    .join('; ');
+    return Object.entries(styles)
+      .map(([key, value]) => {
+        const cssKey = key.replaceAll(/([A-Z])/g, '-$1').toLowerCase();
+        return `${cssKey}: ${value}`;
+      })
+      .join('; ');
   }
 
   private renderBlockControls(block: IBlockDto, index?: number, totalBlocks?: number): string {
@@ -445,28 +467,28 @@ export class UIRenderer {
   }
 
   private renderBlockContent(block: IBlockDto, config: any): string {
-  const userProps = this.getUserComponentProps(block.props);
+    const userProps = this.getUserComponentProps(block.props);
 
-  if (config.render?.kind === 'custom' && config.render?.mount) {
-    return this.renderCustomBlock(block);
-  }
+    if (config.render?.kind === 'custom' && config.render?.mount) {
+      return this.renderCustomBlock(block);
+    }
 
-  if (config.render?.kind === 'component' && config.render?.component) {
-    return this.renderVueComponent(block, config);
-  }
+    if (config.render?.kind === 'component' && config.render?.component) {
+      return this.renderVueComponent(block, config);
+    }
 
-  if (config.render?.kind === 'html' && config.render?.template) {
-    const template = config.render.template;
-    return typeof template === 'function' ? template(userProps) : template;
-  }
+    if (config.render?.kind === 'html' && config.render?.template) {
+      const template = config.render.template;
+      return typeof template === 'function' ? template(userProps) : template;
+    }
 
-  if (config.template) {
-    return typeof config.template === 'function' ? config.template(userProps) : config.template;
-  }
+    if (config.template) {
+      return typeof config.template === 'function' ? config.template(userProps) : config.template;
+    }
 
-  const escapedTitle = this.escapeHtml(config.title || '');
-  const escapedProps = this.escapeHtml(JSON.stringify(userProps, null, 2));
-  return `
+    const escapedTitle = this.escapeHtml(config.title || '');
+    const escapedProps = this.escapeHtml(JSON.stringify(userProps, null, 2));
+    return `
     <div class="block-content-fallback">
       <strong>${escapedTitle}</strong>
       <pre>${escapedProps}</pre>
@@ -484,21 +506,21 @@ export class UIRenderer {
   }
 
   private renderVueComponent(block: IBlockDto, config: any): string {
-  const componentId = `vue-component-${block.id}`;
-  const componentName = config.render.component.name;
-  const userProps = this.getUserComponentProps(block.props);
+    const componentId = `vue-component-${block.id}`;
+    const componentName = config.render.component.name;
+    const userProps = this.getUserComponentProps(block.props);
 
-  const containerHTML = `
+    const containerHTML = `
     <div id="${componentId}" class="vue-component-container">
       <!-- Vue компонент будет монтирован здесь -->
     </div>
   `;
 
-  setTimeout(() => {
-    this.mountVueComponent(componentId, componentName, userProps);
-  }, 0);
+    setTimeout(() => {
+      this.mountVueComponent(componentId, componentName, userProps);
+    }, 0);
 
-  return containerHTML;
+    return containerHTML;
   }
 
   /**
@@ -506,135 +528,145 @@ export class UIRenderer {
    * Используется только в pure-js версии, когда пользователь хочет использовать Vue компоненты в блоках
    * Vue версия пакета рендерит компоненты напрямую через Vue, без этого метода
    */
-  private mountVueComponent(containerId: string, componentName: string, props: Record<string, any>): void {
-  const container = document.getElementById(containerId);
-  if (!container) return;
+  private mountVueComponent(
+    containerId: string,
+    componentName: string,
+    props: Record<string, any>
+  ): void {
+    const container = document.querySelector(`#${containerId}`);
+    if (!container) {
+      return;
+    }
 
-  this.unmountVueComponent(containerId);
+    this.unmountVueComponent(containerId);
 
-  if (typeof (window as any).Vue === 'undefined') {
-    container.textContent = 'Vue не найден. Убедитесь, что Vue загружен.';
-    return;
+    if ((window as any).Vue === undefined) {
+      container.textContent = 'Vue не найден. Убедитесь, что Vue загружен.';
+      return;
+    }
+
+    const component = this.config.componentRegistry.get(componentName);
+    if (!component) {
+      container.textContent = `Компонент ${componentName} не найден`;
+      return;
+    }
+
+    try {
+      const app = (window as any).Vue.createApp({
+        components: {
+          [componentName]: component,
+        },
+        template: `<${componentName} v-bind="props" />`,
+        data() {
+          return {
+            props: props,
+          };
+        },
+      });
+
+      app.mount(container);
+
+      this.vueApps.set(containerId, app);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      container.textContent = `Ошибка рендеринга компонента: ${errorMessage}`;
+    }
   }
 
-  const component = this.config.componentRegistry.get(componentName);
-  if (!component) {
-    container.textContent = `Компонент ${componentName} не найден`;
-    return;
-  }
-
-  try {
-    const app = (window as any).Vue.createApp({
-      components: {
-        [componentName]: component
-      },
-      template: `<${componentName} v-bind="props" />`,
-      data() {
-        return {
-          props: props
-        };
-      }
-    });
-
-    app.mount(container);
-
-    this.vueApps.set(containerId, app);
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    container.textContent = `Ошибка рендеринга компонента: ${errorMessage}`;
-  }
-  }
-
-    private unmountVueComponent(containerId: string): void {
+  private unmountVueComponent(containerId: string): void {
     const app = this.vueApps.get(containerId);
     if (app) {
       try {
         app.unmount();
       } catch (error) {
-        console.warn(`Ошибка при удалении Vue приложения ${containerId}:`, error);
+        logger.warn(`Ошибка при удалении Vue приложения ${containerId}:`, error);
       }
       this.vueApps.delete(containerId);
     }
   }
 
   private renderCustomBlock(block: IBlockDto): string {
-  const containerId = `custom-block-${block.id}`;
-  return `<div id="${containerId}" class="custom-block-container" data-block-id="${block.id}"></div>`;
+    const containerId = `custom-block-${block.id}`;
+    return `<div id="${containerId}" class="custom-block-container" data-block-id="${block.id}"></div>`;
   }
 
-    private initializeCustomBlocks(blocks: IBlockDto[]): void {
-  blocks.forEach(block => {
-    const config = this.config.blockConfigs[block.type];
-    if (config?.render?.kind === 'custom' && config.render.mount) {
-      const containerId = `custom-block-${block.id}`;
-      const container = document.getElementById(containerId);
+  private initializeCustomBlocks(blocks: IBlockDto[]): void {
+    blocks.forEach(block => {
+      const config = this.config.blockConfigs[block.type];
+      const render = config?.render as TRenderRef | undefined;
+      if (render?.kind === 'custom' && 'mount' in render && render.mount) {
+        const containerId = `custom-block-${block.id}`;
+        const container = document.querySelector(`#${containerId}`) as HTMLElement | null;
 
-      if (container && !container.hasAttribute('data-custom-mounted')) {
-        try {
-          const userProps = this.getUserComponentProps(block.props);
+        if (container && !Object.hasOwn(container.dataset, 'customMounted')) {
+          try {
+            const userProps = this.getUserComponentProps(block.props);
 
-          config.render.mount(container, userProps);
-          container.setAttribute('data-custom-mounted', 'true');
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : String(error);
-          container.innerHTML = `<div class="bb-error-box">
+            render.mount(container, userProps);
+            container.dataset.customMounted = 'true';
+          } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            container.innerHTML = `<div class="bb-error-box">
             <strong>⚠️ Ошибка рендеринга:</strong><br>${errorMessage}
           </div>`;
+          }
         }
       }
-    }
-  });
+    });
   }
 
   /**
    * Настройка watchers для отслеживания брекпоинтов и обновления spacing
    */
   private setupBreakpointWatchers(blocks: IBlockDto[]): void {
-  blocks.forEach(block => {
-    const spacing = block.props?.spacing as ISpacingData | undefined;
+    blocks.forEach(block => {
+      const spacing = block.props?.spacing as ISpacingData | undefined;
 
-    if (!spacing || Object.keys(spacing).length === 0) {
-      return;
+      if (!spacing || Object.keys(spacing).length === 0) {
+        return;
+      }
+
+      const element = document.querySelector(`[data-block-id="${block.id}"]`) as HTMLElement;
+
+      if (!element) {
+        return;
+      }
+
+      const oldUnsubscribe = this.breakpointUnsubscribers.get(block.id);
+      if (oldUnsubscribe) {
+        oldUnsubscribe();
+      }
+
+      const blockConfig = this.config.blockConfigs[block.type];
+      const spacingOptions = blockConfig?.spacingOptions as
+        | { config?: { breakpoints?: IBreakpoint[] } }
+        | undefined;
+      const breakpoints: IBreakpoint[] | undefined = spacingOptions?.config?.breakpoints;
+
+      const unsubscribe = watchBreakpointChanges(element, spacing, 'spacing', breakpoints);
+      this.breakpointUnsubscribers.set(block.id, unsubscribe);
+    });
+  }
+
+  private cleanupBreakpointWatchers(): void {
+    this.breakpointUnsubscribers.forEach(unsubscribe => unsubscribe());
+    this.breakpointUnsubscribers.clear();
+    this.vueApps.forEach((app, containerId) => {
+      this.unmountVueComponent(containerId);
+    });
+    this.vueApps.clear();
+  }
+
+  cleanupBlockWatcher(blockId: string): void {
+    const unsubscribe = this.breakpointUnsubscribers.get(blockId);
+    if (unsubscribe) {
+      unsubscribe();
+      this.breakpointUnsubscribers.delete(blockId);
     }
-
-    const element = document.querySelector(`[data-block-id="${block.id}"]`) as HTMLElement;
-
-    if (!element) {
-      return;
-    }
-
-    const oldUnsubscribe = this.breakpointUnsubscribers.get(block.id);
-    if (oldUnsubscribe) {
-      oldUnsubscribe();
-    }
-
-    const blockConfig = this.config.blockConfigs[block.type];
-    const breakpoints = blockConfig?.spacingOptions?.config?.breakpoints;
-
-    const unsubscribe = watchBreakpointChanges(element, spacing, 'spacing', breakpoints);
-    this.breakpointUnsubscribers.set(block.id, unsubscribe);
-  });
+    this.cleanupBlockVueApp(blockId);
   }
 
-    private cleanupBreakpointWatchers(): void {
-  this.breakpointUnsubscribers.forEach(unsubscribe => unsubscribe());
-  this.breakpointUnsubscribers.clear();
-  this.vueApps.forEach((app, containerId) => {
-    this.unmountVueComponent(containerId);
-  });
-  this.vueApps.clear();
-  }
-
-    cleanupBlockWatcher(blockId: string): void {
-  const unsubscribe = this.breakpointUnsubscribers.get(blockId);
-  if (unsubscribe) {
-    unsubscribe();
-    this.breakpointUnsubscribers.delete(blockId);
-  }
-  this.cleanupBlockVueApp(blockId);
-  }
-
-    destroy(): void {
+  destroy(): void {
     document.body.classList.remove('bb-is-edit-mode');
     this.cleanupBreakpointWatchers();
     this.vueApps.forEach((app, containerId) => {
@@ -643,10 +675,8 @@ export class UIRenderer {
     this.vueApps.clear();
   }
 
-    cleanupBlockVueApp(blockId: string): void {
+  cleanupBlockVueApp(blockId: string): void {
     const containerId = `vue-component-${blockId}`;
     this.unmountVueComponent(containerId);
   }
 }
-
-

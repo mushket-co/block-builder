@@ -1,21 +1,17 @@
 import { IBlockRepository } from './core/ports/BlockRepository';
 import { IComponentRegistry } from './core/ports/ComponentRegistry';
-import { IHttpClient } from './core/ports/HttpClient';
 import { ICustomFieldRendererRegistry } from './core/ports/CustomFieldRenderer';
-import { MemoryBlockRepositoryImpl } from './infrastructure/repositories/MemoryBlockRepositoryImpl';
-import { MemoryComponentRegistry } from './infrastructure/registries/MemoryComponentRegistry';
-import { CustomFieldRendererRegistry } from './infrastructure/registries/CustomFieldRendererRegistry';
-import { FetchHttpClient } from './infrastructure/http/FetchHttpClient';
-import { BlockManagementUseCase } from './core/use-cases/BlockManagementUseCase';
+import { IHttpClient } from './core/ports/HttpClient';
 import { ApiSelectUseCase } from './core/use-cases/ApiSelectUseCase';
+import { BlockManagementUseCase } from './core/use-cases/BlockManagementUseCase';
+import { FetchHttpClient } from './infrastructure/http/FetchHttpClient';
+import { CustomFieldRendererRegistry } from './infrastructure/registries/CustomFieldRendererRegistry';
+import { MemoryComponentRegistry } from './infrastructure/registries/MemoryComponentRegistry';
+import { MemoryBlockRepositoryImpl } from './infrastructure/repositories/MemoryBlockRepositoryImpl';
 
-export { ApiSelectUseCase } from './core/use-cases/ApiSelectUseCase';
-export type {
-  IHttpClient,
-  IHttpResponse,
-  IHttpRequestOptions
-} from './core/ports/HttpClient';
+export type { IHttpClient, IHttpRequestOptions, IHttpResponse } from './core/ports/HttpClient';
 export type { IApiRequestParams } from './core/types/form';
+export { ApiSelectUseCase } from './core/use-cases/ApiSelectUseCase';
 
 export interface IBlockBuilderFactoryDependencies {
   repository?: IBlockRepository;
@@ -24,15 +20,13 @@ export interface IBlockBuilderFactoryDependencies {
   customFieldRendererRegistry?: ICustomFieldRendererRegistry;
 }
 
-export class BlockBuilderFactory {
-  static createDependencies(
-    options?: {
-      repository?: IBlockRepository;
-      componentRegistry?: IComponentRegistry;
-      httpClient?: IHttpClient;
-      customFieldRendererRegistry?: ICustomFieldRendererRegistry;
-    }
-  ): {
+export const BlockBuilderFactory = {
+  createDependencies(options?: {
+    repository?: IBlockRepository;
+    componentRegistry?: IComponentRegistry;
+    httpClient?: IHttpClient;
+    customFieldRendererRegistry?: ICustomFieldRendererRegistry;
+  }): {
     repository: IBlockRepository;
     componentRegistry: IComponentRegistry;
     httpClient: IHttpClient;
@@ -60,5 +54,5 @@ export class BlockBuilderFactory {
       useCase,
       apiSelectUseCase,
     };
-  }
-}
+  },
+};

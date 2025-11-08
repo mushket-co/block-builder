@@ -5,8 +5,7 @@
       <span v-if="isRequired" class="bb-api-select__required">*</span>
     </label>
 
-    <div class="bb-api-select__wrapper" ref="wrapperRef">
-      
+    <div ref="wrapperRef" class="bb-api-select__wrapper">
       <div class="bb-api-select__search">
         <input
           ref="searchInput"
@@ -18,30 +17,28 @@
           @input="onSearchInput"
         />
         <span v-if="loading" class="bb-api-select__loader">⏳</span>
-        <span v-else-if="hasValue" class="bb-api-select__clear" @click.stop="clearSelection">✕</span>
+        <span v-else-if="hasValue" class="bb-api-select__clear" @click.stop="clearSelection"
+          >✕</span
+        >
         <button
           type="button"
           class="bb-api-select__toggle"
-          @click="toggleDropdown"
           :class="{ 'bb-api-select__toggle--open': isDropdownOpen }"
+          @click="toggleDropdown"
         >
           ▼
         </button>
       </div>
 
-      
       <div v-if="isDropdownOpen" class="bb-api-select__dropdown">
-        
         <div v-if="loading" class="bb-api-select__message">
           {{ loadingText }}
         </div>
 
-        
         <div v-else-if="error" class="bb-api-select__message bb-api-select__message--error">
           {{ error }}
         </div>
 
-        
         <div v-else-if="items.length > 0" class="bb-api-select__list">
           <div
             v-for="item in items"
@@ -54,36 +51,24 @@
             <span v-if="isSelected(item.id)" class="bb-api-select__item-check">✓</span>
           </div>
 
-          
-          <div
-            v-if="hasMore"
-            class="bb-api-select__load-more"
-            @click="loadMore"
-          >
+          <div v-if="hasMore" class="bb-api-select__load-more" @click="loadMore">
             Загрузить еще...
           </div>
         </div>
 
-        
         <div v-else class="bb-api-select__message">
           {{ noResultsText }}
         </div>
       </div>
     </div>
 
-    
     <div v-if="isMultiple && selectedItems.length > 0" class="bb-api-select__selected">
-      <div
-        v-for="item in selectedItems"
-        :key="item.id"
-        class="bb-api-select__tag"
-      >
+      <div v-for="item in selectedItems" :key="item.id" class="bb-api-select__tag">
         <span class="bb-api-select__tag-name">{{ item.name }}</span>
         <span class="bb-api-select__tag-remove" @click="removeItem(item.id)">✕</span>
       </div>
     </div>
 
-    
     <div v-if="validationError" class="bb-api-select__error">
       {{ validationError }}
     </div>
@@ -91,12 +76,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue';
-import type {
-  IFormFieldConfig,
-  IApiSelectItem,
-  IApiRequestParams,
-} from '../../core/types/form';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
+
+import type { IApiRequestParams, IApiSelectItem, IFormFieldConfig } from '../../core/types/form';
 import type { ApiSelectUseCase } from '../../core/use-cases/ApiSelectUseCase';
 
 interface IProps {
@@ -130,26 +112,18 @@ const apiSelectUseCase = props.apiSelectUseCase;
 const apiConfig = computed(() => props.config.apiSelectConfig);
 
 const isRequired = computed(() => {
-  return props.config.rules?.some((rule) => rule.type === 'required') ?? false;
+  return props.config.rules?.some(rule => rule.type === 'required') ?? false;
 });
 
 const isMultiple = computed(() => apiConfig.value?.multiple ?? false);
 
-const placeholder = computed(
-  () => apiConfig.value?.placeholder ?? 'Начните вводить для поиска...'
-);
+const placeholder = computed(() => apiConfig.value?.placeholder ?? 'Начните вводить для поиска...');
 
-const loadingText = computed(
-  () => apiConfig.value?.loadingText ?? 'Загрузка...'
-);
+const loadingText = computed(() => apiConfig.value?.loadingText ?? 'Загрузка...');
 
-const noResultsText = computed(
-  () => apiConfig.value?.noResultsText ?? 'Ничего не найдено'
-);
+const noResultsText = computed(() => apiConfig.value?.noResultsText ?? 'Ничего не найдено');
 
-const errorText = computed(
-  () => apiConfig.value?.errorText ?? 'Ошибка загрузки данных'
-);
+const errorText = computed(() => apiConfig.value?.errorText ?? 'Ошибка загрузки данных');
 
 const debounceMs = computed(() => apiConfig.value?.debounceMs ?? 300);
 
@@ -196,15 +170,11 @@ const fetchData = async (reset = false) => {
 
     const response = await apiSelectUseCase.fetchItems(apiConfig.value, params);
 
-    if (reset) {
-      items.value = response.data;
-    } else {
-      items.value = [...items.value, ...response.data];
-    }
+    items.value = reset ? response.data : [...items.value, ...response.data];
 
     hasMore.value = response.hasMore ?? false;
-  } catch (err: any) {
-    error.value = err.message || errorText.value;
+  } catch (error_: any) {
+    error.value = error_.message || errorText.value;
     items.value = [];
   } finally {
     loading.value = false;
@@ -256,7 +226,9 @@ const closeDropdown = () => {
 };
 
 const handleClickOutside = (event: MouseEvent) => {
-  if (!isDropdownOpen.value) return;
+  if (!isDropdownOpen.value) {
+    return;
+  }
 
   const target = event.target as HTMLElement;
 
@@ -270,14 +242,13 @@ const selectItem = (item: IApiSelectItem) => {
     const currentValue = (props.modelValue as (string | number)[]) || [];
 
     if (currentValue.includes(item.id)) {
-      const newValue = currentValue.filter((id) => id !== item.id);
+      const newValue = currentValue.filter(id => id !== item.id);
       emit('update:modelValue', newValue);
-      selectedItems.value = selectedItems.value.filter((i) => i.id !== item.id);
+      selectedItems.value = selectedItems.value.filter(i => i.id !== item.id);
     } else {
       emit('update:modelValue', [...currentValue, item.id]);
       selectedItems.value.push(item);
     }
-
   } else {
     emit('update:modelValue', item.id);
     selectedItems.value = [item];
@@ -287,12 +258,14 @@ const selectItem = (item: IApiSelectItem) => {
 };
 
 const removeItem = (id: string | number) => {
-  if (!isMultiple.value) return;
+  if (!isMultiple.value) {
+    return;
+  }
 
   const currentValue = (props.modelValue as (string | number)[]) || [];
-  const newValue = currentValue.filter((itemId) => itemId !== id);
+  const newValue = currentValue.filter(itemId => itemId !== id);
   emit('update:modelValue', newValue);
-  selectedItems.value = selectedItems.value.filter((item) => item.id !== id);
+  selectedItems.value = selectedItems.value.filter(item => item.id !== id);
 };
 
 const clearSelection = () => {
@@ -310,7 +283,9 @@ const clearSelection = () => {
 };
 
 const loadMore = () => {
-  if (!hasMore.value || loading.value) return;
+  if (!hasMore.value || loading.value) {
+    return;
+  }
   currentPage.value += 1;
   fetchData(false);
 };
@@ -330,13 +305,16 @@ onMounted(async () => {
         const ids = props.modelValue as (string | number)[];
         selectedItems.value = response.data.filter((item: IApiSelectItem) => ids.includes(item.id));
       } else {
-        const selectedItem = response.data.find((item: IApiSelectItem) => item.id === props.modelValue);
+        const selectedItem = response.data.find(
+          (item: IApiSelectItem) => item.id === props.modelValue
+        );
         if (selectedItem) {
           selectedItems.value = [selectedItem];
           searchQuery.value = selectedItem.name;
         }
       }
-    } catch (err) {
+    } catch {
+      // Игнорируем ошибки загрузки при инициализации
     } finally {
       loading.value = false;
     }

@@ -27,6 +27,6 @@ interface Props {
 withDefaults(defineProps<Props>(), {
   width: 16,
   height: 16,
-  className: ''
+  className: '',
 });
 </script>

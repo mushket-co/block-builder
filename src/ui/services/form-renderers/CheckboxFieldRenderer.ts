@@ -1,11 +1,10 @@
 import { IFormFieldConfig } from '../../../core/types/form';
-import { CSS_CLASSES } from '../../../utils/constants';
 import { BaseFieldRenderer } from './BaseFieldRenderer';
 
 export class CheckboxFieldRenderer extends BaseFieldRenderer {
   readonly fieldType = 'checkbox';
 
-  render(fieldId: string, field: IFormFieldConfig, value: any, required: string): string {
+  render(fieldId: string, field: IFormFieldConfig, value: any, _required: string): string {
     const escapedLabel = this.escapeHtml(field.label);
     const checked = value ? 'checked' : '';
 
@@ -25,8 +24,12 @@ export class CheckboxFieldRenderer extends BaseFieldRenderer {
     return this.wrapInFormGroup(field, content);
   }
 
-  protected renderInput(fieldId: string, field: IFormFieldConfig, value: any, required: string): string {
+  protected renderInput(
+    _fieldId: string,
+    _field: IFormFieldConfig,
+    _value: any,
+    _required: string
+  ): string {
     return '';
   }
 }
-

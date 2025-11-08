@@ -3,7 +3,4 @@
  * Этот файл используется для встраивания стилей в JS бандл
  */
 
-import styles from './index.scss';
-
-export { styles };
-export default styles;
+export { default, default as styles } from './index.scss';

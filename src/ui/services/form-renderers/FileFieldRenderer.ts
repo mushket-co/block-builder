@@ -5,7 +5,12 @@ import { BaseFieldRenderer } from './BaseFieldRenderer';
 export class FileFieldRenderer extends BaseFieldRenderer {
   readonly fieldType = 'file';
 
-  protected renderInput(fieldId: string, field: IFormFieldConfig, value: any, required: string): string {
+  protected renderInput(
+    fieldId: string,
+    field: IFormFieldConfig,
+    value: any,
+    required: string
+  ): string {
     return `
       <input
         type="file"
@@ -17,4 +22,3 @@ export class FileFieldRenderer extends BaseFieldRenderer {
     `;
   }
 }
-

@@ -1,10 +1,12 @@
 <template>
-  <div ref="containerRef" class="custom-field-container"></div>
+  <div ref="containerRef" class="custom-field-container" />
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
+import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+
 import type { ICustomFieldRendererRegistry } from '../../core/ports/CustomFieldRenderer';
+import { logger } from '../../utils/logger';
 
 interface Props {
   field: any;
@@ -18,7 +20,7 @@ const props = withDefaults(defineProps<Props>(), {
   modelValue: undefined,
   formErrors: () => ({}),
   customFieldRendererRegistry: undefined,
-  isFieldRequired: () => false
+  isFieldRequired: () => false,
 });
 
 const emit = defineEmits<{
@@ -29,10 +31,14 @@ const containerRef = ref<HTMLElement | null>(null);
 let rendererInstance: any = null;
 
 const initializeRenderer = async () => {
-  if (!containerRef.value || !props.customFieldRendererRegistry) return;
+  if (!containerRef.value || !props.customFieldRendererRegistry) {
+    return;
+  }
 
   const renderer = props.customFieldRendererRegistry.get(props.field.customFieldConfig?.rendererId);
-  if (!renderer) return;
+  if (!renderer) {
+    return;
+  }
 
   if (rendererInstance?.destroy) {
     rendererInstance.destroy();
@@ -50,28 +56,34 @@ const initializeRenderer = async () => {
         emit('update:modelValue', newValue);
       });
     },
-    onError: (error: string | null) => {
-    }
+    onError: (_error: string | null) => {
+      // Ошибки обрабатываются в renderer
+    },
   };
 
   try {
     rendererInstance = await renderer.render(containerRef.value, context);
   } catch (error) {
-    console.error('Ошибка инициализации кастомного поля:', error);
+    logger.error('Ошибка инициализации кастомного поля:', error);
   }
 };
 
-watch(() => props.modelValue, (newValue, oldValue) => {
-  if (rendererInstance?.setValue && newValue !== undefined && newValue !== oldValue) {
-    try {
-      const currentValue = rendererInstance.getValue ? rendererInstance.getValue() : undefined;
-      if (currentValue !== newValue) {
-        rendererInstance.setValue(newValue);
+watch(
+  () => props.modelValue,
+  (newValue, oldValue) => {
+    if (rendererInstance?.setValue && newValue !== undefined && newValue !== oldValue) {
+      try {
+        const currentValue = rendererInstance.getValue ? rendererInstance.getValue() : undefined;
+        if (currentValue !== newValue) {
+          rendererInstance.setValue(newValue);
+        }
+      } catch {
+        // Игнорируем ошибки при установке значения
       }
-    } catch (error) {
     }
-  }
-}, { flush: 'post' }); // Используем post flush, чтобы обновлять после рендера
+  },
+  { flush: 'post' }
+); // Используем post flush, чтобы обновлять после рендера
 
 onMounted(async () => {
   await nextTick();
@@ -91,4 +103,3 @@ onBeforeUnmount(() => {
   width: 100%;
 }
 </style>
-

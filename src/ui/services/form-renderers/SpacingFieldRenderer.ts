@@ -5,15 +5,15 @@ import { BaseFieldRenderer } from './BaseFieldRenderer';
 export class SpacingFieldRenderer extends BaseFieldRenderer {
   readonly fieldType = 'spacing';
 
-  render(fieldId: string, field: IFormFieldConfig, value: any, required: string): string {
+  render(_fieldId: string, field: IFormFieldConfig, value: any, required: string): string {
     const spacingConfig = field.spacingConfig || {};
     const configJson = JSON.stringify({
       field: field.field,
       label: field.label,
       required: !!required,
       value: value || {},
-      ...spacingConfig
-    }).replace(/"/g, '&quot;');
+      ...spacingConfig,
+    }).replaceAll('"', '&quot;');
 
     return `
       <div
@@ -26,8 +26,12 @@ export class SpacingFieldRenderer extends BaseFieldRenderer {
     `;
   }
 
-  protected renderInput(fieldId: string, field: IFormFieldConfig, value: any, required: string): string {
+  protected renderInput(
+    _fieldId: string,
+    _field: IFormFieldConfig,
+    _value: any,
+    _required: string
+  ): string {
     return '';
   }
 }
-

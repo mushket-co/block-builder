@@ -1,9 +1,8 @@
-import { CSS_CLASSES } from './constants';
 export class JavaScriptFormGenerator {
-  
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static generateForm(config: any, onSubmit: (data: FormData) => void): string {
-  const formId = `form_${Date.now()}`;
-  let html = `
+    const formId = `form_${Date.now()}`;
+    let html = `
     <form id="${formId}" class="naberika-form">
       <div class="form-header">
         <h3>${config.title}</h3>
@@ -11,10 +10,10 @@ export class JavaScriptFormGenerator {
       </div>
       <div class="form-fields">
   `;
-  for (const field of config.fields) {
-    html += this.generateField(field);
-  }
-  html += `
+    for (const field of config.fields) {
+      html += this.generateField(field);
+    }
+    html += `
       </div>
       <div class="form-actions">
         <button type="submit" class="btn btn-primary">
@@ -26,16 +25,17 @@ export class JavaScriptFormGenerator {
       </div>
     </form>
   `;
-  html += this.generateStyles();
-  html += this.generateValidationScript(formId, config.fields, onSubmit);
-  return html;
+    html += this.generateStyles();
+    html += this.generateValidationScript(formId, config.fields, onSubmit);
+    return html;
   }
-  
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private static generateField(field: any): string {
-  const fieldId = `field_${field.field}`;
-  switch (field.type) {
-    case 'textarea':
-      return `
+    const fieldId = `field_${field.field}`;
+    switch (field.type) {
+      case 'textarea':
+        return `
         <div class="form-group">
           <label for="${fieldId}">${field.label}</label>
           <textarea
@@ -47,11 +47,15 @@ export class JavaScriptFormGenerator {
           <div class="field-errors" id="errors_${field.field}"></div>
         </div>
       `;
-    case 'select': {
-      const options = field.options?.map((opt: { value: string; label: string }) =>
-        `<option value="${opt.value}">${opt.label}</option>`
-      ).join('') || '';
-      return `
+      case 'select': {
+        const options =
+          field.options
+            ?.map(
+              (opt: { value: string; label: string }) =>
+                `<option value="${opt.value}">${opt.label}</option>`
+            )
+            .join('') || '';
+        return `
         <div class="form-group">
           <label for="${fieldId}">${field.label}</label>
           <select id="${fieldId}" name="${field.field}" class="form-control">
@@ -61,9 +65,9 @@ export class JavaScriptFormGenerator {
           <div class="field-errors" id="errors_${field.field}"></div>
         </div>
       `;
-    }
-    case 'checkbox':
-      return `
+      }
+      case 'checkbox':
+        return `
         <div class="form-group">
           <label class="checkbox-label">
             <input
@@ -78,8 +82,8 @@ export class JavaScriptFormGenerator {
           <div class="field-errors" id="errors_${field.field}"></div>
         </div>
       `;
-    case 'color':
-      return `
+      case 'color':
+        return `
         <div class="form-group">
           <label for="${fieldId}">${field.label}</label>
           <input
@@ -92,8 +96,8 @@ export class JavaScriptFormGenerator {
           <div class="field-errors" id="errors_${field.field}"></div>
         </div>
       `;
-    case 'file':
-      return `
+      case 'file':
+        return `
         <div class="form-group">
           <label for="${fieldId}">${field.label}</label>
           <input
@@ -105,8 +109,8 @@ export class JavaScriptFormGenerator {
           <div class="field-errors" id="errors_${field.field}"></div>
         </div>
       `;
-    default:
-      return `
+      default:
+        return `
         <div class="form-group">
           <label for="${fieldId}">${field.label}</label>
           <input
@@ -120,11 +124,11 @@ export class JavaScriptFormGenerator {
           <div class="field-errors" id="errors_${field.field}"></div>
         </div>
       `;
+    }
   }
-  }
-  
+
   private static generateStyles(): string {
-  return `
+    return `
     <style>
       .naberika-form {
         max-width: 500px;
@@ -217,14 +221,19 @@ export class JavaScriptFormGenerator {
     </style>
   `;
   }
-  
-  private static generateValidationScript(formId: string, fields: any[], onSubmit: (data: FormData) => void): string {
-  return `
+
+  private static generateValidationScript(
+    formId: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    fields: any[],
+    onSubmit: (data: FormData) => void
+  ): string {
+    return `
     <script>
       (function() {
         const form = document.getElementById('${formId}');
         if (!form) return;
-        const rules = ${JSON.stringify(fields.map(f => f.rules).flat())};
+        const rules = ${JSON.stringify(fields.flatMap(f => f.rules))};
         function validateField(fieldName, value) {
           const fieldRules = rules.filter(rule => rule.field === fieldName);
           const errors = [];

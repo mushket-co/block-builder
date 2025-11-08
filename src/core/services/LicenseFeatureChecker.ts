@@ -1,4 +1,5 @@
 import { License } from '../entities/License';
+
 export enum LicenseFeature {
   CUSTOM_FIELDS = 'customFields',
   API_SELECT = 'apiSelect',
@@ -60,7 +61,7 @@ export class LicenseFeatureChecker {
     return this.isFeatureAvailable(LicenseFeature.ADVANCED_SPACING);
   }
 
-  filterFieldsByLicense<T extends { type: string; [key: string]: any }>(fields: T[]): T[] {
+  filterFieldsByLicense<T extends { type: string; [key: string]: unknown }>(fields: T[]): T[] {
     return fields.filter(field => {
       if (field.type === 'api-select' && !this.canUseApiSelect()) {
         return false;
@@ -73,9 +74,7 @@ export class LicenseFeatureChecker {
   }
 
   getUnavailableFeatures(): LicenseFeature[] {
-    return Object.values(LicenseFeature).filter(
-      feature => !this.isFeatureAvailable(feature)
-    );
+    return Object.values(LicenseFeature).filter(feature => !this.isFeatureAvailable(feature));
   }
 
   getAvailableFeaturesInfo(): Record<string, boolean> {

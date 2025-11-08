@@ -9,20 +9,12 @@
         <h4>General</h4>
         <div class="property-group">
           <label>Type</label>
-          <input
-            :value="block.type"
-            disabled
-            class="property-input"
-          />
+          <input :value="block.type" disabled class="property-input" />
         </div>
 
         <div class="property-group">
           <label>ID</label>
-          <input
-            :value="block.id"
-            disabled
-            class="property-input"
-          />
+          <input :value="block.id" disabled class="property-input" />
         </div>
 
         <div class="property-group">
@@ -37,51 +29,38 @@
         </div>
       </div>
 
-
       <div class="property-section">
         <h4>Props</h4>
-        <div
-          v-for="(value, key) in block.props"
-          :key="`prop-${key}`"
-          class="property-group"
-        >
+        <div v-for="(value, key) in block.props" :key="`prop-${key}`" class="property-group">
           <label>{{ key }}</label>
           <input
             :value="value"
-            @input="updateProp(key, $event.target.value)"
             class="property-input"
+            @input="updateProp(key, $event.target.value)"
           />
         </div>
       </div>
 
       <div class="property-section">
         <h4>Settings</h4>
-        <div
-          v-for="(value, key) in block.settings"
-          :key="`setting-${key}`"
-          class="property-group"
-        >
+        <div v-for="(value, key) in block.settings" :key="`setting-${key}`" class="property-group">
           <label>{{ key }}</label>
           <input
             :value="value"
-            @input="updateSetting(key, $event.target.value)"
             class="property-input"
+            @input="updateSetting(key, $event.target.value)"
           />
         </div>
       </div>
 
       <div class="property-section">
         <h4>Style</h4>
-        <div
-          v-for="(value, key) in block.style"
-          :key="`style-${key}`"
-          class="property-group"
-        >
+        <div v-for="(value, key) in block.style" :key="`style-${key}`" class="property-group">
           <label>{{ key }}</label>
           <input
             :value="value"
-            @input="updateStyle(key, $event.target.value)"
             class="property-input"
+            @input="updateStyle(key, $event.target.value)"
           />
         </div>
       </div>
@@ -103,24 +82,32 @@ const emit = defineEmits<{
 }>();
 
 const updateProperty = (key: string, value: any) => {
-  if (!props.block) return;
+  if (!props.block) {
+    return;
+  }
   emit('update', props.block.id, { [key]: value });
 };
 
 const updateProp = (key: string, value: string) => {
-  if (!props.block) return;
+  if (!props.block) {
+    return;
+  }
   const newProps = { ...props.block.props, [key]: value };
   emit('update', props.block.id, { props: newProps });
 };
 
 const updateSetting = (key: string, value: string) => {
-  if (!props.block) return;
+  if (!props.block) {
+    return;
+  }
   const newSettings = { ...props.block.settings, [key]: value };
   emit('update', props.block.id, { settings: newSettings });
 };
 
 const updateStyle = (key: string, value: string) => {
-  if (!props.block) return;
+  if (!props.block) {
+    return;
+  }
   const newStyle = { ...props.block.style, [key]: value };
   emit('update', props.block.id, { style: newStyle });
 };
@@ -205,7 +192,7 @@ const updateStyle = (key: string, value: string) => {
   cursor: not-allowed;
 }
 
-.property-group label input[type="checkbox"] {
+.property-group label input[type='checkbox'] {
   margin-right: 6px;
 }
 </style>

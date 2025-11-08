@@ -5,7 +5,12 @@ import { BaseFieldRenderer } from './BaseFieldRenderer';
 export class TextareaFieldRenderer extends BaseFieldRenderer {
   readonly fieldType = 'textarea';
 
-  protected renderInput(fieldId: string, field: IFormFieldConfig, value: any, required: string): string {
+  protected renderInput(
+    fieldId: string,
+    field: IFormFieldConfig,
+    value: any,
+    required: string
+  ): string {
     const escapedValue = this.getEscapedValue(value);
     const escapedPlaceholder = this.getEscapedPlaceholder(field.placeholder);
 
@@ -21,4 +26,3 @@ export class TextareaFieldRenderer extends BaseFieldRenderer {
     `;
   }
 }
-

@@ -1,7 +1,7 @@
 export type {
   IBlockDto,
+  IBlockListDto,
   ICreateBlockDto,
   IUpdateBlockDto,
-  IBlockListDto,
-  TRenderRef
+  TRenderRef,
 } from '../types';

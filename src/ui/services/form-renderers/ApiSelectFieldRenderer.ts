@@ -5,15 +5,17 @@ import { BaseFieldRenderer } from './BaseFieldRenderer';
 export class ApiSelectFieldRenderer extends BaseFieldRenderer {
   readonly fieldType = 'api-select';
 
-  render(fieldId: string, field: IFormFieldConfig, value: any, required: string): string {
+  render(_fieldId: string, field: IFormFieldConfig, value: any, _required: string): string {
     const apiSelectConfig = field.apiSelectConfig || { url: '', multiple: false };
-    const configJson = JSON.stringify({
+    const configData = {
       field: field.field,
       label: field.label,
       rules: field.rules || [],
       value: value || (apiSelectConfig.multiple ? [] : null),
-      ...apiSelectConfig
-    }).replace(/"/g, '&quot;');
+      ...apiSelectConfig,
+    };
+    
+    const configJson = JSON.stringify(configData).replaceAll('"', '&quot;');
 
     return `
       <div
@@ -29,8 +31,12 @@ export class ApiSelectFieldRenderer extends BaseFieldRenderer {
     `;
   }
 
-  protected renderInput(fieldId: string, field: IFormFieldConfig, value: any, required: string): string {
+  protected renderInput(
+    _fieldId: string,
+    _field: IFormFieldConfig,
+    _value: any,
+    _required: string
+  ): string {
     return '';
   }
 }
-

@@ -10,20 +10,22 @@
       <span v-if="required" class="image-upload-field__required">*</span>
     </label>
 
-    
     <div v-if="displayValue" class="image-upload-field__preview">
-      <img :src="displayValue" :alt="label || 'Изображение'" class="image-upload-field__preview-img" />
+      <img
+        :src="displayValue"
+        :alt="label || 'Изображение'"
+        class="image-upload-field__preview-img"
+      />
       <button
         type="button"
-        @click="clearImage"
         class="image-upload-field__preview-clear"
         title="Удалить изображение"
+        @click="clearImage"
       >
         ×
       </button>
     </div>
 
-    
     <div class="image-upload-field__file">
       <input
         :id="inputId"
@@ -44,13 +46,13 @@
       <span v-if="fileError" class="image-upload-field__error">{{ fileError }}</span>
     </div>
 
-    
     <div v-if="error" class="image-upload-field__error">{{ error }}</div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, nextTick } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
+
 import type { IImageUploadConfig } from '../../core/types/form';
 import { CSS_CLASSES } from '../../utils/constants';
 
@@ -75,7 +77,7 @@ const props = withDefaults(defineProps<Props>(), {
   imageUploadConfig: undefined,
   dataRepeaterField: undefined,
   dataRepeaterIndex: undefined,
-  dataRepeaterItemField: undefined
+  dataRepeaterItemField: undefined,
 });
 
 const dataRepeaterField = computed(() => {
@@ -85,10 +87,14 @@ const dataRepeaterField = computed(() => {
 
 const dataRepeaterIndex = computed(() => {
   const value = props.dataRepeaterIndex;
-  if (value === undefined || value === null) return undefined;
-  if (typeof value === 'number') return value;
-  const parsed = parseInt(String(value), 10);
-  return isNaN(parsed) ? undefined : parsed;
+  if (value === undefined || value === null) {
+    return undefined;
+  }
+  if (typeof value === 'number') {
+    return value;
+  }
+  const parsed = Number.parseInt(String(value), 10);
+  return Number.isNaN(parsed) ? undefined : parsed;
 });
 
 const dataRepeaterItemField = computed(() => {
@@ -97,7 +103,11 @@ const dataRepeaterItemField = computed(() => {
 });
 
 const fieldNamePath = computed(() => {
-  if (dataRepeaterField.value && dataRepeaterIndex.value !== undefined && dataRepeaterItemField.value) {
+  if (
+    dataRepeaterField.value &&
+    dataRepeaterIndex.value !== undefined &&
+    dataRepeaterItemField.value
+  ) {
     return `${dataRepeaterField.value}[${dataRepeaterIndex.value}].${dataRepeaterItemField.value}`;
   }
   return '';
@@ -111,37 +121,43 @@ const containerRef = ref<HTMLElement | null>(null);
 const fileInputRef = ref<HTMLInputElement | null>(null);
 const fileError = ref('');
 const isLoading = ref(false);
-const inputId = computed(() => `image-upload-${Math.random().toString(36).substring(7)}`);
+const inputId = computed(() => `image-upload-${Math.random().toString(36).slice(7)}`);
 
 const updateDataAttributes = () => {
-  if (!containerRef.value) return;
+  if (!containerRef.value) {
+    return;
+  }
 
   const field = dataRepeaterField.value;
   const index = dataRepeaterIndex.value;
   const itemField = dataRepeaterItemField.value;
 
   if (field) {
-    containerRef.value.setAttribute('data-repeater-field', field);
+    containerRef.value.dataset.repeaterField = field;
   } else {
-    containerRef.value.removeAttribute('data-repeater-field');
+    delete containerRef.value.dataset.repeaterField;
   }
 
   if (index !== undefined && index !== null) {
-    containerRef.value.setAttribute('data-repeater-index', String(index));
+    containerRef.value.dataset.repeaterIndex = String(index);
   } else {
-    containerRef.value.removeAttribute('data-repeater-index');
+    delete containerRef.value.dataset.repeaterIndex;
   }
 
   if (itemField) {
-    containerRef.value.setAttribute('data-repeater-item-field', itemField);
+    containerRef.value.dataset.repeaterItemField = itemField;
   } else {
-    containerRef.value.removeAttribute('data-repeater-item-field');
+    delete containerRef.value.dataset.repeaterItemField;
   }
 };
 
-watch([containerRef, dataRepeaterField, dataRepeaterIndex, dataRepeaterItemField], () => {
-  updateDataAttributes();
-}, { immediate: true, flush: 'post' });
+watch(
+  [containerRef, dataRepeaterField, dataRepeaterIndex, dataRepeaterItemField],
+  () => {
+    updateDataAttributes();
+  },
+  { immediate: true, flush: 'post' }
+);
 
 onMounted(() => {
   nextTick(() => {
@@ -151,9 +167,13 @@ onMounted(() => {
 
 const displayValue = computed(() => {
   const value = props.modelValue;
-  if (!value) return '';
+  if (!value) {
+    return '';
+  }
 
-  if (typeof value === 'string') return value;
+  if (typeof value === 'string') {
+    return value;
+  }
   if (typeof value === 'object') {
     return value.src || '';
   }
@@ -170,8 +190,8 @@ const handleFileChange = async (event: Event) => {
   }
 
   const config = props.imageUploadConfig || {};
-  const accept = config.accept || 'image/*';
-  const maxFileSize = config.maxFileSize || (10 * 1024 * 1024); // 10MB по умолчанию
+  const _accept = config.accept || 'image/*';
+  const maxFileSize = config.maxFileSize || 10 * 1024 * 1024; // 10MB по умолчанию
 
   if (!file.type.startsWith('image/')) {
     fileError.value = 'Пожалуйста, выберите файл изображения';
@@ -192,13 +212,13 @@ const handleFileChange = async (event: Event) => {
       emit('update:modelValue', uploadedUrl);
     } else {
       const reader = new FileReader();
-      reader.onload = (e) => {
+      reader.addEventListener('load', e => {
         const result = e.target?.result as string;
         emit('update:modelValue', result);
-      };
-      reader.onerror = () => {
+      });
+      reader.addEventListener('error', () => {
         fileError.value = 'Ошибка при чтении файла';
-      };
+      });
       reader.readAsDataURL(file);
     }
   } catch (error) {
@@ -212,7 +232,10 @@ const handleFileChange = async (event: Event) => {
 };
 
 const uploadFileToServer = async (file: File, config: IImageUploadConfig): Promise<any> => {
-  const uploadUrl = config.uploadUrl!;
+  const uploadUrl = config.uploadUrl;
+  if (!uploadUrl) {
+    throw new Error('uploadUrl не указан в конфигурации');
+  }
   const uploadHeaders = config.uploadHeaders || {};
   const fileParamName = config.fileParamName || 'file';
 
@@ -222,7 +245,7 @@ const uploadFileToServer = async (file: File, config: IImageUploadConfig): Promi
   const response = await fetch(uploadUrl, {
     method: 'POST',
     headers: uploadHeaders,
-    body: formData
+    body: formData,
   });
 
   if (!response.ok) {
@@ -246,6 +269,3 @@ const clearImage = () => {
   fileError.value = '';
 };
 </script>
-
-
-

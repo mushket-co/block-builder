@@ -1,7 +1,8 @@
 import { TBlockId, TRenderRef } from './common';
 import { IFormGenerationConfig } from './form';
-export type TBlockSettings = Record<string, any>;
-export type TBlockProps = Record<string, any>;
+
+export type TBlockSettings = Record<string, unknown>;
+export type TBlockProps = Record<string, unknown>;
 export type TBlockStyle = Record<string, string | number>;
 export interface IBlockMetadata {
   createdAt: Date;
