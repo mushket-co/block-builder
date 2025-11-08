@@ -6,7 +6,7 @@
     </label>
 
     <div class="bb-api-select__wrapper" ref="wrapperRef">
-      <!-- Поле поиска -->
+      
       <div class="bb-api-select__search">
         <input
           ref="searchInput"
@@ -29,19 +29,19 @@
         </button>
       </div>
 
-      <!-- Выпадающий список -->
+      
       <div v-if="isDropdownOpen" class="bb-api-select__dropdown">
-        <!-- Загрузка -->
+        
         <div v-if="loading" class="bb-api-select__message">
           {{ loadingText }}
         </div>
 
-        <!-- Ошибка -->
+        
         <div v-else-if="error" class="bb-api-select__message bb-api-select__message--error">
           {{ error }}
         </div>
 
-        <!-- Список элементов -->
+        
         <div v-else-if="items.length > 0" class="bb-api-select__list">
           <div
             v-for="item in items"
@@ -54,7 +54,7 @@
             <span v-if="isSelected(item.id)" class="bb-api-select__item-check">✓</span>
           </div>
 
-          <!-- Кнопка загрузить еще -->
+          
           <div
             v-if="hasMore"
             class="bb-api-select__load-more"
@@ -64,14 +64,14 @@
           </div>
         </div>
 
-        <!-- Нет результатов -->
+        
         <div v-else class="bb-api-select__message">
           {{ noResultsText }}
         </div>
       </div>
     </div>
 
-    <!-- Выбранные элементы (для multiple) -->
+    
     <div v-if="isMultiple && selectedItems.length > 0" class="bb-api-select__selected">
       <div
         v-for="item in selectedItems"
@@ -83,7 +83,7 @@
       </div>
     </div>
 
-    <!-- Ошибки валидации -->
+    
     <div v-if="validationError" class="bb-api-select__error">
       {{ validationError }}
     </div>
@@ -111,11 +111,9 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: string | number | (string | number)[] | null): void;
 }>();
 
-// Ссылки
 const searchInput = ref<HTMLInputElement | null>(null);
 const wrapperRef = ref<HTMLElement | null>(null);
 
-// Состояние
 const searchQuery = ref('');
 const items = ref<IApiSelectItem[]>([]);
 const selectedItems = ref<IApiSelectItem[]>([]);
@@ -125,13 +123,10 @@ const isDropdownOpen = ref(false);
 const currentPage = ref(1);
 const hasMore = ref(false);
 
-// Debounce таймер
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
-// Use Case (внедряется через props)
 const apiSelectUseCase = props.apiSelectUseCase;
 
-// Computed
 const apiConfig = computed(() => props.config.apiSelectConfig);
 
 const isRequired = computed(() => {
@@ -167,7 +162,6 @@ const hasValue = computed(() => {
   return props.modelValue !== null && props.modelValue !== undefined && props.modelValue !== '';
 });
 
-// Методы
 const isSelected = (id: string | number): boolean => {
   if (isMultiple.value) {
     const value = props.modelValue as (string | number)[];
@@ -182,7 +176,6 @@ const fetchData = async (reset = false) => {
     return;
   }
 
-  // Проверка минимальной длины поиска
   if (searchQuery.value.length < minSearchLength.value && searchQuery.value.length > 0) {
     return;
   }
@@ -215,7 +208,6 @@ const fetchData = async (reset = false) => {
     items.value = [];
   } finally {
     loading.value = false;
-    // Vue реактивно обновляет DOM, input не пересоздается, фокус сохраняется автоматически
   }
 };
 
@@ -226,7 +218,6 @@ const onSearchInput = () => {
 
   debounceTimer = setTimeout(() => {
     fetchData(true).then(() => {
-      // Открываем dropdown после загрузки результатов поиска
       if (!isDropdownOpen.value) {
         isDropdownOpen.value = true;
       }
@@ -238,8 +229,6 @@ const openDropdown = () => {
   if (!isDropdownOpen.value) {
     isDropdownOpen.value = true;
 
-    // Всегда загружаем данные при открытии с учетом текущего searchQuery
-    // Это гарантирует актуальные результаты (либо по поиску, либо полный список)
     if (!loading.value) {
       fetchData(true);
     }
@@ -257,26 +246,20 @@ const toggleDropdown = () => {
 const closeDropdown = () => {
   isDropdownOpen.value = false;
 
-  // Очищаем инпут поиска при закрытии
   if (isMultiple.value) {
-    // Для множественного выбора всегда очищаем
     searchQuery.value = '';
   } else if (selectedItems.value.length > 0) {
-    // Для одиночного выбора показываем имя выбранного элемента
     searchQuery.value = selectedItems.value[0].name;
   } else {
-    // Если ничего не выбрано, очищаем
     searchQuery.value = '';
   }
 };
 
-// Обработчик клика вне компонента
 const handleClickOutside = (event: MouseEvent) => {
   if (!isDropdownOpen.value) return;
 
   const target = event.target as HTMLElement;
 
-  // Проверяем, что клик был вне wrapper
   if (wrapperRef.value && !wrapperRef.value.contains(target)) {
     closeDropdown();
   }
@@ -287,17 +270,14 @@ const selectItem = (item: IApiSelectItem) => {
     const currentValue = (props.modelValue as (string | number)[]) || [];
 
     if (currentValue.includes(item.id)) {
-      // Убрать из выбранных
       const newValue = currentValue.filter((id) => id !== item.id);
       emit('update:modelValue', newValue);
       selectedItems.value = selectedItems.value.filter((i) => i.id !== item.id);
     } else {
-      // Добавить в выбранные
       emit('update:modelValue', [...currentValue, item.id]);
       selectedItems.value.push(item);
     }
 
-    // Не закрываем dropdown для множественного выбора
   } else {
     emit('update:modelValue', item.id);
     selectedItems.value = [item];
@@ -335,13 +315,10 @@ const loadMore = () => {
   fetchData(false);
 };
 
-// Загрузка начальных данных при монтировании
 onMounted(async () => {
-  // Регистрируем обработчик клика вне компонента
   await nextTick();
   document.addEventListener('mousedown', handleClickOutside, true);
 
-  // Если есть начальное значение, загружаем данные элементов
   if (hasValue.value && apiConfig.value) {
     try {
       loading.value = true;
@@ -360,7 +337,6 @@ onMounted(async () => {
         }
       }
     } catch (err) {
-      // Ошибка загрузки начальных данных
     } finally {
       loading.value = false;
     }
@@ -368,7 +344,6 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
-  // Удаляем обработчик при размонтировании компонента
   document.removeEventListener('mousedown', handleClickOutside, true);
 });
 </script>

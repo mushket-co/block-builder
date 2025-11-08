@@ -5,11 +5,9 @@
  * Идеально для тех, кто хочет создать свой UI
  */
 
-// Главный класс - весь доступ к функционалу через него
 export { BlockBuilderFacade as BlockBuilder } from './BlockBuilderFacade';
 export type { IBlockBuilderOptions } from './BlockBuilderFacade';
 
-// Типы для конфигурации блоков и работы с API
 export type {
   IBlock,
   IBlockMetadata,
@@ -31,18 +29,15 @@ export type {
 } from './core/types/form';
 export type { IValidationRule, TValidationRuleType, IValidationResult } from './core/types/validation';
 
-// Core Ports для расширения функциональности
 export type { IBlockRepository } from './core/ports/BlockRepository';
 export type { IComponentRegistry } from './core/ports/ComponentRegistry';
 export type { IHttpClient } from './core/ports/HttpClient';
 export type { ICustomFieldRenderer, ICustomFieldRendererRegistry } from './core/ports/CustomFieldRenderer';
 
-// Infrastructure для кастомизации (опционально)
 export { MemoryBlockRepositoryImpl } from './infrastructure/repositories/MemoryBlockRepositoryImpl';
 export { MemoryComponentRegistry } from './infrastructure/registries/MemoryComponentRegistry';
 export { FetchHttpClient } from './infrastructure/http/FetchHttpClient';
 
-// Utils для работы с блоками
 export { cloneBlock, buildBlockHierarchy, getAllChildren, isChildOf } from './utils/blockHelpers';
 export {
   generateSpacingCSSVariables,

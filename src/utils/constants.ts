@@ -1,17 +1,8 @@
-/**
- * Константы для использования по всему приложению
- */
-
-// Таймауты
-export const HTTP_DEFAULT_TIMEOUT_MS = 30000; // 30 секунд
-export const NOTIFICATION_DISPLAY_DURATION_MS = 12000; // 12 секунд
-export const ERROR_RENDER_DELAY_MS = 100; // 100 миллисекунд
-export const REPEATER_ACCORDION_ANIMATION_DELAY_MS = 350; // 350 миллисекунд для анимации раскрытия
-
-// Идентификаторы элементов
+export const HTTP_DEFAULT_TIMEOUT_MS = 30000;
+export const NOTIFICATION_DISPLAY_DURATION_MS = 12000;
+export const ERROR_RENDER_DELAY_MS = 100;
+export const REPEATER_ACCORDION_ANIMATION_DELAY_MS = 350;
 export const FORM_ID_PREFIX = 'block-builder-form';
-
-// Селекторы CSS классов
 export const CSS_CLASSES = {
   MODAL_BODY: 'block-builder-modal-body',
   FORM_GROUP: 'block-builder-form-group',
@@ -24,8 +15,6 @@ export const CSS_CLASSES = {
   API_SELECT_CONTROL_CONTAINER: 'api-select-control-container',
   CUSTOM_FIELD_CONTROL_CONTAINER: 'custom-field-control-container',
 } as const;
-
-// Сообщения об ошибках
 export const ERROR_MESSAGES = {
   BLOCK_NOT_FOUND: (id: string) => `Block with id ${id} not found`,
   COMPONENT_NOT_REGISTERED: (name: string) => `Component '${name}' is not registered`,
@@ -37,24 +26,18 @@ export const ERROR_MESSAGES = {
   FAILED_TO_COPY_CLIPBOARD: 'Unable to copy to clipboard',
   LICENSE_VERIFICATION_FAILED: 'Ошибка проверки лицензии',
 } as const;
-
 export const UI_STRINGS = {
-  // Базовые кнопки
   create: 'Создать',
   save: 'Сохранить',
   cancel: 'Отмена',
   delete: 'Удалить',
   duplicate: 'Дублировать',
   edit: 'Редактировать',
-
-  // Модальные окна и confirm
   confirmDelete: 'Удалить все блоки?',
   confirmTitle: 'Подтверждение удаления',
   confirmYes: 'Подтвердить',
   confirmNo: 'Отмена',
   saveNotEnabled: 'Функция сохранения не настроена. Передайте onSave в конфигурацию BlockBuilder.',
-
-  // Валидатор, формы, notifications
   errorSaveFailed: 'Произошла ошибка при сохранении',
   errorCreateFailed: 'Ошибка при создании',
   errorBlockNotFound: 'Блок не найден',
@@ -62,18 +45,14 @@ export const UI_STRINGS = {
   successDeleted: 'Блоки удалены',
   copiedId: 'ID скопирован:',
   copyError: 'Ошибка копирования ID',
-
-  // Repeater
   repeaterAdd: 'Добавить',
   repeaterRemove: 'Удалить',
   repeaterItem: 'Элемент',
   repeaterMin: 'Минимум:',
   repeaterMax: 'Максимум:',
-
   imageBlockBorderRadiusLabel: 'Скругление углов изображения',
   borderRadiusCannotBeNegative: 'Скругление не может быть отрицательным',
   maxBorderRadius: 'Максимальное скругление: 50px',
-
   buttonBlockTitle: 'Настройка кнопки',
   buttonBlockDescription: 'Настройте параметры кнопки',
   buttonBlockTextLabel: 'Текст кнопки',
@@ -91,8 +70,6 @@ export const UI_STRINGS = {
   buttonBlockOnClickLabel: 'Обработчик клика',
   buttonBlockOnClickPlaceholder: 'alert("Привет!")',
   onClickRequired: 'Обработчик клика обязателен',
-
-  // Card list
   cardListBlockTitle: 'Настройка списка карточек',
   cardListBlockDescription: 'Настройте параметры списка карточек',
   cardListBlockTitleLabel: 'Заголовок списка',
@@ -159,8 +136,6 @@ export const UI_STRINGS = {
   gapCannotBeNegative: 'Отступ не может быть отрицательным',
   maxGap: 'Максимальный отступ: 50px',
   createCardList: 'Создать список карточек',
-
-  // Примеры других, которые ещё могут понадобиться
   blockTextTitle: 'Настройка текстового блока',
   blockTextDescription: 'Настройте параметры текстового блока',
   textBlockContentLabel: 'Текст',
@@ -179,7 +154,6 @@ export const UI_STRINGS = {
   textAlignRight: 'По правому краю',
   textAlignJustify: 'По ширине',
   textAlignRequired: 'Выравнивание обязательно',
-
   blockImageTitle: 'Настройка блока изображения',
   blockImageDescription: 'Настройте параметры блока изображения',
   imageBlockSrcLabel: 'URL изображения',
@@ -189,7 +163,6 @@ export const UI_STRINGS = {
   imageBlockAltLabel: 'Альтернативный текст',
   imageBlockAltPlaceholder: 'Описание изображения',
   altRequired: 'Альтернативный текст обязателен',
-
   blockTypeSelectionTitle: 'Выберите тип блока',
   cancelButtonText: 'Отмена',
   blockConfigNotFound: 'Конфигурация для типа блока не найдена',

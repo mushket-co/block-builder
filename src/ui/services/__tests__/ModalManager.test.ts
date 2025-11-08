@@ -9,10 +9,7 @@ describe('ModalManager', () => {
   modalManager = new ModalManager();
   mockOnSubmit = jest.fn();
   mockOnCancel = jest.fn();
-  // Очищаем DOM
   document.body.innerHTML = '';
-  // Очищаем window handlers
-  delete (window as any).__modalHandlers;
   });
 
   afterEach(() => {
@@ -32,7 +29,7 @@ describe('ModalManager', () => {
     modalManager.showModal(options);
 
     const modal = document.getElementById('block-builder-modal');
-    
+
     expect(modal).toBeTruthy();
     expect(modal?.classList.contains('block-builder-modal')).toBe(true);
   });
@@ -42,7 +39,7 @@ describe('ModalManager', () => {
     modalManager.showModal(options);
 
     const header = document.querySelector('.block-builder-modal-header h3');
-    
+
     expect(header?.textContent).toBe('Тест модалка');
   });
 
@@ -51,7 +48,7 @@ describe('ModalManager', () => {
     modalManager.showModal(options);
 
     const body = document.querySelector('.block-builder-modal-body');
-    
+
     expect(body?.innerHTML).toContain('<p>Тестовый контент</p>');
   });
 
@@ -61,7 +58,7 @@ describe('ModalManager', () => {
 
     const footer = document.querySelector('.block-builder-modal-footer');
     const buttons = footer?.querySelectorAll('button');
-    
+
     expect(buttons?.length).toBe(2);
     expect(buttons?.[0].textContent?.trim()).toBe('Отмена');
     expect(buttons?.[1].textContent?.trim()).toBe('Сохранить');
@@ -77,7 +74,7 @@ describe('ModalManager', () => {
 
     const footer = document.querySelector('.block-builder-modal-footer');
     const buttons = footer?.querySelectorAll('button');
-    
+
     expect(buttons?.[0].textContent?.trim()).toBe('Закрыть');
     expect(buttons?.[1].textContent?.trim()).toBe('Создать');
   });
@@ -90,19 +87,21 @@ describe('ModalManager', () => {
     modalManager.showModal(options);
 
     const footer = document.querySelector('.block-builder-modal-footer');
-    
+
     expect(footer).toBeNull();
   });
 
-  test('должен сохранить обработчики в window.__modalHandlers', () => {
+  test('должен сохранить обработчики и вызывать их при submit', () => {
     const options = createBasicOptions();
     modalManager.showModal(options);
 
-    const handlers = (window as any).__modalHandlers;
-    
-    expect(handlers).toBeDefined();
-    expect(handlers.onSubmit).toBe(mockOnSubmit);
-    expect(handlers.onCancel).toBe(mockOnCancel);
+    modalManager.submitModal();
+    expect(mockOnSubmit).toHaveBeenCalledTimes(1);
+
+    modalManager.closeModal();
+    modalManager.showModal(options);
+    modalManager.submitModal();
+    expect(mockOnSubmit).toHaveBeenCalledTimes(2);
   });
 
   test('должен заменить существующее модальное окно', () => {
@@ -118,7 +117,7 @@ describe('ModalManager', () => {
 
     const modals = document.querySelectorAll('#block-builder-modal');
     const header = document.querySelector('.block-builder-modal-header h3');
-    
+
     expect(modals.length).toBe(1);
     expect(header?.textContent).toBe('Второе окно');
   });
@@ -134,13 +133,16 @@ describe('ModalManager', () => {
     expect(document.getElementById('block-builder-modal')).toBeNull();
   });
 
-  test('должен очистить window.__modalHandlers', () => {
+  test('должен очистить обработчики после закрытия', () => {
     modalManager.showModal(createBasicOptions());
-    expect((window as any).__modalHandlers).toBeDefined();
+
+    modalManager.submitModal();
+    expect(mockOnSubmit).toHaveBeenCalledTimes(1);
 
     modalManager.closeModal();
 
-    expect((window as any).__modalHandlers).toBeUndefined();
+    modalManager.submitModal();
+    expect(mockOnSubmit).toHaveBeenCalledTimes(1);
   });
 
   test('должен работать если модальное окно не открыто', () => {
@@ -194,7 +196,7 @@ describe('ModalManager', () => {
         <input type="number" name="age" value="30" />
       </form>
     `;
-    
+
     modalManager.showModal({
       ...createBasicOptions(),
       bodyHTML: formHTML
@@ -232,7 +234,7 @@ describe('ModalManager', () => {
         <input type="text" name="name" value="Test" />
       </form>
     `;
-    
+
     modalManager.showModal({
       ...createBasicOptions(),
       bodyHTML: formHTML
@@ -240,7 +242,6 @@ describe('ModalManager', () => {
 
     const formData = modalManager.getFormData('multi-form');
 
-    // FormData.entries() берет последнее значение для дублирующихся ключей
     expect(formData.name).toBe('Test');
     expect(formData.tags).toBeDefined();
   });
@@ -248,18 +249,15 @@ describe('ModalManager', () => {
 
   describe('Интеграция', () => {
   test('полный цикл работы с модальным окном', () => {
-    // Открытие
     expect(modalManager.isModalOpen()).toBe(false);
-    
+
     modalManager.showModal(createBasicOptions());
     expect(modalManager.isModalOpen()).toBe(true);
     expect(document.getElementById('block-builder-modal')).toBeTruthy();
 
-    // Submit
     modalManager.submitModal();
     expect(mockOnSubmit).toHaveBeenCalledTimes(1);
 
-    // Закрытие
     modalManager.closeModal();
     expect(modalManager.isModalOpen()).toBe(false);
     expect(document.getElementById('block-builder-modal')).toBeNull();

@@ -1,8 +1,3 @@
-/**
- * SpacingControlRenderer - генерация HTML для spacing контрола в чистом JS
- * Универсальная реализация для использования без фреймворков
- */
-
 import { IBreakpoint, ISpacingFieldConfig, TSpacingType } from '../../core/types/form';
 import { ISpacingData, DEFAULT_BREAKPOINTS } from '../../utils/spacingHelpers';
 import { LicenseFeatureChecker, LicenseFeature } from '../../core/services/LicenseFeatureChecker';
@@ -14,7 +9,7 @@ export interface ISpacingControlOptions {
   config?: ISpacingFieldConfig;
   value?: ISpacingData;
   onChange?: (value: ISpacingData) => void;
-  licenseFeatureChecker?: LicenseFeatureChecker; // Для ограничения кастомных брекпоинтов
+  licenseFeatureChecker?: LicenseFeatureChecker;
 }
 
 export class SpacingControlRenderer {
@@ -37,15 +32,11 @@ export class SpacingControlRenderer {
   this.onChange = options.onChange;
   this.licenseFeatureChecker = options.licenseFeatureChecker;
 
-  // Инициализируем currentBreakpoint первым доступным брекпоинтом
   const breakpoints = this.getBreakpoints();
   this.currentBreakpoint = breakpoints[0]?.name || 'desktop';
   }
 
-  /**
-   * Инициализация значения с нулевыми отступами
-   */
-  private initializeValue(): ISpacingData {
+    private initializeValue(): ISpacingData {
   const value: ISpacingData = {};
   const breakpoints = this.getBreakpoints();
   const spacingTypes = this.getSpacingTypes();
@@ -60,37 +51,24 @@ export class SpacingControlRenderer {
   return value;
   }
 
-  /**
-   * Получить список брекпоинтов
-   * В FREE версии кастомные брекпоинты недоступны - используются только дефолтные
-   */
   private getBreakpoints(): IBreakpoint[] {
   const custom = this.config.breakpoints || [];
 
-  // ВСЕГДА проверяем лицензию ПЕРВЫМ - в FREE версии кастомные брекпоинты недоступны
   if (this.licenseFeatureChecker) {
-    // Если лицензия не PRO - используем только дефолтные брекпоинты
     if (!this.licenseFeatureChecker.hasAdvancedSpacing()) {
       return DEFAULT_BREAKPOINTS;
     }
   } else {
-    // Если licenseFeatureChecker не передан - предполагаем FREE режим, используем дефолтные
     return DEFAULT_BREAKPOINTS;
   }
 
-  // Только если есть licenseFeatureChecker И лицензия PRO - можем использовать кастомные брекпоинты
-  // Если breakpoints передан и не пустой - используем только его
   if (custom.length > 0) {
     return custom;
   }
 
-  // Иначе используем дефолтные
   return DEFAULT_BREAKPOINTS;
   }
 
-  /**
-   * Получить список типов отступов
-   */
   private getSpacingTypes(): TSpacingType[] {
   return this.config.spacingTypes || [
     'padding-top',
@@ -100,16 +78,10 @@ export class SpacingControlRenderer {
   ];
   }
 
-  /**
-   * Получить значение отступа
-   */
   private getSpacingValue(spacingType: TSpacingType): number {
   return this.value?.[this.currentBreakpoint]?.[spacingType] || 0;
   }
 
-  /**
-   * Установить значение отступа
-   */
   private setSpacingValue(spacingType: TSpacingType, newValue: number): void {
   if (!this.value[this.currentBreakpoint]) {
     this.value[this.currentBreakpoint] = {};
@@ -121,13 +93,9 @@ export class SpacingControlRenderer {
     this.onChange(this.value);
   }
 
-  // Обновляем UI
   this.updateUI(spacingType);
   }
 
-  /**
-   * Получить подпись для типа отступа
-   */
   private getSpacingLabel(spacingType: TSpacingType): string {
   const labels: Record<TSpacingType, string> = {
     'padding-top': 'Внутренний верх',
@@ -139,9 +107,6 @@ export class SpacingControlRenderer {
   }
 
 
-  /**
-   * Генерация HTML для превью CSS переменных
-   */
   private generateCSSPreview(): string {
   const lines: string[] = [];
   const breakpoints = this.getBreakpoints();
@@ -174,10 +139,7 @@ export class SpacingControlRenderer {
   return lines.join('\n') || '/* Нет заданных отступов */';
   }
 
-  /**
-   * Обновление UI после изменения значения
-   */
-  private updateUI(spacingType: TSpacingType): void {
+    private updateUI(spacingType: TSpacingType): void {
   if (!this.container) return;
 
   const value = this.getSpacingValue(spacingType);
@@ -186,37 +148,28 @@ export class SpacingControlRenderer {
   );
 
   if (sliderWrapper) {
-    // Обновляем слайдер
     const slider = sliderWrapper.querySelector('.spacing-control__slider') as HTMLInputElement;
     if (slider) {
       slider.value = value.toString();
     }
 
-    // Обновляем числовой инпут
     const valueInput = sliderWrapper.querySelector('.spacing-control__value-input') as HTMLInputElement;
     if (valueInput) {
       valueInput.value = value.toString();
     }
   }
 
-  // Обновляем превью
   const previewCode = this.container.querySelector('.spacing-control__preview-code');
   if (previewCode) {
     previewCode.textContent = this.generateCSSPreview();
   }
   }
 
-  /**
-   * Переключение брекпоинта
-   */
-  private switchBreakpoint(breakpointName: string): void {
+    private switchBreakpoint(breakpointName: string): void {
   this.currentBreakpoint = breakpointName;
   this.render(this.container!);
   }
 
-  /**
-   * Генерация HTML для одной группы отступов
-   */
   private generateSpacingGroupHTML(spacingType: TSpacingType): string {
   const value = this.getSpacingValue(spacingType);
   const min = this.config.min || 0;
@@ -254,20 +207,12 @@ export class SpacingControlRenderer {
   `;
   }
 
-  /**
-   * Проверка, нужно ли показывать заглушку для продвинутых настроек spacing
-   */
-  private shouldShowAdvancedSpacingRestriction(): boolean {
-    // Проверяем, есть ли кастомные брекпоинты в оригинальной конфигурации
+    private shouldShowAdvancedSpacingRestriction(): boolean {
     const hasCustomBreakpoints = !!(this.config.breakpoints && this.config.breakpoints.length > 0);
-    // Проверяем лицензию
     const hasAdvancedSpacing = this.licenseFeatureChecker?.hasAdvancedSpacing() ?? false;
     return hasCustomBreakpoints && (!this.licenseFeatureChecker || !hasAdvancedSpacing);
   }
 
-  /**
-   * Получить HTML для заглушки продвинутых настроек spacing
-   */
   private generateAdvancedSpacingRestrictionHTML(): string {
     if (!this.shouldShowAdvancedSpacingRestriction()) {
       return '';
@@ -284,9 +229,6 @@ export class SpacingControlRenderer {
     `;
   }
 
-  /**
-   * Генерация полного HTML
-   */
   public generateHTML(): string {
   const breakpoints = this.getBreakpoints();
   const spacingTypes = this.getSpacingTypes();
@@ -336,22 +278,15 @@ export class SpacingControlRenderer {
   `;
   }
 
-  /**
-   * Рендеринг в контейнер
-   */
   public render(container: HTMLElement): void {
   this.container = container;
   container.innerHTML = this.generateHTML();
   this.attachEventListeners();
   }
 
-  /**
-   * Привязка обработчиков событий
-   */
   private attachEventListeners(): void {
   if (!this.container) return;
 
-  // Переключение брекпоинтов
   const breakpointButtons = this.container.querySelectorAll('.spacing-control__breakpoint-btn');
   breakpointButtons.forEach(btn => {
     btn.addEventListener('click', (e) => {
@@ -362,7 +297,6 @@ export class SpacingControlRenderer {
     });
   });
 
-  // Слайдеры
   const sliders = this.container.querySelectorAll('.spacing-control__slider');
   sliders.forEach(slider => {
     slider.addEventListener('input', (e) => {
@@ -373,7 +307,6 @@ export class SpacingControlRenderer {
     });
   });
 
-  // Числовые инпуты
   const valueInputs = this.container.querySelectorAll('.spacing-control__value-input');
   valueInputs.forEach(input => {
     input.addEventListener('input', (e) => {
@@ -381,7 +314,6 @@ export class SpacingControlRenderer {
       const spacingType = target.dataset.spacingType as TSpacingType;
       let value = parseInt(target.value, 10);
 
-      // Валидация
       const min = this.config.min || 0;
       const max = this.config.max || 200;
       if (isNaN(value)) value = 0;
@@ -393,16 +325,10 @@ export class SpacingControlRenderer {
   });
   }
 
-  /**
-   * Получить текущее значение
-   */
   public getValue(): ISpacingData {
   return this.value;
   }
 
-  /**
-   * Установить значение
-   */
   public setValue(value: ISpacingData): void {
   this.value = value;
   if (this.container) {
@@ -410,9 +336,6 @@ export class SpacingControlRenderer {
   }
   }
 
-  /**
-   * Уничтожение контрола
-   */
   public destroy(): void {
   if (this.container) {
     this.container.innerHTML = '';

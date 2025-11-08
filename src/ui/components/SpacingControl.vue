@@ -1,7 +1,4 @@
-<!--
-  SpacingControl - Компонент для управления отступами блока с поддержкой брекпоинтов
-  Используется в формах создания и редактирования блоков
--->
+
 <template>
   <div class="spacing-control">
     <div class="spacing-control__header">
@@ -11,12 +8,12 @@
       </label>
     </div>
 
-    <!-- Заглушка для продвинутых настроек spacing (кастомные брекпоинты) -->
+    
     <div v-if="showAdvancedSpacingRestriction" class="bb-warning-box bb-mb-sm">
       ⚠️ {{ getAdvancedSpacingRestrictionMessage() }}
     </div>
 
-    <!-- Переключатель брекпоинтов -->
+    
     <div class="spacing-control__breakpoints">
       <button
         v-for="bp in allBreakpoints"
@@ -30,7 +27,7 @@
       </button>
     </div>
 
-    <!-- Группы контролов для каждого типа отступа -->
+    
     <div class="spacing-control__groups">
       <div
         v-for="spacingType in availableSpacingTypes"
@@ -66,7 +63,7 @@
       </div>
     </div>
 
-    <!-- Превью CSS переменных -->
+    
     <div v-if="showPreview" class="spacing-control__preview">
       <div class="spacing-control__preview-title">CSS переменные:</div>
       <pre class="spacing-control__preview-code">{{ getCSSVariablesPreview() }}</pre>
@@ -78,14 +75,12 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { LicenseFeature } from '../../core/services/LicenseFeatureChecker';
 
-// Базовые брекпоинты по умолчанию
 const DEFAULT_BREAKPOINTS = [
   { name: 'desktop', label: 'Десктоп', maxWidth: undefined },
   { name: 'tablet', label: 'Таблет', maxWidth: 1199 },
   { name: 'mobile', label: 'Моб', maxWidth: 767 }
 ];
 
-// Все доступные типы отступов
 const ALL_SPACING_TYPES = ['padding-top', 'padding-bottom', 'margin-top', 'margin-bottom'];
 
 export default {
@@ -140,19 +135,16 @@ export default {
   setup(props, { emit }) {
     const spacingData = ref({});
 
-    // Проверяем, есть ли кастомные брекпоинты в пропсах (даже если они будут проигнорированы)
     const hasCustomBreakpoints = computed(() => {
       return props.breakpoints && props.breakpoints.length > 0;
     });
 
-    // Проверяем, нужно ли показывать заглушку для продвинутых настроек spacing
     const showAdvancedSpacingRestriction = computed(() => {
       return hasCustomBreakpoints.value &&
              props.licenseFeatureChecker &&
              !props.licenseFeatureChecker.hasAdvancedSpacing();
     });
 
-    // Получить сообщение об ограничении для продвинутых настроек spacing
     const getAdvancedSpacingRestrictionMessage = () => {
       if (props.licenseFeatureChecker) {
         return props.licenseFeatureChecker.getFeatureRestrictionMessage(LicenseFeature.ADVANCED_SPACING);
@@ -160,31 +152,22 @@ export default {
       return 'Продвинутые настройки spacing доступны только в PRO версии. Для снятия ограничений приобретите PRO версию.';
     };
 
-    // Вычисляемые свойства
     const allBreakpoints = computed(() => {
-      // ВСЕГДА проверяем лицензию ПЕРВЫМ - в FREE версии кастомные брекпоинты недоступны
       if (props.licenseFeatureChecker) {
-        // Если лицензия не PRO - используем только дефолтные брекпоинты
         const hasAdvanced = props.licenseFeatureChecker.hasAdvancedSpacing();
         if (!hasAdvanced) {
           return DEFAULT_BREAKPOINTS;
         }
       } else {
-        // Если licenseFeatureChecker не передан - предполагаем FREE режим, используем дефолтные
         return DEFAULT_BREAKPOINTS;
       }
 
-      // Только если есть licenseFeatureChecker И лицензия PRO - можем использовать кастомные брекпоинты
-      // Если breakpoints передан и не пустой - используем только его
       if (props.breakpoints && props.breakpoints.length > 0) {
-        // Преобразуем Proxy в обычный массив для избежания проблем с реактивностью Vue
         return Array.isArray(props.breakpoints) ? [...props.breakpoints] : props.breakpoints;
       }
-      // Иначе используем дефолтные
       return DEFAULT_BREAKPOINTS;
     });
 
-    // Инициализируем текущий брекпоинт (будет установлен в onMounted)
     const currentBreakpoint = ref('');
 
     const availableSpacingTypes = computed(() => {
@@ -197,14 +180,12 @@ export default {
     const maxValue = computed(() => props.max);
     const stepValue = computed(() => props.step);
 
-    // Инициализация данных из modelValue
     const initializeSpacingData = () => {
       const initialData = {};
 
       allBreakpoints.value.forEach(bp => {
         initialData[bp.name] = {};
         availableSpacingTypes.value.forEach(spacingType => {
-          // Если есть значение в modelValue, используем его, иначе 0
           const existingValue = props.modelValue?.[bp.name]?.[spacingType];
           initialData[bp.name][spacingType] = existingValue !== undefined ? existingValue : 0;
         });
@@ -213,12 +194,10 @@ export default {
       spacingData.value = initialData;
     };
 
-    // Получить ID поля
     const getFieldId = (spacingType) => {
       return `${props.fieldName}-${spacingType}-${currentBreakpoint.value}`;
     };
 
-    // Получить подпись для типа отступа
     const getSpacingLabel = (spacingType) => {
       const labels = {
         'padding-top': 'Внутренний верх',
@@ -229,22 +208,18 @@ export default {
       return labels[spacingType] || spacingType;
     };
 
-    // Получить значение отступа для текущего брекпоинта
     const getSpacingValue = (spacingType) => {
       return spacingData.value?.[currentBreakpoint.value]?.[spacingType] || 0;
     };
 
-    // Обработать изменение слайдера
     const handleSpacingChange = (spacingType, event) => {
       const value = parseInt(event.target.value, 10);
       updateSpacingValue(spacingType, value);
     };
 
-    // Обработать изменение числового инпута
     const handleValueInputChange = (spacingType, event) => {
       let value = parseInt(event.target.value, 10);
 
-      // Валидация границ
       if (isNaN(value)) value = 0;
       if (value < minValue.value) value = minValue.value;
       if (value > maxValue.value) value = maxValue.value;
@@ -252,7 +227,6 @@ export default {
       updateSpacingValue(spacingType, value);
     };
 
-    // Обновить значение отступа
     const updateSpacingValue = (spacingType, value) => {
       if (!spacingData.value[currentBreakpoint.value]) {
         spacingData.value[currentBreakpoint.value] = {};
@@ -262,7 +236,6 @@ export default {
       emit('update:modelValue', spacingData.value);
     };
 
-    // Получить превью CSS переменных
     const getCSSVariablesPreview = () => {
       const lines = [];
 
@@ -293,29 +266,23 @@ export default {
       return lines.join('\n') || '/* Нет заданных отступов */';
     };
 
-    // Инициализация при монтировании
     onMounted(() => {
-      // Устанавливаем первый доступный брекпоинт
       if (!currentBreakpoint.value && allBreakpoints.value.length > 0) {
         currentBreakpoint.value = allBreakpoints.value[0].name;
       }
       initializeSpacingData();
     });
 
-    // Следим за изменениями modelValue извне
     watch(() => props.modelValue, (newValue) => {
       if (newValue && Object.keys(newValue).length > 0) {
         spacingData.value = { ...newValue };
       }
     }, { deep: true });
 
-    // Следим за изменениями брекпоинтов
     watch(allBreakpoints, (newBreakpoints) => {
-      // Проверяем, существует ли текущий брекпоинт в новом списке
       const currentExists = newBreakpoints.some(bp => bp.name === currentBreakpoint.value);
 
       if (!currentExists && newBreakpoints.length > 0) {
-        // Если текущего брекпоинта нет в списке, устанавливаем первый доступный
         currentBreakpoint.value = newBreakpoints[0].name;
       }
     });

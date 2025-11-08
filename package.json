@@ -1,6 +1,6 @@
 {
   "name": "@mushket-co/block-builder",
-  "version": "1.0.19",
+  "version": "1.0.20",
   "description": "Блочный конструктор для no-code разработки (Beta)",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",

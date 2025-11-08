@@ -1,192 +1,129 @@
-/**
- * Типы для работы с формами
- */
-
 import { IValidationRule } from './validation';
 import { ICustomFieldConfig } from '../ports/CustomFieldRenderer';
-
-// Типы полей форм
 export type TFieldType = 'text' | 'number' | 'email' | 'url' | 'textarea' | 'select' | 'checkbox' | 'radio' | 'color' | 'file' | 'image' | 'spacing' | 'repeater' | 'api-select' | 'custom';
-
-// Типы отступов
 export type TSpacingType = 'padding-top' | 'padding-bottom' | 'margin-top' | 'margin-bottom';
-
-// Брекпоинты для адаптивности
 export interface IBreakpoint {
   name: string;
-  maxWidth?: number; // undefined для desktop (default)
+  maxWidth?: number;
   label: string;
 }
-
-// Значение отступа для конкретного брекпоинта
 export interface ISpacingValue {
-  [breakpoint: string]: number; // Ключ - название брекпоинта, значение - размер в пикселях
+  [breakpoint: string]: number;
 }
-
-// Конфигурация для spacing поля
 export interface ISpacingFieldConfig {
-  spacingTypes?: TSpacingType[]; // Какие типы отступов доступны
-  min?: number; // Минимальное значение (по умолчанию 0)
-  max?: number; // Максимальное значение (по умолчанию 200)
-  step?: number; // Шаг изменения (по умолчанию 1)
-  breakpoints?: IBreakpoint[]; // Кастомные брекпоинты (если не указаны, используются базовые)
+  spacingTypes?: TSpacingType[];
+  min?: number;
+  max?: number;
+  step?: number;
+  breakpoints?: IBreakpoint[];
 }
-
-// Опции для автоматического spacing в блоках
 export interface IBlockSpacingOptions {
-  enabled?: boolean; // Включить/выключить spacing для блока (по умолчанию true)
-  spacingTypes?: TSpacingType[]; // Конкретные типы отступов (по умолчанию все 4)
-  config?: Omit<ISpacingFieldConfig, 'spacingTypes'>; // Дополнительная конфигурация
+  enabled?: boolean;
+  spacingTypes?: TSpacingType[];
+  config?: Omit<ISpacingFieldConfig, 'spacingTypes'>;
 }
-
-// Конфигурация поля внутри repeater
 export interface IRepeaterItemFieldConfig {
-  field: string; // Имя поля внутри элемента массива
-  label: string; // Метка поля
-  type: Exclude<TFieldType, 'repeater' | 'spacing'>; // Тип поля (repeater не может быть вложенным)
+  field: string;
+  label: string;
+  type: Exclude<TFieldType, 'repeater' | 'spacing'>;
   placeholder?: string;
   defaultValue?: any;
-  options?: { value: string; label: string }[]; // Для типов 'select' и 'radio'
+  options?: { value: string; label: string }[];
   rules?: IValidationRule[];
 }
-
-// Конфигурация для repeater поля
 export interface IRepeaterFieldConfig {
-  fields: IRepeaterItemFieldConfig[]; // Поля внутри каждого элемента массива
-  addButtonText?: string; // Текст кнопки добавления (по умолчанию "Добавить")
-  removeButtonText?: string; // Текст кнопки удаления (по умолчанию "Удалить")
-  itemTitle?: string; // Заголовок элемента (например, "Карточка", "Слайд")
-  min?: number; // Минимальное количество элементов (если не указано, определяется по required: true = 1, false = 0)
-  max?: number; // Максимальное количество элементов
-  defaultItemValue?: Record<string, any>; // Значения по умолчанию для нового элемента
+  fields: IRepeaterItemFieldConfig[];
+  addButtonText?: string;
+  removeButtonText?: string;
+  itemTitle?: string;
+  min?: number;
+  max?: number;
+  defaultItemValue?: Record<string, any>;
 }
-
-// Метод HTTP запроса
 export type THttpMethod = 'GET' | 'POST';
-
-// Элемент списка из API
 export interface IApiSelectItem {
   id: string | number;
   name: string;
 }
-
-// Параметры для HTTP запроса к API
 export interface IApiRequestParams {
-  search?: string; // Поисковый запрос
-  page?: number; // Номер страницы
-  limit?: number; // Количество элементов
-  [key: string]: any; // Дополнительные параметры
+  search?: string;
+  page?: number;
+  limit?: number;
+  [key: string]: any;
 }
-
-// Ответ от API
 export interface IApiSelectResponse {
-  data: IApiSelectItem[]; // Массив элементов
-  total?: number; // Общее количество
-  page?: number; // Текущая страница
-  hasMore?: boolean; // Есть ли еще элементы
+  data: IApiSelectItem[];
+  total?: number;
+  page?: number;
+  hasMore?: boolean;
 }
-
-// Конфигурация для api-select поля
 export interface IApiSelectConfig {
-  url: string; // URL API пользователя
-  method?: THttpMethod; // Метод запроса (по умолчанию GET)
-  headers?: Record<string, string>; // Дополнительные заголовки
-  searchParam?: string; // Имя параметра для поиска (по умолчанию 'search')
-  pageParam?: string; // Имя параметра для страницы (по умолчанию 'page')
-  limitParam?: string; // Имя параметра для лимита (по умолчанию 'limit')
-  limit?: number; // Количество элементов на странице (по умолчанию 20)
-  debounceMs?: number; // Задержка для поиска в мс (по умолчанию 300)
-  multiple?: boolean; // Множественный выбор (по умолчанию false)
-  responseMapper?: (response: any) => IApiSelectResponse; // Функция преобразования ответа
-  dataPath?: string; // Путь к данным в ответе (например, 'data.items')
-  idField?: string; // Поле ID в элементах (по умолчанию 'id')
-  nameField?: string; // Поле name в элементах (по умолчанию 'name')
-  minSearchLength?: number; // Минимальная длина поиска (по умолчанию 0)
-  placeholder?: string; // Плейсхолдер для поля поиска
-  noResultsText?: string; // Текст когда нет результатов
-  loadingText?: string; // Текст во время загрузки
-  errorText?: string; // Текст при ошибке
+  url: string;
+  method?: THttpMethod;
+  headers?: Record<string, string>;
+  searchParam?: string;
+  pageParam?: string;
+  limitParam?: string;
+  limit?: number;
+  debounceMs?: number;
+  multiple?: boolean;
+  responseMapper?: (response: any) => IApiSelectResponse;
+  dataPath?: string;
+  idField?: string;
+  nameField?: string;
+  minSearchLength?: number;
+  placeholder?: string;
+  noResultsText?: string;
+  loadingText?: string;
+  errorText?: string;
 }
-
-// Конфигурация для image поля
 export interface IImageUploadConfig {
-  /**
-   * URL API для загрузки файла на сервер пользователя
-   * Если не указан, будет использоваться base64 encoding
-   */
+
   uploadUrl?: string;
 
-  /**
-   * Имя параметра для файла в FormData (по умолчанию 'file')
-   * Имя ключа, по которому файл будет отправляться на сервер
-   */
   fileParamName?: string;
 
-  /**
-   * Дополнительные заголовки для запроса загрузки
-   */
   uploadHeaders?: Record<string, string>;
 
-  /**
-   * Максимальный размер файла в байтах (по умолчанию 10MB)
-   */
   maxFileSize?: number;
 
-  /**
-   * Разрешенные типы файлов (по умолчанию 'image/*')
-   */
   accept?: string;
 
-  /**
-   * Функция преобразования ответа сервера в URL
-   * По умолчанию возвращается ответ сервера как есть (любой тип)
-   */
   responseMapper?: (response: any) => any;
 
-  /**
-   * Callback для обработки ошибки загрузки
-   */
   onUploadError?: (error: Error) => void;
 }
-
-// Конфигурация поля формы
 export interface IFormFieldConfig {
   field: string;
   label: string;
   type: TFieldType;
   placeholder?: string;
   defaultValue?: any;
-  options?: { value: string; label: string }[]; // Для типов 'select' и 'radio'
+  options?: { value: string; label: string }[];
   rules?: IValidationRule[];
-  spacingConfig?: ISpacingFieldConfig; // Для типа 'spacing'
-  repeaterConfig?: IRepeaterFieldConfig; // Для типа 'repeater'
-  apiSelectConfig?: IApiSelectConfig; // Для типа 'api-select'
-  customFieldConfig?: ICustomFieldConfig; // Для типа 'custom'
-  imageUploadConfig?: IImageUploadConfig; // Для типа 'image'
+  spacingConfig?: ISpacingFieldConfig;
+  repeaterConfig?: IRepeaterFieldConfig;
+  apiSelectConfig?: IApiSelectConfig;
+  customFieldConfig?: ICustomFieldConfig;
+  imageUploadConfig?: IImageUploadConfig;
 }
-
-// Конфигурация блока с опциями spacing
 export interface IBlockConfigWithSpacing {
   title?: string;
   icon?: string;
   description?: string;
   fields?: IFormFieldConfig[];
-  spacingOptions?: IBlockSpacingOptions; // Опции для автоматического добавления spacing
+  spacingOptions?: IBlockSpacingOptions;
   [key: string]: any;
 }
-
-// Конфигурация поля с расширенной валидацией
 export interface IFieldValidationConfig {
   field: string;
   label: string;
   type: TFieldType;
   placeholder?: string;
-  options?: Array<{ value: any; label: string }>; // Для select
+  options?: Array<{ value: any; label: string }>;
   rules: IValidationRule[];
   defaultValue?: any;
 }
-
-// Конфигурация для генерации форм
 export interface IFormGenerationConfig {
   title: string;
   description?: string;

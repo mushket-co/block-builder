@@ -1,6 +1,6 @@
 <template>
   <div :class="appClass">
-  <!-- Баннер о бесплатной версии -->
+  
   <div v-if="!licenseInfoComputed.isPro" class="block-builder-license-banner">
     <div class="block-builder-license-banner__content">
       <span class="block-builder-license-banner__icon">⚠️</span>
@@ -11,7 +11,7 @@
     </div>
   </div>
 
-  <!-- Панель управления -->
+  
   <div
     v-if="props.isEdit"
     :class="[
@@ -37,12 +37,12 @@
           <span v-html="deleteIconHTML" class="bb-icon-wrapper"></span> Очистить все
         </button>
 
-        <!-- Статистика -->
+        
         <div class="block-builder-stats">
           <p>Всего блоков: <span>{{ props.isEdit ? blocks.length : visibleBlocks.length }}</span></p>
         </div>
 
-        <!-- Badge лицензии -->
+        
         <div
           v-if="licenseInfoComputed"
           :class="[
@@ -62,9 +62,9 @@
     </div>
   </div>
 
-    <!-- Список блоков -->
+    
     <div class="block-builder-blocks">
-      <!-- Пустое состояние -->
+      
       <div v-if="visibleBlocks.length === 0" class="block-builder-empty-state">
         <div v-if="props.isEdit" class="block-builder-add-block-separator">
           <button
@@ -78,9 +78,9 @@
         </div>
       </div>
 
-      <!-- Блоки с кнопками добавления -->
+      
       <template v-else>
-        <!-- Кнопка перед первым блоком -->
+        
         <div v-if="props.isEdit" class="block-builder-add-block-separator">
           <button
             @click="openBlockTypeSelectionModal(0)"
@@ -99,7 +99,7 @@
             :data-block-id="block.id"
             :style="getBlockSpacingStyles(block)"
           >
-            <!-- Поп-апчик с контролами -->
+            
             <div v-if="props.isEdit" class="block-builder-block-controls">
               <div
                 class="block-builder-block-controls-container"
@@ -167,7 +167,7 @@
               </div>
             </div>
 
-            <!-- Содержимое блока -->
+            
             <div class="block-builder-block-content">
               <component
                 v-if="isVueComponent(block)"
@@ -181,7 +181,7 @@
             </div>
           </div>
 
-          <!-- Кнопка после каждого блока -->
+          
           <div v-if="props.isEdit" class="block-builder-add-block-separator">
             <button
               @click="openBlockTypeSelectionModal(index + 1)"
@@ -196,7 +196,7 @@
       </template>
     </div>
 
-    <!-- Модальное окно выбора типа блока -->
+    
     <div v-if="showTypeSelectionModal" class="block-builder-modal" @mousedown="closeTypeSelectionModal">
       <div class="block-builder-modal-content" @mousedown.stop>
         <div class="block-builder-modal-header">
@@ -205,7 +205,7 @@
         </div>
 
         <div class="block-builder-modal-body">
-          <!-- Предупреждение о бесплатной версии -->
+          
           <div v-if="!licenseInfoComputed.isPro" class="block-builder-license-warning">
             <div class="block-builder-license-warning__header">
               <span class="block-builder-license-warning__icon">⚠️</span>
@@ -236,7 +236,7 @@
       </div>
     </div>
 
-    <!-- Модальное окно создания/редактирования -->
+    
     <div v-if="showModal" class="block-builder-modal" @mousedown="handleOverlayClick">
       <div class="block-builder-modal-content" @mousedown.stop>
         <div class="block-builder-modal-header">
@@ -253,7 +253,7 @@
               :data-field-name="field.field"
               :class="{ [CSS_CLASSES.ERROR]: formErrors[field.field] && field.type !== 'image' }"
             >
-              <!-- Лейбл только для полей без собственного лейбла (spacing, repeater и image имеют свой) -->
+              
               <label
                 v-if="isRegularInputField(field)"
                 :for="'field-' + field.field"
@@ -263,7 +263,7 @@
                 <span v-if="isFieldRequired(field)" class="required">*</span>
               </label>
 
-              <!-- Text input -->
+              
               <input
                 v-if="field.type === 'text'"
                 v-model="formData[field.field]"
@@ -274,7 +274,7 @@
                 :class="{ [CSS_CLASSES.ERROR]: formErrors[field.field] }"
               />
 
-              <!-- Textarea -->
+              
               <textarea
                 v-else-if="field.type === 'textarea'"
                 v-model="formData[field.field]"
@@ -285,7 +285,7 @@
                 :class="{ [CSS_CLASSES.ERROR]: formErrors[field.field] }"
               ></textarea>
 
-              <!-- Number -->
+              
               <input
                 v-else-if="field.type === 'number'"
                 v-model.number="formData[field.field]"
@@ -296,7 +296,7 @@
                 :class="{ [CSS_CLASSES.ERROR]: formErrors[field.field] }"
               />
 
-              <!-- Color -->
+              
               <input
                 v-else-if="field.type === 'color'"
                 v-model="formData[field.field]"
@@ -306,7 +306,7 @@
                 :class="{ [CSS_CLASSES.ERROR]: formErrors[field.field] }"
               />
 
-              <!-- URL -->
+              
               <input
                 v-else-if="field.type === 'url'"
                 v-model="formData[field.field]"
@@ -317,7 +317,7 @@
                 :class="{ [CSS_CLASSES.ERROR]: formErrors[field.field] }"
               />
 
-              <!-- Image Upload -->
+              
               <ImageUploadField
                 v-else-if="field.type === 'image'"
                 v-model="formData[field.field]"
@@ -328,7 +328,7 @@
                 :image-upload-config="field.imageUploadConfig"
               />
 
-              <!-- Select -->
+              
               <select
                 v-else-if="field.type === 'select'"
                 v-model="formData[field.field]"
@@ -346,7 +346,7 @@
                 </option>
               </select>
 
-              <!-- Checkbox -->
+              
               <label v-else-if="field.type === 'checkbox'" class="block-builder-form-checkbox">
                 <input
                   v-model="formData[field.field]"
@@ -357,7 +357,7 @@
                 <span class="block-builder-form-checkbox-label">{{ field.label }}</span>
               </label>
 
-              <!-- Radio -->
+              
               <div v-else-if="field.type === 'radio'" class="block-builder-form-group">
                 <label class="block-builder-form-label">
                   {{ field.label }}
@@ -382,7 +382,7 @@
                 </div>
               </div>
 
-              <!-- Spacing Control -->
+              
               <SpacingControl
                 v-else-if="field.type === 'spacing'"
                 :label="field.label"
@@ -398,7 +398,7 @@
                 :license-feature-checker="getLicenseFeatureChecker"
               />
 
-              <!-- Repeater Control -->
+              
               <RepeaterControl
                 v-else-if="field.type === 'repeater'"
                 :ref="createRepeaterRefCallback(field.field)"
@@ -416,10 +416,10 @@
                 :default-item-value="field.repeaterConfig?.defaultItemValue"
               />
 
-              <!-- API Select Field -->
+              
               <div v-else-if="field.type === 'api-select'" class="block-builder-form-group">
-                <!-- Лейбл и ошибки рендерятся внутри ApiSelectField компонента -->
-                <!-- API Select поле - показываем только если PRO и есть apiSelectUseCase -->
+                
+                
                 <ApiSelectField
                   v-if="isApiSelectAvailable(field) && props.apiSelectUseCase"
                   :config="field"
@@ -427,13 +427,13 @@
                   :validation-error="formErrors[field.field]?.[0]"
                   :api-select-use-case="props.apiSelectUseCase"
                 />
-                <!-- Заглушка для FREE версии -->
+                
                 <div v-else class="bb-warning-box">
                   ⚠️ {{ getApiSelectRestrictionMessage() }}
                 </div>
               </div>
 
-              <!-- Custom Field -->
+              
               <div
                 v-else-if="field.type === 'custom'"
                 class="block-builder-form-group"
@@ -458,7 +458,7 @@
                 </div>
               </div>
 
-              <!-- Ошибки валидации -->
+              
               <div
                 v-if="formErrors[field.field] && field.type !== 'image' && field.type !== 'api-select' && field.type !== 'custom' && field.type !== 'repeater' && field.type !== 'spacing'"
                 class="block-builder-form-errors"
@@ -498,7 +498,6 @@ import type { LicenseFeatureChecker } from '../../core/services/LicenseFeatureCh
 import { LicenseFeature } from '../../core/services/LicenseFeatureChecker';
 import SpacingControl from './SpacingControl.vue';
 import RepeaterControl from './RepeaterControl.vue';
-// @ts-ignore - Vue SFC components with <script setup> are properly handled by build tools
 import ApiSelectField from './ApiSelectField.vue';
 import ImageUploadField from './ImageUploadField.vue';
 import CustomField from './CustomField.vue';
@@ -817,42 +816,31 @@ const loadInitialBlocks = async () => {
   }
 };
 
-// Перезагружает блоки при изменении лицензии (PRO↔FREE)
 const reloadBlocksAfterLicenseChange = async () => {
   try {
     const licenseService = props.licenseService || internalLicenseService.value;
 
-    // Получаем все блоки из репозитория ДО очистки (чтобы сохранить их)
     const currentBlocks = await blockService.getAllBlocks() as any[];
 
-    // Также берем блоки из originalInitialBlocks (которые были в props)
     const initialBlocksFromProps = originalInitialBlocks.value || [];
 
-    // Объединяем все блоки, избегая дубликатов по ID
     const allBlocksMap = new Map<string, any>();
     currentBlocks.forEach(block => allBlocksMap.set(block.id, block));
     initialBlocksFromProps.forEach(block => allBlocksMap.set(block.id, block));
     const allBlocksToReload = Array.from(allBlocksMap.values());
 
-    // Очищаем все блоки из репозитория
     await blockService.clearAllBlocks();
 
-    // Фильтруем блоки с учетом новой лицензии
     if (licenseService && allBlocksToReload.length > 0) {
-      // Получаем список типов блоков из конфигурации пользователя (props.config.availableBlockTypes)
-      // Это основной источник типов блоков - конфигурация пользователя
       let allBlockTypes: string[] = [];
 
-      // Приоритет 1: типы из конфигурации пользователя (props.config.availableBlockTypes)
       if (props.config?.availableBlockTypes && props.config.availableBlockTypes.length > 0) {
         allBlockTypes = props.config.availableBlockTypes.map(bt => bt.type);
       }
-      // Приоритет 2: типы из componentRegistry (зарегистрированные компоненты)
       else if (componentRegistry) {
         const registeredComponents = componentRegistry.getAll();
         allBlockTypes = Object.keys(registeredComponents);
       }
-      // Приоритет 3: fallback - уникальные типы из самих блоков
       else {
         allBlockTypes = [...new Set(allBlocksToReload.map(block => block.type))];
       }
@@ -860,7 +848,6 @@ const reloadBlocksAfterLicenseChange = async () => {
       const allowedTypes = licenseService.getAllowedBlockTypes(allBlockTypes);
       const filteredBlocks = licenseService.filterBlocksByLicense(allBlocksToReload, allowedTypes);
 
-      // Загружаем только разрешенные блоки
       for (const block of filteredBlocks) {
         try {
           await blockService.createBlock(block as any);
@@ -869,22 +856,17 @@ const reloadBlocksAfterLicenseChange = async () => {
         }
       }
     } else if (allBlocksToReload.length > 0) {
-      // Fallback: фильтрация вручную если нет licenseService
       const licenseInfo = licenseInfoComputed.value;
 
-      // Получаем список типов блоков из конфигурации пользователя
       let allBlockTypes: string[] = [];
 
-      // Приоритет 1: типы из конфигурации пользователя
       if (props.config?.availableBlockTypes && props.config.availableBlockTypes.length > 0) {
         allBlockTypes = props.config.availableBlockTypes.map(bt => bt.type);
       }
-      // Приоритет 2: типы из componentRegistry
       else if (componentRegistry) {
         const registeredComponents = componentRegistry.getAll();
         allBlockTypes = Object.keys(registeredComponents);
       }
-      // Приоритет 3: fallback - уникальные типы из блоков
       else {
         allBlockTypes = [...new Set(allBlocksToReload.map(block => block.type))];
       }
@@ -904,10 +886,8 @@ const reloadBlocksAfterLicenseChange = async () => {
       }
     }
 
-    // Перезагружаем отображение всех блоков
     await loadBlocks();
 
-    // Обновляем watchers для новых блоков
     await setupBreakpointWatchers();
   } catch (error) {
     console.error('Ошибка перезагрузки блоков:', error);
@@ -954,7 +934,6 @@ const openCreateModal = (type: string, position?: number) => {
   Object.keys(formData).forEach(key => delete formData[key]);
   const blockType = currentBlockType.value;
   blockType?.fields?.forEach((field: any) => {
-    // Для api-select полей правильно инициализируем значение по умолчанию
     if (field.type === 'api-select') {
       const isMultiple = field.apiSelectConfig?.multiple ?? false;
       formData[field.field] = field.defaultValue ?? (isMultiple ? [] : null);
@@ -964,10 +943,6 @@ const openCreateModal = (type: string, position?: number) => {
   });
 
   showModal.value = true;
-
-  nextTick(() => {
-    // initializeCustomFields(); // Удалено
-  });
 };
 
 const openEditModal = (block: IBlock) => {
@@ -982,60 +957,25 @@ const openEditModal = (block: IBlock) => {
   Object.assign(formData, { ...block.props });
 
   showModal.value = true;
-
-  nextTick(() => {
-    // initializeCustomFields(); // Удалено
-  });
 };
 
-// Удалить функции initializeCustomFields, cleanupCustomFields, вызовы document.querySelectorAll,
-// Удалить ручную работу с data-атрибутами и добавление кастомных полей в DOM.
-// В шаблоне формы (там, где выводятся поля), добавить:
-// <template v-for="field in currentBlockFields" :key="field.field">
-//   <component
-//     v-if="field.type === 'custom'"
-//     :is="props.customFieldRendererRegistry?.get(field.customFieldConfig?.rendererId)?.vueComponent || 'input'"
-//     v-model="formData[field.field]"
-//     :label="field.label"
-//     :options="field.customFieldConfig?.options"
-//     :required="field.rules?.some(r => r.type === 'required')"
-//     :error="formErrors[field.field]?.[0]"
-//   />
-//   <!-- Аналогичный паттерн подготовить для spacing/repeater/api-select -->
-// </template>
-// Все изменения состояния формы — только через formData, ошибки через formErrors, никаких дом-атрибутов и querySelector.
-
-// isJoditElement - Удалено
-
-// Обработчик клика по оверлею модалки
 const handleOverlayClick = (event: MouseEvent) => {
   const target = event.target as HTMLElement;
 
-  // Если клик был на элементе Jodit, не закрываем модалку
-  // if (isJoditElement(target)) { // Удалено
-  //   return; // Удалено
-  // } // Удалено
-
-  // Если клик был на оверлей (а не на content внутри), закрываем модалку
   if (target.classList.contains('block-builder-modal')) {
     closeModal();
   }
 };
 
-// Закрыть модалку
 const closeModal = () => {
   showModal.value = false;
   currentType.value = null;
   currentBlockId.value = null;
   Object.keys(formData).forEach(key => delete formData[key]);
   Object.keys(formErrors).forEach(key => delete formErrors[key]);
-  // Очищаем refs к repeater компонентам
   repeaterRefs.clear();
-  // Очищаем кастомные поля
-  // cleanupCustomFields(); // Удалено
 };
 
-// Отправка формы
 const handleSubmit = async () => {
   let success = false;
 
@@ -1045,43 +985,25 @@ const handleSubmit = async () => {
     success = await updateBlock();
   }
 
-  // Закрываем модалку только если успешно
   if (success) {
     closeModal();
   }
 };
 
-// Получить значения из кастомных полей
-// const collectCustomFieldValues = () => { // Удалено
-//   customFieldInstances.forEach((instance, fieldName) => { // Удалено
-//     if (instance.getValue) { // Удалено
-//       formData[fieldName] = instance.getValue(); // Удалено
-//     } // Удалено
-//   }); // Удалено
-// }; // Удалено
-
-// Создание блока
 const createBlock = async (): Promise<boolean> => {
   if (!currentType.value) return false;
 
   const blockType = currentBlockType.value;
   if (!blockType) return false;
 
-  // Собираем значения из кастомных полей
-  // collectCustomFieldValues(); // Удалено
-
-  // Валидация формы с помощью UniversalValidator
   const fields = currentBlockFields.value;
   const validation = UniversalValidator.validateForm(formData, fields);
 
-  // Очищаем старые ошибки
   Object.keys(formErrors).forEach(key => delete formErrors[key]);
 
   if (!validation.isValid) {
-    // Копируем ошибки в reactive объект
     Object.assign(formErrors, validation.errors);
 
-    // Скроллим к первой ошибке и открываем аккордеон, если нужно
     await handleValidationErrors();
 
     return false;
@@ -1095,31 +1017,23 @@ const createBlock = async (): Promise<boolean> => {
       render: blockType.render
     } as any);
 
-
-    // Если указана позиция, вставляем блок в нужное место
     if (selectedPosition.value !== undefined) {
-      // Получаем все блоки и перемещаем новый блок на нужную позицию
       const allBlocks = await blockService.getAllBlocks() as any[];
 
       const blockIds = allBlocks.map((b: any) => b.id);
 
-      // Удаляем новый блок из конца
       const newBlockIndex = blockIds.indexOf(newBlock.id);
       if (newBlockIndex !== -1) {
         blockIds.splice(newBlockIndex, 1);
       }
 
-      // Вставляем на нужную позицию
       blockIds.splice(selectedPosition.value, 0, newBlock.id);
 
-      // Обновляем порядок
       const reorderResult = await blockService.reorderBlocks(blockIds);
     }
 
-    // Перезагружаем блоки
     await loadBlocks();
 
-    // Перенастраиваем watchers для новых блоков
     await setupBreakpointWatchers();
 
     (emit as any)('block-added', newBlock as any);
@@ -1130,25 +1044,17 @@ const createBlock = async (): Promise<boolean> => {
   }
 };
 
-// Обновление блока
 const updateBlock = async (): Promise<boolean> => {
   if (!currentBlockId.value) return false;
 
-  // Собираем значения из кастомных полей
-  // collectCustomFieldValues(); // Удалено
-
-  // Валидация формы с помощью UniversalValidator
   const fields = currentBlockFields.value;
   const validation = UniversalValidator.validateForm(formData, fields);
 
-  // Очищаем старые ошибки
   Object.keys(formErrors).forEach(key => delete formErrors[key]);
 
   if (!validation.isValid) {
-    // Копируем ошибки в reactive объект
     Object.assign(formErrors, validation.errors);
 
-    // Скроллим к первой ошибке и открываем аккордеон, если нужно
     await handleValidationErrors();
 
     return false;
@@ -1164,7 +1070,6 @@ const updateBlock = async (): Promise<boolean> => {
       blocks.value[index] = updated as any;
     }
 
-    // Перенастраиваем watchers после обновления блока
     await setupBreakpointWatchers();
 
     (emit as any)('block-updated', updated as any);
@@ -1175,7 +1080,6 @@ const updateBlock = async (): Promise<boolean> => {
   }
 };
 
-// Дублирование блока
 const handleDuplicateBlock = async (id: TBlockId) => {
   if (!props.isEdit) {
     return; // Блокируем если режим редактирования выключен
@@ -1184,7 +1088,6 @@ const handleDuplicateBlock = async (id: TBlockId) => {
     const duplicated = await blockService.duplicateBlock(id);
     blocks.value.push(duplicated as any);
 
-    // Перенастраиваем watchers после дублирования
     await setupBreakpointWatchers();
 
     (emit as any)('block-added', duplicated as any);
@@ -1194,14 +1097,12 @@ const handleDuplicateBlock = async (id: TBlockId) => {
   }
 };
 
-// Удаление блока
 const handleDeleteBlock = async (id: TBlockId) => {
   if (!props.isEdit) {
     return; // Блокируем если режим редактирования выключен
   }
   if (confirm('Удалить блок?')) {
     try {
-      // Очищаем watcher для удаляемого блока
       const unsubscribe = breakpointUnsubscribers.get(id);
       if (unsubscribe) {
         unsubscribe();
@@ -1218,26 +1119,21 @@ const handleDeleteBlock = async (id: TBlockId) => {
   }
 };
 
-// Перемещение блоков
 const handleMoveUp = async (id: TBlockId) => {
   if (!props.isEdit) {
     return; // Блокируем если режим редактирования выключен
   }
   const index = blocks.value.findIndex((b: IBlock) => b.id === id);
   if (index > 0) {
-    // Создаем новый массив с измененным порядком
     const newBlocks = [...blocks.value];
     const temp = newBlocks[index];
     newBlocks[index] = newBlocks[index - 1];
     newBlocks[index - 1] = temp;
 
-    // Получаем новые ID в правильном порядке
     const blockIds = newBlocks.map((b: IBlock) => b.id);
 
-    // Сохраняем новый порядок в репозитории
     await blockService.reorderBlocks(blockIds);
 
-    // Перезагружаем блоки из репозитория и обновляем watchers
     await loadBlocks();
     await setupBreakpointWatchers();
   }
@@ -1249,25 +1145,20 @@ const handleMoveDown = async (id: TBlockId) => {
   }
   const index = blocks.value.findIndex((b: IBlock) => b.id === id);
   if (index < blocks.value.length - 1) {
-    // Создаем новый массив с измененным порядком
     const newBlocks = [...blocks.value];
     const temp = newBlocks[index];
     newBlocks[index] = newBlocks[index + 1];
     newBlocks[index + 1] = temp;
 
-    // Получаем новые ID в правильном порядке
     const blockIds = newBlocks.map((b: IBlock) => b.id);
 
-    // Сохраняем новый порядок в репозитории
     await blockService.reorderBlocks(blockIds);
 
-    // Перезагружаем блоки из репозитория и обновляем watchers
     await loadBlocks();
     await setupBreakpointWatchers();
   }
 };
 
-// Переключить видимость блока
 const handleToggleVisibility = async (blockId: TBlockId) => {
   if (!props.isEdit) {
     return; // Блокируем если режим редактирования выключен
@@ -1280,12 +1171,10 @@ const handleToggleVisibility = async (blockId: TBlockId) => {
   await setupBreakpointWatchers();
 };
 
-// Получить конфигурацию блока по типу
 const getBlockConfig = (type: string) => {
   return availableBlockTypes.value.find((bt: IBlockType) => bt.type === type);
 };
 
-// Копирование ID блока
 const handleCopyId = async (blockId: TBlockId) => {
   try {
     const success = await copyToClipboard(blockId as string);
@@ -1297,7 +1186,6 @@ const handleCopyId = async (blockId: TBlockId) => {
   }
 };
 
-// Показать уведомление
 const showNotification = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
   const notification = document.createElement('div');
   notification.className = 'block-builder-notification';
@@ -1324,16 +1212,13 @@ const showNotification = (message: string, type: 'success' | 'error' | 'info' = 
   `;
   document.body.appendChild(notification);
 
-  // Удаляем уведомление через указанное время
   setTimeout(() => {
     notification.style.animation = 'fadeOut 0.3s ease-in-out';
     setTimeout(() => notification.remove(), 300);
   }, NOTIFICATION_DISPLAY_DURATION_MS);
 };
 
-// Сохранение всех блоков
 const handleSave = async () => {
-  // Если колбэк сохранения не указан, показываем предупреждение
   if (!props.onSave) {
     showNotification('Функция сохранения не настроена. Передайте onSave в пропсы компонента.', 'error');
     return;
@@ -1353,7 +1238,6 @@ const handleSave = async () => {
   }
 };
 
-// Очистка всех блоков
 const handleClearAll = async () => {
   if (!props.isEdit) {
     return; // Блокируем если режим редактирования выключен
@@ -1369,18 +1253,14 @@ const handleClearAll = async () => {
   }
 };
 
-// ===== Spacing Utilities =====
 
-// Получение inline стилей для блока (margin + CSS переменные для padding)
 const getBlockSpacingStyles = (block: IBlock): Record<string, string> => {
-  // Проверяем, есть ли spacing в props блока
   const spacing = block.props?.spacing as ISpacingData | undefined;
 
   if (!spacing || Object.keys(spacing).length === 0) {
     return {};
   }
 
-  // Получаем конфиг блока для определения breakpoints
   const blockConfig = getBlockConfig(block.type) as any;
   const breakpoints = blockConfig?.spacingOptions?.config?.breakpoints;
 
@@ -1432,20 +1312,15 @@ const handleValidationErrors = async () => {
     return;
   }
 
-  // Добавляем небольшую задержку перед скроллом для стабильной позиции
   setTimeout(async () => {
-    // Находим первую ошибку
     const firstErrorKey = Object.keys(formErrors)[0];
     if (!firstErrorKey) return;
 
     const errorInfo = parseErrorKey(firstErrorKey);
 
-    // Если ошибка в repeater - СНАЧАЛА открываем аккордеон, ПОТОМ скроллим
     if (errorInfo.isRepeaterField && errorInfo.repeaterFieldName) {
       await openRepeaterAccordion(errorInfo.repeaterFieldName, errorInfo.repeaterIndex || 0);
-      // Скролл произойдет автоматически внутри openRepeaterAccordion после раскрытия
     } else {
-      // Для обычных полей скроллим сразу
       scrollToFirstError(modalContent, formErrors, {
         offset: 40,
         behavior: 'smooth',

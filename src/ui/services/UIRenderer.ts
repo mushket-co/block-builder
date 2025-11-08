@@ -1,8 +1,3 @@
-/**
- * UIRenderer - отвечает только за рендеринг UI
- * Принцип единой ответственности (SRP)
- */
-
 import { IBlockDto } from '../../core/types';
 import { getBlockInlineStyles, watchBreakpointChanges } from '../../utils/breakpointHelpers';
 import { ISpacingData } from '../../utils/spacingHelpers';
@@ -36,7 +31,7 @@ export interface IUIRendererConfig {
     maxBlockTypes: number;
     currentTypesCount: number;
   };
-  isEdit?: boolean; // Режим редактирования (по умолчанию true)
+  isEdit?: boolean;
 }
 
 interface IComponentRegistry {
@@ -49,31 +44,24 @@ export class UIRenderer {
   private config: IUIRendererConfig;
   private breakpointUnsubscribers: Map<string, () => void> = new Map();
   private eventDelegation: EventDelegation;
-  private isEdit: boolean; // Режим редактирования
+  private isEdit: boolean;
+  private vueApps: Map<string, any> = new Map();
 
   constructor(config: IUIRendererConfig) {
     this.config = config;
     this.eventDelegation = config.eventDelegation || new EventDelegation();
-    this.isEdit = config.isEdit !== undefined ? config.isEdit : true; // По умолчанию true
+    this.isEdit = config.isEdit !== undefined ? config.isEdit : true;
   }
 
-  /**
-   * Получение props для пользовательского компонента (без служебного spacing)
-   */
-  private getUserComponentProps(props: Record<string, any>): Record<string, any> {
+    private getUserComponentProps(props: Record<string, any>): Record<string, any> {
   if (!props) return {};
 
-  // Исключаем spacing - это служебное поле для BlockBuilder
   const { spacing, ...userProps } = props;
 
   return userProps;
   }
 
-  /**
-   * Рендеринг основного UI контейнера
-   */
   renderContainer(): void {
-  // Инициализируем SVG sprite для иконок
   initIcons();
 
   const container = document.getElementById(this.config.containerId);
@@ -81,11 +69,9 @@ export class UIRenderer {
     return;
   }
 
-  // Формируем классы для объединенного блока контролов и статистики
   const panelClass = `block-builder-controls${this.config.controlsFixedPosition ? ` block-builder-controls--fixed-${this.config.controlsFixedPosition}` : ''}`;
   const containerClass = this.config.controlsContainerClass || '';
 
-  // Формируем инлайн стили для offset
   let inlineStyles = '';
   if (this.config.controlsFixedPosition) {
     const offset = this.config.controlsOffset || 0;
@@ -106,12 +92,10 @@ export class UIRenderer {
     }
   }
 
-  // Формируем классы для основного контейнера
   const positionClass = this.config.controlsFixedPosition === 'top' ? ' has-top-controls' : '';
   const bottomClass = this.config.controlsFixedPosition === 'bottom' ? ' has-bottom-controls' : '';
   const appClass = `block-builder block-builder-app${this.config.controlsFixedPosition ? ' has-fixed-controls' : ''}${positionClass}${bottomClass}`;
 
-  // Управляем классом bb-is-edit-mode на body (используем classList.add/remove)
   if (this.isEdit) {
     document.body.classList.add('bb-is-edit-mode');
   } else {
@@ -142,9 +126,6 @@ export class UIRenderer {
   `;
   }
 
-  /**
-   * Рендеринг баннера о лицензии
-   */
   private renderLicenseBanner(): string {
     const license = this.config.license;
     if (license && !license.isPro) {
@@ -163,12 +144,9 @@ export class UIRenderer {
     return '';
   }
 
-  /**
-   * Рендеринг кнопок управления
-   */
   private renderControlButtons(): string {
     if (!this.isEdit) {
-      return ''; // Не показываем кнопки управления если режим редактирования выключен
+      return '';
     }
     return `
     <button data-action="saveAllBlocksUI" class="block-builder-btn block-builder-btn--success">
@@ -180,9 +158,6 @@ export class UIRenderer {
   `;
   }
 
-  /**
-   * Рендеринг плашки со статусом лицензии
-   */
   private renderLicenseBadge(): string {
     const license = this.config.license;
     if (!license) return '';
@@ -204,40 +179,29 @@ export class UIRenderer {
     }
   }
 
-  /**
-   * Обновление режима редактирования
-   */
-  updateEditMode(isEdit: boolean): void {
+    updateEditMode(isEdit: boolean): void {
     this.isEdit = isEdit;
     this.config.isEdit = isEdit;
-    // Обновляем класс на body
     if (isEdit) {
       document.body.classList.add('bb-is-edit-mode');
     } else {
       document.body.classList.remove('bb-is-edit-mode');
     }
-    // Перерендериваем панель управления
     this.updateControlsPanel();
   }
 
-  /**
-   * Обновление панели управления при смене режима редактирования
-   */
-  private updateControlsPanel(): void {
+    private updateControlsPanel(): void {
     const container = document.getElementById(this.config.containerId);
     if (!container) return;
 
     const appContainer = container.querySelector('.block-builder-app');
     if (!appContainer) return;
 
-    // Находим существующую панель управления
     const existingControls = appContainer.querySelector('.block-builder-controls');
 
-    // Формируем HTML для панели управления
     const panelClass = `block-builder-controls${this.config.controlsFixedPosition ? ` block-builder-controls--fixed-${this.config.controlsFixedPosition}` : ''}`;
     const containerClass = this.config.controlsContainerClass || '';
 
-    // Формируем инлайн стили для offset
     let inlineStyles = '';
     if (this.config.controlsFixedPosition) {
       const offset = this.config.controlsOffset || 0;
@@ -272,10 +236,8 @@ export class UIRenderer {
       </div>
     ` : '';
 
-    // Если панель управления существует - заменяем её
     if (existingControls) {
       if (controlsHTML) {
-        // Заменяем существующую панель
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = controlsHTML.trim();
         const newControls = tempDiv.firstChild;
@@ -283,11 +245,9 @@ export class UIRenderer {
           existingControls.replaceWith(newControls);
         }
       } else {
-        // Удаляем панель, если режим просмотра
         existingControls.remove();
       }
     } else if (controlsHTML) {
-      // Если панели нет, но нужно её показать - добавляем
       const tempDiv = document.createElement('div');
       tempDiv.innerHTML = controlsHTML.trim();
       const newControls = tempDiv.firstChild;
@@ -302,17 +262,12 @@ export class UIRenderer {
     }
   }
 
-  /**
-   * Обновление статуса лицензии в UI
-   */
-  updateLicenseStatus(licenseInfo: { isPro: boolean; maxBlockTypes: number; currentTypesCount: number }): void {
+    updateLicenseStatus(licenseInfo: { isPro: boolean; maxBlockTypes: number; currentTypesCount: number }): void {
     this.config.license = licenseInfo;
-    // Также обновляем isEdit в конфиге если он был изменен
     if (this.config.isEdit !== undefined) {
       this.updateEditMode(this.config.isEdit);
     }
 
-    // Обновляем плашку лицензии
     const licenseBadge = this.renderLicenseBadge();
     const statsContainer = document.querySelector('.block-builder-controls-inner');
     if (statsContainer) {
@@ -327,27 +282,21 @@ export class UIRenderer {
       }
     }
 
-    // Обновляем баннер
     const licenseBanner = this.renderLicenseBanner();
     const container = document.getElementById(this.config.containerId);
     if (container) {
-      // Ищем баннер в основном контейнере или внутри block-builder-app
       const appContainer = container.querySelector('.block-builder-app') || container;
       const existingBanner = appContainer.querySelector('.block-builder-license-banner');
 
       if (!licenseInfo.isPro && licenseBanner) {
-        // Показываем баннер для FREE версии
         if (existingBanner) {
-          // Обновляем существующий баннер
           existingBanner.outerHTML = licenseBanner;
         } else {
-          // Добавляем баннер в самое начало контейнера (вверху страницы)
           const tempDiv = document.createElement('div');
           tempDiv.innerHTML = licenseBanner.trim();
           const bannerNode = tempDiv.firstChild;
 
           if (bannerNode) {
-            // Вставляем в начало block-builder-app, или если его нет - в начало контейнера
             if (appContainer.firstChild) {
               appContainer.insertBefore(bannerNode, appContainer.firstChild);
             } else {
@@ -356,23 +305,17 @@ export class UIRenderer {
           }
         }
       } else if (licenseInfo.isPro && existingBanner) {
-        // Удаляем баннер для PRO версии
         existingBanner.remove();
       }
     }
 
-    // Если активирована PRO лицензия - обновляем конфигурацию блоков
     if (licenseInfo.isPro) {
-      // В pure-js через BlockBuilderFacade это обрабатывается через updateUIForLicenseChange
     }
   }
 
-  /**
-   * Рендеринг кнопки добавления блока
-   */
   private renderAddBlockButton(position: number): string {
     if (!this.isEdit) {
-      return ''; // Не показываем кнопку добавления если режим редактирования выключен
+      return '';
     }
     return `
     <div class="block-builder-add-block-separator">
@@ -389,30 +332,23 @@ export class UIRenderer {
   `;
   }
 
-  /**
-   * Рендеринг списка блоков
-   */
   renderBlocks(blocks: IBlockDto[]): void {
   const blocksContainer = document.getElementById('block-builder-blocks');
   const countElement = document.getElementById('blocks-count');
 
   if (!blocksContainer) return;
 
-  // Очищаем старые watchers перед перерендером
   this.cleanupBreakpointWatchers();
 
-  // Фильтруем скрытые блоки в режиме просмотра (isEdit: false)
   const blocksToRender = this.isEdit
     ? blocks
     : blocks.filter(block => block.visible !== false);
 
-  // Обновляем счетчик (если элемент существует - он может отсутствовать в режиме просмотра)
   if (countElement) {
     countElement.textContent = blocksToRender.length.toString();
   }
 
   if (blocksToRender.length === 0) {
-    // Если блоков нет, показываем только одну кнопку добавления
     blocksContainer.innerHTML = `
       <div class="block-builder-empty-state">
         ${this.renderAddBlockButton(0)}
@@ -421,13 +357,10 @@ export class UIRenderer {
     return;
   }
 
-  // Рендерим блоки с кнопками добавления между ними
   const blocksHTML: string[] = [];
 
-  // Кнопка перед первым блоком
   blocksHTML.push(this.renderAddBlockButton(0));
 
-  // Блоки с кнопками после каждого
   blocksToRender.forEach((block, index) => {
     blocksHTML.push(this.renderBlock(block, index, blocksToRender.length));
     blocksHTML.push(this.renderAddBlockButton(index + 1));
@@ -435,25 +368,18 @@ export class UIRenderer {
 
   blocksContainer.innerHTML = blocksHTML.join('');
 
-  // Инициализируем custom блоки после рендеринга
   afterRender(() => {
     this.initializeCustomBlocks(blocksToRender);
-    // Настраиваем watchers для spacing после рендеринга DOM
     this.setupBreakpointWatchers(blocksToRender);
   });
 }
 
-  /**
-   * Рендеринг отдельного блока
-   */
   private renderBlock(block: IBlockDto, index: number, totalBlocks: number): string {
   const config = this.config.blockConfigs[block.type];
   if (!config) return '';
 
   const blockContent = this.renderBlockContent(block, config);
 
-  // Генерируем spacing стили из props.spacing
-  // margin - напрямую, padding - через CSS переменные
   const spacingStylesObj = getBlockInlineStyles(block.props.spacing || {}, 'spacing');
   const styleAttr = Object.keys(spacingStylesObj).length > 0
     ? ` style="${this.objectToStyleString(spacingStylesObj)}"`
@@ -483,25 +409,17 @@ export class UIRenderer {
   `;
   }
 
-  /**
-   * Преобразование объекта стилей в строку
-   */
   private objectToStyleString(styles: Record<string, string>): string {
   return Object.entries(styles)
     .map(([key, value]) => {
-      // Конвертируем camelCase в kebab-case для CSS свойств
       const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
       return `${cssKey}: ${value}`;
     })
     .join('; ');
   }
 
-  /**
-   * Рендеринг элементов управления блока
-   */
   private renderBlockControls(block: IBlockDto, index?: number, totalBlocks?: number): string {
     if (!this.isEdit) {
-      // В режиме просмотра показываем только кнопку копирования ID
       return `
         <button data-action="copyBlockId" data-args='["${block.id}"]' class="block-builder-control-btn" title="Копировать ID: ${block.id}">${copyIconHTML}</button>
       `;
@@ -509,11 +427,9 @@ export class UIRenderer {
 
     const visibilityIcon = block.visible ? eyeIconHTML : eyeOffIconHTML;
 
-    // Определяем, должна ли быть кнопка вверх задизейблена (для первого блока)
     const isFirst = index === 0;
     const moveUpDisabled = isFirst ? ' disabled' : '';
 
-    // Определяем, должна ли быть кнопка вниз задизейблена (для последнего блока)
     const isLast = totalBlocks && index !== undefined ? index === totalBlocks - 1 : false;
     const moveDownDisabled = isLast ? ' disabled' : '';
 
@@ -528,59 +444,56 @@ export class UIRenderer {
     `;
   }
 
-  /**
-   * Рендеринг содержимого блока
-   */
   private renderBlockContent(block: IBlockDto, config: any): string {
-  // Получаем props без служебного spacing
   const userProps = this.getUserComponentProps(block.props);
 
-  // Если есть custom render с функцией mount
   if (config.render?.kind === 'custom' && config.render?.mount) {
     return this.renderCustomBlock(block);
   }
 
-  // Если есть Vue компонент
   if (config.render?.kind === 'component' && config.render?.component) {
     return this.renderVueComponent(block, config);
   }
 
-  // Если есть HTML шаблон в render
   if (config.render?.kind === 'html' && config.render?.template) {
     const template = config.render.template;
     return typeof template === 'function' ? template(userProps) : template;
   }
 
-  // Fallback на старый формат template
   if (config.template) {
     return typeof config.template === 'function' ? config.template(userProps) : config.template;
   }
 
-  // Fallback - простое отображение
+  const escapedTitle = this.escapeHtml(config.title || '');
+  const escapedProps = this.escapeHtml(JSON.stringify(userProps, null, 2));
   return `
     <div class="block-content-fallback">
-      <strong>${config.title}</strong>
-      <pre>${JSON.stringify(userProps, null, 2)}</pre>
+      <strong>${escapedTitle}</strong>
+      <pre>${escapedProps}</pre>
     </div>
   `;
   }
 
-  /**
-   * Рендеринг Vue компонента
-   */
+  private escapeHtml(text: string | number | null | undefined): string {
+    if (text === null || text === undefined) {
+      return '';
+    }
+    const div = document.createElement('div');
+    div.textContent = String(text);
+    return div.innerHTML;
+  }
+
   private renderVueComponent(block: IBlockDto, config: any): string {
   const componentId = `vue-component-${block.id}`;
   const componentName = config.render.component.name;
   const userProps = this.getUserComponentProps(block.props);
 
-  // Создаем контейнер для Vue компонента
   const containerHTML = `
     <div id="${componentId}" class="vue-component-container">
       <!-- Vue компонент будет монтирован здесь -->
     </div>
   `;
 
-  // Монтируем Vue компонент асинхронно
   setTimeout(() => {
     this.mountVueComponent(componentId, componentName, userProps);
   }, 0);
@@ -590,26 +503,27 @@ export class UIRenderer {
 
   /**
    * Монтирование Vue компонента
+   * Используется только в pure-js версии, когда пользователь хочет использовать Vue компоненты в блоках
+   * Vue версия пакета рендерит компоненты напрямую через Vue, без этого метода
    */
   private mountVueComponent(containerId: string, componentName: string, props: Record<string, any>): void {
   const container = document.getElementById(containerId);
   if (!container) return;
 
-  // Проверяем, что Vue доступен
+  this.unmountVueComponent(containerId);
+
   if (typeof (window as any).Vue === 'undefined') {
-    container.innerHTML = `<div class="vue-error">Vue не найден. Убедитесь, что Vue загружен.</div>`;
+    container.textContent = 'Vue не найден. Убедитесь, что Vue загружен.';
     return;
   }
 
-  // Получаем компонент из реестра
   const component = this.config.componentRegistry.get(componentName);
   if (!component) {
-    container.innerHTML = `<div class="vue-error">Компонент ${componentName} не найден</div>`;
+    container.textContent = `Компонент ${componentName} не найден`;
     return;
   }
 
   try {
-    // Создаем Vue приложение с компонентом
     const app = (window as any).Vue.createApp({
       components: {
         [componentName]: component
@@ -622,26 +536,33 @@ export class UIRenderer {
       }
     });
 
-    // Монтируем приложение
     app.mount(container);
+
+    this.vueApps.set(containerId, app);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    container.innerHTML = `<div class="vue-error">Ошибка рендеринга компонента: ${errorMessage}</div>`;
+    container.textContent = `Ошибка рендеринга компонента: ${errorMessage}`;
   }
   }
 
-  /**
-   * Рендеринг custom блока (с императивной функцией mount)
-   */
+    private unmountVueComponent(containerId: string): void {
+    const app = this.vueApps.get(containerId);
+    if (app) {
+      try {
+        app.unmount();
+      } catch (error) {
+        console.warn(`Ошибка при удалении Vue приложения ${containerId}:`, error);
+      }
+      this.vueApps.delete(containerId);
+    }
+  }
+
   private renderCustomBlock(block: IBlockDto): string {
   const containerId = `custom-block-${block.id}`;
   return `<div id="${containerId}" class="custom-block-container" data-block-id="${block.id}"></div>`;
   }
 
-  /**
-   * Инициализация custom блоков после рендеринга
-   */
-  private initializeCustomBlocks(blocks: IBlockDto[]): void {
+    private initializeCustomBlocks(blocks: IBlockDto[]): void {
   blocks.forEach(block => {
     const config = this.config.blockConfigs[block.type];
     if (config?.render?.kind === 'custom' && config.render.mount) {
@@ -650,10 +571,8 @@ export class UIRenderer {
 
       if (container && !container.hasAttribute('data-custom-mounted')) {
         try {
-          // Получаем props без служебного spacing
           const userProps = this.getUserComponentProps(block.props);
 
-          // Вызываем функцию mount с контейнером и пропсами
           config.render.mount(container, userProps);
           container.setAttribute('data-custom-mounted', 'true');
         } catch (error) {
@@ -678,54 +597,55 @@ export class UIRenderer {
       return;
     }
 
-    // Находим DOM элемент блока
     const element = document.querySelector(`[data-block-id="${block.id}"]`) as HTMLElement;
 
     if (!element) {
       return;
     }
 
-    // Отписываемся от старого watcher, если есть
     const oldUnsubscribe = this.breakpointUnsubscribers.get(block.id);
     if (oldUnsubscribe) {
       oldUnsubscribe();
     }
 
-    // Получаем конфиг блока для определения breakpoints
     const blockConfig = this.config.blockConfigs[block.type];
     const breakpoints = blockConfig?.spacingOptions?.config?.breakpoints;
 
-    // Настраиваем новый watcher
     const unsubscribe = watchBreakpointChanges(element, spacing, 'spacing', breakpoints);
     this.breakpointUnsubscribers.set(block.id, unsubscribe);
   });
   }
 
-  /**
-   * Очистка всех watchers
-   */
-  private cleanupBreakpointWatchers(): void {
+    private cleanupBreakpointWatchers(): void {
   this.breakpointUnsubscribers.forEach(unsubscribe => unsubscribe());
   this.breakpointUnsubscribers.clear();
+  this.vueApps.forEach((app, containerId) => {
+    this.unmountVueComponent(containerId);
+  });
+  this.vueApps.clear();
   }
 
-  /**
-   * Очистка watcher для конкретного блока
-   */
-  cleanupBlockWatcher(blockId: string): void {
+    cleanupBlockWatcher(blockId: string): void {
   const unsubscribe = this.breakpointUnsubscribers.get(blockId);
   if (unsubscribe) {
     unsubscribe();
     this.breakpointUnsubscribers.delete(blockId);
   }
+  this.cleanupBlockVueApp(blockId);
   }
 
-  /**
-   * Очистка ресурсов (удаление класса с body)
-   */
-  destroy(): void {
+    destroy(): void {
     document.body.classList.remove('bb-is-edit-mode');
     this.cleanupBreakpointWatchers();
+    this.vueApps.forEach((app, containerId) => {
+      this.unmountVueComponent(containerId);
+    });
+    this.vueApps.clear();
+  }
+
+    cleanupBlockVueApp(blockId: string): void {
+    const containerId = `vue-component-${blockId}`;
+    this.unmountVueComponent(containerId);
   }
 }
 

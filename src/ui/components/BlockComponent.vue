@@ -8,15 +8,15 @@
     :style="userBlockStyle"
   >
     <div class="block-component__content">
-      <!-- Vue компонент -->
+      
       <component
         v-if="isVueComponent(block.render)"
         :is="getVueComponent(block.render)"
         v-bind="block.props"
       />
-      <!-- HTML template -->
+      
       <div v-else-if="getHtmlTemplate(block.render)" v-html="renderedTemplate"></div>
-      <!-- Fallback -->
+      
       <div v-else>Блок {{ block.type }}</div>
     </div>
 

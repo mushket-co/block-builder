@@ -1,11 +1,9 @@
 import { DuplicateBlockUseCase } from '../DuplicateBlockUseCase';
 import { IBlockRepository } from '../../ports/BlockRepository';
 import { IBlockDto } from '../../types';
-
 describe('DuplicateBlockUseCase', () => {
   let useCase: DuplicateBlockUseCase;
   let mockRepository: jest.Mocked<IBlockRepository>;
-
   beforeEach(() => {
   mockRepository = {
     create: jest.fn(),
@@ -19,10 +17,8 @@ describe('DuplicateBlockUseCase', () => {
     count: jest.fn(),
     clear: jest.fn()
   };
-
   useCase = new DuplicateBlockUseCase(mockRepository);
   });
-
   describe('execute', () => {
   test('должен дублировать простой блок', async () => {
     const originalBlock: IBlockDto = {
@@ -37,7 +33,6 @@ describe('DuplicateBlockUseCase', () => {
         version: 1
       }
     };
-
     const duplicatedBlock: IBlockDto = {
       id: 'duplicated',
       type: 'TestBlock',
@@ -51,13 +46,10 @@ describe('DuplicateBlockUseCase', () => {
         version: 1
       }
     };
-
     mockRepository.getById.mockResolvedValue(originalBlock);
     mockRepository.getChildren.mockResolvedValue([]);
     mockRepository.create.mockResolvedValue(duplicatedBlock);
-
     const result = await useCase.execute('original');
-
     expect(result).toBeDefined();
     expect(result?.id).toBe('duplicated');
     expect(result?.type).toBe('TestBlock');
@@ -66,16 +58,12 @@ describe('DuplicateBlockUseCase', () => {
     expect(result?.locked).toBe(false);
     expect(mockRepository.create).toHaveBeenCalledTimes(1);
   });
-
   test('должен вернуть null если блок не найден', async () => {
     mockRepository.getById.mockResolvedValue(null);
-
     const result = await useCase.execute('non-existent');
-
     expect(result).toBeNull();
     expect(mockRepository.create).not.toHaveBeenCalled();
   });
-
   test('должен разблокировать дубликат заблокированного блока', async () => {
     const lockedBlock: IBlockDto = {
       id: 'locked',
@@ -84,7 +72,6 @@ describe('DuplicateBlockUseCase', () => {
       props: {},
       locked: true
     };
-
     const duplicatedBlock: IBlockDto = {
       id: 'duplicated',
       type: 'LockedBlock',
@@ -97,13 +84,10 @@ describe('DuplicateBlockUseCase', () => {
         version: 1
       }
     };
-
     mockRepository.getById.mockResolvedValue(lockedBlock);
     mockRepository.getChildren.mockResolvedValue([]);
     mockRepository.create.mockResolvedValue(duplicatedBlock);
-
     const result = await useCase.execute('locked');
-
     expect(result?.locked).toBe(false);
     expect(mockRepository.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -111,7 +95,6 @@ describe('DuplicateBlockUseCase', () => {
       })
     );
   });
-
   test('должен сохранить visible состояние', async () => {
     const hiddenBlock: IBlockDto = {
       id: 'hidden',
@@ -120,7 +103,6 @@ describe('DuplicateBlockUseCase', () => {
       props: {},
       visible: false
     };
-
     const duplicatedBlock: IBlockDto = {
       id: 'duplicated',
       type: 'HiddenBlock',
@@ -134,16 +116,12 @@ describe('DuplicateBlockUseCase', () => {
         version: 1
       }
     };
-
     mockRepository.getById.mockResolvedValue(hiddenBlock);
     mockRepository.getChildren.mockResolvedValue([]);
     mockRepository.create.mockResolvedValue(duplicatedBlock);
-
     const result = await useCase.execute('hidden');
-
     expect(result?.visible).toBe(false);
   });
-
   test('должен дублировать блок с render конфигурацией', async () => {
     const blockWithRender: IBlockDto = {
       id: 'with-render',
@@ -155,7 +133,6 @@ describe('DuplicateBlockUseCase', () => {
         template: '<div>Test</div>'
       }
     };
-
     const duplicatedBlock: IBlockDto = {
       id: 'duplicated',
       ...blockWithRender,
@@ -166,19 +143,15 @@ describe('DuplicateBlockUseCase', () => {
         version: 1
       }
     };
-
     mockRepository.getById.mockResolvedValue(blockWithRender);
     mockRepository.getChildren.mockResolvedValue([]);
     mockRepository.create.mockResolvedValue(duplicatedBlock);
-
     const result = await useCase.execute('with-render');
-
     expect(result?.render).toEqual({
       kind: 'html',
       template: '<div>Test</div>'
     });
   });
-
   test('должен сохранить parent при дублировании', async () => {
     const childBlock: IBlockDto = {
       id: 'child',
@@ -187,7 +160,6 @@ describe('DuplicateBlockUseCase', () => {
       props: {},
       parent: 'parent-id'
     };
-
     const duplicatedBlock: IBlockDto = {
       id: 'duplicated',
       type: 'ChildBlock',
@@ -201,16 +173,12 @@ describe('DuplicateBlockUseCase', () => {
         version: 1
       }
     };
-
     mockRepository.getById.mockResolvedValue(childBlock);
     mockRepository.getChildren.mockResolvedValue([]);
     mockRepository.create.mockResolvedValue(duplicatedBlock);
-
     const result = await useCase.execute('child');
-
     expect(result?.parent).toBe('parent-id');
   });
-
   test('должен дублировать блок с дочерними блоками', async () => {
     const parentBlock: IBlockDto = {
       id: 'parent',
@@ -218,7 +186,6 @@ describe('DuplicateBlockUseCase', () => {
       settings: {},
       props: {}
     };
-
     const child1: IBlockDto = {
       id: 'child-1',
       type: 'Child',
@@ -226,7 +193,6 @@ describe('DuplicateBlockUseCase', () => {
       props: {},
       parent: 'parent'
     };
-
     const child2: IBlockDto = {
       id: 'child-2',
       type: 'Child',
@@ -234,7 +200,6 @@ describe('DuplicateBlockUseCase', () => {
       props: {},
       parent: 'parent'
     };
-
     const duplicatedParent: IBlockDto = {
       id: 'duplicated-parent',
       type: 'Parent',
@@ -247,7 +212,6 @@ describe('DuplicateBlockUseCase', () => {
         version: 1
       }
     };
-
     const duplicatedChild1: IBlockDto = {
       id: 'duplicated-child-1',
       type: 'Child',
@@ -261,7 +225,6 @@ describe('DuplicateBlockUseCase', () => {
         version: 1
       }
     };
-
     const duplicatedChild2: IBlockDto = {
       id: 'duplicated-child-2',
       type: 'Child',
@@ -275,24 +238,20 @@ describe('DuplicateBlockUseCase', () => {
         version: 1
       }
     };
-
     mockRepository.getById.mockResolvedValue(parentBlock);
     mockRepository.getChildren
-      .mockResolvedValueOnce([child1, child2]) // Дети родителя
-      .mockResolvedValueOnce([]) // Дети child-1
-      .mockResolvedValueOnce([]); // Дети child-2
+      .mockResolvedValueOnce([child1, child2])
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([]);
     
     mockRepository.create
       .mockResolvedValueOnce(duplicatedParent)
       .mockResolvedValueOnce(duplicatedChild1)
       .mockResolvedValueOnce(duplicatedChild2);
-
     const result = await useCase.execute('parent');
-
     expect(result).toBeDefined();
-    expect(mockRepository.create).toHaveBeenCalledTimes(3); // parent + 2 children
+    expect(mockRepository.create).toHaveBeenCalledTimes(3);
     
-    // Проверяем что дочерние блоки созданы с правильным parent
     const createCalls = mockRepository.create.mock.calls;
     expect(createCalls[1][0]).toMatchObject({
       type: 'Child',
@@ -303,7 +262,6 @@ describe('DuplicateBlockUseCase', () => {
       parent: 'duplicated-parent'
     });
   });
-
   test('должен рекурсивно дублировать вложенные блоки', async () => {
     const grandParent: IBlockDto = {
       id: 'grandparent',
@@ -311,7 +269,6 @@ describe('DuplicateBlockUseCase', () => {
       settings: {},
       props: {}
     };
-
     const parent: IBlockDto = {
       id: 'parent',
       type: 'Parent',
@@ -319,7 +276,6 @@ describe('DuplicateBlockUseCase', () => {
       props: {},
       parent: 'grandparent'
     };
-
     const child: IBlockDto = {
       id: 'child',
       type: 'Child',
@@ -327,7 +283,6 @@ describe('DuplicateBlockUseCase', () => {
       props: {},
       parent: 'parent'
     };
-
     const duplicatedGrandParent: IBlockDto = {
       id: 'dup-grandparent',
       type: 'GrandParent',
@@ -340,7 +295,6 @@ describe('DuplicateBlockUseCase', () => {
         version: 1
       }
     };
-
     const duplicatedParent: IBlockDto = {
       id: 'dup-parent',
       type: 'Parent',
@@ -354,7 +308,6 @@ describe('DuplicateBlockUseCase', () => {
         version: 1
       }
     };
-
     const duplicatedChild: IBlockDto = {
       id: 'dup-child',
       type: 'Child',
@@ -368,24 +321,20 @@ describe('DuplicateBlockUseCase', () => {
         version: 1
       }
     };
-
     mockRepository.getById.mockResolvedValue(grandParent);
     mockRepository.getChildren
-      .mockResolvedValueOnce([parent]) // Дети grandparent
-      .mockResolvedValueOnce([child]) // Дети parent
-      .mockResolvedValueOnce([]); // Дети child
+      .mockResolvedValueOnce([parent])
+      .mockResolvedValueOnce([child])
+      .mockResolvedValueOnce([]);
     
     mockRepository.create
       .mockResolvedValueOnce(duplicatedGrandParent)
       .mockResolvedValueOnce(duplicatedParent)
       .mockResolvedValueOnce(duplicatedChild);
-
     const result = await useCase.execute('grandparent');
-
     expect(result).toBeDefined();
     expect(mockRepository.create).toHaveBeenCalledTimes(3);
   });
-
   test('должен создать новые metadata для дубликата', async () => {
     const originalBlock: IBlockDto = {
       id: 'original',
@@ -398,7 +347,6 @@ describe('DuplicateBlockUseCase', () => {
         version: 10
       }
     };
-
     mockRepository.getById.mockResolvedValue(originalBlock);
     mockRepository.getChildren.mockResolvedValue([]);
     mockRepository.create.mockImplementation((blockData) => {
@@ -407,9 +355,7 @@ describe('DuplicateBlockUseCase', () => {
         id: 'duplicated'
       } as IBlockDto);
     });
-
     await useCase.execute('original');
-
     expect(mockRepository.create).toHaveBeenCalledWith(
       expect.objectContaining({
         metadata: expect.objectContaining({
@@ -420,7 +366,6 @@ describe('DuplicateBlockUseCase', () => {
       })
     );
   });
-
   test('должен обработать блок без стилей', async () => {
     const blockWithoutStyle: IBlockDto = {
       id: 'no-style',
@@ -428,7 +373,6 @@ describe('DuplicateBlockUseCase', () => {
       settings: {},
       props: {}
     };
-
     const duplicatedBlock: IBlockDto = {
       id: 'duplicated',
       type: 'SimpleBlock',
@@ -441,16 +385,12 @@ describe('DuplicateBlockUseCase', () => {
         version: 1
       }
     };
-
     mockRepository.getById.mockResolvedValue(blockWithoutStyle);
     mockRepository.getChildren.mockResolvedValue([]);
     mockRepository.create.mockResolvedValue(duplicatedBlock);
-
     const result = await useCase.execute('no-style');
-
     expect(result).toBeDefined();
     expect(result?.style).toBeUndefined();
   });
   });
 });
-

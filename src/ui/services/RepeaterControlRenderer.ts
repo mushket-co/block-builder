@@ -1,8 +1,3 @@
-/**
- * RepeaterControlRenderer - генерация HTML для repeater контрола в чистом JS
- * Универсальная реализация для использования без фреймворков
- */
-
 import { IRepeaterItemFieldConfig, IRepeaterFieldConfig } from '../../core/types/form';
 import { CSS_CLASSES } from '../../utils/constants';
 
@@ -14,7 +9,7 @@ export interface IRepeaterControlOptions {
   config?: IRepeaterFieldConfig;
   value?: any[];
   onChange?: (value: any[]) => void;
-  onAfterRender?: () => void; // Callback после рендера для инициализации вложенных контролов
+  onAfterRender?: () => void;
 }
 
 export class RepeaterControlRenderer {
@@ -40,7 +35,6 @@ export class RepeaterControlRenderer {
   this.onChange = options.onChange;
   this.onAfterRender = options.onAfterRender;
 
-  // Инициализируем минимальное количество элементов
   const effectiveMin = this.getEffectiveMin();
   if (this.value.length === 0 && effectiveMin > 0) {
     for (let i = 0; i < effectiveMin; i++) {
@@ -49,9 +43,6 @@ export class RepeaterControlRenderer {
   }
   }
 
-  /**
-   * Проверяем, есть ли правило required в rules
-   */
   private isRequired(): boolean {
   return this.rules.some(rule => rule.type === 'required');
   }
@@ -64,22 +55,16 @@ export class RepeaterControlRenderer {
    * 3. Есть required, но min не задан → min = 1 (по умолчанию)
    */
   private getEffectiveMin(): number {
-  // Если нет required → всегда можно удалить все
   if (!this.isRequired()) {
     return 0;
   }
-  // Если есть required и задан min явно → используем его
   if (this.config.min !== undefined) {
     return this.config.min;
   }
-  // Если есть required, но min не задан → по умолчанию 1
   return 1;
   }
 
-  /**
-   * Создание нового элемента с дефолтными значениями
-   */
-  private createNewItem(): Record<string, any> {
+    private createNewItem(): Record<string, any> {
   const newItem: Record<string, any> = {};
 
   this.config.fields.forEach(field => {
@@ -88,7 +73,6 @@ export class RepeaterControlRenderer {
     } else if (field.defaultValue !== undefined) {
       newItem[field.field] = field.defaultValue;
     } else {
-      // Значения по умолчанию по типу
       switch (field.type) {
         case 'checkbox':
           newItem[field.field] = false;
@@ -105,9 +89,6 @@ export class RepeaterControlRenderer {
   return newItem;
   }
 
-  /**
-   * Добавление элемента
-   */
   private addItem(): void {
   if (this.config.max && this.value.length >= this.config.max) {
     return;
@@ -118,10 +99,7 @@ export class RepeaterControlRenderer {
   this.render(this.container!);
   }
 
-  /**
-   * Удаление элемента
-   */
-  private removeItem(index: number): void {
+    private removeItem(index: number): void {
   const effectiveMin = this.getEffectiveMin();
   if (this.value.length <= effectiveMin) {
     return;
@@ -133,10 +111,7 @@ export class RepeaterControlRenderer {
   this.render(this.container!);
   }
 
-  /**
-   * Перемещение элемента
-   */
-  private moveItem(fromIndex: number, toIndex: number): void {
+    private moveItem(fromIndex: number, toIndex: number): void {
   const item = this.value[fromIndex];
   this.value.splice(fromIndex, 1);
   this.value.splice(toIndex, 0, item);
@@ -144,9 +119,6 @@ export class RepeaterControlRenderer {
   this.render(this.container!);
   }
 
-  /**
-   * Сворачивание/разворачивание элемента
-   */
   private toggleCollapse(index: number): void {
   if (this.collapsedItems.has(index)) {
     this.collapsedItems.delete(index);
@@ -156,50 +128,31 @@ export class RepeaterControlRenderer {
   this.render(this.container!);
   }
 
-  /**
-   * Изменение значения поля
-   */
   private onFieldChange(itemIndex: number, fieldName: string, value: any): void {
   this.value[itemIndex][fieldName] = value;
   this.emitChange();
   }
 
-  /**
-   * Отправка изменений
-   */
   private emitChange(): void {
   if (this.onChange) {
     this.onChange(this.value);
   }
   }
 
-  /**
-   * Проверка обязательности поля
-   */
-  private isFieldRequired(field: IRepeaterItemFieldConfig): boolean {
+    private isFieldRequired(field: IRepeaterItemFieldConfig): boolean {
   return field.rules?.some(rule => rule.type === 'required') ?? false;
   }
 
-  /**
-   * Получение ошибок для конкретного поля конкретного элемента
-   * Формат ключа ошибки: "cards[0].title", "slides[1].url" и т.д.
-   */
-  private getFieldErrors(index: number, fieldName: string): string[] {
+    private getFieldErrors(index: number, fieldName: string): string[] {
   const errorKey = `${this.fieldName}[${index}].${fieldName}`;
   return this.errors[errorKey] || [];
   }
 
-  /**
-   * Проверка, есть ли ошибка у поля
-   */
-  private hasFieldError(index: number, fieldName: string): boolean {
+    private hasFieldError(index: number, fieldName: string): boolean {
   return this.getFieldErrors(index, fieldName).length > 0;
   }
 
-  /**
-   * Получение правильного склонения для счетчика
-   */
-  private getItemCountLabel(count: number): string {
+    private getItemCountLabel(count: number): string {
   const itemTitle = this.config.itemTitle || 'Элемент';
   const mod10 = count % 10;
   const mod100 = count % 100;
@@ -213,9 +166,6 @@ export class RepeaterControlRenderer {
   }
   }
 
-  /**
-   * Генерация HTML для поля
-   */
   private generateFieldHTML(field: IRepeaterItemFieldConfig, itemIndex: number, value: any): string {
   const fieldId = `repeater-${this.fieldName}-${itemIndex}-${field.field}`;
   const required = this.isFieldRequired(field) ? 'required' : '';
@@ -372,9 +322,6 @@ export class RepeaterControlRenderer {
   }
   }
 
-  /**
-   * Экранирование HTML для предотвращения XSS атак
-   */
   private escapeHtml(text: string): string {
     if (!text) return '';
     const div = document.createElement('div');
@@ -382,9 +329,6 @@ export class RepeaterControlRenderer {
     return div.innerHTML;
   }
 
-  /**
-   * Генерация HTML для поля изображения в repeater
-   */
   private generateImageFieldHTML(
     field: IRepeaterItemFieldConfig,
     itemIndex: number,
@@ -394,13 +338,10 @@ export class RepeaterControlRenderer {
     hasError: boolean,
     errors: string[]
   ): string {
-    // Извлекаем URL для preview
-    // Поддерживаем и src (правильное поле) и url (для обратной совместимости)
     const getImageUrl = (val: any): string => {
       if (!val) return '';
       if (typeof val === 'string') return val;
       if (typeof val === 'object' && val !== null) {
-        // Приоритет src, затем url для обратной совместимости
         return val.src || val.url || '';
       }
       return '';
@@ -409,13 +350,11 @@ export class RepeaterControlRenderer {
     const imageUrl = getImageUrl(value);
     const hasImage = !!imageUrl;
 
-    // Конфигурация загрузки
     const config = (field as any).imageUploadConfig || {};
     const uploadUrl = config.uploadUrl || '';
     const maxFileSize = config.maxFileSize || (10 * 1024 * 1024);
     const fileParamName = config.fileParamName || 'file';
 
-    // Сериализуем конфигурацию для JS обработчика
     const configJson = JSON.stringify({
       uploadUrl,
       fileParamName,
@@ -470,9 +409,6 @@ export class RepeaterControlRenderer {
     `;
   }
 
-  /**
-   * Генерация HTML для одного элемента
-   */
   private generateItemHTML(item: Record<string, any>, index: number): string {
   const itemTitle = this.config.itemTitle || 'Элемент';
   const isCollapsed = this.collapsedItems.has(index);
@@ -540,9 +476,6 @@ export class RepeaterControlRenderer {
   `;
   }
 
-  /**
-   * Генерация полного HTML
-   */
   public generateHTML(): string {
   const itemCount = this.value.length;
   const canAdd = !this.config.max || itemCount < this.config.max;
@@ -592,35 +525,25 @@ export class RepeaterControlRenderer {
   `;
   }
 
-  /**
-   * Рендеринг в контейнер
-   */
   public render(container: HTMLElement): void {
   this.container = container;
-  // Очищаем флаги инициализации image upload контролов при перерендере
   container.querySelectorAll('[data-image-initialized]').forEach(el => {
     el.removeAttribute('data-image-initialized');
   });
   container.innerHTML = this.generateHTML();
   this.attachEventListeners();
-  
-  // Вызываем callback для инициализации вложенных контролов (например, image upload)
+
   if (this.onAfterRender) {
     this.onAfterRender();
   }
   }
 
-  /**
-   * Привязка обработчиков событий
-   */
   private attachEventListeners(): void {
   if (!this.container) return;
 
-  // Кнопка добавления
   const addButton = this.container.querySelector('[data-action="add"]');
   addButton?.addEventListener('click', () => this.addItem());
 
-  // Кнопки действий элементов
   const actionButtons = this.container.querySelectorAll('.repeater-control__item-btn');
   actionButtons.forEach(btn => {
     btn.addEventListener('click', (e) => {
@@ -645,7 +568,6 @@ export class RepeaterControlRenderer {
     });
   });
 
-  // Поля ввода
   const inputs = this.container.querySelectorAll('input[data-item-index], textarea[data-item-index], select[data-item-index]');
   inputs.forEach(input => {
     const eventType = input.tagName === 'SELECT' ? 'change' : 'input';
@@ -668,27 +590,17 @@ export class RepeaterControlRenderer {
   });
   }
 
-  /**
-   * Получить текущее значение
-   */
   public getValue(): any[] {
   return this.value;
   }
 
-  /**
-   * Обновить ошибки валидации
-   */
   public updateErrors(errors: Record<string, string[]>): void {
   this.errors = errors;
-  // Перерендерим контрол с новыми ошибками
   if (this.container) {
     this.render(this.container);
   }
   }
 
-  /**
-   * Установить значение
-   */
   public setValue(value: any[]): void {
   this.value = value;
   if (this.container) {
@@ -696,9 +608,6 @@ export class RepeaterControlRenderer {
   }
   }
 
-  /**
-   * Уничтожение контрола
-   */
   public destroy(): void {
   if (this.container) {
     this.container.innerHTML = '';
@@ -706,9 +615,6 @@ export class RepeaterControlRenderer {
   }
   }
 
-  /**
-   * Открыть аккордеон для элемента с ошибкой
-   */
   public expandItem(index: number): void {
   if (this.collapsedItems.has(index)) {
     this.collapsedItems.delete(index);
@@ -718,9 +624,6 @@ export class RepeaterControlRenderer {
   }
   }
 
-  /**
-   * Проверить, свернут ли элемент
-   */
   public isItemCollapsed(index: number): boolean {
   return this.collapsedItems.has(index);
   }

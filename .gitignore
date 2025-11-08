@@ -105,3 +105,6 @@ temp/
 *.sln
 *.sw?
 .cursor/
+
+# dev *.MD
+_README.md

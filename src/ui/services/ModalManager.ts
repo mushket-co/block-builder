@@ -1,8 +1,3 @@
-/**
- * ModalManager - отвечает только за управление модальными окнами
- * Принцип единой ответственности (SRP)
- */
-
 import { CSS_CLASSES } from '../../utils/constants';
 
 export interface IModalOptions {
@@ -17,33 +12,36 @@ export interface IModalOptions {
 
 export class ModalManager {
   private static readonly MODAL_ID = 'block-builder-modal'
+  private static readonly MODAL_CONTENT_ID = 'block-builder-modal-content'
   private boundHandleOverlayClick: ((event: MouseEvent) => void) | null = null;
+  private boundHandleModalContentClick: ((event: MouseEvent) => void) | null = null;
+  private modalHandlers: { onSubmit?: () => void; onCancel?: () => void } | null = null;
 
-  /**
-   * Показать модальное окно
-   */
   showModal(options: IModalOptions): void {
-  // Удаляем существующее модальное окно
   this.closeModal();
+
+  const escapedTitle = this.escapeHtml(options.title);
+  const escapedCancelText = this.escapeHtml(options.cancelButtonText || 'Отмена');
+  const escapedSubmitText = this.escapeHtml(options.submitButtonText || 'Сохранить');
 
   const footerHTML = options.hideSubmitButton
     ? ''
     : `
       <div class="block-builder-modal-footer">
         <button data-action="closeModal" class="block-builder-btn block-builder-btn--secondary">
-          ${options.cancelButtonText || 'Отмена'}
+          ${escapedCancelText}
         </button>
         <button data-action="submitModal" class="block-builder-btn block-builder-btn--primary">
-          ${options.submitButtonText || 'Сохранить'}
+          ${escapedSubmitText}
         </button>
       </div>
     `;
 
   const modalHTML = `
     <div id="${ModalManager.MODAL_ID}" class="block-builder-modal">
-      <div class="block-builder-modal-content" id="block-builder-modal-content">
+      <div class="block-builder-modal-content" id="${ModalManager.MODAL_CONTENT_ID}">
         <div class="block-builder-modal-header">
-          <h3>${options.title}</h3>
+          <h3>${escapedTitle}</h3>
           <button data-action="closeModal" class="block-builder-modal-close">&times;</button>
         </div>
         <div class="${CSS_CLASSES.MODAL_BODY}">
@@ -56,125 +54,56 @@ export class ModalManager {
 
   document.body.insertAdjacentHTML('beforeend', modalHTML);
 
-  // Добавляем обработчики сразу после добавления в DOM
-  requestAnimationFrame(() => {
-    // Сохраняем привязанную функцию для последующего удаления
-    this.boundHandleOverlayClick = this.handleOverlayClick.bind(this);
+  this.modalHandlers = {
+    onSubmit: options.onSubmit,
+    onCancel: options.onCancel
+  };
 
-    // Добавляем обработчик закрытия по клику вне области
+  requestAnimationFrame(() => {
+    this.boundHandleOverlayClick = (event: MouseEvent) => {
+      if (event.target === event.currentTarget) {
+        this.closeModal();
+      }
+    };
+    this.boundHandleModalContentClick = (e: MouseEvent) => e.stopPropagation();
+
     const modal = document.getElementById(ModalManager.MODAL_ID);
     if (modal) {
       modal.addEventListener('mousedown', this.boundHandleOverlayClick);
     }
 
-    // Предотвращаем всплытие события от контента модалки
-    const modalContent = document.getElementById('block-builder-modal-content');
-    if (modalContent) {
-      modalContent.addEventListener('mousedown', (e) => e.stopPropagation());
+    const modalContent = document.getElementById(ModalManager.MODAL_CONTENT_ID);
+    if (modalContent && this.boundHandleModalContentClick) {
+      modalContent.addEventListener('mousedown', this.boundHandleModalContentClick);
     }
   });
-
-  // Сохраняем обработчики
-  (window as any).__modalHandlers = {
-    onSubmit: options.onSubmit,
-    onCancel: options.onCancel
-  };
   }
 
-  /**
-   * Обработчик клика по оверлею модалки
-   */
-  private handleOverlayClick(event: MouseEvent): void {
-    const target = event.target as HTMLElement;
-
-    // Если клик был на элементе Jodit, не закрываем модалку
-    if (this.isJoditElement(target)) {
-      return;
-    }
-
-    // Если клик был на оверлей (а не на content внутри), закрываем модалку
-    if (target.classList.contains('block-builder-modal')) {
-      this.closeModal();
-    }
-  }
-
-  /**
-   * Проверка, является ли элемент частью Jodit popup/dialog
-   */
-  private isJoditElement(element: HTMLElement | null): boolean {
-    if (!element) return false;
-
-    // Jodit создаёт элементы с различными классами
-    const joditClasses = [
-      'jodit',
-      'jodit-popup',
-      'jodit-dialog',
-      'jodit-toolbar-popup',
-      'jodit-ui',
-      'jodit-toolbar-button',
-      'jodit-workplace',
-      'jodit-wysiwyg'
-    ];
-
-    let currentElement: HTMLElement | null = element;
-
-    // Проверяем элемент и всех его родителей
-    while (currentElement) {
-      // Проверяем классы
-      const classList = currentElement.classList;
-      for (const joditClass of joditClasses) {
-        if (classList.contains(joditClass)) {
-          return true;
-        }
-      }
-
-      // Проверяем data-атрибуты Jodit
-      if (currentElement.getAttribute('data-editor') === 'jodit' ||
-          currentElement.getAttribute('data-jodit')) {
-        return true;
-      }
-
-      currentElement = currentElement.parentElement;
-    }
-
-    return false;
-  }
-
-  /**
-   * Закрыть модальное окно
-   */
   closeModal(): void {
   const modal = document.getElementById(ModalManager.MODAL_ID);
   if (modal) {
-    // Удаляем обработчики событий перед удалением элемента
     if (this.boundHandleOverlayClick) {
       modal.removeEventListener('mousedown', this.boundHandleOverlayClick);
+      this.boundHandleOverlayClick = null;
     }
     modal.remove();
   }
 
-  const modalContent = document.getElementById('block-builder-modal-content');
-  if (modalContent) {
-    modalContent.removeEventListener('mousedown', (e) => e.stopPropagation());
+  const modalContent = document.getElementById(ModalManager.MODAL_CONTENT_ID);
+  if (modalContent && this.boundHandleModalContentClick) {
+    modalContent.removeEventListener('mousedown', this.boundHandleModalContentClick);
+    this.boundHandleModalContentClick = null;
   }
 
-  // Очищаем обработчики
-  delete (window as any).__modalHandlers;
+  this.modalHandlers = null;
   }
 
-  /**
-   * Обработка submit модального окна
-   */
   submitModal(): void {
-  const handlers = (window as any).__modalHandlers;
-  if (handlers?.onSubmit) {
-    handlers.onSubmit();
+  if (this.modalHandlers?.onSubmit) {
+    this.modalHandlers.onSubmit();
   }
   }
 
-  /**
-   * Получение данных формы из модального окна
-   */
   getFormData(formId: string): Record<string, any> {
   const form = document.getElementById(formId) as HTMLFormElement;
   if (!form) return {};
@@ -183,17 +112,13 @@ export class ModalManager {
   const props: Record<string, any> = {};
 
   for (const [key, value] of formData.entries()) {
-    // Пропускаем поля внутри repeater (они имеют формат "fieldName[index].subField")
-    // Эти поля обрабатываются отдельно через repeater renderer
     if (key.includes('[') && key.includes('].')) {
       continue;
     }
 
-    // Проверяем, является ли поле скрытым полем изображения с JSON значением
     const hiddenInput = form.querySelector(`input[type="hidden"][name="${key}"][data-image-value="true"]`);
     if (hiddenInput && typeof value === 'string') {
       try {
-        // Пробуем распарсить JSON (для объектов изображений)
         const parsed = JSON.parse(value);
         if (typeof parsed === 'object' && parsed !== null) {
           props[key] = parsed;
@@ -201,7 +126,6 @@ export class ModalManager {
           props[key] = value;
         }
       } catch {
-        // Если не JSON, оставляем как есть (строка base64)
         props[key] = value;
       }
     } else {
@@ -212,25 +136,24 @@ export class ModalManager {
   return props;
   }
 
-  /**
-   * Проверка существования модального окна
-   */
   isModalOpen(): boolean {
   return document.getElementById(ModalManager.MODAL_ID) !== null;
   }
 
   /**
    * Показывает модальное окно подтверждения
-   * @param message - текст сообщения
-   * @param title - заголовок (по умолчанию "Подтверждение")
+   * @param message - текст сообщения (будет экранирован для безопасности)
+   * @param title - заголовок (по умолчанию "Подтверждение", будет экранирован)
    * @returns Promise<boolean> - true если подтверждено, false если отменено
    */
   confirm(message: string, title: string = 'Подтверждение'): Promise<boolean> {
     return new Promise((resolve) => {
-      const bodyHTML = `<p>${message}</p>`;
+      const escapedMessage = this.escapeHtml(message);
+      const escapedTitle = this.escapeHtml(title);
+      const bodyHTML = `<p>${escapedMessage}</p>`;
 
       this.showModal({
-        title,
+        title: escapedTitle,
         bodyHTML,
         submitButtonText: 'Подтвердить',
         cancelButtonText: 'Отмена',
@@ -244,6 +167,12 @@ export class ModalManager {
         },
       });
     });
+  }
+
+  private escapeHtml(text: string): string {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
   }
 }
 

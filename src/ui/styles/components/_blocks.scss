@@ -18,7 +18,6 @@
 /* Отдельный блок */
 .block-builder-block {
   position: relative;
-  min-height: 280px; /* Минимальная высота для контролов + отступы */
   transition: all var(--bb-transition-slow);
   color: var(--bb-text-primary);
 
@@ -38,6 +37,10 @@
       opacity: 0.3;
       pointer-events: none;
     }
+  }
+
+  .bb-is-edit-mode & {
+    min-height: 280px; /* Минимальная высота для контролов + отступы */
   }
 }
 

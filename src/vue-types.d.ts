@@ -1,5 +1,3 @@
-// Типы для Vue компонентов в библиотеке
-// Не требует установки Vue как зависимости
 
 declare module '*.vue' {
   import type { DefineComponent } from 'vue'
@@ -7,7 +5,6 @@ declare module '*.vue' {
   export default component
 }
 
-// Базовые типы Vue для использования в библиотеке
 declare module 'vue' {
   export interface Ref<T = unknown> {
     value: T

@@ -1,8 +1,3 @@
-/**
- * Универсальная система валидации для всех фреймворков
- * Поддерживает: Pure JS, Vue3, React, Angular и другие
- */
-
 import {
   IValidationRule,
   IFormFieldConfig,
@@ -10,10 +5,7 @@ import {
   IFormData,
   IValidationResult
 } from '../core/types';
-
 import { UI_STRINGS } from './constants';
-
-// Реэкспорт типов для обратной совместимости
 export type {
   IValidationRule,
   IFormFieldConfig,
@@ -22,17 +14,10 @@ export type {
   IValidationResult,
   TValidationRuleType
 } from '../core/types';
-
-/**
- * Универсальный валидатор
- */
 export class UniversalValidator {
-  /**
-   * Валидация одного поля
-   */
+
   static validateField<T = unknown>(value: T, rules: IValidationRule[]): string[] {
     const errors: string[] = [];
-
     for (const rule of rules) {
       switch (rule.type) {
         case 'required':
@@ -95,15 +80,10 @@ export class UniversalValidator {
     return errors;
   }
 
-  /**
-   * Валидация всей формы
-   */
   static validateForm(formData: IFormData, formFields: IFormFieldConfig[]): IValidationResult {
   const formErrors: Record<string, string[]> = {};
   let isValid = true;
-
   for (const fieldConfig of formFields) {
-    // Валидация самого поля (например, required для repeater массива)
     if (fieldConfig.rules && fieldConfig.rules.length > 0) {
       const errors = this.validateField(formData[fieldConfig.field], fieldConfig.rules);
       if (errors.length > 0) {
@@ -111,13 +91,10 @@ export class UniversalValidator {
         isValid = false;
       }
     }
-
-    // Дополнительная валидация для repeater - проверяем поля внутри каждого элемента
     if (fieldConfig.type === 'repeater' && fieldConfig.repeaterConfig) {
       const arrayValue = formData[fieldConfig.field];
       if (Array.isArray(arrayValue)) {
         const repeaterFields = fieldConfig.repeaterConfig.fields || [];
-
         arrayValue.forEach((item, index) => {
           for (const repeaterField of repeaterFields) {
             if (repeaterField.rules && repeaterField.rules.length > 0) {
@@ -133,38 +110,21 @@ export class UniversalValidator {
       }
     }
   }
-
   return {
     isValid,
     errors: formErrors
   };
   }
-
-  /**
-   * Создание валидатора для конкретного поля
-   */
-  static createFieldValidator(rules: IValidationRule[]) {
+    static createFieldValidator(rules: IValidationRule[]) {
   return (value: any) => this.validateField(value, rules);
   }
-
-  /**
-   * Создание валидатора для всей формы
-   */
-  static createFormValidator(formFields: IFormFieldConfig[]) {
+    static createFormValidator(formFields: IFormFieldConfig[]) {
   return (formData: IFormData) => this.validateForm(formData, formFields);
   }
 }
-
-/**
- * Утилиты для работы с формами
- */
 export class FormUtils {
-  /**
-   * Инициализация данных формы из конфигурации
-   */
-  static initializeFormData(fields: IFormFieldConfig[]): IFormData {
+    static initializeFormData(fields: IFormFieldConfig[]): IFormData {
   const formData: IFormData = {};
-
   fields.forEach(field => {
     if (field.defaultValue !== undefined) {
       formData[field.field] = field.defaultValue;
@@ -181,28 +141,15 @@ export class FormUtils {
       }
     }
   });
-
   return formData;
   }
-
-  /**
-   * Очистка ошибок валидации
-   */
-  static clearErrors(errors: Record<string, string[]>): void {
+    static clearErrors(errors: Record<string, string[]>): void {
   Object.keys(errors).forEach(key => delete errors[key]);
   }
-
-  /**
-   * Проверка, есть ли ошибки в форме
-   */
-  static hasErrors(errors: Record<string, string[]>): boolean {
+    static hasErrors(errors: Record<string, string[]>): boolean {
   return Object.keys(errors).length > 0;
   }
-
-  /**
-   * Получение всех ошибок в виде массива
-   */
-  static getAllErrors(errors: Record<string, string[]>): string[] {
+    static getAllErrors(errors: Record<string, string[]>): string[] {
   const allErrors: string[] = [];
   Object.values(errors).forEach(fieldErrors => {
     allErrors.push(...fieldErrors);
@@ -210,10 +157,6 @@ export class FormUtils {
   return allErrors;
   }
 }
-
-/**
- * Предустановленные конфигурации форм для блоков
- */
 export class BlockFormConfigs {
   static getTextBlockConfig(): IFormGenerationConfig {
   return {
@@ -271,7 +214,6 @@ export class BlockFormConfigs {
     cancelButtonText: UI_STRINGS.cancel
   };
   }
-
   static getImageBlockConfig(): IFormGenerationConfig {
   return {
     title: UI_STRINGS.blockImageTitle,
@@ -284,7 +226,7 @@ export class BlockFormConfigs {
         rules: [
           { type: 'required', field: 'image', message: UI_STRINGS.imageSrcRequired }
         ],
-        defaultValue: ''  // Пустое значение по умолчанию для изображений
+        defaultValue: ''
       },
       {
         field: 'alt',
@@ -311,7 +253,6 @@ export class BlockFormConfigs {
     cancelButtonText: UI_STRINGS.cancel
   };
   }
-
   static getButtonBlockConfig(): IFormGenerationConfig {
   return {
     title: UI_STRINGS.buttonBlockTitle,
@@ -381,7 +322,6 @@ export class BlockFormConfigs {
     cancelButtonText: UI_STRINGS.cancel
   };
   }
-
   static getCardListBlockConfig(): IFormGenerationConfig {
   return {
     title: UI_STRINGS.cardListBlockTitle,
@@ -607,9 +547,6 @@ export class BlockFormConfigs {
   };
   }
 
-  /**
-   * Получить конфигурацию для типа блока
-   */
   static getConfigForBlockType(blockType: string): IFormGenerationConfig {
   switch (blockType) {
     case 'text':
@@ -625,23 +562,15 @@ export class BlockFormConfigs {
   }
   }
 
-  /**
-   * Создать конфигурацию для редактирования блока
-   */
   static createEditConfig(blockType: string, blockData: IFormData): IFormGenerationConfig {
   const config = this.getConfigForBlockType(blockType);
-
-  // Обновляем заголовок и кнопку
   config.title = `Редактирование ${config.title.toLowerCase().replace('настройка ', '')}`;
   config.submitButtonText = 'Сохранить изменения';
-
-  // Заполняем значения по умолчанию из данных блока
   config.fields.forEach(field => {
     if (blockData[field.field] !== undefined) {
       field.defaultValue = blockData[field.field];
     }
   });
-
   return config;
   }
 }

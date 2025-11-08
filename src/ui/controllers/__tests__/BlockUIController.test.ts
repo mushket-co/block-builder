@@ -4,7 +4,6 @@ import { ApiSelectUseCase } from '../../../core/use-cases/ApiSelectUseCase';
 import { IBlockDto } from '../../../core/types';
 import { LicenseService } from '../../../core/services/LicenseService';
 
-// Мокируем все сервисы
 jest.mock('../../services/UIRenderer');
 jest.mock('../../services/FormBuilder');
 jest.mock('../../services/ModalManager');
@@ -35,12 +34,10 @@ describe('BlockUIController', () => {
   });
 
   beforeEach(() => {
-  // Создаем DOM контейнер
   container = document.createElement('div');
   container.id = 'test-container';
   document.body.appendChild(container);
 
-  // Создаем моки use cases
   mockUseCase = {
     getAllBlocks: jest.fn(),
     getBlock: jest.fn(),
@@ -90,10 +87,9 @@ describe('BlockUIController', () => {
     },
     useCase: mockUseCase,
     apiSelectUseCase: mockApiSelectUseCase,
-    licenseService: new LicenseService()  // Добавляем licenseService для тестов
+    licenseService: new LicenseService()
   };
 
-  // Мокируем window.blockBuilder
   (window as any).blockBuilder = {};
 
   controller = new BlockUIController(config);
@@ -112,8 +108,6 @@ describe('BlockUIController', () => {
   });
 
   test('должен инициализировать все сервисы', () => {
-    // Проверяем что контроллер создан успешно
-    // Сервисы создаются в конструкторе
     expect(controller).toBeDefined();
   });
   });
@@ -166,14 +160,12 @@ describe('BlockUIController', () => {
 
     controller.showBlockTypeSelectionModal(0);
 
-    // Проверяем что метод был вызван без ошибок
     expect(controller).toBeDefined();
   });
 
   test('должен показать все доступные типы блоков', () => {
     controller.showBlockTypeSelectionModal();
 
-    // Проверяем что контроллер работает
     expect(controller).toBeDefined();
   });
   });
@@ -184,7 +176,6 @@ describe('BlockUIController', () => {
     mockUseCase.createBlock.mockResolvedValue(newBlock);
     mockUseCase.getAllBlocks.mockResolvedValue([newBlock]);
 
-    // Симулируем создание блока через use case
     const createdBlock = await mockUseCase.createBlock({
       type: 'text',
       settings: {},
@@ -353,7 +344,6 @@ describe('BlockUIController', () => {
     const blocks = [createMockBlock('block-1')];
     mockUseCase.getAllBlocks.mockResolvedValue(blocks);
 
-    // Вызываем onSave напрямую
     const result = await onSave(blocks);
 
     expect(result).toBe(true);
@@ -431,23 +421,18 @@ describe('BlockUIController', () => {
     mockUseCase.deleteBlock.mockResolvedValue(true);
     mockUseCase.duplicateBlock.mockResolvedValue(block);
 
-    // Создание
     await mockUseCase.createBlock({ type: 'text', settings: {}, props: {} });
     expect(mockUseCase.createBlock).toHaveBeenCalled();
 
-    // Получение
     await mockUseCase.getBlock('block-1');
     expect(mockUseCase.getBlock).toHaveBeenCalled();
 
-    // Обновление
     await mockUseCase.updateBlock('block-1', { props: {} });
     expect(mockUseCase.updateBlock).toHaveBeenCalled();
 
-    // Удаление
     await mockUseCase.deleteBlock('block-1');
     expect(mockUseCase.deleteBlock).toHaveBeenCalled();
 
-    // Дублирование
     await mockUseCase.duplicateBlock('block-1');
     expect(mockUseCase.duplicateBlock).toHaveBeenCalled();
   });

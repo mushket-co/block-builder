@@ -10,7 +10,7 @@
       <span v-if="required" class="image-upload-field__required">*</span>
     </label>
 
-    <!-- Текущее изображение -->
+    
     <div v-if="displayValue" class="image-upload-field__preview">
       <img :src="displayValue" :alt="label || 'Изображение'" class="image-upload-field__preview-img" />
       <button
@@ -23,7 +23,7 @@
       </button>
     </div>
 
-    <!-- Поле загрузки файла -->
+    
     <div class="image-upload-field__file">
       <input
         :id="inputId"
@@ -44,7 +44,7 @@
       <span v-if="fileError" class="image-upload-field__error">{{ fileError }}</span>
     </div>
 
-    <!-- Ошибки валидации -->
+    
     <div v-if="error" class="image-upload-field__error">{{ error }}</div>
   </div>
 </template>
@@ -61,7 +61,6 @@ interface Props {
   placeholder?: string;
   error?: string;
   imageUploadConfig?: IImageUploadConfig;
-  // Data attributes - используем camelCase для props, так как Vue не передает props с дефисами
   dataRepeaterField?: string;
   dataRepeaterIndex?: number | string;
   dataRepeaterItemField?: string;
@@ -79,7 +78,6 @@ const props = withDefaults(defineProps<Props>(), {
   dataRepeaterItemField: undefined
 });
 
-// Computed для извлечения значений data-атрибутов
 const dataRepeaterField = computed(() => {
   const value = props.dataRepeaterField;
   return typeof value === 'string' ? value : undefined;
@@ -98,7 +96,6 @@ const dataRepeaterItemField = computed(() => {
   return typeof value === 'string' ? value : undefined;
 });
 
-// Computed для формирования полного пути поля
 const fieldNamePath = computed(() => {
   if (dataRepeaterField.value && dataRepeaterIndex.value !== undefined && dataRepeaterItemField.value) {
     return `${dataRepeaterField.value}[${dataRepeaterIndex.value}].${dataRepeaterItemField.value}`;
@@ -116,7 +113,6 @@ const fileError = ref('');
 const isLoading = ref(false);
 const inputId = computed(() => `image-upload-${Math.random().toString(36).substring(7)}`);
 
-// Устанавливаем data-атрибуты программно, так как Vue не устанавливает их из props с дефисами
 const updateDataAttributes = () => {
   if (!containerRef.value) return;
 
@@ -143,7 +139,6 @@ const updateDataAttributes = () => {
   }
 };
 
-// Отслеживаем изменения props и обновляем атрибуты
 watch([containerRef, dataRepeaterField, dataRepeaterIndex, dataRepeaterItemField], () => {
   updateDataAttributes();
 }, { immediate: true, flush: 'post' });
@@ -158,8 +153,6 @@ const displayValue = computed(() => {
   const value = props.modelValue;
   if (!value) return '';
 
-  // base64 - всегда строка
-  // серверное загрузка - объект с обязательным src
   if (typeof value === 'string') return value;
   if (typeof value === 'object') {
     return value.src || '';
@@ -180,13 +173,11 @@ const handleFileChange = async (event: Event) => {
   const accept = config.accept || 'image/*';
   const maxFileSize = config.maxFileSize || (10 * 1024 * 1024); // 10MB по умолчанию
 
-  // Проверка типа файла
   if (!file.type.startsWith('image/')) {
     fileError.value = 'Пожалуйста, выберите файл изображения';
     return;
   }
 
-  // Проверка размера файла
   if (file.size > maxFileSize) {
     fileError.value = `Размер файла не должен превышать ${Math.round(maxFileSize / 1024 / 1024)}MB`;
     return;
@@ -196,12 +187,10 @@ const handleFileChange = async (event: Event) => {
   isLoading.value = true;
 
   try {
-    // Если настроен uploadUrl, загружаем на сервер
     if (config.uploadUrl) {
       const uploadedUrl = await uploadFileToServer(file, config);
       emit('update:modelValue', uploadedUrl);
     } else {
-      // Иначе конвертируем в base64
       const reader = new FileReader();
       reader.onload = (e) => {
         const result = e.target?.result as string;
@@ -227,11 +216,9 @@ const uploadFileToServer = async (file: File, config: IImageUploadConfig): Promi
   const uploadHeaders = config.uploadHeaders || {};
   const fileParamName = config.fileParamName || 'file';
 
-  // Создаем FormData с файлом
   const formData = new FormData();
   formData.append(fileParamName, file);
 
-  // Выполняем запрос (всегда POST, так как используется FormData)
   const response = await fetch(uploadUrl, {
     method: 'POST',
     headers: uploadHeaders,
@@ -244,12 +231,10 @@ const uploadFileToServer = async (file: File, config: IImageUploadConfig): Promi
 
   const responseData = await response.json();
 
-  // Преобразуем ответ, если есть responseMapper
   if (config.responseMapper) {
     return config.responseMapper(responseData);
   }
 
-  // По умолчанию: возвращаем ответ как есть
   return responseData;
 };
 
@@ -262,5 +247,5 @@ const clearImage = () => {
 };
 </script>
 
-<!-- Стили определены в src/ui/styles/components/_image-upload-field.scss -->
+
 
