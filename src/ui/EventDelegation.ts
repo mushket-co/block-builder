@@ -8,9 +8,6 @@ import { logger } from '../utils/logger';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type TEventHandler = (...args: any[]) => void | Promise<void>;
 
-/**
- * Менеджер делегирования событий
- */
 export class EventDelegation {
   private handlers: Map<string, TEventHandler> = new Map();
   private registered: boolean = false;
@@ -32,17 +29,11 @@ export class EventDelegation {
     }
   }
 
-  /**
-   * Настройка event delegation
-   */
   private setupDelegation(): void {
     this.boundClickHandler = this.handleClick.bind(this);
-    document.addEventListener('click', this.boundClickHandler, true); // useCapture для раннего перехвата
+    document.addEventListener('click', this.boundClickHandler, true);
   }
 
-  /**
-   * Обработчик клика для event delegation
-   */
   private handleClick(event: MouseEvent): void {
     const target = event.target as HTMLElement;
     const button = target.closest('[data-action]');

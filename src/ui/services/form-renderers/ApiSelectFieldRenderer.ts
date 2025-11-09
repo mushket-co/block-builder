@@ -14,7 +14,7 @@ export class ApiSelectFieldRenderer extends BaseFieldRenderer {
       value: value || (apiSelectConfig.multiple ? [] : null),
       ...apiSelectConfig,
     };
-    
+
     const configJson = JSON.stringify(configData).replaceAll('"', '&quot;');
 
     return `

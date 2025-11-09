@@ -350,9 +350,7 @@ export class BlockUIController {
         const renderer = new RepeaterControlRenderer({
           fieldName: parsed.field,
           label: parsed.label,
-          rules:
-            (parsed.rules as Array<{ type: string; message?: string; value?: unknown }>) ||
-            [],
+          rules: (parsed.rules as Array<{ type: string; message?: string; value?: unknown }>) || [],
           config: repeaterFieldConfig,
           value: (parsed.value as unknown[]) || [],
           onChange: value => {
@@ -465,8 +463,7 @@ export class BlockUIController {
           fieldName: parsedData.field,
           label: parsedData.label,
           rules:
-            (parsedData.rules as Array<{ type: string; message?: string; value?: unknown }>) ||
-            [],
+            (parsedData.rules as Array<{ type: string; message?: string; value?: unknown }>) || [],
           config: apiConfig,
           value:
             (parsedData.value as string | number | (string | number)[] | null | undefined) ||
@@ -480,7 +477,7 @@ export class BlockUIController {
         await renderer.init(htmlContainer);
 
         this.apiSelectRenderers.set(parsedData.field, renderer);
-      } catch (error) {
+      } catch {
         // Игнорируем ошибки инициализации api select контролов
       }
     }
@@ -853,7 +850,9 @@ export class BlockUIController {
           if (container) {
             container.classList.remove(CSS_CLASSES.ERROR);
             // Очищаем только ошибки загрузки файла, не ошибки валидации
-            const fileErrorDiv = container.querySelector('.image-upload-field__file .image-upload-field__error') as HTMLElement;
+            const fileErrorDiv = container.querySelector(
+              '.image-upload-field__file .image-upload-field__error'
+            ) as HTMLElement;
             if (fileErrorDiv) {
               fileErrorDiv.style.display = 'none';
               fileErrorDiv.textContent = '';
@@ -1408,7 +1407,9 @@ export class BlockUIController {
     const errors: Record<string, string[]> = {};
 
     document
-      .querySelectorAll('.repeater-control__field-error, .image-upload-field__error')
+      .querySelectorAll(
+        '.block-builder-form-errors .block-builder-error, .image-upload-field__error'
+      )
       .forEach(errorEl => {
         let field: HTMLElement | null = null;
         let repeaterIndex: string | null = null;
@@ -1424,7 +1425,7 @@ export class BlockUIController {
             fieldName = imageField.dataset.repeaterItemField || null;
           }
         } else {
-          field = errorEl.closest('.repeater-control__field') as HTMLElement;
+          field = errorEl.closest('.block-builder-form-group') as HTMLElement;
           if (field) {
             const input = field.querySelector('input, textarea, select') as HTMLElement;
             if (input) {

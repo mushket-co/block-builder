@@ -1,34 +1,48 @@
 import { IFormFieldConfig } from '../../../core/types/form';
 import { BaseFieldRenderer } from './BaseFieldRenderer';
+import { IRenderContext } from './IRenderContext';
 
 export class CheckboxFieldRenderer extends BaseFieldRenderer {
   readonly fieldType = 'checkbox';
 
-  render(fieldId: string, field: IFormFieldConfig, value: any, _required: string): string {
+  render(
+    fieldId: string,
+    field: IFormFieldConfig,
+    value: any,
+    _required: string,
+    context?: IRenderContext
+  ): string {
     const escapedLabel = this.escapeHtml(field.label);
     const checked = value ? 'checked' : '';
+    const checkboxContainerClass = context?.checkboxContainerClass || 'block-builder-form-checkbox';
+    const checkboxLabelClass = context?.checkboxLabelClass || 'block-builder-form-checkbox-label';
+    const checkboxInputClass = context?.checkboxInputClass || 'block-builder-form-checkbox-input';
+    const fieldName = this.getFieldName(context, field);
+    const dataAttributes = this.getInputDataAttributes(context);
 
     const content = `
-      <label class="block-builder-form-checkbox">
+      <label class="${checkboxContainerClass}">
         <input
           type="checkbox"
           id="${fieldId}"
-          name="${field.field}"
-          class="block-builder-form-checkbox-input"
+          name="${fieldName}"
+          class="${checkboxInputClass}"
           ${checked}
+          ${dataAttributes}
         />
-        <span class="block-builder-form-checkbox-label">${escapedLabel}</span>
+        <span class="${checkboxLabelClass}">${escapedLabel}</span>
       </label>
     `;
 
-    return this.wrapInFormGroup(field, content);
+    return this.wrapInFormGroup(field, content, context);
   }
 
   protected renderInput(
     _fieldId: string,
     _field: IFormFieldConfig,
     _value: any,
-    _required: string
+    _required: string,
+    _context?: IRenderContext
   ): string {
     return '';
   }

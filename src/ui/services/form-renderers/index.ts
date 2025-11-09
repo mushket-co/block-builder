@@ -8,6 +8,7 @@ export { FieldRendererFactory } from './FieldRendererFactory';
 export { FileFieldRenderer } from './FileFieldRenderer';
 export type { IFieldRenderer } from './IFieldRenderer';
 export { ImageFieldRenderer } from './ImageFieldRenderer';
+export type { IRenderContext } from './IRenderContext';
 export { NumberFieldRenderer } from './NumberFieldRenderer';
 export { RadioFieldRenderer } from './RadioFieldRenderer';
 export { RepeaterFieldRenderer } from './RepeaterFieldRenderer';

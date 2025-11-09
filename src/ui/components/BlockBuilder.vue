@@ -265,212 +265,102 @@
 
         <div class="block-builder-modal-body">
           <form class="block-builder-form" @submit.prevent="handleSubmit">
-            <div
+            <FormField
               v-for="field in currentBlockFields"
               :key="field.field"
-              class="block-builder-form-group"
-              :data-field-name="field.field"
-              :class="{ [CSS_CLASSES.ERROR]: formErrors[field.field] && field.type !== 'image' }"
+              :field="field"
+              :field-id="'field-' + field.field"
+              :model-value="formData[field.field]"
+              :required="isFieldRequired(field)"
+              :error="getFieldError(field)"
+              :container-class="
+                formErrors[field.field] && shouldShowErrorContainer(field)
+                  ? `${CSS_CLASSES.FORM_GROUP} ${CSS_CLASSES.ERROR}`
+                  : CSS_CLASSES.FORM_GROUP
+              "
+              @update:model-value="formData[field.field] = $event"
             >
-              <label
-                v-if="isRegularInputField(field)"
-                :for="'field-' + field.field"
-                class="block-builder-form-label"
+              <!-- Специальные поля, которые не обрабатываются FormField -->
+              <template
+                #default="{
+                  field: slotField,
+                  fieldId: slotFieldId,
+                  modelValue: slotModelValue,
+                  error: slotError,
+                }"
               >
-                {{ field.label }}
-                <span v-if="isFieldRequired(field)" class="required">*</span>
-              </label>
-
-              <input
-                v-if="field.type === 'text'"
-                :id="'field-' + field.field"
-                v-model="formData[field.field]"
-                type="text"
-                :placeholder="field.placeholder"
-                class="block-builder-form-control"
-                :class="{ [CSS_CLASSES.ERROR]: formErrors[field.field] }"
-              />
-
-              <textarea
-                v-else-if="field.type === 'textarea'"
-                :id="'field-' + field.field"
-                v-model="formData[field.field]"
-                :placeholder="field.placeholder"
-                rows="4"
-                class="block-builder-form-control"
-                :class="{ [CSS_CLASSES.ERROR]: formErrors[field.field] }"
-              />
-
-              <input
-                v-else-if="field.type === 'number'"
-                :id="'field-' + field.field"
-                v-model.number="formData[field.field]"
-                type="number"
-                :placeholder="field.placeholder"
-                class="block-builder-form-control"
-                :class="{ [CSS_CLASSES.ERROR]: formErrors[field.field] }"
-              />
-
-              <input
-                v-else-if="field.type === 'color'"
-                :id="'field-' + field.field"
-                v-model="formData[field.field]"
-                type="color"
-                class="block-builder-form-control"
-                :class="{ [CSS_CLASSES.ERROR]: formErrors[field.field] }"
-              />
-
-              <input
-                v-else-if="field.type === 'url'"
-                :id="'field-' + field.field"
-                v-model="formData[field.field]"
-                type="url"
-                :placeholder="field.placeholder"
-                class="block-builder-form-control"
-                :class="{ [CSS_CLASSES.ERROR]: formErrors[field.field] }"
-              />
-
-              <ImageUploadField
-                v-else-if="field.type === 'image'"
-                v-model="formData[field.field]"
-                :label="field.label"
-                :required="isFieldRequired(field)"
-                :placeholder="field.placeholder"
-                :error="formErrors[field.field]?.[0]"
-                :image-upload-config="field.imageUploadConfig"
-              />
-
-              <select
-                v-else-if="field.type === 'select'"
-                :id="'field-' + field.field"
-                v-model="formData[field.field]"
-                class="block-builder-form-control"
-                :class="{ [CSS_CLASSES.ERROR]: formErrors[field.field] }"
-              >
-                <option value="">Выберите...</option>
-                <option v-for="option in field.options" :key="option.value" :value="option.value">
-                  {{ option.label }}
-                </option>
-              </select>
-
-              <label v-else-if="field.type === 'checkbox'" class="block-builder-form-checkbox">
-                <input
-                  :id="'field-' + field.field"
-                  v-model="formData[field.field]"
-                  type="checkbox"
-                  class="block-builder-form-checkbox-input"
+                <SpacingControl
+                  v-if="slotField.type === 'spacing'"
+                  :model-value="slotModelValue"
+                  :label="slotField.label"
+                  :field-name="slotField.field"
+                  :spacing-types="slotField.spacingConfig?.spacingTypes"
+                  :min="slotField.spacingConfig?.min"
+                  :max="slotField.spacingConfig?.max"
+                  :step="slotField.spacingConfig?.step"
+                  :breakpoints="getSpacingBreakpoints(slotField)"
+                  :required="isFieldRequired(slotField)"
+                  :show-preview="true"
+                  :license-feature-checker="getLicenseFeatureChecker"
+                  @update:model-value="formData[slotField.field] = $event"
                 />
-                <span class="block-builder-form-checkbox-label">{{ field.label }}</span>
-              </label>
 
-              <div v-else-if="field.type === 'radio'" class="block-builder-form-group">
-                <label class="block-builder-form-label">
-                  {{ field.label }}
-                  <span v-if="isFieldRequired(field)" class="required">*</span>
-                </label>
-                <div class="block-builder-form-radio-group">
-                  <label
-                    v-for="option in field.options"
-                    :key="option.value"
-                    class="block-builder-form-radio"
-                  >
-                    <input
-                      :id="'field-' + field.field + '-' + option.value"
-                      v-model="formData[field.field]"
-                      type="radio"
-                      :name="'field-' + field.field"
-                      :value="option.value"
-                      class="block-builder-form-radio-input"
-                    />
-                    <span class="block-builder-form-radio-label">{{ option.label }}</span>
+                <RepeaterControl
+                  v-else-if="slotField.type === 'repeater'"
+                  :ref="createRepeaterRefCallback(slotField.field)"
+                  :model-value="slotModelValue"
+                  :field-name="slotField.field"
+                  :label="slotField.label"
+                  :fields="slotField.repeaterConfig?.fields || []"
+                  :rules="slotField.rules || []"
+                  :errors="formErrors"
+                  :add-button-text="slotField.repeaterConfig?.addButtonText"
+                  :remove-button-text="slotField.repeaterConfig?.removeButtonText"
+                  :item-title="slotField.repeaterConfig?.itemTitle"
+                  :min="slotField.repeaterConfig?.min"
+                  :max="slotField.repeaterConfig?.max"
+                  :default-item-value="slotField.repeaterConfig?.defaultItemValue"
+                  @update:model-value="formData[slotField.field] = $event"
+                />
+
+                <div v-else-if="slotField.type === 'api-select'" class="block-builder-form-group">
+                  <ApiSelectField
+                    v-if="isApiSelectAvailable(slotField) && props.apiSelectUseCase"
+                    :model-value="slotModelValue"
+                    :config="slotField"
+                    :validation-error="slotError"
+                    :api-select-use-case="props.apiSelectUseCase"
+                    @update:model-value="formData[slotField.field] = $event"
+                  />
+
+                  <div v-else class="bb-warning-box">⚠️ {{ getApiSelectRestrictionMessage() }}</div>
+                </div>
+
+                <div v-else-if="slotField.type === 'custom'" class="block-builder-form-group">
+                  <label :for="slotFieldId" class="block-builder-form-label">
+                    {{ slotField.label }}
+                    <span v-if="isFieldRequired(slotField)" class="required">*</span>
                   </label>
+                  <CustomField
+                    v-if="
+                      isCustomFieldAvailable(slotField) &&
+                      props.customFieldRendererRegistry?.get(
+                        slotField.customFieldConfig?.rendererId
+                      )
+                    "
+                    :model-value="slotModelValue"
+                    :field="slotField"
+                    :form-errors="formErrors"
+                    :custom-field-renderer-registry="props.customFieldRendererRegistry"
+                    :is-field-required="isFieldRequired"
+                    @update:model-value="formData[slotField.field] = $event"
+                  />
+                  <div v-else class="bb-warning-box">
+                    ⚠️ {{ getCustomFieldsRestrictionMessage() }}
+                  </div>
                 </div>
-              </div>
-
-              <SpacingControl
-                v-else-if="field.type === 'spacing'"
-                v-model="formData[field.field]"
-                :label="field.label"
-                :field-name="field.field"
-                :spacing-types="field.spacingConfig?.spacingTypes"
-                :min="field.spacingConfig?.min"
-                :max="field.spacingConfig?.max"
-                :step="field.spacingConfig?.step"
-                :breakpoints="getSpacingBreakpoints(field)"
-                :required="isFieldRequired(field)"
-                :show-preview="true"
-                :license-feature-checker="getLicenseFeatureChecker"
-              />
-
-              <RepeaterControl
-                v-else-if="field.type === 'repeater'"
-                :ref="createRepeaterRefCallback(field.field)"
-                v-model="formData[field.field]"
-                :field-name="field.field"
-                :label="field.label"
-                :fields="field.repeaterConfig?.fields || []"
-                :rules="field.rules || []"
-                :errors="formErrors"
-                :add-button-text="field.repeaterConfig?.addButtonText"
-                :remove-button-text="field.repeaterConfig?.removeButtonText"
-                :item-title="field.repeaterConfig?.itemTitle"
-                :min="field.repeaterConfig?.min"
-                :max="field.repeaterConfig?.max"
-                :default-item-value="field.repeaterConfig?.defaultItemValue"
-              />
-
-              <div v-else-if="field.type === 'api-select'" class="block-builder-form-group">
-                <ApiSelectField
-                  v-if="isApiSelectAvailable(field) && props.apiSelectUseCase"
-                  v-model="formData[field.field]"
-                  :config="field"
-                  :validation-error="formErrors[field.field]?.[0]"
-                  :api-select-use-case="props.apiSelectUseCase"
-                />
-
-                <div v-else class="bb-warning-box">⚠️ {{ getApiSelectRestrictionMessage() }}</div>
-              </div>
-
-              <div v-else-if="field.type === 'custom'" class="block-builder-form-group">
-                <label :for="'field-' + field.field" class="block-builder-form-label">
-                  {{ field.label }}
-                  <span v-if="isFieldRequired(field)" class="required">*</span>
-                </label>
-                <CustomField
-                  v-if="
-                    isCustomFieldAvailable(field) &&
-                    props.customFieldRendererRegistry?.get(field.customFieldConfig?.rendererId)
-                  "
-                  v-model="formData[field.field]"
-                  :field="field"
-                  :form-errors="formErrors"
-                  :custom-field-renderer-registry="props.customFieldRendererRegistry"
-                  :is-field-required="isFieldRequired"
-                />
-                <div v-else class="bb-warning-box">
-                  ⚠️ {{ getCustomFieldsRestrictionMessage() }}
-                </div>
-              </div>
-
-              <div
-                v-if="
-                  formErrors[field.field] &&
-                  field.type !== 'image' &&
-                  field.type !== 'api-select' &&
-                  field.type !== 'custom' &&
-                  field.type !== 'repeater' &&
-                  field.type !== 'spacing'
-                "
-                class="block-builder-form-errors"
-              >
-                <span
-                  v-for="error in formErrors[field.field]"
-                  :key="error"
-                  :class="CSS_CLASSES.ERROR"
-                  >{{ error }}</span
-                >
-              </div>
-            </div>
+              </template>
+            </FormField>
           </form>
         </div>
 
@@ -527,7 +417,7 @@ import { saveIconHTML } from '../icons/iconHelpers';
 import { initIcons } from '../icons/index';
 import ApiSelectField from './ApiSelectField.vue';
 import CustomField from './CustomField.vue';
-import ImageUploadField from './ImageUploadField.vue';
+import { FormField } from './form-fields';
 import RepeaterControl from './RepeaterControl.vue';
 import SpacingControl from './SpacingControl.vue';
 
@@ -779,15 +669,33 @@ const getSpacingBreakpoints = (field: any): any[] | undefined => {
   return Array.isArray(breakpoints) ? toRaw(breakpoints) : breakpoints;
 };
 
-const isRegularInputField = (field: any): boolean => {
-  return (
-    field.type !== 'spacing' &&
-    field.type !== 'repeater' &&
-    field.type !== 'checkbox' &&
-    field.type !== 'radio' &&
+const getFieldError = (field: any): string => {
+  const errors = formErrors[field.field];
+  if (!errors || errors.length === 0) {
+    return '';
+  }
+  // Для полей, которые показывают ошибки внутри себя (image, api-select, custom, repeater, spacing)
+  // не возвращаем ошибку, так как они сами её обрабатывают
+  if (
+    field.type === 'image' ||
+    field.type === 'api-select' ||
+    field.type === 'custom' ||
+    field.type === 'repeater' ||
+    field.type === 'spacing'
+  ) {
+    return '';
+  }
+  return errors[0] || '';
+};
+
+const shouldShowErrorContainer = (field: any): boolean => {
+  return !!(
+    formErrors[field.field] &&
+    field.type !== 'image' &&
     field.type !== 'api-select' &&
     field.type !== 'custom' &&
-    field.type !== 'image'
+    field.type !== 'repeater' &&
+    field.type !== 'spacing'
   );
 };
 
@@ -1475,7 +1383,7 @@ const openRepeaterAccordion = async (
   }
 };
 
-const updateBodyEditModeClass = (isEdit: boolean) => {
+const updateBodyEditModeClass = (isEdit: boolean | undefined) => {
   if (isEdit) {
     document.body.classList.add('bb-is-edit-mode');
   } else {
@@ -1485,7 +1393,7 @@ const updateBodyEditModeClass = (isEdit: boolean) => {
 
 watch(
   () => props.isEdit,
-  newValue => {
+  (newValue: boolean | undefined) => {
     updateBodyEditModeClass(newValue);
   },
   { immediate: true }

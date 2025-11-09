@@ -1,11 +1,3 @@
-/**
- * Naberika - Блочный конструктор для no-code разработки
- *
- * Главный API для использования пакета
- *
- * Стили импортируются автоматически из ui/styles
- */
-
 import './ui/styles/index.scss';
 
 export type { IBlockBuilderOptions } from './BlockBuilderFacade';

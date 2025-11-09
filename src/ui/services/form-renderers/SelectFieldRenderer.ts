@@ -1,6 +1,6 @@
 import { IFormFieldConfig } from '../../../core/types/form';
-import { CSS_CLASSES } from '../../../utils/constants';
 import { BaseFieldRenderer } from './BaseFieldRenderer';
+import { IRenderContext } from './IRenderContext';
 
 export class SelectFieldRenderer extends BaseFieldRenderer {
   readonly fieldType = 'select';
@@ -9,9 +9,13 @@ export class SelectFieldRenderer extends BaseFieldRenderer {
     fieldId: string,
     field: IFormFieldConfig,
     value: any,
-    required: string
+    required: string,
+    context?: IRenderContext
   ): string {
     const options = field.options || [];
+    const inputClass = this.getInputClass(context);
+    const fieldName = this.getFieldName(context, field);
+    const dataAttributes = this.getInputDataAttributes(context);
 
     const optionsHTML = options
       .map(option => {
@@ -25,7 +29,7 @@ export class SelectFieldRenderer extends BaseFieldRenderer {
       .join('');
 
     return `
-      <select id="${fieldId}" name="${field.field}" class="${CSS_CLASSES.FORM_CONTROL}" ${required}>
+      <select id="${fieldId}" name="${fieldName}" class="${inputClass}" ${required} ${dataAttributes}>
         <option value="">Выберите...</option>
         ${optionsHTML}
       </select>

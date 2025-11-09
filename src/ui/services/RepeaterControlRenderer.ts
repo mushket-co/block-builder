@@ -1,5 +1,11 @@
-import { IRepeaterFieldConfig, IRepeaterItemFieldConfig } from '../../core/types/form';
+import {
+  IFormFieldConfig,
+  IRepeaterFieldConfig,
+  IRepeaterItemFieldConfig,
+} from '../../core/types/form';
 import { CSS_CLASSES } from '../../utils/constants';
+import { FieldRendererFactory } from './form-renderers/FieldRendererFactory';
+import { IRenderContext } from './form-renderers/IRenderContext';
 
 export interface IRepeaterControlOptions {
   fieldName: string;
@@ -23,7 +29,7 @@ export class RepeaterControlRenderer {
   private onAfterRender?: () => void;
   private container?: HTMLElement;
   private collapsedItems: Set<number> = new Set();
-  private itemIdCounter = 0;
+  private rendererFactory: FieldRendererFactory;
 
   constructor(options: IRepeaterControlOptions) {
     this.fieldName = options.fieldName;
@@ -34,6 +40,7 @@ export class RepeaterControlRenderer {
     this.value = options.value || [];
     this.onChange = options.onChange;
     this.onAfterRender = options.onAfterRender;
+    this.rendererFactory = FieldRendererFactory.getInstance();
 
     const effectiveMin = this.getEffectiveMin();
     if (this.value.length === 0 && effectiveMin > 0) {
@@ -172,6 +179,10 @@ export class RepeaterControlRenderer {
     }
   }
 
+  /**
+   * Генерирует HTML для поля внутри repeater, используя рендереры из form-renderers
+   * Передает контекст напрямую в рендерер, без замены строк
+   */
   private generateFieldHTML(
     field: IRepeaterItemFieldConfig,
     itemIndex: number,
@@ -180,169 +191,61 @@ export class RepeaterControlRenderer {
     const fieldId = `repeater-${this.fieldName}-${itemIndex}-${field.field}`;
     const required = this.isFieldRequired(field) ? 'required' : '';
     const hasError = this.hasFieldError(itemIndex, field.field);
-    const errorClass = hasError ? CSS_CLASSES.ERROR : '';
     const errors = this.getFieldErrors(itemIndex, field.field);
+    const fieldNamePath = `${this.fieldName}[${itemIndex}].${field.field}`;
 
-    switch (field.type) {
-      case 'textarea':
-        return `
-        <div class="repeater-control__field ${hasError ? CSS_CLASSES.ERROR : ''}">
-          <label for="${fieldId}" class="repeater-control__field-label">
-            ${field.label}
-            ${required ? '<span class="required">*</span>' : ''}
-          </label>
-          <textarea
-            id="${fieldId}"
-            class="repeater-control__field-textarea ${errorClass}"
-            placeholder="${field.placeholder || ''}"
-            data-item-index="${itemIndex}"
-            data-field-name="${field.field}"
-            rows="3"
-            ${required}
-          >${value || ''}</textarea>
-          ${hasError ? `<div class="repeater-control__field-error">${errors[0]}</div>` : ''}
-        </div>
-      `;
+    // Преобразуем конфигурацию поля для использования с рендерерами
+    const formFieldConfig = this.convertToFormFieldConfig(field);
 
-      case 'select':
-        return `
-        <div class="repeater-control__field ${hasError ? CSS_CLASSES.ERROR : ''}">
-          <label for="${fieldId}" class="repeater-control__field-label">
-            ${field.label}
-            ${required ? '<span class="required">*</span>' : ''}
-          </label>
-          <select
-            id="${fieldId}"
-            class="repeater-control__field-select ${errorClass}"
-            data-item-index="${itemIndex}"
-            data-field-name="${field.field}"
-            ${required}
-          >
-            <option value="">Выберите...</option>
-            ${
-              field.options
-                ?.map(
-                  option =>
-                    `<option value="${option.value}" ${option.value === value ? 'selected' : ''}>${option.label}</option>`
-                )
-                .join('') || ''
-            }
-          </select>
-          ${hasError ? `<div class="repeater-control__field-error">${errors[0]}</div>` : ''}
-        </div>
-      `;
-
-      case 'number':
-        return `
-        <div class="repeater-control__field ${hasError ? CSS_CLASSES.ERROR : ''}">
-          <label for="${fieldId}" class="repeater-control__field-label">
-            ${field.label}
-            ${required ? '<span class="required">*</span>' : ''}
-          </label>
-          <input
-            type="number"
-            id="${fieldId}"
-            class="repeater-control__field-input ${errorClass}"
-            placeholder="${field.placeholder || ''}"
-            value="${value || ''}"
-            data-item-index="${itemIndex}"
-            data-field-name="${field.field}"
-            ${required}
-          />
-          ${hasError ? `<div class="repeater-control__field-error">${errors[0]}</div>` : ''}
-        </div>
-      `;
-
-      case 'color':
-        return `
-        <div class="repeater-control__field ${hasError ? CSS_CLASSES.ERROR : ''}">
-          <label for="${fieldId}" class="repeater-control__field-label">
-            ${field.label}
-            ${required ? '<span class="required">*</span>' : ''}
-          </label>
-          <input
-            type="color"
-            id="${fieldId}"
-            class="repeater-control__field-color"
-            value="${value || '#000000'}"
-            data-item-index="${itemIndex}"
-            data-field-name="${field.field}"
-            ${required}
-          />
-          ${hasError ? `<div class="repeater-control__field-error">${errors[0]}</div>` : ''}
-        </div>
-      `;
-
-      case 'checkbox':
-        return `
-        <div class="repeater-control__field ${hasError ? CSS_CLASSES.ERROR : ''}">
-          <label class="repeater-control__field-checkbox">
-            <input
-              type="checkbox"
-              id="${fieldId}"
-              data-item-index="${itemIndex}"
-              data-field-name="${field.field}"
-              ${value ? 'checked' : ''}
-            />
-            <span class="repeater-control__field-checkbox-label">${field.label}</span>
-          </label>
-        </div>
-      `;
-
-      case 'url':
-      case 'email':
-        return `
-        <div class="repeater-control__field ${hasError ? CSS_CLASSES.ERROR : ''}">
-          <label for="${fieldId}" class="repeater-control__field-label">
-            ${field.label}
-            ${required ? '<span class="required">*</span>' : ''}
-          </label>
-          <input
-            type="${field.type}"
-            id="${fieldId}"
-            class="repeater-control__field-input ${errorClass}"
-            placeholder="${field.placeholder || ''}"
-            value="${value || ''}"
-            data-item-index="${itemIndex}"
-            data-field-name="${field.field}"
-            ${required}
-          />
-          ${hasError ? `<div class="repeater-control__field-error">${errors[0]}</div>` : ''}
-        </div>
-      `;
-
-      case 'image':
-        return this.generateImageFieldHTML(
-          field,
-          itemIndex,
-          value,
-          fieldId,
-          required,
-          hasError,
-          errors
-        );
-
-      default: // text
-        return `
-        <div class="repeater-control__field ${hasError ? CSS_CLASSES.ERROR : ''}">
-          <label for="${fieldId}" class="repeater-control__field-label">
-            ${field.label}
-            ${required ? '<span class="required">*</span>' : ''}
-          </label>
-          <input
-            type="text"
-            id="${fieldId}"
-            class="repeater-control__field-input ${errorClass}"
-            placeholder="${field.placeholder || ''}"
-            value="${value || ''}"
-            data-item-index="${itemIndex}"
-            data-field-name="${field.field}"
-            ${required}
-          />
-          ${hasError ? `<div class="repeater-control__field-error">${errors[0]}</div>` : ''}
-        </div>
-      `;
+    // Используем стандартные классы из form-renderers
+    // Стили применяются через вложенность в SCSS (.repeater-control__item-fields .block-builder-form-group)
+    let inputClass = CSS_CLASSES.FORM_CONTROL;
+    if (hasError) {
+      inputClass += ` ${CSS_CLASSES.ERROR}`;
     }
+
+    // Создаем контекст для рендеринга
+    const context: IRenderContext = {
+      containerClass: hasError
+        ? `${CSS_CLASSES.FORM_GROUP} ${CSS_CLASSES.ERROR}`
+        : CSS_CLASSES.FORM_GROUP,
+      labelClass: 'block-builder-form-label',
+      inputClass: inputClass,
+      checkboxContainerClass: 'block-builder-form-checkbox',
+      checkboxLabelClass: 'block-builder-form-checkbox-label',
+      checkboxInputClass: 'block-builder-form-checkbox-input',
+      fieldNamePath: fieldNamePath,
+      showErrors: hasError,
+      errors: errors,
+      inputDataAttributes: {
+        'item-index': String(itemIndex),
+        'field-name': field.field,
+      },
+    };
+
+    // Для image полей добавляем специальные data-атрибуты
+    if (field.type === 'image') {
+      context.containerDataAttributes = {
+        'field-name': fieldNamePath,
+        'repeater-field': this.fieldName,
+        'repeater-index': String(itemIndex),
+        'repeater-item-field': field.field,
+      };
+      context.inputDataAttributes = {
+        'item-index': String(itemIndex),
+        'field-name': field.field,
+        'repeater-field-name': this.fieldName,
+        'item-field-name': field.field,
+        'repeater-field': this.fieldName,
+        'repeater-index': String(itemIndex),
+      };
+    }
+
+    // Получаем рендерер для типа поля
+    const renderer = this.rendererFactory.getRenderer(field.type);
+
+    // Рендерим поле с помощью рендерера, передавая контекст
+    return renderer.render(fieldId, formFieldConfig, value, required, context);
   }
 
   private escapeHtml(text: string): string {
@@ -354,88 +257,28 @@ export class RepeaterControlRenderer {
     return div.innerHTML;
   }
 
-  private generateImageFieldHTML(
-    field: IRepeaterItemFieldConfig,
-    itemIndex: number,
-    value: any,
-    fieldId: string,
-    required: string,
-    hasError: boolean,
-    errors: string[]
-  ): string {
-    const getImageUrl = (val: any): string => {
-      if (!val) {
-        return '';
-      }
-      if (typeof val === 'string') {
-        return val;
-      }
-      if (typeof val === 'object' && val !== null) {
-        return val.src || val.url || '';
-      }
-      return '';
+  /**
+   * Преобразует IRepeaterItemFieldConfig в IFormFieldConfig для использования с рендерерами
+   * Поддерживает расширенные свойства через приведение типов (например, imageUploadConfig)
+   */
+  private convertToFormFieldConfig(field: IRepeaterItemFieldConfig): IFormFieldConfig {
+    const baseConfig: IFormFieldConfig = {
+      field: field.field,
+      label: field.label,
+      type: field.type,
+      placeholder: field.placeholder,
+      defaultValue: field.defaultValue,
+      options: field.options,
+      rules: field.rules,
     };
 
-    const imageUrl = getImageUrl(value);
-    const hasImage = !!imageUrl;
+    // Поддержка imageUploadConfig для полей изображений (расширенное свойство)
+    const extendedField = field as IRepeaterItemFieldConfig & { imageUploadConfig?: any };
+    if (field.type === 'image' && extendedField.imageUploadConfig) {
+      baseConfig.imageUploadConfig = extendedField.imageUploadConfig;
+    }
 
-    const config = (field as any).imageUploadConfig || {};
-    const uploadUrl = config.uploadUrl || '';
-    const maxFileSize = config.maxFileSize || 10 * 1024 * 1024;
-    const fileParamName = config.fileParamName || 'file';
-
-    const configJson = JSON.stringify({
-      uploadUrl,
-      fileParamName,
-      maxFileSize,
-      uploadHeaders: config.uploadHeaders || {},
-      responseMapper: config.responseMapper ? 'CUSTOM' : null,
-      onUploadError: config.onUploadError ? 'CUSTOM' : null,
-    }).replaceAll('"', '&quot;');
-
-    const escapedLabel = this.escapeHtml(field.label);
-    const errorClass = hasError ? CSS_CLASSES.ERROR : '';
-    const fieldNamePath = `${this.fieldName}[${itemIndex}].${field.field}`;
-
-    return `
-      <div class="repeater-control__field image-upload-field ${errorClass}" data-field-name="${fieldNamePath}" data-repeater-field="${this.fieldName}" data-repeater-index="${itemIndex}" data-repeater-item-field="${field.field}">
-        <label for="${fieldId}" class="repeater-control__field-label">
-          ${escapedLabel} ${required ? '<span class="required">*</span>' : ''}
-        </label>
-
-        <!-- Preview изображения -->
-        <div class="image-upload-field__preview${hasImage ? '' : ' bb-hidden'}">
-          <img src="${this.escapeHtml(imageUrl)}" alt="${escapedLabel}" class="image-upload-field__preview-img" />
-          <button type="button" class="image-upload-field__preview-clear" data-item-index="${itemIndex}" data-field-name="${field.field}" data-repeater-field="${this.fieldName}" title="Удалить изображение">×</button>
-        </div>
-
-        <!-- Поле загрузки файла -->
-        <div class="image-upload-field__file">
-          <input
-            type="file"
-            id="${fieldId}"
-            name="${fieldNamePath}"
-            accept="image/*"
-            class="image-upload-field__file-input"
-            data-config='${configJson}'
-            data-item-index="${itemIndex}"
-            data-field-name="${field.field}"
-            data-repeater-field-name="${this.fieldName}"
-          />
-          <label for="${fieldId}" class="image-upload-field__file-label">
-            <span class="image-upload-field__label-text">${hasImage ? 'Изменить файл' : 'Выберите изображение'}</span>
-            <span class="image-upload-field__loading-text bb-hidden">⏳ Загрузка...</span>
-          </label>
-          <span class="image-upload-field__error bb-hidden"></span>
-        </div>
-
-        <!-- Сообщение об ошибке валидации -->
-        <div class="image-upload-field__error${hasError ? '' : ' bb-hidden'}">${hasError ? this.escapeHtml(errors[0]) : ''}</div>
-
-        <!-- Hidden input для хранения значения -->
-        <input type="hidden" name="${fieldNamePath}" value="${typeof value === 'object' && value !== null ? JSON.stringify(value).replaceAll('"', '&quot;') : this.escapeHtml(value || '')}" data-image-value="true" data-item-index="${itemIndex}" data-field-name="${field.field}" data-repeater-field-name="${this.fieldName}" />
-      </div>
-    `;
+    return baseConfig;
   }
 
   private generateItemHTML(item: Record<string, any>, index: number): string {

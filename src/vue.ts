@@ -1,8 +1,3 @@
-/**
- * Vue3 компоненты для BlockBuilder
- * Используйте этот модуль если работаете с Vue3
- */
-
 export type { IBlockBuilderFactoryDependencies } from './BlockBuilderFactory';
 export { BlockBuilderFactory } from './BlockBuilderFactory';
 export * from './core/ports/CustomFieldRenderer';

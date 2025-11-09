@@ -283,7 +283,7 @@ export class ApiSelectControlRenderer {
           this.searchQuery = selectedItem.name;
         }
       }
-    } catch (error) {
+    } catch {
       // Игнорируем ошибки инициализации
     } finally {
       this.loading = false;
@@ -629,7 +629,7 @@ export class ApiSelectControlRenderer {
       const newToggleButton = toggleButton.cloneNode(true) as HTMLElement;
       toggleButton.parentNode?.replaceChild(newToggleButton, toggleButton);
 
-      newToggleButton.addEventListener('click', (e) => {
+      newToggleButton.addEventListener('click', e => {
         e.stopPropagation();
         this.toggleDropdown();
       });

@@ -6,6 +6,22 @@
 и проект следует [Semantic Versioning](https://semver.org/lang/ru/).
 
 
+## [1.0.22] - 2025-11-09
+
+### Добавлено
+- **Vue form-fields**: Добавлен каталог `src/ui/components/form-fields/` с базовыми Vue-компонентами полей (`TextField`, `TextareaField`, `NumberField`, `ColorField`, `SelectField`, `CheckboxField`, `RadioField`) и универсальным `FormField` для повторного использования UI-логики.
+- **IRenderContext**: Новый интерфейс `IRenderContext`, передающий классы, data-атрибуты и состояние ошибок в рендереры форм без постобработки HTML.
+
+### Изменено
+- **BlockBuilder.vue и RepeaterControl.vue**: Формы переписаны на `FormField`, устранено дублирование шаблонов, унифицированы ошибки и стили.
+- **RepeaterControlRenderer и form-renderers**: Рендереры обновлены для работы с `IRenderContext`; удалены строковые замены, добавлена передача контекста и спец-атрибутов для repeater и image полей.
+- **ApiSelectControlRenderer, BlockUIController, EventDelegation**: Адаптированы к новой архитектуре, улучшено управление обработчиками и состояниями UI.
+- **Стили repeater**: Унифицированы с общими классами форм, настроена поддержка новых компонентов.
+- **package.json, index.ts, core.ts, vue.ts**: Обновлены экспорты и точки входа для новых компонентов и типов.
+
+### Удалено
+- **utils/validation.ts**: Удалён устаревший модуль валидации; функциональность перенесена в актуальные сервисы и компоненты.
+
 ## [1.0.21] - 2025-11-08
 
 ### Добавлено

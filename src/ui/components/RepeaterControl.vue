@@ -59,109 +59,36 @@
         </div>
 
         <div v-if="!collapsedItems[item._id]" class="repeater-control__item-fields">
-          <div
+          <FormField
             v-for="field in fields"
             :key="field.field"
-            class="repeater-control__field"
-            :class="{ [CSS_CLASSES.ERROR]: hasFieldError(index, field.field) }"
+            :field="field"
+            :field-id="getFieldId(item._id, field.field)"
+            :model-value="item[field.field]"
+            :required="isFieldRequired(field)"
+            :error="hasFieldError(index, field.field) ? getFieldErrors(index, field.field)[0] : ''"
+            :container-class="
+              hasFieldError(index, field.field)
+                ? `${CSS_CLASSES.FORM_GROUP} ${CSS_CLASSES.ERROR}`
+                : CSS_CLASSES.FORM_GROUP
+            "
+            @update:model-value="updateItemField(index, field.field, $event)"
           >
-            <label :for="getFieldId(item._id, field.field)" class="repeater-control__field-label">
-              {{ field.label }}
-              <span v-if="isFieldRequired(field)" class="required">*</span>
-            </label>
-
-            <input
-              v-if="field.type === 'text' || field.type === 'url' || field.type === 'email'"
-              :id="getFieldId(item._id, field.field)"
-              v-model="item[field.field]"
-              :type="field.type"
-              :placeholder="field.placeholder || ''"
-              class="repeater-control__field-input"
-              :class="{ [CSS_CLASSES.ERROR]: hasFieldError(index, field.field) }"
-              :data-field-name="field.field"
-              @input="onFieldChange"
-            />
-
-            <input
-              v-else-if="field.type === 'number'"
-              :id="getFieldId(item._id, field.field)"
-              v-model.number="item[field.field]"
-              type="number"
-              :placeholder="field.placeholder || ''"
-              class="repeater-control__field-input"
-              :class="{ [CSS_CLASSES.ERROR]: hasFieldError(index, field.field) }"
-              :data-field-name="field.field"
-              @input="onFieldChange"
-            />
-
-            <textarea
-              v-else-if="field.type === 'textarea'"
-              :id="getFieldId(item._id, field.field)"
-              v-model="item[field.field]"
-              :placeholder="field.placeholder || ''"
-              class="repeater-control__field-textarea"
-              :class="{ [CSS_CLASSES.ERROR]: hasFieldError(index, field.field) }"
-              rows="3"
-              :data-field-name="field.field"
-              @input="onFieldChange"
-            />
-
-            <select
-              v-else-if="field.type === 'select'"
-              :id="getFieldId(item._id, field.field)"
-              v-model="item[field.field]"
-              class="repeater-control__field-select"
-              :class="{ [CSS_CLASSES.ERROR]: hasFieldError(index, field.field) }"
-              :data-field-name="field.field"
-              @change="onFieldChange"
-            >
-              <option value="">Выберите...</option>
-              <option v-for="option in field.options" :key="option.value" :value="option.value">
-                {{ option.label }}
-              </option>
-            </select>
-
-            <label v-else-if="field.type === 'checkbox'" class="repeater-control__field-checkbox">
-              <input
-                :id="getFieldId(item._id, field.field)"
-                v-model="item[field.field]"
-                type="checkbox"
-                :data-field-name="field.field"
-                @change="onFieldChange"
+            <template #default="{ field: slotField, modelValue: slotModelValue, error: slotError }">
+              <ImageUploadField
+                v-if="slotField.type === 'image'"
+                :model-value="slotModelValue"
+                :label="''"
+                :required="isFieldRequired(slotField)"
+                :error="slotError"
+                :image-upload-config="slotField.imageUploadConfig"
+                :data-repeater-field="fieldName"
+                :data-repeater-index="index"
+                :data-repeater-item-field="slotField.field"
+                @update:model-value="updateItemField(index, slotField.field, $event)"
               />
-              <span class="repeater-control__field-checkbox-label">{{ field.label }}</span>
-            </label>
-
-            <input
-              v-else-if="field.type === 'color'"
-              :id="getFieldId(item._id, field.field)"
-              v-model="item[field.field]"
-              type="color"
-              class="repeater-control__field-color"
-            />
-
-            <ImageUploadField
-              v-else-if="field.type === 'image'"
-              :model-value="item[field.field]"
-              :label="''"
-              :required="isFieldRequired(field)"
-              :error="
-                hasFieldError(index, field.field) ? getFieldErrors(index, field.field)[0] : ''
-              "
-              :image-upload-config="field.imageUploadConfig"
-              :data-repeater-field="fieldName"
-              :data-repeater-index="index"
-              :data-repeater-item-field="field.field"
-              @update:model-value="updateItemField(index, field.field, $event)"
-            />
-
-            <div
-              v-if="field.type !== 'image' && hasFieldError(index, field.field)"
-              class="repeater-control__field-error"
-            >
-              {{ getFieldErrors(index, field.field)[0] }}
-            </div>
-          </div>
+            </template>
+          </FormField>
         </div>
       </div>
     </div>
@@ -185,11 +112,13 @@
 import { computed, onMounted, ref, watch } from 'vue';
 
 import { CSS_CLASSES, UI_STRINGS } from '../../utils/constants';
+import { FormField } from './form-fields';
 import ImageUploadField from './ImageUploadField.vue';
 
 export default {
   name: 'RepeaterControl',
   components: {
+    FormField,
     ImageUploadField,
   },
 
@@ -363,10 +292,6 @@ export default {
       }
     };
 
-    const onFieldChange = () => {
-      emitUpdate();
-    };
-
     const updateItemField = (index, fieldName, value) => {
       items.value[index][fieldName] = value;
       emitUpdate();
@@ -458,7 +383,6 @@ export default {
       removeItem,
       moveItem,
       toggleCollapse,
-      onFieldChange,
       getFieldId,
       isFieldRequired,
       getItemCountLabel,

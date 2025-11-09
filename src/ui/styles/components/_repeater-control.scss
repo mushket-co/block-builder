@@ -139,125 +139,42 @@
     display: grid;
     grid-template-columns: 1fr;
     gap: 12px;
-  }
 
-  &__field {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  &__field-label {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--bb-text-secondary);
-    display: flex;
-    align-items: center;
-    gap: 4px;
-
-    .required {
-      color: var(--bb-color-danger);
-      font-weight: bold;
-    }
-  }
-
-  &__field-input,
-  &__field-textarea,
-  &__field-select {
-    width: 100%;
-    padding: 8px 12px;
-    border: 1px solid var(--bb-border-color-dashed);
-    border-radius: 4px;
-    font-size: 14px;
-    font-family: inherit;
-    color: var(--bb-text-secondary);
-    background: var(--bb-bg-primary);
-    transition: all 0.2s ease;
-
-    &:focus {
-      outline: none;
-      border-color: var(--bb-color-primary);
-      box-shadow: 0 0 0 3px var(--bb-color-primary-hover);
+    .block-builder-form-control {
+      // Более компактный padding для repeater
+      padding: 8px 12px;
     }
 
-    &::placeholder {
-      color: var(--bb-text-muted);
-    }
+    // Стили для ошибок в контексте repeater
+    .block-builder-form-errors {
+      margin-top: 4px;
 
-    &:disabled {
-      background: var(--bb-bg-tertiary);
-      cursor: not-allowed;
-    }
+      .block-builder-error {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 12px;
 
-    // Стили для ошибок валидации
-    &.block-builder-error {
-      border-color: var(--bb-color-danger);
-      background-color: var(--bb-color-danger-bg);
-
-      &:focus {
-        border-color: var(--bb-color-danger);
-        box-shadow: 0 0 0 3px var(--bb-color-error-shadow);
+        &::before {
+          content: '⚠';
+          font-size: 14px;
+        }
       }
     }
-  }
 
-  // Сообщение об ошибке валидации
-  &__field-error {
-    font-size: 12px;
-    color: var(--bb-color-danger);
-    margin-top: 4px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
+    // Стили для image полей в repeater
+    .image-upload-field {
+      // Label для image полей в repeater должен использовать стандартные стили
+      .block-builder-form-label {
+        font-size: 13px;
+        color: var(--bb-text-secondary);
+      }
 
-    &::before {
-      content: '⚠';
-      font-size: 14px;
+      // Ошибки валидации для image полей
+      .block-builder-form-errors {
+        margin-top: 4px;
+      }
     }
-  }
-
-  &__field-textarea {
-    resize: vertical;
-    min-height: 60px;
-  }
-
-  &__field-color {
-    width: 60px;
-    height: 40px;
-    padding: 4px;
-    border: 1px solid var(--bb-border-color-dashed);
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-
-    &:hover {
-      border-color: var(--bb-border-color);
-    }
-
-    &:focus {
-      outline: none;
-      border-color: var(--bb-color-primary);
-      box-shadow: 0 0 0 3px var(--bb-color-primary-hover);
-    }
-  }
-
-  &__field-checkbox {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-
-    input[type="checkbox"] {
-      width: 18px;
-      height: 18px;
-      cursor: pointer;
-    }
-  }
-
-  &__field-checkbox-label {
-    font-size: 14px;
-    color: var(--bb-text-secondary);
-    user-select: none;
   }
 
   &__image-upload {

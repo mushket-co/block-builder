@@ -1,10 +1,3 @@
-/**
- * Block Builder - Core API Only (without UI)
- *
- * Этот entry point предоставляет только API без UI компонентов
- * Идеально для тех, кто хочет создать свой UI
- */
-
 export type { IBlockBuilderOptions } from './BlockBuilderFacade';
 export { BlockBuilderFacade as BlockBuilder } from './BlockBuilderFacade';
 export type { IBlockRepository } from './core/ports/BlockRepository';
