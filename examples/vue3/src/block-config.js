@@ -251,14 +251,6 @@ export const blockConfigs = {
           { type: 'max', value: 50, message: 'Максимум: 50' }
         ],
         defaultValue: 4
-      },
-      {
-        field: 'padding',
-        label: 'Отступы',
-        type: 'text',
-        placeholder: '8px 16px',
-        rules: [{ type: 'required', message: 'Отступы обязательны' }],
-        defaultValue: '8px 16px'
       }
     ],
     spacingOptions: {
@@ -489,6 +481,37 @@ export const blockConfigs = {
               placeholder: 'https://example.com',
               rules: [],
               defaultValue: 'https://example.com'
+            },
+            {
+              field: 'featuredNews',
+              label: 'Связанная новость',
+              type: 'api-select',
+              rules: [],
+              defaultValue: null,
+              apiSelectConfig: {
+                url: '/api/news',
+                searchParam: 'search',
+                pageParam: 'page',
+                limitParam: 'limit',
+                placeholder: 'Выберите новость',
+                noResultsText: 'Ничего не найдено',
+                loadingText: 'Загрузка...',
+                errorText: 'Ошибка загрузки новостей',
+                limit: 10
+              }
+            },
+            {
+              field: 'customContent',
+              label: 'Дополнительное содержимое',
+              type: 'custom',
+              rules: [],
+              defaultValue: '',
+              customFieldConfig: {
+                rendererId: 'wysiwyg-editor',
+                options: {
+                  mode: 'simple'
+                }
+              }
             }
           ]
         }
@@ -1006,7 +1029,8 @@ export const blockConfigs = {
             textColor: '#333333',
             meetingPlace: 'Конференц-зал "Альфа", БЦ "Столица"',
             meetingTime: '15:00, 25 октября 2024',
-            participantsCount: '50'
+            participantsCount: '50',
+            relatedArticle: null
           },
           {
             title: 'Стандарт версия',
@@ -1023,7 +1047,8 @@ export const blockConfigs = {
             textColor: '#212529',
             meetingPlace: 'Офис компании, 3 этаж',
             meetingTime: '10:30, 26 октября 2024',
-            participantsCount: '25'
+            participantsCount: '25',
+            relatedArticle: null
           },
           {
             title: 'Корпоративное решение',
@@ -1040,7 +1065,8 @@ export const blockConfigs = {
             textColor: '#004085',
             meetingPlace: 'Гостиница "Метрополь", зал "Премьер"',
             meetingTime: '14:00, 27 октября 2024',
-            participantsCount: '100'
+            participantsCount: '100',
+            relatedArticle: null
           }
         ],
         repeaterConfig: {
@@ -1077,10 +1103,15 @@ export const blockConfigs = {
             {
               field: 'detailedText',
               label: 'Детальное описание',
-              type: 'textarea',
-              placeholder: 'Подробное описание со всеми деталями...',
+              type: 'custom',
               rules: [],
-              defaultValue: ''
+              defaultValue: '',
+              customFieldConfig: {
+                rendererId: 'wysiwyg-editor',
+                options: {
+                  mode: 'default'
+                }
+              }
             },
             {
               field: 'link',
@@ -1174,7 +1205,26 @@ export const blockConfigs = {
                 { type: 'min', value: 1, message: 'Минимум 1 участник' }
               ],
               defaultValue: ''
-            }
+            },
+            {
+              field: 'relatedArticle',
+              label: 'Связанная статья',
+              type: 'api-select',
+              rules: [],
+              defaultValue: null,
+              apiSelectConfig: {
+                url: '/api/articles',
+                searchParam: 'search',
+                pageParam: 'page',
+                limitParam: 'limit',
+                placeholder: 'Выберите статью',
+                noResultsText: 'Статьи не найдены',
+                loadingText: 'Загрузка статей...',
+                errorText: 'Ошибка загрузки статей',
+                limit: 10,
+                multiple: false
+              }
+            },
           ]
         }
       },
@@ -1519,13 +1569,6 @@ export const blockConfigs = {
         label: 'Цвет фона',
         type: 'color',
         defaultValue: '#f0f0f0'
-      },
-      {
-        field: 'padding',
-        label: 'Отступы',
-        type: 'text',
-        placeholder: '12px 24px',
-        defaultValue: '12px 24px'
       }
     ]
   }

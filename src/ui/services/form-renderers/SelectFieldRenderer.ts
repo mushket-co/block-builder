@@ -1,9 +1,11 @@
 import { IFormFieldConfig } from '../../../core/types/form';
 import { BaseFieldRenderer } from './BaseFieldRenderer';
 import { IRenderContext } from './IRenderContext';
+import { SelectControlRenderer, ISelectControlOptions } from '../../services/SelectControlRenderer';
 
 export class SelectFieldRenderer extends BaseFieldRenderer {
   readonly fieldType = 'select';
+  private selectRenderer?: SelectControlRenderer;
 
   protected renderInput(
     fieldId: string,
@@ -12,27 +14,58 @@ export class SelectFieldRenderer extends BaseFieldRenderer {
     required: string,
     context?: IRenderContext
   ): string {
-    const options = field.options || [];
-    const inputClass = this.getInputClass(context);
     const fieldName = this.getFieldName(context, field);
-    const dataAttributes = this.getInputDataAttributes(context);
+    const placeholder = field.placeholder || 'Выберите значение';
 
-    const optionsHTML = options
-      .map(option => {
-        const escapedLabel = this.escapeHtml(option.label);
-        const escapedValue =
-          typeof option.value === 'string' ? this.escapeHtml(option.value) : option.value;
-        const selected = option.value === value ? 'selected' : '';
+    return `<div class="select-placeholder" data-field-name="${fieldName}" data-field-id="${fieldId}"></div>`;
+  }
 
-        return `<option value="${escapedValue}" ${selected}>${escapedLabel}</option>`;
-      })
-      .join('');
+  async renderControl(
+    container: HTMLElement,
+    field: IFormFieldConfig,
+    value: any,
+    context?: IRenderContext
+  ): Promise<void> {
+    const fieldName = this.getFieldName(context, field);
+    const placeholder = container.querySelector('.select-placeholder') as HTMLElement;
 
-    return `
-      <select id="${fieldId}" name="${fieldName}" class="${inputClass}" ${required} ${dataAttributes}>
-        <option value="">Выберите...</option>
-        ${optionsHTML}
-      </select>
-    `;
+    if (!placeholder) {
+      return;
+    }
+
+    const options = (field.options || []).map(opt => ({
+      value: opt.value,
+      label: opt.label,
+      disabled: opt.disabled || false,
+    }));
+
+    const rules = field.rules || [];
+    const errors = context?.errors || {};
+
+    const selectOptions: ISelectControlOptions = {
+      fieldName,
+      label: field.label || '',
+      rules,
+      errors,
+      value: value ?? null,
+      multiple: field.multiple || false,
+      placeholder: field.placeholder || 'Выберите значение',
+      options,
+      onChange: (newValue: string | number | (string | number)[] | null) => {
+        if (context?.onFieldChange) {
+          context.onFieldChange(fieldName, newValue);
+        }
+      },
+    };
+
+    this.selectRenderer = new SelectControlRenderer(selectOptions);
+    await this.selectRenderer.init(placeholder);
+  }
+
+  destroy(): void {
+    if (this.selectRenderer) {
+      this.selectRenderer.destroy();
+      this.selectRenderer = undefined;
+    }
   }
 }

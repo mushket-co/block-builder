@@ -3,12 +3,14 @@
     {{ label }}
     <span v-if="required" class="required">*</span>
   </label>
-  <select :id="fieldId" :value="modelValue" :class="inputClass" @change="handleChange">
-    <option value="">{{ placeholder || 'Выберите...' }}</option>
-    <option v-for="option in options" :key="option.value" :value="option.value">
-      {{ option.label }}
-    </option>
-  </select>
+  <CustomDropdown
+    :model-value="modelValue"
+    :options="dropdownOptions"
+    :placeholder="placeholder || 'Выберите...'"
+    :clearable="isClearable"
+    :invalid="showError"
+    @update:modelValue="handleUpdate"
+  />
   <div v-if="showError && error" class="block-builder-form-errors">
     <span :class="CSS_CLASSES.ERROR">{{ error }}</span>
   </div>
@@ -18,10 +20,12 @@
 import { computed } from 'vue';
 
 import { CSS_CLASSES } from '../../../utils/constants';
+import CustomDropdown from '../CustomDropdown.vue';
 
-interface Option {
+interface IOption {
   value: string | number;
   label: string;
+  disabled?: boolean;
 }
 
 interface Props {
@@ -41,7 +45,7 @@ const props = withDefaults(defineProps<Props>(), {
   placeholder: '',
   required: false,
   error: '',
-  options: () => [],
+  options: () => [] as IOption[],
   showLabel: true,
 });
 
@@ -49,15 +53,32 @@ const emit = defineEmits<{
   'update:modelValue': [value: string | number];
 }>();
 
-const inputClass = computed(() => {
-  const baseClass = CSS_CLASSES.FORM_CONTROL;
-  return props.error ? `${baseClass} ${CSS_CLASSES.ERROR}` : baseClass;
+type TDropdownValue = string | number | (string | number)[] | null;
+
+const dropdownOptions = computed(() => {
+  return props.options.map(option => ({
+    value: option.value,
+    label: option.label,
+    disabled: option.disabled ?? false,
+  }));
 });
 
 const showError = computed(() => !!props.error);
 
-const handleChange = (event: Event) => {
-  const target = event.target as HTMLSelectElement;
-  emit('update:modelValue', target.value);
+const isClearable = computed(() => !props.required);
+
+const handleUpdate = (value: TDropdownValue) => {
+  if (Array.isArray(value)) {
+    const [first] = value;
+    emit('update:modelValue', (first ?? '') as string | number);
+    return;
+  }
+
+  if (value === null || value === undefined) {
+    emit('update:modelValue', '' as string);
+    return;
+  }
+
+  emit('update:modelValue', value as string | number);
 };
 </script>

@@ -65,8 +65,22 @@
           </p>
 
           <!-- Детальный текст -->
-          <div v-if="card.detailedText" class="rich-card__detailed-text">
-            {{ card.detailedText }}
+          <div
+            v-if="card.detailedText"
+            class="rich-card__detailed-text"
+            v-html="card.detailedText"
+          />
+
+          <!-- Связанная статья -->
+          <div v-if="card.relatedArticle" class="rich-card__related-article">
+            <span class="rich-card__related-label">📰 Связанная статья:</span>
+            <span class="rich-card__related-value">
+              {{
+                typeof card.relatedArticle === 'object' && card.relatedArticle !== null
+                  ? card.relatedArticle.name || card.relatedArticle.id
+                  : card.relatedArticle
+              }}
+            </span>
           </div>
 
           <!-- Информация о встрече -->
@@ -279,6 +293,34 @@ export default {
   line-height: 1.6;
   opacity: 0.75;
   margin-top: 8px;
+}
+
+.rich-card__detailed-text :deep(p) {
+  margin: 0 0 8px 0;
+}
+
+.rich-card__detailed-text :deep(p:last-child) {
+  margin-bottom: 0;
+}
+
+.rich-card__related-article {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  padding: 12px;
+  background-color: rgba(102, 126, 234, 0.1);
+  border-radius: 6px;
+  margin-top: 12px;
+}
+
+.rich-card__related-label {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.rich-card__related-value {
+  opacity: 0.9;
 }
 
 .rich-card__meeting-info {

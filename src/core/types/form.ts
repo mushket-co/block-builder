@@ -44,8 +44,12 @@ export interface IRepeaterItemFieldConfig {
   type: Exclude<TFieldType, 'repeater' | 'spacing'>;
   placeholder?: string;
   defaultValue?: unknown;
-  options?: { value: string; label: string }[];
+  options?: { value: string | number; label: string; disabled?: boolean }[];
   rules?: IValidationRule[];
+  multiple?: boolean;
+  apiSelectConfig?: IApiSelectConfig;
+  customFieldConfig?: ICustomFieldConfig;
+  imageUploadConfig?: IImageUploadConfig;
 }
 export interface IRepeaterFieldConfig {
   fields: IRepeaterItemFieldConfig[];
@@ -114,8 +118,9 @@ export interface IFormFieldConfig {
   type: TFieldType;
   placeholder?: string;
   defaultValue?: unknown;
-  options?: { value: string; label: string }[];
+  options?: { value: string | number; label: string; disabled?: boolean }[];
   rules?: IValidationRule[];
+  multiple?: boolean;
   spacingConfig?: ISpacingFieldConfig;
   repeaterConfig?: IRepeaterFieldConfig;
   apiSelectConfig?: IApiSelectConfig;

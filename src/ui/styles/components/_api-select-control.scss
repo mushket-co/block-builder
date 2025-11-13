@@ -10,6 +10,18 @@
   width: 100%;
   color: var(--bb-text-primary);
 
+  &__dropdown-control {
+    width: 100%;
+  }
+
+  &__dropdown-control .bb-dropdown__control {
+    padding: 0;
+    cursor: text;
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent;
+  }
+
   &__label {
     display: block;
     font-size: 14px;
@@ -30,12 +42,28 @@
     position: relative;
     display: flex;
     align-items: center;
+    width: 100%;
+    border: 1px solid var(--bb-border-color);
+    border-radius: 6px;
+    background-color: var(--bb-bg-primary);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+    &:focus-within {
+      border-color: var(--bb-color-primary);
+      box-shadow: 0 0 0 2px var(--bb-color-primary-hover);
+    }
+
+    &--open {
+      border-color: var(--bb-color-primary);
+      box-shadow: 0 0 0 2px var(--bb-color-primary-hover);
+    }
   }
 
   &__input {
+    height: 100%;
     width: 100%;
     padding: 8px 72px 8px 12px;
-    border: 1px solid var(--bb-border-color);
+    border: unset !important;
     border-radius: 6px;
     font-size: 14px;
     color: var(--bb-text-primary);
@@ -75,7 +103,6 @@
     }
   }
 
-  // Анимация для лоадера
   @keyframes pulse {
     0%, 100% {
       opacity: 1;
@@ -107,19 +134,16 @@
   }
 
   &__dropdown {
-    position: absolute;
-    top: calc(100% + 4px);
-    left: 0;
-    right: 0;
+    position: fixed;
     background: var(--bb-bg-primary);
     border: 1px solid var(--bb-border-color);
     border-radius: 6px;
     max-height: 300px;
+    min-width: 200px;
     overflow-y: auto;
     box-shadow: var(--bb-shadow-md);
-    z-index: 1000;
+    z-index: 10000;
 
-    /* Кастомный скроллбар */
     &::-webkit-scrollbar {
       width: 8px;
     }

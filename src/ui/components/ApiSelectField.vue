@@ -5,62 +5,65 @@
       <span v-if="isRequired" class="bb-api-select__required">*</span>
     </label>
 
-    <div ref="wrapperRef" class="bb-api-select__wrapper">
-      <div class="bb-api-select__search">
-        <input
-          ref="searchInput"
-          v-model="searchQuery"
-          type="text"
-          class="bb-api-select__input"
-          :placeholder="placeholder"
-          @click="openDropdown"
-          @input="onSearchInput"
-        />
-        <span v-if="loading" class="bb-api-select__loader">⏳</span>
-        <span v-else-if="hasValue" class="bb-api-select__clear" @click.stop="clearSelection"
-          >✕</span
-        >
-        <button
-          type="button"
-          class="bb-api-select__toggle"
-          :class="{ 'bb-api-select__toggle--open': isDropdownOpen }"
-          @click="toggleDropdown"
-        >
-          ▼
-        </button>
-      </div>
+    <CustomDropdown
+      ref="dropdownRef"
+      class="bb-api-select__dropdown-control"
+      :model-value="props.modelValue"
+      :options="dropdownOptions"
+      :multiple="isMultiple"
+      :placeholder="placeholder"
+      :loading="loading"
+      :loading-text="loadingText"
+      :empty-text="noResultsText"
+      :error-text="error"
+      :clearable="hasValue"
+      :invalid="!!validationError"
+      :close-on-select="!isMultiple"
+      :chip-display-limit="0"
+      @open="handleDropdownOpen"
+      @close="handleDropdownClose"
+      @update:modelValue="onValueUpdate"
+      @scroll-bottom="handleScrollBottom"
+    >
+      <template #trigger="{ state, actions }">
+        <div class="bb-api-select__search" :class="{ 'bb-api-select__search--open': state.isOpen }">
+          <input
+            ref="searchInput"
+            v-model="searchQuery"
+            type="text"
+            class="bb-api-select__input"
+            :placeholder="effectivePlaceholder(state.selectedOptions)"
+            @focus="onSearchFocus(actions.open)"
+            @click.stop="onSearchClick(actions.open)"
+            @input="onSearchInput"
+          />
 
-      <div v-if="isDropdownOpen" class="bb-api-select__dropdown">
-        <div v-if="loading" class="bb-api-select__message">
-          {{ loadingText }}
-        </div>
-
-        <div v-else-if="error" class="bb-api-select__message bb-api-select__message--error">
-          {{ error }}
-        </div>
-
-        <div v-else-if="items.length > 0" class="bb-api-select__list">
-          <div
-            v-for="item in items"
-            :key="item.id"
-            class="bb-api-select__item"
-            :class="{ 'bb-api-select__item--selected': isSelected(item.id) }"
-            @click="selectItem(item)"
+          <span v-if="loading" class="bb-api-select__loader">⏳</span>
+          <span
+            v-else-if="hasValue"
+            class="bb-api-select__clear"
+            @click.stop="() => handleClear(actions.clear)"
           >
-            <span class="bb-api-select__item-name">{{ item.name }}</span>
-            <span v-if="isSelected(item.id)" class="bb-api-select__item-check">✓</span>
-          </div>
+            ✕
+          </span>
 
-          <div v-if="hasMore" class="bb-api-select__load-more" @click="loadMore">
-            Загрузить еще...
-          </div>
+          <button
+            type="button"
+            class="bb-api-select__toggle"
+            :class="{ 'bb-api-select__toggle--open': state.isOpen }"
+            @click.stop="actions.toggle"
+          >
+            ▼
+          </button>
         </div>
+      </template>
 
-        <div v-else class="bb-api-select__message">
-          {{ noResultsText }}
+      <template #after-options>
+        <div v-if="hasMore" class="bb-api-select__load-more" @click.stop="loadMore">
+          Загрузить еще...
         </div>
-      </div>
-    </div>
+      </template>
+    </CustomDropdown>
 
     <div v-if="isMultiple && selectedItems.length > 0" class="bb-api-select__selected">
       <div v-for="item in selectedItems" :key="item.id" class="bb-api-select__tag">
@@ -76,10 +79,22 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 import type { IApiRequestParams, IApiSelectItem, IFormFieldConfig } from '../../core/types/form';
 import type { ApiSelectUseCase } from '../../core/use-cases/ApiSelectUseCase';
+import CustomDropdown from './CustomDropdown.vue';
+
+type TDropdownValue = string | number | (string | number)[] | null;
+type TCustomDropdownExpose = {
+  open: () => void;
+  close: () => void;
+  toggle: () => void;
+  updatePosition: () => void;
+  saveScrollPosition: () => number;
+  restoreScrollPosition: (scrollTop: number) => void;
+  isOpen: { value: boolean };
+};
 
 interface IProps {
   config: IFormFieldConfig;
@@ -94,7 +109,7 @@ const emit = defineEmits<{
 }>();
 
 const searchInput = ref<HTMLInputElement | null>(null);
-const wrapperRef = ref<HTMLElement | null>(null);
+const dropdownRef = ref<TCustomDropdownExpose | null>(null);
 
 const searchQuery = ref('');
 const items = ref<IApiSelectItem[]>([]);
@@ -106,6 +121,8 @@ const currentPage = ref(1);
 const hasMore = ref(false);
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+const knownItems = new Map<string | number, IApiSelectItem>();
+const previousModelValue = ref<TDropdownValue>(props.modelValue);
 
 const apiSelectUseCase = props.apiSelectUseCase;
 
@@ -136,12 +153,43 @@ const hasValue = computed(() => {
   return props.modelValue !== null && props.modelValue !== undefined && props.modelValue !== '';
 });
 
-const isSelected = (id: string | number): boolean => {
+const dropdownOptions = computed(() => {
+  const map = new Map<string | number, IApiSelectItem>();
+  items.value.forEach(item => {
+    map.set(item.id, item);
+  });
+  selectedItems.value.forEach(item => {
+    if (!map.has(item.id)) {
+      map.set(item.id, item);
+    }
+  });
+
+  return Array.from(map.values()).map(item => ({
+    value: item.id,
+    label: item.name,
+  }));
+});
+
+const updateKnownSelections = (value: string | number | (string | number)[] | null) => {
+  const previousSelection = selectedItems.value;
+
   if (isMultiple.value) {
-    const value = props.modelValue as (string | number)[];
-    return Array.isArray(value) && value.includes(id);
+    const ids = new Set(Array.isArray(value) ? value : []);
+    selectedItems.value = Array.from(ids)
+      .map(id => knownItems.get(id) ?? previousSelection.find(item => item.id === id))
+      .filter((item): item is IApiSelectItem => Boolean(item));
+  } else if (
+    !Array.isArray(value) &&
+    value !== null &&
+    value !== undefined &&
+    value !== ''
+  ) {
+    const candidate =
+      knownItems.get(value) ?? previousSelection.find(item => item.id === value) ?? null;
+    selectedItems.value = candidate ? [candidate] : [];
+  } else {
+    selectedItems.value = [];
   }
-  return props.modelValue === id;
 };
 
 const fetchData = async (reset = false) => {
@@ -158,6 +206,8 @@ const fetchData = async (reset = false) => {
     currentPage.value = 1;
   }
 
+  const savedScrollTop = !reset && isDropdownOpen.value ? dropdownRef.value?.saveScrollPosition() ?? 0 : 0;
+
   loading.value = true;
   error.value = null;
 
@@ -171,8 +221,19 @@ const fetchData = async (reset = false) => {
     const response = await apiSelectUseCase.fetchItems(apiConfig.value, params);
 
     items.value = reset ? response.data : [...items.value, ...response.data];
+    response.data.forEach(item => {
+      knownItems.set(item.id, item);
+    });
+    updateKnownSelections(props.modelValue);
 
     hasMore.value = response.hasMore ?? false;
+    if (isDropdownOpen.value) {
+      await nextTick();
+      dropdownRef.value?.updatePosition();
+      if (savedScrollTop > 0) {
+        dropdownRef.value?.restoreScrollPosition(savedScrollTop);
+      }
+    }
   } catch (error_: any) {
     error.value = error_.message || errorText.value;
     items.value = [];
@@ -189,72 +250,41 @@ const onSearchInput = () => {
   debounceTimer = setTimeout(() => {
     fetchData(true).then(() => {
       if (!isDropdownOpen.value) {
-        isDropdownOpen.value = true;
+        dropdownRef.value?.open();
       }
     });
   }, debounceMs.value);
 };
 
-const openDropdown = () => {
-  if (!isDropdownOpen.value) {
-    isDropdownOpen.value = true;
-
-    if (!loading.value) {
-      fetchData(true);
-    }
-  }
-};
-
-const toggleDropdown = () => {
-  if (isDropdownOpen.value) {
-    closeDropdown();
-  } else {
-    openDropdown();
-  }
-};
-
-const closeDropdown = () => {
-  isDropdownOpen.value = false;
-
+const syncSearchQueryWithSelection = (value: string | number | (string | number)[] | null) => {
   if (isMultiple.value) {
     searchQuery.value = '';
-  } else if (selectedItems.value.length > 0) {
-    searchQuery.value = selectedItems.value[0].name;
-  } else {
-    searchQuery.value = '';
-  }
-};
-
-const handleClickOutside = (event: MouseEvent) => {
-  if (!isDropdownOpen.value) {
     return;
   }
 
-  const target = event.target as HTMLElement;
+  if (value === null || value === undefined || value === '') {
+    searchQuery.value = '';
+    return;
+  }
 
-  if (wrapperRef.value && !wrapperRef.value.contains(target)) {
-    closeDropdown();
+  const selectedItem =
+    selectedItems.value.find(item => item.id === value) ||
+    items.value.find(item => item.id === value);
+
+  searchQuery.value = selectedItem?.name ?? '';
+};
+
+const handleDropdownOpen = () => {
+  isDropdownOpen.value = true;
+
+  if (!loading.value) {
+    fetchData(true);
   }
 };
 
-const selectItem = (item: IApiSelectItem) => {
-  if (isMultiple.value) {
-    const currentValue = (props.modelValue as (string | number)[]) || [];
-
-    if (currentValue.includes(item.id)) {
-      const newValue = currentValue.filter(id => id !== item.id);
-      emit('update:modelValue', newValue);
-      selectedItems.value = selectedItems.value.filter(i => i.id !== item.id);
-    } else {
-      emit('update:modelValue', [...currentValue, item.id]);
-      selectedItems.value.push(item);
-    }
-  } else {
-    emit('update:modelValue', item.id);
-    selectedItems.value = [item];
-    searchQuery.value = item.name;
-    closeDropdown();
-  }
+const handleDropdownClose = () => {
+  isDropdownOpen.value = false;
+  syncSearchQueryWithSelection(props.modelValue);
 };
 
 const removeItem = (id: string | number) => {
@@ -266,20 +296,8 @@ const removeItem = (id: string | number) => {
   const newValue = currentValue.filter(itemId => itemId !== id);
   emit('update:modelValue', newValue);
   selectedItems.value = selectedItems.value.filter(item => item.id !== id);
-};
-
-const clearSelection = () => {
-  if (isMultiple.value) {
-    emit('update:modelValue', []);
-    selectedItems.value = [];
-    searchQuery.value = '';
-    fetchData(true); // Загрузка всех элементов без поиска
-  } else {
-    emit('update:modelValue', null);
-    selectedItems.value = [];
-    searchQuery.value = '';
-    fetchData(true); // Загрузка всех элементов без поиска
-  }
+  previousModelValue.value = cloneModelValue(newValue);
+  syncSearchQueryWithSelection(newValue);
 };
 
 const loadMore = () => {
@@ -287,18 +305,92 @@ const loadMore = () => {
     return;
   }
   currentPage.value += 1;
-  fetchData(false);
+  fetchData(false).then(() => {
+    dropdownRef.value?.updatePosition();
+  });
 };
+
+const handleScrollBottom = () => {
+  if (hasMore.value && !loading.value) {
+    loadMore();
+  }
+};
+
+const onValueUpdate = (value: TDropdownValue) => {
+  emit('update:modelValue', value);
+  updateKnownSelections(value);
+  syncSearchQueryWithSelection(value);
+  previousModelValue.value = cloneModelValue(value);
+};
+
+const handleClear = (clear: () => void) => {
+  clear();
+  fetchData(true);
+};
+
+const effectivePlaceholder = (selectedOptions: { label: string }[]) => {
+  if (!isMultiple.value && selectedOptions.length > 0 && !isDropdownOpen.value) {
+    return '';
+  }
+  return placeholder.value;
+};
+
+const onSearchFocus = (openDropdownSlot: () => Promise<void> | void) => {
+  openDropdownSlot();
+};
+
+const onSearchClick = (openDropdownSlot: () => Promise<void> | void) => {
+  openDropdownSlot();
+};
+
+const cloneModelValue = (value: TDropdownValue): TDropdownValue => {
+  if (Array.isArray(value)) {
+    return [...value];
+  }
+  return value;
+};
+
+const isSameModelValue = (first: TDropdownValue, second: TDropdownValue): boolean => {
+  if (Array.isArray(first) && Array.isArray(second)) {
+    if (first.length !== second.length) {
+      return false;
+    }
+    return first.every((item, index) => item === second[index]);
+  }
+
+  if (!Array.isArray(first) && !Array.isArray(second)) {
+    return first === second;
+  }
+
+  return false;
+};
+
+const syncWithModelValue = (value: TDropdownValue) => {
+  updateKnownSelections(value);
+  if (!isDropdownOpen.value) {
+    syncSearchQueryWithSelection(value);
+  }
+};
+
+watch<TDropdownValue>(
+  () => props.modelValue as TDropdownValue,
+  value => {
+    if (!isSameModelValue(previousModelValue.value, value)) {
+      previousModelValue.value = cloneModelValue(value);
+    }
+    syncWithModelValue(value);
+  },
+  { immediate: true }
+);
 
 onMounted(async () => {
   await nextTick();
-  document.addEventListener('mousedown', handleClickOutside, true);
 
   if (hasValue.value && apiConfig.value) {
     try {
       loading.value = true;
       const response = await apiSelectUseCase.fetchItems(apiConfig.value, {
-        limit: 100, // Загружаем больше для поиска выбранных
+        limit: apiConfig.value.limit ?? 20,
       });
 
       if (isMultiple.value) {
@@ -313,15 +405,29 @@ onMounted(async () => {
           searchQuery.value = selectedItem.name;
         }
       }
+
+      response.data.forEach(item => {
+        knownItems.set(item.id, item);
+      });
+      updateKnownSelections(props.modelValue);
     } catch {
-      // Игнорируем ошибки загрузки при инициализации
     } finally {
       loading.value = false;
     }
+
+    selectedItems.value.forEach(item => {
+      knownItems.set(item.id, item);
+    });
   }
+
+  previousModelValue.value = cloneModelValue(props.modelValue);
+  syncWithModelValue(props.modelValue);
 });
 
 onBeforeUnmount(() => {
-  document.removeEventListener('mousedown', handleClickOutside, true);
+  if (debounceTimer) {
+    clearTimeout(debounceTimer);
+  }
 });
+
 </script>

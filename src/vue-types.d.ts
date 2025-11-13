@@ -16,6 +16,25 @@ declare module 'vue' {
   export function onMounted(fn: () => void): void
   export function onBeforeUnmount(fn: () => void): void
   export function nextTick(fn?: () => void): Promise<void>
+  export function defineAsyncComponent(
+    loader: () => Promise<{ default: unknown }>
+  ): unknown
+  export function watch<T>(
+    source: Ref<T> | (() => T),
+    callback: (value: T, oldValue: T) => void,
+    options?: { immediate?: boolean }
+  ): void
+
+  export type DefineComponent<
+    Props = Record<string, never>,
+    RawBindings = Record<string, never>,
+    Slots = unknown
+  > = {
+    new (...args: unknown[]): {
+      $props: Props
+      $slots: Slots
+    }
+  }
   
   export function withDefaults<T>(props: T, defaults: Record<string, unknown>): T
   export function defineProps<T>(): T

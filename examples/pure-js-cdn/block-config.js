@@ -13,8 +13,8 @@ export const blockConfigs = {
     // HTML template для рендеринга блока
     template: (props) => `
       <div style="
-        text-align: ${props.textAlign}; 
-        font-size: ${props.fontSize}px; 
+        text-align: ${props.textAlign};
+        font-size: ${props.fontSize}px;
         color: ${props.color};
         padding: 10px;
         border: 1px solid #e9ecef;
@@ -29,8 +29,8 @@ export const blockConfigs = {
       kind: 'html',
       template: (props) => `
         <div style="
-          text-align: ${props.textAlign}; 
-          font-size: ${props.fontSize}px; 
+          text-align: ${props.textAlign};
+          font-size: ${props.fontSize}px;
           color: ${props.color};
           padding: 10px;
           border: 1px solid #e9ecef;
@@ -108,18 +108,18 @@ export const blockConfigs = {
         return '';
       };
       const imageUrl = getImageUrl(props.image);
-      
+
       return `
       <div style="text-align: center; margin: 20px 0;">
-        <img 
-          src="${imageUrl}" 
-          alt="${props.alt || ''}" 
+        <img
+          src="${imageUrl}"
+          alt="${props.alt || ''}"
           style="
             max-width: 100%;
             height: auto;
             border-radius: ${props.borderRadius}px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-          " 
+          "
         />
       </div>
     `;
@@ -200,16 +200,6 @@ export const blockConfigs = {
           { type: 'max', value: 50, message: 'Максимальное скругление: 50px' }
         ],
         defaultValue: 4
-      },
-      {
-        field: 'padding',
-        label: 'Отступы',
-        type: 'text',
-        placeholder: '8px 16px',
-        rules: [
-          { type: 'required', message: 'Отступы обязательны' }
-        ],
-        defaultValue: '8px 16px'
       },
       {
         field: 'onClick',
@@ -541,16 +531,16 @@ export const blockConfigs = {
       return `
         <div class="gallery-slider-block" style="padding: 20px; background: #f8f9fa; border-radius: 8px;">
           ${title ? `<h2 style="text-align: center; margin-bottom: 30px; font-size: 28px; font-weight: 700; color: #333;">${title}</h2>` : ''}
-          
+
           <div id="${swiperId}" class="swiper" data-swiper-config='${swiperData}' style="width: 100%; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
             <div class="swiper-wrapper">
               ${slidesHtml}
             </div>
-            
+
             <!-- Navigation -->
             <div class="swiper-button-next" style="color: white;"></div>
             <div class="swiper-button-prev" style="color: white;"></div>
-            
+
             <!-- Pagination -->
             <div class="swiper-pagination"></div>
           </div>
@@ -728,9 +718,9 @@ export const blockConfigs = {
       mount: function(container, props) {
         const stages = props.stages || []
         const blockId = 'timelapse-' + Math.random().toString(36).substr(2, 9)
-        
+
         // Создаем HTML
-        container.innerHTML = 
+        container.innerHTML =
           '<div class="timelapse-block" id="' + blockId + '">' +
             (props.title ? '<h2 class="timelapse-block__title">' + props.title + '</h2>' : '') +
             '<div class="timelapse-block__content">' +
@@ -802,7 +792,7 @@ export const blockConfigs = {
             '.timelapse-block__completed { text-align: center; font-size: 24px; font-weight: 700; color: #4CAF50; padding: 20px; background: #f1f8f4; border-radius: 8px; }' +
             '@media (max-width: 768px) { .timelapse-block__content { flex-direction: column; } .timelapse-block__timer-value { font-size: 48px; } .timelapse-block__controls { flex-direction: column; } .timelapse-block__btn { width: 100%; } }' +
           '</style>'
-        
+
         // Инициализация логики после рендера HTML
         setTimeout(function() {
           const blockEl = container.querySelector('#' + blockId)
@@ -810,13 +800,13 @@ export const blockConfigs = {
             console.error('Timelapse block not found')
             return
           }
-          
+
           let currentStageIndex = 0
           let timeLeft = 0
           let isRunning = false
           let isCompleted = false
           let intervalId = null
-          
+
           // Элементы DOM
           const timerValue = blockEl.querySelector('[data-timer-value]')
           const currentName = blockEl.querySelector('[data-current-name]')
@@ -826,18 +816,18 @@ export const blockConfigs = {
           const resetBtn = blockEl.querySelector('[data-reset-btn]')
           const completedMsg = blockEl.querySelector('[data-completed]')
           const stageElements = blockEl.querySelectorAll('[data-stage-index]')
-          
+
           function formatTime(seconds) {
             const minutes = Math.floor(seconds / 60)
             const secs = seconds % 60
             return String(minutes).padStart(2, '0') + ':' + String(secs).padStart(2, '0')
           }
-          
+
           function updateUI() {
             if (!timerValue || !currentName || !progressBar) return
-            
+
             timerValue.textContent = formatTime(timeLeft)
-            
+
             if (stages[currentStageIndex]) {
               currentName.textContent = stages[currentStageIndex].name
               const elapsed = stages[currentStageIndex].duration - timeLeft
@@ -847,11 +837,11 @@ export const blockConfigs = {
               currentName.textContent = 'Нажмите "Старт"'
               progressBar.style.width = '0%'
             }
-            
+
             stageElements.forEach(function(el, index) {
               el.classList.remove('timelapse-block__stage--active', 'timelapse-block__stage--completed')
               const check = el.querySelector('.timelapse-block__stage-check')
-              
+
               if (index === currentStageIndex) {
                 el.classList.add('timelapse-block__stage--active')
                 if (check) check.style.display = 'none'
@@ -863,18 +853,18 @@ export const blockConfigs = {
               }
             })
           }
-          
+
           function start() {
             if (isCompleted) return
-            
+
             isRunning = true
             if (startBtn) startBtn.style.display = 'none'
             if (pauseBtn) pauseBtn.style.display = 'inline-block'
-            
+
             if (timeLeft === 0 && stages[currentStageIndex]) {
               timeLeft = stages[currentStageIndex].duration
             }
-            
+
             intervalId = setInterval(function() {
               if (timeLeft > 0) {
                 timeLeft--
@@ -884,7 +874,7 @@ export const blockConfigs = {
               }
             }, 1000)
           }
-          
+
           function pause() {
             isRunning = false
             if (startBtn) {
@@ -894,24 +884,24 @@ export const blockConfigs = {
             if (pauseBtn) pauseBtn.style.display = 'none'
             clearTimer()
           }
-          
+
           function reset() {
             isRunning = false
             isCompleted = false
             currentStageIndex = 0
             timeLeft = stages[0] ? stages[0].duration : 0
-            
+
             if (startBtn) {
               startBtn.style.display = 'inline-block'
               startBtn.textContent = 'Старт'
             }
             if (pauseBtn) pauseBtn.style.display = 'none'
             if (completedMsg) completedMsg.style.display = 'none'
-            
+
             clearTimer()
             updateUI()
           }
-          
+
           function moveToNextStage() {
             if (currentStageIndex < stages.length - 1) {
               currentStageIndex++
@@ -926,25 +916,25 @@ export const blockConfigs = {
               clearTimer()
             }
           }
-          
+
           function clearTimer() {
             if (intervalId) {
               clearInterval(intervalId)
               intervalId = null
             }
           }
-          
+
           // Инициализация
           if (stages.length > 0) {
             timeLeft = stages[0].duration
           }
           updateUI()
-          
+
           // События
           if (startBtn) startBtn.addEventListener('click', start)
           if (pauseBtn) pauseBtn.addEventListener('click', pause)
           if (resetBtn) resetBtn.addEventListener('click', reset)
-          
+
           // Очистка при удалении блока
           blockEl.cleanup = clearTimer
         }, 0)

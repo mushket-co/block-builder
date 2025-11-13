@@ -348,6 +348,7 @@ export const blockConfigs = {
                 font-size: 16px;
                 font-weight: 500;
                 transition: all 0.2s ease;
+                padding: 20px;
               "
               onclick="this.textContent='Загрузка...'; setTimeout(() => this.textContent='${props.text.replace(/'/g, "\\'")}', 1000)"
               onmouseover="this.style.transform='scale(1.05)'; this.style.filter='brightness(1.1)'"
@@ -394,14 +395,6 @@ export const blockConfigs = {
           { type: 'max', value: 50, message: 'Максимум: 50' }
         ],
         defaultValue: 4
-      },
-      {
-        field: 'padding',
-        label: 'Отступы',
-        type: 'text',
-        placeholder: '8px 16px',
-        rules: [{ type: 'required', message: 'Отступы обязательны' }],
-        defaultValue: '8px 16px'
       }
     ]
   },
@@ -417,16 +410,10 @@ export const blockConfigs = {
         // Генерируем уникальный ID для слайдера
         const sliderId = `swiper-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 
-        // ✅ НОВЫЙ подход: используем массив slides из props
-        // Преобразуем изображение в URL
-        // base64 - всегда строка
-        // серверное загрузка - объект с обязательным src
-        // Поддерживаем и src (правильное поле) и url (для обратной совместимости)
         const getImageUrl = (image) => {
           if (!image) return '';
           if (typeof image === 'string') return image;
           if (typeof image === 'object' && image !== null) {
-            // Приоритет src, затем url для обратной совместимости
             return image.src || image.url || '';
           }
           return '';
@@ -585,6 +572,37 @@ export const blockConfigs = {
               placeholder: 'Описание слайда',
               rules: [],
               defaultValue: ''
+            },
+            {
+              field: 'relatedNews',
+              label: 'Связанная новость',
+              type: 'api-select',
+              rules: [],
+              defaultValue: null,
+              apiSelectConfig: {
+                url: '/api/news',
+                searchParam: 'search',
+                pageParam: 'page',
+                limitParam: 'limit',
+                placeholder: 'Выберите новость',
+                noResultsText: 'Ничего не найдено',
+                loadingText: 'Загрузка...',
+                errorText: 'Ошибка загрузки новостей',
+                limit: 10
+              }
+            },
+            {
+              field: 'customContent',
+              label: 'Дополнительное содержимое',
+              type: 'custom',
+              rules: [],
+              defaultValue: '',
+              customFieldConfig: {
+                rendererId: 'wysiwyg-editor',
+                options: {
+                  mode: 'simple'
+                }
+              }
             }
           ]
         }
@@ -982,6 +1000,26 @@ export const blockConfigs = {
                   ">${card.detailedText}</div>
                 ` : ''}
 
+                ${card.relatedArticle ? `
+                  <div style="
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    font-size: 14px;
+                    padding: 12px;
+                    background-color: rgba(102, 126, 234, 0.1);
+                    border-radius: 6px;
+                    margin-top: 12px;
+                  ">
+                    <span style="font-weight: 600; white-space: nowrap;">📰 Связанная статья:</span>
+                    <span style="opacity: 0.9;">
+                      ${typeof card.relatedArticle === 'object' && card.relatedArticle !== null
+                        ? (card.relatedArticle.name || card.relatedArticle.id || '')
+                        : card.relatedArticle}
+                    </span>
+                  </div>
+                ` : ''}
+
                 ${card.meetingPlace || card.meetingTime || card.participantsCount ? `
                   <div style="
                     display: flex;
@@ -1190,7 +1228,8 @@ export const blockConfigs = {
             textColor: '#333333',
             meetingPlace: 'Конференц-зал "Альфа", БЦ "Столица"',
             meetingTime: '15:00, 25 октября 2024',
-            participantsCount: '50'
+            participantsCount: '50',
+            relatedArticle: null
           },
           {
             title: 'Стандарт версия',
@@ -1207,7 +1246,8 @@ export const blockConfigs = {
             textColor: '#212529',
             meetingPlace: 'Офис компании, 3 этаж',
             meetingTime: '10:30, 26 октября 2024',
-            participantsCount: '25'
+            participantsCount: '25',
+            relatedArticle: null
           },
           {
             title: 'Корпоративное решение',
@@ -1224,7 +1264,8 @@ export const blockConfigs = {
             textColor: '#004085',
             meetingPlace: 'Гостиница "Метрополь", зал "Премьер"',
             meetingTime: '14:00, 27 октября 2024',
-            participantsCount: '100'
+            participantsCount: '100',
+            relatedArticle: null
           }
         ],
         repeaterConfig: {
@@ -1261,10 +1302,15 @@ export const blockConfigs = {
             {
               field: 'detailedText',
               label: 'Детальное описание',
-              type: 'textarea',
-              placeholder: 'Подробное описание со всеми деталями...',
+              type: 'custom',
               rules: [],
-              defaultValue: ''
+              defaultValue: '',
+              customFieldConfig: {
+                rendererId: 'wysiwyg-editor',
+                options: {
+                  mode: 'default'
+                }
+              }
             },
             {
               field: 'link',
@@ -1358,7 +1404,26 @@ export const blockConfigs = {
                 { type: 'min', value: 1, message: 'Минимум 1 участник' }
               ],
               defaultValue: ''
-            }
+            },
+            {
+              field: 'relatedArticle',
+              label: 'Связанная статья',
+              type: 'api-select',
+              rules: [],
+              defaultValue: null,
+              apiSelectConfig: {
+                url: '/api/articles',
+                searchParam: 'search',
+                pageParam: 'page',
+                limitParam: 'limit',
+                placeholder: 'Выберите статью',
+                noResultsText: 'Статьи не найдены',
+                loadingText: 'Загрузка статей...',
+                errorText: 'Ошибка загрузки статей',
+                limit: 10,
+                multiple: false
+              }
+            },
           ]
         }
       },
@@ -2180,12 +2245,12 @@ export const blockConfigs = {
     render: {
       kind: 'html',
       template: (props) => {
-        const blockStyle = props.hasBackground 
+        const blockStyle = props.hasBackground
           ? `background-color: ${props.backgroundColor || '#f0f0f0'}; padding: ${props.padding || '12px 24px'}; border-radius: 8px;`
           : '';
         const target = props.linkTarget || '_self';
         const rel = target === '_blank' ? ' rel="noopener noreferrer"' : '';
-        
+
         return `
           <div class="link-block" style="${blockStyle} text-align: center; margin: 20px 0;">
             <div class="container">
@@ -2256,13 +2321,6 @@ export const blockConfigs = {
         label: 'Цвет фона',
         type: 'color',
         defaultValue: '#f0f0f0'
-      },
-      {
-        field: 'padding',
-        label: 'Отступы',
-        type: 'text',
-        placeholder: '12px 24px',
-        defaultValue: '12px 24px'
       }
     ]
   }

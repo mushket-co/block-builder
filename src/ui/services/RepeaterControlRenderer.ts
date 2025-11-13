@@ -87,6 +87,13 @@ export class RepeaterControlRenderer {
           case 'number':
             newItem[field.field] = 0;
             break;
+          case 'api-select':
+            const apiSelectConfig = (field as any).apiSelectConfig;
+            newItem[field.field] = apiSelectConfig?.multiple ? [] : null;
+            break;
+          case 'custom':
+            newItem[field.field] = '';
+            break;
           default:
             newItem[field.field] = '';
         }
@@ -194,17 +201,28 @@ export class RepeaterControlRenderer {
     const errors = this.getFieldErrors(itemIndex, field.field);
     const fieldNamePath = `${this.fieldName}[${itemIndex}].${field.field}`;
 
-    // Преобразуем конфигурацию поля для использования с рендерерами
     const formFieldConfig = this.convertToFormFieldConfig(field);
 
-    // Используем стандартные классы из form-renderers
-    // Стили применяются через вложенность в SCSS (.repeater-control__item-fields .block-builder-form-group)
     let inputClass = CSS_CLASSES.FORM_CONTROL;
     if (hasError) {
       inputClass += ` ${CSS_CLASSES.ERROR}`;
     }
 
-    // Создаем контекст для рендеринга
+    const containerDataAttributes: Record<string, string> = {
+      'field-path': fieldNamePath,
+      'repeater-field': this.fieldName,
+      'repeater-index': String(itemIndex),
+      'repeater-item-field': field.field,
+    };
+
+    const inputDataAttributes: Record<string, string> = {
+      'item-index': String(itemIndex),
+      'field-name': field.field,
+      'repeater-field': this.fieldName,
+      'repeater-index': String(itemIndex),
+      'repeater-item-field': field.field,
+    };
+
     const context: IRenderContext = {
       containerClass: hasError
         ? `${CSS_CLASSES.FORM_GROUP} ${CSS_CLASSES.ERROR}`
@@ -217,34 +235,24 @@ export class RepeaterControlRenderer {
       fieldNamePath: fieldNamePath,
       showErrors: hasError,
       errors: errors,
-      inputDataAttributes: {
-        'item-index': String(itemIndex),
-        'field-name': field.field,
-      },
+      containerDataAttributes,
+      inputDataAttributes,
     };
 
-    // Для image полей добавляем специальные data-атрибуты
     if (field.type === 'image') {
       context.containerDataAttributes = {
+        ...context.containerDataAttributes,
         'field-name': fieldNamePath,
-        'repeater-field': this.fieldName,
-        'repeater-index': String(itemIndex),
-        'repeater-item-field': field.field,
       };
       context.inputDataAttributes = {
-        'item-index': String(itemIndex),
-        'field-name': field.field,
+        ...context.inputDataAttributes,
         'repeater-field-name': this.fieldName,
         'item-field-name': field.field,
-        'repeater-field': this.fieldName,
-        'repeater-index': String(itemIndex),
       };
     }
 
-    // Получаем рендерер для типа поля
     const renderer = this.rendererFactory.getRenderer(field.type);
 
-    // Рендерим поле с помощью рендерера, передавая контекст
     return renderer.render(fieldId, formFieldConfig, value, required, context);
   }
 
@@ -272,10 +280,22 @@ export class RepeaterControlRenderer {
       rules: field.rules,
     };
 
-    // Поддержка imageUploadConfig для полей изображений (расширенное свойство)
-    const extendedField = field as IRepeaterItemFieldConfig & { imageUploadConfig?: any };
+    const extendedField = field as IRepeaterItemFieldConfig & {
+      imageUploadConfig?: any;
+      apiSelectConfig?: any;
+      customFieldConfig?: any;
+    };
+
     if (field.type === 'image' && extendedField.imageUploadConfig) {
       baseConfig.imageUploadConfig = extendedField.imageUploadConfig;
+    }
+
+    if (field.type === 'api-select' && extendedField.apiSelectConfig) {
+      baseConfig.apiSelectConfig = extendedField.apiSelectConfig;
+    }
+
+    if (field.type === 'custom' && extendedField.customFieldConfig) {
+      baseConfig.customFieldConfig = extendedField.customFieldConfig;
     }
 
     return baseConfig;

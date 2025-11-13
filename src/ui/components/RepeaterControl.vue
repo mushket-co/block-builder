@@ -75,8 +75,43 @@
             @update:model-value="updateItemField(index, field.field, $event)"
           >
             <template #default="{ field: slotField, modelValue: slotModelValue, error: slotError }">
+              <template v-if="slotField.type === 'api-select'">
+                <ApiSelectField
+                  v-if="isApiSelectFieldAllowed(slotField) && apiSelectUseCaseValue"
+                  :model-value="slotModelValue"
+                  :config="toFormFieldConfig(slotField)"
+                  :validation-error="slotError"
+                  :api-select-use-case="apiSelectUseCaseValue"
+                  @update:model-value="updateItemField(index, slotField.field, $event)"
+                />
+                <div v-else class="bb-warning-box">⚠️ {{ apiSelectRestrictionMessage }}</div>
+              </template>
+
+              <template v-else-if="slotField.type === 'custom'">
+                <label
+                  :for="getFieldId(item._id, slotField.field)"
+                  class="block-builder-form-label"
+                >
+                  {{ slotField.label }}
+                  <span v-if="isFieldRequired(slotField)" class="required">*</span>
+                </label>
+                <CustomField
+                  v-if="
+                    isCustomFieldAllowed(slotField) &&
+                    customFieldRendererRegistryValue?.get(slotField.customFieldConfig?.rendererId)
+                  "
+                  :field="toFormFieldConfig(slotField)"
+                  :model-value="slotModelValue"
+                  :form-errors="formErrors"
+                  :custom-field-renderer-registry="customFieldRendererRegistryValue"
+                  :is-field-required="isFieldRequired"
+                  @update:model-value="updateItemField(index, slotField.field, $event)"
+                />
+                <div v-else class="bb-warning-box">⚠️ {{ customFieldRestrictionMessage }}</div>
+              </template>
+
               <ImageUploadField
-                v-if="slotField.type === 'image'"
+                v-else-if="slotField.type === 'image'"
                 :model-value="slotModelValue"
                 :label="''"
                 :required="isFieldRequired(slotField)"
@@ -112,6 +147,8 @@
 import { computed, onMounted, ref, watch } from 'vue';
 
 import { CSS_CLASSES, UI_STRINGS } from '../../utils/constants';
+import ApiSelectField from './ApiSelectField.vue';
+import CustomField from './CustomField.vue';
 import { FormField } from './form-fields';
 import ImageUploadField from './ImageUploadField.vue';
 
@@ -119,6 +156,8 @@ export default {
   name: 'RepeaterControl',
   components: {
     FormField,
+    ApiSelectField,
+    CustomField,
     ImageUploadField,
   },
 
@@ -182,6 +221,36 @@ export default {
       type: Object,
       default: () => ({}),
     },
+
+    apiSelectUseCase: {
+      type: Object,
+      default: null,
+    },
+
+    isApiSelectAvailable: {
+      type: Function,
+      default: () => false,
+    },
+
+    getApiSelectRestrictionMessage: {
+      type: Function,
+      default: () => 'API Select поля недоступны.',
+    },
+
+    customFieldRendererRegistry: {
+      type: Object,
+      default: null,
+    },
+
+    isCustomFieldAvailable: {
+      type: Function,
+      default: () => false,
+    },
+
+    getCustomFieldRestrictionMessage: {
+      type: Function,
+      default: () => 'Кастомные поля недоступны.',
+    },
   },
 
   emits: ['update:modelValue'],
@@ -189,6 +258,20 @@ export default {
     const items = ref([]);
     const collapsedItems = ref({});
     let idCounter = 0;
+
+    const apiSelectRestrictionMessage = computed(() => {
+      const message = props.getApiSelectRestrictionMessage();
+      return typeof message === 'string' && message.trim().length > 0
+        ? message
+        : 'API Select поля недоступны.';
+    });
+
+    const customFieldRestrictionMessage = computed(() => {
+      const message = props.getCustomFieldRestrictionMessage();
+      return typeof message === 'string' && message.trim().length > 0
+        ? message
+        : 'Кастомные поля недоступны.';
+    });
 
     const isRequired = computed(() => {
       return props.rules?.some(rule => rule.type === 'required') ?? false;
@@ -233,6 +316,12 @@ export default {
               break;
             case 'number':
               newItem[field.field] = 0;
+              break;
+            case 'api-select':
+              newItem[field.field] = field.apiSelectConfig?.multiple ? [] : null;
+              break;
+            case 'custom':
+              newItem[field.field] = '';
               break;
             default:
               newItem[field.field] = '';
@@ -296,6 +385,33 @@ export default {
       items.value[index][fieldName] = value;
       emitUpdate();
     };
+
+    const toFormFieldConfig = field => {
+      return {
+        field: field.field,
+        label: field.label,
+        type: field.type,
+        placeholder: field.placeholder,
+        defaultValue: field.defaultValue,
+        options: field.options,
+        rules: field.rules,
+        apiSelectConfig: field.apiSelectConfig,
+        customFieldConfig: field.customFieldConfig,
+        imageUploadConfig: field.imageUploadConfig,
+      };
+    };
+
+    const isApiSelectFieldAllowed = field => {
+      return props.isApiSelectAvailable ? props.isApiSelectAvailable(field) : false;
+    };
+
+    const isCustomFieldAllowed = field => {
+      return props.isCustomFieldAvailable ? props.isCustomFieldAvailable(field) : false;
+    };
+
+    const apiSelectUseCaseValue = computed(() => props.apiSelectUseCase);
+    const customFieldRendererRegistryValue = computed(() => props.customFieldRendererRegistry);
+    const formErrors = computed(() => props.errors);
 
     const emitUpdate = () => {
       const cleanItems = items.value.map(item => {
@@ -393,6 +509,14 @@ export default {
       updateItemField,
       repeaterMinText,
       repeaterMaxText,
+      apiSelectRestrictionMessage,
+      customFieldRestrictionMessage,
+      toFormFieldConfig,
+      isApiSelectFieldAllowed,
+      isCustomFieldAllowed,
+      apiSelectUseCaseValue,
+      customFieldRendererRegistryValue,
+      formErrors,
       CSS_CLASSES,
     };
   },

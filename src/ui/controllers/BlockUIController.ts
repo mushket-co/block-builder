@@ -40,6 +40,7 @@ import { EventDelegation } from '../EventDelegation';
 import { ApiSelectControlRenderer } from '../services/ApiSelectControlRenderer';
 import { CustomFieldControlRenderer } from '../services/CustomFieldControlRenderer';
 import { FormBuilder, TFieldConfig } from '../services/FormBuilder';
+import { SelectControlRenderer, ISelectControlOptions } from '../services/SelectControlRenderer';
 import { ModalManager } from '../services/ModalManager';
 import { RepeaterControlRenderer } from '../services/RepeaterControlRenderer';
 import { SpacingControlRenderer } from '../services/SpacingControlRenderer';
@@ -79,6 +80,7 @@ export class BlockUIController {
   private spacingRenderers: Map<string, SpacingControlRenderer> = new Map();
   private repeaterRenderers: Map<string, RepeaterControlRenderer> = new Map();
   private apiSelectRenderers: Map<string, ApiSelectControlRenderer> = new Map();
+  private selectRenderers: Map<string, SelectControlRenderer> = new Map();
   private customFieldRenderers: Map<string, CustomFieldControlRenderer> = new Map();
   private eventDelegation: EventDelegation;
   private licenseService: LicenseService;
@@ -243,6 +245,7 @@ export class BlockUIController {
       this.initializeSpacingControls();
       this.initializeRepeaterControls();
       await this.initializeApiSelectControls();
+      await this.initializeSelectControls();
       this.initializeImageUploadControls();
       await this.initializeCustomFieldControls();
     });
@@ -289,7 +292,6 @@ export class BlockUIController {
 
         this.spacingRenderers.set(spacingConfig.field, renderer);
       } catch {
-        // Игнорируем ошибки инициализации spacing контролов
       }
     });
   }
@@ -335,8 +337,6 @@ export class BlockUIController {
 
         const self = this;
 
-        // Создаем config из развернутых полей repeaterConfig
-        // Важно: сохраняем все поля из parsed.fields, включая дополнительные (imageUploadConfig и т.д.)
         const repeaterFieldConfig: IRepeaterFieldConfig = {
           fields: (parsed.fields || []) as IRepeaterItemFieldConfig[],
           addButtonText: parsed.addButtonText,
@@ -358,6 +358,8 @@ export class BlockUIController {
           },
           onAfterRender: () => {
             self.initializeImageUploadControls();
+            void self.initializeApiSelectControls();
+            void self.initializeCustomFieldControls();
           },
         });
 
@@ -365,7 +367,6 @@ export class BlockUIController {
 
         this.repeaterRenderers.set(parsed.field, renderer);
       } catch (error) {
-        // Логируем ошибки инициализации repeater контролов для отладки
         logger.error('Ошибка инициализации repeater контрола:', error);
         if (error instanceof Error) {
           logger.error('Детали ошибки:', error.message, error.stack);
@@ -412,6 +413,7 @@ export class BlockUIController {
       try {
         const parsedData = parseJSONFromAttribute(config) as {
           field: string;
+          fieldPath?: string;
           label: string;
           rules?: unknown[];
           config?: IApiSelectConfig;
@@ -436,28 +438,67 @@ export class BlockUIController {
           errorText?: string;
         };
 
-        const apiConfig: IApiSelectConfig = parsedData.config || {
-          url: parsedData.url || '',
-          method: parsedData.method as THttpMethod | undefined,
-          headers: parsedData.headers,
-          searchParam: parsedData.searchParam,
-          pageParam: parsedData.pageParam,
-          limitParam: parsedData.limitParam,
-          limit: parsedData.limit,
-          debounceMs: parsedData.debounceMs,
-          responseMapper: parsedData.responseMapper as
-            | ((response: unknown) => IApiSelectResponse)
-            | undefined,
-          dataPath: parsedData.dataPath,
-          idField: parsedData.idField,
-          nameField: parsedData.nameField,
-          minSearchLength: parsedData.minSearchLength,
-          placeholder: parsedData.placeholder,
-          noResultsText: parsedData.noResultsText,
-          loadingText: parsedData.loadingText,
-          errorText: parsedData.errorText,
-          multiple: parsedData.multiple,
-        };
+        const repeaterFieldName = htmlContainer.dataset.repeaterField;
+        const repeaterIndexStr = htmlContainer.dataset.repeaterIndex;
+        const repeaterItemField = htmlContainer.dataset.repeaterItemField || parsedData.field;
+        const fieldPath = parsedData.fieldPath || parsedData.field;
+        const isRepeaterContext = Boolean(repeaterFieldName);
+
+        let apiSelectConfigFromRepeater: IApiSelectConfig | undefined;
+        if (isRepeaterContext && repeaterFieldName && repeaterItemField) {
+          const repeaterFieldsMap = this.repeaterFieldConfigs.get(repeaterFieldName);
+          if (repeaterFieldsMap) {
+            const itemFieldConfig = repeaterFieldsMap.get(repeaterItemField);
+            if (itemFieldConfig && itemFieldConfig.type === 'api-select') {
+              apiSelectConfigFromRepeater = itemFieldConfig.apiSelectConfig;
+            }
+          }
+        }
+
+        const apiConfig: IApiSelectConfig =
+          parsedData.config ||
+          apiSelectConfigFromRepeater ||
+          {
+            url: parsedData.url || '',
+            method: parsedData.method as THttpMethod | undefined,
+            headers: parsedData.headers,
+            searchParam: parsedData.searchParam,
+            pageParam: parsedData.pageParam,
+            limitParam: parsedData.limitParam,
+            limit: parsedData.limit,
+            debounceMs: parsedData.debounceMs,
+            responseMapper: parsedData.responseMapper as
+              | ((response: unknown) => IApiSelectResponse)
+              | undefined,
+            dataPath: parsedData.dataPath,
+            idField: parsedData.idField,
+            nameField: parsedData.nameField,
+            minSearchLength: parsedData.minSearchLength,
+            placeholder: parsedData.placeholder,
+            noResultsText: parsedData.noResultsText,
+            loadingText: parsedData.loadingText,
+            errorText: parsedData.errorText,
+            multiple: parsedData.multiple,
+          };
+
+        let initialValue: string | number | (string | number)[] | null =
+          (parsedData.value as string | number | (string | number)[] | null | undefined) ||
+          (apiConfig.multiple ? [] : null);
+
+        if (isRepeaterContext && repeaterFieldName && typeof repeaterIndexStr === 'string') {
+          const repeaterRenderer = this.repeaterRenderers.get(repeaterFieldName);
+          if (repeaterRenderer) {
+            const index = Number.parseInt(repeaterIndexStr, 10);
+            const rendererValue = (repeaterRenderer as any).value;
+            if (
+              Array.isArray(rendererValue) &&
+              rendererValue[index] &&
+              Object.hasOwn(rendererValue[index], repeaterItemField)
+            ) {
+              initialValue = rendererValue[index][repeaterItemField];
+            }
+          }
+        }
 
         const renderer = new ApiSelectControlRenderer({
           fieldName: parsedData.field,
@@ -465,20 +506,31 @@ export class BlockUIController {
           rules:
             (parsedData.rules as Array<{ type: string; message?: string; value?: unknown }>) || [],
           config: apiConfig,
-          value:
-            (parsedData.value as string | number | (string | number)[] | null | undefined) ||
-            (parsedData.multiple ? [] : null),
+          value: initialValue,
           apiSelectUseCase: this.apiSelectUseCase,
           onChange: value => {
             htmlContainer.dataset.apiSelectValue = JSON.stringify(value);
+
+            if (isRepeaterContext && repeaterFieldName && typeof repeaterIndexStr === 'string') {
+              const repeaterRenderer = this.repeaterRenderers.get(repeaterFieldName);
+              if (repeaterRenderer) {
+                const index = Number.parseInt(repeaterIndexStr, 10);
+                const rendererValue = (repeaterRenderer as any).value;
+                if (Array.isArray(rendererValue) && rendererValue[index]) {
+                  rendererValue[index][repeaterItemField] = value;
+                  if (typeof (repeaterRenderer as any).emitChange === 'function') {
+                    (repeaterRenderer as any).emitChange();
+                  }
+                }
+              }
+            }
           },
         });
 
         await renderer.init(htmlContainer);
 
-        this.apiSelectRenderers.set(parsedData.field, renderer);
+        this.apiSelectRenderers.set(fieldPath, renderer);
       } catch {
-        // Игнорируем ошибки инициализации api select контролов
       }
     }
   }
@@ -488,6 +540,114 @@ export class BlockUIController {
       renderer.destroy();
     });
     this.apiSelectRenderers.clear();
+  }
+
+  private async initializeSelectControls(): Promise<void> {
+    this.cleanupSelectControls();
+
+    const placeholders = document.querySelectorAll('.select-placeholder');
+
+    for (const placeholder of Array.from(placeholders)) {
+      const htmlPlaceholder = placeholder as HTMLElement;
+      const fieldName = htmlPlaceholder.dataset.fieldName;
+      const fieldId = htmlPlaceholder.dataset.fieldId;
+
+      if (!fieldName || !fieldId) {
+        continue;
+      }
+
+      try {
+        const container = htmlPlaceholder.closest('.block-builder-form-group') as HTMLElement;
+        if (!container) {
+          continue;
+        }
+
+        const fieldConfig = this.currentFormFields.get(fieldName);
+        if (!fieldConfig || fieldConfig.type !== 'select') {
+          continue;
+        }
+        const hiddenInput = container.querySelector(`input[type="hidden"][name="${fieldName}"]`) as HTMLInputElement;
+        let currentValue: string | number | (string | number)[] | null = null;
+
+        if (hiddenInput) {
+          const inputValue = hiddenInput.value;
+          if (fieldConfig.multiple) {
+            try {
+              currentValue = JSON.parse(inputValue || '[]');
+            } catch {
+              currentValue = [];
+            }
+          } else {
+            currentValue = inputValue || null;
+            if (currentValue && typeof currentValue === 'string' && !isNaN(Number(currentValue))) {
+              const numValue = Number(currentValue);
+              const option = fieldConfig.options?.find(opt => {
+                const optValue = typeof opt.value === 'number' ? opt.value : Number(opt.value);
+                return !isNaN(optValue) && optValue === numValue;
+              });
+              if (option) {
+                currentValue = typeof option.value === 'number' ? option.value : numValue;
+              }
+            }
+          }
+        } else {
+          const defaultValue = fieldConfig.defaultValue;
+          if (fieldConfig.multiple) {
+            currentValue = Array.isArray(defaultValue) ? defaultValue : [];
+          } else {
+            if (defaultValue === null || defaultValue === undefined || defaultValue === '') {
+              currentValue = null;
+            } else if (typeof defaultValue === 'string' || typeof defaultValue === 'number') {
+              currentValue = defaultValue;
+            } else {
+              currentValue = null;
+            }
+          }
+        }
+
+        const options = (fieldConfig.options || []).map(opt => ({
+          value: opt.value,
+          label: opt.label,
+          disabled: opt.disabled || false,
+        }));
+
+        const selectOptions: ISelectControlOptions = {
+          fieldName,
+          label: fieldConfig.label || '',
+          rules: fieldConfig.rules || [],
+          errors: {},
+          value: currentValue,
+          multiple: fieldConfig.multiple || false,
+          placeholder: fieldConfig.placeholder || 'Выберите значение',
+          options,
+          onChange: (newValue: string | number | (string | number)[] | null) => {
+            if (hiddenInput) {
+              if (fieldConfig.multiple && Array.isArray(newValue)) {
+                hiddenInput.value = JSON.stringify(newValue);
+              } else {
+                hiddenInput.value = String(newValue ?? '');
+              }
+            }
+
+            htmlPlaceholder.dataset.selectValue = JSON.stringify(newValue);
+          },
+        };
+
+        const renderer = new SelectControlRenderer(selectOptions);
+        await renderer.init(htmlPlaceholder);
+
+        this.selectRenderers.set(fieldName, renderer);
+      } catch (error) {
+        logger.error('Ошибка инициализации select контрола', error);
+      }
+    }
+  }
+
+  private cleanupSelectControls(): void {
+    this.selectRenderers.forEach(renderer => {
+      renderer.destroy();
+    });
+    this.selectRenderers.clear();
   }
 
   private async initializeCustomFieldControls(): Promise<void> {
@@ -528,6 +688,7 @@ export class BlockUIController {
       try {
         const customFieldConfig = parseJSONFromAttribute(config) as {
           field: string;
+          fieldPath?: string;
           label: string;
           value?: unknown;
           required?: boolean;
@@ -555,22 +716,59 @@ export class BlockUIController {
           renderContainer = htmlContainer;
         }
 
+        const repeaterFieldName = htmlContainer.dataset.repeaterField;
+        const repeaterIndexStr = htmlContainer.dataset.repeaterIndex;
+        const repeaterItemField =
+          htmlContainer.dataset.repeaterItemField || customFieldConfig.field;
+        const fieldPath = customFieldConfig.fieldPath || customFieldConfig.field;
+        const isRepeaterContext = Boolean(repeaterFieldName);
+
+        let initialValue = customFieldConfig.value;
+
+        if (isRepeaterContext && repeaterFieldName && typeof repeaterIndexStr === 'string') {
+          const repeaterRenderer = this.repeaterRenderers.get(repeaterFieldName);
+          if (repeaterRenderer) {
+            const index = Number.parseInt(repeaterIndexStr, 10);
+            const rendererValue = (repeaterRenderer as any).value;
+            if (
+              Array.isArray(rendererValue) &&
+              rendererValue[index] &&
+              Object.hasOwn(rendererValue[index], repeaterItemField)
+            ) {
+              initialValue = rendererValue[index][repeaterItemField];
+            }
+          }
+        }
+
         const fieldRenderer = new CustomFieldControlRenderer(renderContainer, renderer, {
           fieldName: customFieldConfig.field,
           label: customFieldConfig.label,
-          value: customFieldConfig.value,
+          value: initialValue,
           required: customFieldConfig.required || false,
           rendererId: customFieldConfig.rendererId,
           options: customFieldConfig.options as Record<string, unknown> | undefined,
           onChange: value => {
             htmlContainer.dataset.customFieldValue = JSON.stringify(value);
+
+            if (isRepeaterContext && repeaterFieldName && typeof repeaterIndexStr === 'string') {
+              const repeaterRenderer = this.repeaterRenderers.get(repeaterFieldName);
+              if (repeaterRenderer) {
+                const index = Number.parseInt(repeaterIndexStr, 10);
+                const rendererValue = (repeaterRenderer as any).value;
+                if (Array.isArray(rendererValue) && rendererValue[index]) {
+                  rendererValue[index][repeaterItemField] = value;
+                  if (typeof (repeaterRenderer as any).emitChange === 'function') {
+                    (repeaterRenderer as any).emitChange();
+                  }
+                }
+              }
+            }
           },
           onError: _error => {
-            // Ошибки обрабатываются в renderer
           },
         });
 
-        this.customFieldRenderers.set(customFieldConfig.field, fieldRenderer);
+        this.customFieldRenderers.set(fieldPath, fieldRenderer);
       } catch (error) {
         this.showCustomFieldError(htmlContainer, `Ошибка: ${error}`);
       }
@@ -608,7 +806,6 @@ export class BlockUIController {
       }
 
       const configStr = fileInput.dataset.config || '{}';
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let config: any = {};
       try {
         config = JSON.parse(configStr.replaceAll('&quot;', '"'));
@@ -664,7 +861,6 @@ export class BlockUIController {
               currentValue = parsed;
             }
           } catch {
-            // Игнорируем ошибки парсинга JSON
           }
         }
       }
@@ -845,11 +1041,8 @@ export class BlockUIController {
             }
           }
 
-          // Очищаем только визуальные ошибки текущего поля изображения
-          // Валидация всей формы должна срабатывать только при сохранении формы
           if (container) {
             container.classList.remove(CSS_CLASSES.ERROR);
-            // Очищаем только ошибки загрузки файла, не ошибки валидации
             const fileErrorDiv = container.querySelector(
               '.image-upload-field__file .image-upload-field__error'
             ) as HTMLElement;
@@ -861,7 +1054,6 @@ export class BlockUIController {
 
           const changeEvent = new Event('change', { bubbles: true });
           hiddenInput.dispatchEvent(changeEvent);
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
           logger.error('ImageUpload error:', error);
           if (errorDiv) {
@@ -922,11 +1114,15 @@ export class BlockUIController {
     });
 
     this.apiSelectRenderers.forEach((renderer, fieldName) => {
-      props[fieldName] = renderer.getValue();
+      if (!fieldName.includes('[')) {
+        props[fieldName] = renderer.getValue();
+      }
     });
 
     this.customFieldRenderers.forEach((renderer, fieldName) => {
-      props[fieldName] = renderer.getValue();
+      if (!fieldName.includes('[')) {
+        props[fieldName] = renderer.getValue();
+      }
     });
 
     return props;
@@ -1043,6 +1239,7 @@ export class BlockUIController {
       this.initializeSpacingControls();
       this.initializeRepeaterControls();
       await this.initializeApiSelectControls();
+      await this.initializeSelectControls();
       this.initializeImageUploadControls();
       await this.initializeCustomFieldControls();
     });

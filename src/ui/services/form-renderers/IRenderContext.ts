@@ -56,4 +56,9 @@ export interface IRenderContext {
    * Ошибки валидации
    */
   errors?: string[];
+
+  /**
+   * Callback для изменения значения поля
+   */
+  onFieldChange?: (fieldName: string, value: unknown) => void;
 }

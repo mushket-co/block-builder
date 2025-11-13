@@ -1,8 +1,3 @@
-/**
- * ApiSelectControlRenderer - генерация HTML для api-select контрола в чистом JS
- * Универсальная реализация для использования без фреймворков
- */
-
 import { IApiRequestParams, IApiSelectConfig, IApiSelectItem } from '../../core/types/form';
 import { ApiSelectUseCase } from '../../core/use-cases/ApiSelectUseCase';
 
@@ -27,6 +22,8 @@ export class ApiSelectControlRenderer {
   private onChange?: (value: string | number | (string | number)[] | null) => void;
   private container?: HTMLElement;
   private searchInputElement?: HTMLInputElement;
+  private dropdownElement?: HTMLElement;
+  private searchElement?: HTMLElement;
 
   private searchQuery = '';
   private items: IApiSelectItem[] = [];
@@ -41,6 +38,8 @@ export class ApiSelectControlRenderer {
   private apiSelectUseCase: ApiSelectUseCase;
 
   private handleClickOutsideBound = this.handleClickOutside.bind(this);
+  private handleResizeBound = this.handleResize.bind(this);
+  private handleScrollBound = this.handleScroll.bind(this);
 
   constructor(options: IApiSelectControlOptions) {
     this.fieldName = options.fieldName;
@@ -125,18 +124,23 @@ export class ApiSelectControlRenderer {
 
     const debounceMs = this.config.debounceMs ?? 300;
     this.debounceTimer = setTimeout(() => {
-      this.fetchData(true);
+      this.fetchData(true).then(() => {
+        if (!this.isDropdownOpen) {
+          this.openDropdown();
+        } else {
+          this.updateDropdownPosition();
+        }
+      });
     }, debounceMs);
   }
 
   private openDropdown(): void {
     if (!this.isDropdownOpen) {
       this.isDropdownOpen = true;
+      this.updateDropdownContent();
 
       if (!this.loading) {
         this.fetchData(true);
-      } else {
-        this.updateDropdownContent();
       }
     }
   }
@@ -179,7 +183,10 @@ export class ApiSelectControlRenderer {
 
     const target = event.target as HTMLElement;
 
-    if (this.container && !this.container.contains(target)) {
+    const isClickInContainer = this.container?.contains(target) ?? false;
+    const isClickInDropdown = this.dropdownElement?.contains(target) ?? false;
+
+    if (!isClickInContainer && !isClickInDropdown) {
       this.closeDropdown();
     }
   }
@@ -195,20 +202,25 @@ export class ApiSelectControlRenderer {
         this.value = [...currentValue, item.id];
         this.selectedItems.push(item);
       }
+      this.updateHiddenInput();
       this.updateDropdownContent();
     } else {
       this.value = item.id;
       this.selectedItems = [item];
       this.searchQuery = item.name;
-      this.isDropdownOpen = false;
 
       if (this.searchInputElement) {
         this.searchInputElement.value = item.name;
       }
-      this.updateDropdownContent();
+
+      this.updateHiddenInput();
+      this.emitChange();
+      this.closeDropdown();
     }
 
-    this.emitChange();
+    if (this.isMultiple()) {
+      this.emitChange();
+    }
   }
 
   private removeItem(id: string | number): void {
@@ -220,6 +232,7 @@ export class ApiSelectControlRenderer {
     this.value = currentValue.filter(itemId => itemId !== id);
     this.selectedItems = this.selectedItems.filter(item => item.id !== id);
 
+    this.updateHiddenInput();
     this.emitChange();
     this.updateDropdownContent();
   }
@@ -237,6 +250,7 @@ export class ApiSelectControlRenderer {
       }
     }
 
+    this.updateHiddenInput();
     this.emitChange();
 
     if (this.config.url && this.isDropdownOpen) {
@@ -251,7 +265,9 @@ export class ApiSelectControlRenderer {
       return;
     }
     this.currentPage += 1;
-    this.fetchData(false);
+    this.fetchData(false).then(() => {
+      this.updateDropdownPosition();
+    });
   }
 
   private emitChange(): void {
@@ -284,7 +300,6 @@ export class ApiSelectControlRenderer {
         }
       }
     } catch {
-      // Игнорируем ошибки инициализации
     } finally {
       this.loading = false;
     }
@@ -334,17 +349,26 @@ export class ApiSelectControlRenderer {
       return;
     }
 
-    const wrapper = this.container.querySelector('.bb-api-select__wrapper');
-    if (!wrapper) {
-      return;
+    let savedScrollTop = 0;
+    if (this.dropdownElement) {
+      savedScrollTop = this.dropdownElement.scrollTop;
     }
 
-    const oldDropdown = wrapper.querySelector('.bb-api-select__dropdown');
-    if (oldDropdown) {
-      oldDropdown.remove();
+    if (this.dropdownElement && this.dropdownElement.parentNode) {
+      this.dropdownElement.parentNode.removeChild(this.dropdownElement);
+      this.dropdownElement = undefined;
     }
 
     this.updateLoadingState();
+
+    const searchElement = this.container.querySelector('.bb-api-select__search') as HTMLElement;
+    if (searchElement) {
+      if (this.isDropdownOpen) {
+        searchElement.classList.add('bb-api-select__search--open');
+      } else {
+        searchElement.classList.remove('bb-api-select__search--open');
+      }
+    }
 
     const clearButton = this.container.querySelector('[data-api-select-clear]');
     if (clearButton) {
@@ -360,11 +384,68 @@ export class ApiSelectControlRenderer {
 
     if (this.isDropdownOpen) {
       const dropdown = this.createDropdownElement();
-      wrapper.append(dropdown);
+      this.dropdownElement = dropdown;
+      document.body.appendChild(dropdown);
+      this.updateDropdownPosition();
       this.attachDropdownEvents(dropdown);
+
+      if (savedScrollTop > 0) {
+        dropdown.scrollTop = savedScrollTop;
+      }
     }
 
     this.updateSelectedTags();
+  }
+
+  private updateDropdownPosition(): void {
+    if (!this.container || !this.dropdownElement) {
+      return;
+    }
+
+    const searchElement = this.container.querySelector('.bb-api-select__search') as HTMLElement;
+    if (!searchElement) {
+      return;
+    }
+
+    this.searchElement = searchElement;
+
+    const dropdownEl = this.dropdownElement;
+    const rect = searchElement.getBoundingClientRect();
+
+    const spaceBelow = Math.max(0, window.innerHeight - rect.bottom);
+    const spaceAbove = Math.max(0, rect.top);
+    const viewportMargin = 8;
+    const shouldShowAbove = spaceBelow < spaceAbove;
+    const availableSpace = (shouldShowAbove ? spaceAbove : spaceBelow) - viewportMargin;
+    const constrainedSpace = Math.max(120, availableSpace);
+
+    dropdownEl.style.left = `${rect.left}px`;
+    dropdownEl.style.width = `${rect.width}px`;
+    dropdownEl.style.maxHeight = `${constrainedSpace}px`;
+
+    const dropdownHeight = Math.min(dropdownEl.scrollHeight, constrainedSpace);
+
+    let top = shouldShowAbove
+      ? rect.top - dropdownHeight - viewportMargin
+      : rect.bottom + viewportMargin;
+
+    const maxTop = window.innerHeight - dropdownHeight - viewportMargin;
+    const minTop = viewportMargin;
+    top = Math.max(minTop, Math.min(maxTop, top));
+
+    dropdownEl.style.top = `${top}px`;
+  }
+
+  private handleResize(): void {
+    if (this.isDropdownOpen) {
+      this.updateDropdownPosition();
+    }
+  }
+
+  private handleScroll(): void {
+    if (this.isDropdownOpen) {
+      this.updateDropdownPosition();
+    }
   }
 
   private createDropdownElement(): HTMLElement {
@@ -412,9 +493,15 @@ export class ApiSelectControlRenderer {
   }
 
   private attachDropdownEvents(dropdown: HTMLElement): void {
+    dropdown.addEventListener('mousedown', (e) => {
+      e.stopPropagation();
+    }, true);
+
     const items = dropdown.querySelectorAll('[data-api-select-item]');
     items.forEach(itemEl => {
-      itemEl.addEventListener('click', () => {
+      itemEl.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
         const idStr = (itemEl as HTMLElement).dataset.itemId;
         if (!idStr) {
           return;
@@ -428,9 +515,26 @@ export class ApiSelectControlRenderer {
 
     const loadMoreButton = dropdown.querySelector('[data-api-select-load-more]');
     if (loadMoreButton) {
-      loadMoreButton.addEventListener('click', () => {
+      loadMoreButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
         this.loadMore();
       });
+    }
+  }
+
+  private updateHiddenInput(): void {
+    if (!this.container) {
+      return;
+    }
+
+    const hiddenInput = this.container.querySelector(`input[type="hidden"][name="${this.fieldName}"]`) as HTMLInputElement;
+    if (hiddenInput) {
+      if (this.isMultiple() && Array.isArray(this.value)) {
+        hiddenInput.value = JSON.stringify(this.value);
+      } else {
+        hiddenInput.value = String(this.value ?? '');
+      }
     }
   }
 
@@ -465,7 +569,6 @@ export class ApiSelectControlRenderer {
 
       wrapper.after(tagsContainer);
 
-      // Прикрепляем события к новым тегам
       this.attachRemoveTagEvents(this.container);
     }
   }
@@ -508,7 +611,7 @@ export class ApiSelectControlRenderer {
   ): string {
     return `
       <div class="bb-api-select__wrapper">
-        <div class="bb-api-select__search">
+        <div class="bb-api-select__search ${this.isDropdownOpen ? 'bb-api-select__search--open' : ''}">
           <input
             type="text"
             class="bb-api-select__input"
@@ -653,7 +756,6 @@ export class ApiSelectControlRenderer {
   private attachRemoveTagEvents(container: HTMLElement): void {
     const removeTags = container.querySelectorAll('[data-api-select-remove]');
     removeTags.forEach(removeTag => {
-      // Удаляем старые обработчики
       const newRemoveTag = removeTag.cloneNode(true) as HTMLElement;
       removeTag.parentNode?.replaceChild(newRemoveTag, removeTag);
 
@@ -688,11 +790,20 @@ export class ApiSelectControlRenderer {
 
     setTimeout(() => {
       document.addEventListener('mousedown', this.handleClickOutsideBound, true);
+      window.addEventListener('resize', this.handleResizeBound);
+      window.addEventListener('scroll', this.handleScrollBound, true);
     }, 0);
   }
 
   destroy(): void {
     document.removeEventListener('mousedown', this.handleClickOutsideBound, true);
+    window.removeEventListener('resize', this.handleResizeBound);
+    window.removeEventListener('scroll', this.handleScrollBound, true);
+
+    if (this.dropdownElement && this.dropdownElement.parentNode) {
+      this.dropdownElement.parentNode.removeChild(this.dropdownElement);
+      this.dropdownElement = undefined;
+    }
 
     if (this.debounceTimer) {
       clearTimeout(this.debounceTimer);

@@ -320,6 +320,12 @@
                   :min="slotField.repeaterConfig?.min"
                   :max="slotField.repeaterConfig?.max"
                   :default-item-value="slotField.repeaterConfig?.defaultItemValue"
+                  :api-select-use-case="props.apiSelectUseCase"
+                  :is-api-select-available="isApiSelectAvailable"
+                  :get-api-select-restriction-message="getApiSelectRestrictionMessage"
+                  :custom-field-renderer-registry="props.customFieldRendererRegistry"
+                  :is-custom-field-available="isCustomFieldAvailable"
+                  :get-custom-field-restriction-message="getCustomFieldsRestrictionMessage"
                   @update:model-value="formData[slotField.field] = $event"
                 />
 
@@ -674,8 +680,6 @@ const getFieldError = (field: any): string => {
   if (!errors || errors.length === 0) {
     return '';
   }
-  // Для полей, которые показывают ошибки внутри себя (image, api-select, custom, repeater, spacing)
-  // не возвращаем ошибку, так как они сами её обрабатывают
   if (
     field.type === 'image' ||
     field.type === 'api-select' ||
@@ -738,7 +742,6 @@ const loadInitialBlocks = async () => {
     }
 
     for (const block of filteredBlocks) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await blockService.createBlock(block as any);
     }
   } catch (error) {
@@ -781,7 +784,6 @@ const reloadBlocksAfterLicenseChange = async () => {
 
       for (const block of filteredBlocks) {
         try {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           await blockService.createBlock(block as any);
         } catch (error) {
           logger.warn(`⚠️ Не удалось создать блок ${block.id}:`, error);
@@ -809,7 +811,6 @@ const reloadBlocksAfterLicenseChange = async () => {
 
       for (const block of filteredBlocks) {
         try {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           await blockService.createBlock(block as any);
         } catch (error) {
           logger.warn(`⚠️ Не удалось создать блок ${block.id}:`, error);
@@ -1017,16 +1018,14 @@ const updateBlock = async (): Promise<boolean> => {
 
 const handleDuplicateBlock = async (id: TBlockId) => {
   if (!props.isEdit) {
-    return; // Блокируем если режим редактирования выключен
+    return;
   }
   try {
     const duplicated = await blockService.duplicateBlock(id);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     blocks.value.push(duplicated as any);
 
     await setupBreakpointWatchers();
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (emit as any)('block-added', duplicated as any);
   } catch (error) {
     logger.error('Ошибка дублирования блока:', error);
@@ -1050,7 +1049,6 @@ const handleDeleteBlock = async (id: TBlockId) => {
 
       await blockService.deleteBlock(id);
       blocks.value = blocks.value.filter((b: IBlock) => b.id !== id);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (emit as any)('block-deleted', id);
     } catch (error) {
       logger.error('Ошибка удаления блока:', error);
