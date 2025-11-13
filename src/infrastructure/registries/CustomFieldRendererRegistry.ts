@@ -9,9 +9,6 @@ export class CustomFieldRendererRegistry implements ICustomFieldRendererRegistry
     if (!renderer.id) {
       throw new Error('Renderer ID is required');
     }
-    if (this.renderers.has(renderer.id)) {
-      // Рендерер с таким ID уже существует, перезаписываем
-    }
     this.renderers.set(renderer.id, renderer);
   }
   get(id: string): ICustomFieldRenderer | null {

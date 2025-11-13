@@ -225,12 +225,10 @@ const fetchData = async (reset = false) => {
     hasMore.value = response.hasMore ?? false;
     if (isDropdownOpen.value) {
       await nextTick();
-      // Обновляем позицию после загрузки данных, так как размер дропдауна мог измениться
       dropdownRef.value?.updatePosition();
       if (savedScrollTop > 0) {
         dropdownRef.value?.restoreScrollPosition(savedScrollTop);
       }
-      // Дополнительное обновление позиции после восстановления скролла
       await nextTick();
       dropdownRef.value?.updatePosition();
     }
@@ -239,7 +237,6 @@ const fetchData = async (reset = false) => {
     items.value = [];
   } finally {
     loading.value = false;
-    // Обновляем позицию после завершения загрузки, чтобы учесть изменения размера
     if (isDropdownOpen.value) {
       nextTick(() => {
         dropdownRef.value?.updatePosition();
@@ -283,8 +280,6 @@ const syncSearchQueryWithSelection = (value: string | number | (string | number)
 const handleDropdownOpen = async () => {
   isDropdownOpen.value = true;
 
-  // Обновляем позицию дропдауна при открытии
-  // Это особенно важно для полей в репитере, которые могут быть в скроллируемой области
   await nextTick();
   dropdownRef.value?.updatePosition();
 

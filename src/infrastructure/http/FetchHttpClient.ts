@@ -10,10 +10,6 @@ import { HTTP_DEFAULT_TIMEOUT_MS } from '../../utils/constants';
 export class FetchHttpClient implements IHttpClient {
   private readonly defaultTimeout: number = HTTP_DEFAULT_TIMEOUT_MS;
 
-  /**
-   * Получает базовый URL для преобразования относительных URL в абсолютные
-   * @returns Базовый URL (origin текущей страницы)
-   */
   private getBaseUrl(): string {
     if (typeof window !== 'undefined') {
       return window.location.origin;
@@ -21,37 +17,21 @@ export class FetchHttpClient implements IHttpClient {
     return '';
   }
 
-  /**
-   * Преобразует URL в абсолютный формат для работы с new URL()
-   * @param url - URL (может быть относительным или абсолютным)
-   * @returns Абсолютный URL
-   */
   private normalizeUrl(url: string): string {
     try {
-      // Пытаемся создать URL - если это абсолютный URL, вернет его как есть
       new URL(url);
       return url;
     } catch {
-      // Если URL относительный, используем new URL(url, base) для правильного преобразования
       const baseUrl = this.getBaseUrl();
       return new URL(url, baseUrl).toString();
     }
   }
 
-  /**
-   * Добавляет query параметры к URL (работает с относительными и абсолютными URL)
-   * Использует new URL() для правильной обработки кодирования и edge cases
-   * @param url - URL (может быть относительным или абсолютным)
-   * @param params - Параметры запроса
-   * @returns URL с query параметрами (относительный или абсолютный, в зависимости от исходного)
-   */
   private buildUrlWithParams(url: string, params?: IApiRequestParams): string {
     if (!params || Object.keys(params).length === 0) {
       return url;
     }
 
-    // Преобразуем в абсолютный URL для работы с new URL()
-    // Это нужно для правильной обработки query параметров
     const absoluteUrl = this.normalizeUrl(url);
     const urlObj = new URL(absoluteUrl);
 
@@ -63,14 +43,10 @@ export class FetchHttpClient implements IHttpClient {
 
     const result = urlObj.toString();
 
-    // Если исходный URL был относительным, возвращаем относительный результат
-    // (убираем origin, оставляем только pathname + search)
     try {
       new URL(url);
-      // Исходный URL был абсолютным, возвращаем абсолютный результат
       return result;
     } catch {
-      // Исходный URL был относительным, возвращаем относительный результат
       return urlObj.pathname + urlObj.search;
     }
   }
@@ -85,9 +61,6 @@ export class FetchHttpClient implements IHttpClient {
       timeout = this.defaultTimeout,
     } = options;
 
-    // Добавляем query параметры для GET запросов
-    // buildUrlWithParams использует new URL() для правильной обработки параметров,
-    // но сохраняет относительный формат URL если исходный был относительным
     const fullUrl = method === 'GET' && params ? this.buildUrlWithParams(url, params) : url;
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);

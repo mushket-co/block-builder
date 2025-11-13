@@ -1,10 +1,5 @@
 import { logger } from '../utils/logger';
 
-/**
- * Event Delegation для обработки onclick событий
- * Альтернатива глобальным переменным
- */
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type TEventHandler = (...args: any[]) => void | Promise<void>;
 

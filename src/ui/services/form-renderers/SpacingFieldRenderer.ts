@@ -12,7 +12,7 @@ export class SpacingFieldRenderer extends BaseFieldRenderer {
       label: field.label,
       required: !!required,
       value: value || {},
-      config: spacingConfig, // Передаем spacingConfig как config, чтобы breakpoints были в config.breakpoints
+      config: spacingConfig,
     }).replaceAll('"', '&quot;');
 
     return `

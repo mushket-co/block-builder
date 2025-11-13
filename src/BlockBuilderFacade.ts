@@ -36,10 +36,6 @@ export interface IBlockBuilderOptions {
   isEdit?: boolean;
 }
 
-/**
- * BlockBuilderFacade - главный класс библиотеки
- * Единственная точка входа для пользователей пакета
- */
 export class BlockBuilderFacade {
   private useCase: BlockManagementUseCase;
   private repository: IBlockRepository;
@@ -110,10 +106,6 @@ export class BlockBuilderFacade {
     }
   }
 
-  /**
-   * Асинхронная инициализация: загрузка начальных блоков и рендеринг UI
-   * UI инициализируется автоматически, если передан containerId
-   */
   private async initialize(containerId?: string, initialBlocks?: IBlockDto[]): Promise<void> {
     if (initialBlocks && initialBlocks.length > 0) {
       await this.loadInitialBlocks(initialBlocks);
@@ -197,10 +189,6 @@ export class BlockBuilderFacade {
     }
   }
 
-  /**
-   * Перезагружает конфигурацию лицензии после изменения типа
-   * Используется после успешной активации PRO режима
-   */
   private reloadLicenseConfiguration(): void {
     this.registerComponentsFromConfig();
 
@@ -276,10 +264,6 @@ export class BlockBuilderFacade {
     }
   }
 
-  /**
-   * Перезагружает блоки при изменении лицензии (PRO↔FREE)
-   * Сохраняет текущие блоки, фильтрует их по новой лицензии и перезагружает
-   */
   private async reloadBlocksAfterLicenseChange(): Promise<void> {
     if (!this.uiController) {
       return;
@@ -430,17 +414,11 @@ export class BlockBuilderFacade {
     return this.licenseService.getLicense().isPro();
   }
 
-  /**
-   * Получить оставшееся количество слотов для типов блоков
-   */
   getRemainingBlockTypeSlots(): number {
     const currentCount = Object.keys(this.blockConfigs).length;
     return this.licenseService.getLicense().getRemainingBlockTypeSlots(currentCount);
   }
 
-  /**
-   * Получить сервис лицензии (для передачи в UI компоненты)
-   */
   getLicenseService(): LicenseService {
     return this.licenseService;
   }
