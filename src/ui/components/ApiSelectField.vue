@@ -22,7 +22,7 @@
       :chip-display-limit="0"
       @open="handleDropdownOpen"
       @close="handleDropdownClose"
-      @update:modelValue="onValueUpdate"
+      @update:model-value="onValueUpdate"
       @scroll-bottom="handleScrollBottom"
     >
       <template #trigger="{ state, actions }">
@@ -177,13 +177,8 @@ const updateKnownSelections = (value: string | number | (string | number)[] | nu
     const ids = new Set(Array.isArray(value) ? value : []);
     selectedItems.value = Array.from(ids)
       .map(id => knownItems.get(id) ?? previousSelection.find(item => item.id === id))
-      .filter((item): item is IApiSelectItem => Boolean(item));
-  } else if (
-    !Array.isArray(value) &&
-    value !== null &&
-    value !== undefined &&
-    value !== ''
-  ) {
+      .filter(Boolean);
+  } else if (!Array.isArray(value) && value !== null && value !== undefined && value !== '') {
     const candidate =
       knownItems.get(value) ?? previousSelection.find(item => item.id === value) ?? null;
     selectedItems.value = candidate ? [candidate] : [];
@@ -206,7 +201,8 @@ const fetchData = async (reset = false) => {
     currentPage.value = 1;
   }
 
-  const savedScrollTop = !reset && isDropdownOpen.value ? dropdownRef.value?.saveScrollPosition() ?? 0 : 0;
+  const savedScrollTop =
+    !reset && isDropdownOpen.value ? (dropdownRef.value?.saveScrollPosition() ?? 0) : 0;
 
   loading.value = true;
   error.value = null;
@@ -229,16 +225,26 @@ const fetchData = async (reset = false) => {
     hasMore.value = response.hasMore ?? false;
     if (isDropdownOpen.value) {
       await nextTick();
+      // Обновляем позицию после загрузки данных, так как размер дропдауна мог измениться
       dropdownRef.value?.updatePosition();
       if (savedScrollTop > 0) {
         dropdownRef.value?.restoreScrollPosition(savedScrollTop);
       }
+      // Дополнительное обновление позиции после восстановления скролла
+      await nextTick();
+      dropdownRef.value?.updatePosition();
     }
   } catch (error_: any) {
     error.value = error_.message || errorText.value;
     items.value = [];
   } finally {
     loading.value = false;
+    // Обновляем позицию после завершения загрузки, чтобы учесть изменения размера
+    if (isDropdownOpen.value) {
+      nextTick(() => {
+        dropdownRef.value?.updatePosition();
+      });
+    }
   }
 };
 
@@ -274,8 +280,13 @@ const syncSearchQueryWithSelection = (value: string | number | (string | number)
   searchQuery.value = selectedItem?.name ?? '';
 };
 
-const handleDropdownOpen = () => {
+const handleDropdownOpen = async () => {
   isDropdownOpen.value = true;
+
+  // Обновляем позицию дропдауна при открытии
+  // Это особенно важно для полей в репитере, которые могут быть в скроллируемой области
+  await nextTick();
+  dropdownRef.value?.updatePosition();
 
   if (!loading.value) {
     fetchData(true);
@@ -429,5 +440,4 @@ onBeforeUnmount(() => {
     clearTimeout(debounceTimer);
   }
 });
-
 </script>

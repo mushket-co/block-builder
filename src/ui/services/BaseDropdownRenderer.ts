@@ -166,11 +166,10 @@ export abstract class BaseDropdownRenderer {
       `input[type="hidden"][name="${this.fieldName}"]`
     ) as HTMLInputElement;
     if (hiddenInput) {
-      if (this.multiple && Array.isArray(this.value)) {
-        hiddenInput.value = JSON.stringify(this.value);
-      } else {
-        hiddenInput.value = String(this.value ?? '');
-      }
+      hiddenInput.value =
+        this.multiple && Array.isArray(this.value)
+          ? JSON.stringify(this.value)
+          : String(this.value ?? '');
     }
   }
 
@@ -190,4 +189,3 @@ export abstract class BaseDropdownRenderer {
   abstract getValue(): string | number | (string | number)[] | null;
   abstract setValue(value: string | number | (string | number)[] | null): void;
 }
-

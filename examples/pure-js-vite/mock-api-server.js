@@ -57,8 +57,8 @@ function handleNewsSearch(searchQuery, page = 1, limit = 10) {
 export function setupMockApi(app, port = 3002) {
   // Vite middleware - используем обработчик для всех запросов
   app.use((req, res, next) => {
-    // Обработка только API запросов
-    if (!req.url.startsWith('/api/news')) {
+    // Обработка только API запросов (новости и статьи)
+    if (!req.url.startsWith('/api/news') && !req.url.startsWith('/api/articles')) {
       return next();
     }
 
@@ -125,7 +125,7 @@ export function setupMockApi(app, port = 3002) {
 
     // Простой парсер multipart/form-data (для демо)
     let body = Buffer.alloc(0);
-    
+
     req.on('data', chunk => {
       body = Buffer.concat([body, chunk]);
     });
@@ -137,7 +137,7 @@ export function setupMockApi(app, port = 3002) {
         const timestamp = Date.now();
         const randomId = Math.random().toString(36).substring(7);
         const mockUrl = `/uploads/${timestamp}-${randomId}.jpg`;
-        
+
         // Возвращаем URL загруженного файла как объект
         // В реальности ответ может быть каким угодно - строкой, объектом и т.д.
         res.setHeader('Content-Type', 'application/json');

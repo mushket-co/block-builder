@@ -9,7 +9,7 @@
     :placeholder="placeholder || 'Выберите...'"
     :clearable="isClearable"
     :invalid="showError"
-    @update:modelValue="handleUpdate"
+    @update:model-value="handleUpdate"
   />
   <div v-if="showError && error" class="block-builder-form-errors">
     <span :class="CSS_CLASSES.ERROR">{{ error }}</span>

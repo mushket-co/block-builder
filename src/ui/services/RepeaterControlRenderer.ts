@@ -87,10 +87,11 @@ export class RepeaterControlRenderer {
           case 'number':
             newItem[field.field] = 0;
             break;
-          case 'api-select':
+          case 'api-select': {
             const apiSelectConfig = (field as any).apiSelectConfig;
             newItem[field.field] = apiSelectConfig?.multiple ? [] : null;
             break;
+          }
           case 'custom':
             newItem[field.field] = '';
             break;

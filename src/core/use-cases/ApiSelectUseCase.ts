@@ -111,9 +111,14 @@ export class ApiSelectUseCase {
       errors.push('URL обязателен');
     } else {
       try {
+        // Пытаемся создать URL - если это относительный путь, выбросит ошибку
         new URL(config.url);
       } catch {
-        errors.push('Некорректный URL');
+        // Проверяем, что это хотя бы похоже на относительный путь
+        if (!config.url.startsWith('/') && !config.url.match(/^https?:\/\//)) {
+          errors.push('Некорректный URL');
+        }
+        // Относительные URL (начинающиеся с /) считаем валидными
       }
     }
     if (config.method && !['GET', 'POST'].includes(config.method)) {

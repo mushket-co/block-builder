@@ -57,8 +57,8 @@ function handleNewsSearch(searchQuery, page = 1, limit = 10) {
 export function setupMockApi(app) {
   // Vite middleware - используем обработчик для всех запросов
   app.use((req, res, next) => {
-    // Обработка только API запросов
-    if (!req.url.startsWith('/api/news')) {
+    // Обработка только API запросов (новости и статьи)
+    if (!req.url.startsWith('/api/news') && !req.url.startsWith('/api/articles')) {
       return next();
     }
 

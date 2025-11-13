@@ -63,7 +63,7 @@
     </div>
 
     <Teleport :to="teleportTo">
-      <transition name="bb-dropdown-fade">
+      <Transition name="bb-dropdown-fade">
         <div
           v-if="isOpen"
           ref="panelRef"
@@ -88,10 +88,7 @@
                 </slot>
               </div>
 
-              <div
-                v-else-if="errorText"
-                class="bb-dropdown__message bb-dropdown__message--error"
-              >
+              <div v-else-if="errorText" class="bb-dropdown__message bb-dropdown__message--error">
                 <slot name="error">
                   {{ errorText }}
                 </slot>
@@ -115,7 +112,9 @@
                   >
                     <slot name="option" :option="option" :selected="isOptionSelected(option.value)">
                       <span class="bb-dropdown__option-label">{{ option.label }}</span>
-                      <span v-if="isOptionSelected(option.value)" class="bb-dropdown__option-check">✓</span>
+                      <span v-if="isOptionSelected(option.value)" class="bb-dropdown__option-check"
+                        >✓</span
+                      >
                     </slot>
                   </li>
                 </ul>
@@ -131,7 +130,7 @@
             </div>
           </slot>
         </div>
-      </transition>
+      </Transition>
     </Teleport>
   </div>
 </template>
@@ -243,13 +242,6 @@ const contentStyle = computed(() => {
   };
 });
 
-const resolvedCloseOnSelect = computed(() => {
-  if (props.closeOnSelect !== undefined) {
-    return props.closeOnSelect;
-  }
-  return !props.multiple;
-});
-
 const visibleChipOptions = computed(() => {
   if (!props.multiple) {
     return [];
@@ -346,7 +338,9 @@ const updatePosition = () => {
 
   const dropdownHeight = Math.min(panelRef.value.scrollHeight, effectiveMaxHeight);
 
-  let top = shouldShowAbove ? rect.top - dropdownHeight - viewportMargin : rect.bottom + viewportMargin;
+  let top = shouldShowAbove
+    ? rect.top - dropdownHeight - viewportMargin
+    : rect.bottom + viewportMargin;
   const viewportOffsetTop = window.visualViewport?.offsetTop ?? 0;
   top += viewportOffsetTop;
 
@@ -563,10 +557,7 @@ const isElementScrollable = (element: HTMLElement) => {
   const overflowY = style.overflowY;
   const overflow = style.overflow;
   const isScrollable =
-    overflowY === 'scroll' ||
-    overflowY === 'auto' ||
-    overflow === 'scroll' ||
-    overflow === 'auto';
+    overflowY === 'scroll' || overflowY === 'auto' || overflow === 'scroll' || overflow === 'auto';
 
   if (!isScrollable) {
     return false;
@@ -697,4 +688,3 @@ defineExpose({
   isOpen,
 });
 </script>
-

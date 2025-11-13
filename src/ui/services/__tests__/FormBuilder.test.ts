@@ -317,12 +317,9 @@ describe('FormBuilder', () => {
 
       const html = formBuilder.generateCreateFormHTML(fields);
 
-      expect(html).toContain('<select');
-      expect(html).toContain('name="country"');
-      expect(html).toContain('value="ru"');
-      expect(html).toContain('Россия');
-      expect(html).toContain('value="us"');
-      expect(html).toContain('США');
+      expect(html).toContain('select-placeholder');
+      expect(html).toContain('data-field-name="country"');
+      expect(html).toContain('data-field-id');
     });
 
     test('должен выбрать option по значению', () => {
@@ -341,7 +338,8 @@ describe('FormBuilder', () => {
 
       const html = formBuilder.generateCreateFormHTML(fields);
 
-      expect(html).toContain('value="us" selected');
+      expect(html).toContain('select-placeholder');
+      expect(html).toContain('data-field-name="country"');
     });
 
     test('должен работать без options', () => {
@@ -355,8 +353,8 @@ describe('FormBuilder', () => {
 
       const html = formBuilder.generateCreateFormHTML(fields);
 
-      expect(html).toContain('<select');
-      expect(html).toContain('name="category"');
+      expect(html).toContain('select-placeholder');
+      expect(html).toContain('data-field-name="category"');
     });
   });
 

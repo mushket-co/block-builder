@@ -355,7 +355,7 @@ export class ApiSelectControlRenderer {
     }
 
     if (this.dropdownElement && this.dropdownElement.parentNode) {
-      this.dropdownElement.parentNode.removeChild(this.dropdownElement);
+      this.dropdownElement.remove();
       this.dropdownElement = undefined;
     }
 
@@ -385,7 +385,7 @@ export class ApiSelectControlRenderer {
     if (this.isDropdownOpen) {
       const dropdown = this.createDropdownElement();
       this.dropdownElement = dropdown;
-      document.body.appendChild(dropdown);
+      document.body.append(dropdown);
       this.updateDropdownPosition();
       this.attachDropdownEvents(dropdown);
 
@@ -493,13 +493,17 @@ export class ApiSelectControlRenderer {
   }
 
   private attachDropdownEvents(dropdown: HTMLElement): void {
-    dropdown.addEventListener('mousedown', (e) => {
-      e.stopPropagation();
-    }, true);
+    dropdown.addEventListener(
+      'mousedown',
+      e => {
+        e.stopPropagation();
+      },
+      true
+    );
 
     const items = dropdown.querySelectorAll('[data-api-select-item]');
     items.forEach(itemEl => {
-      itemEl.addEventListener('click', (e) => {
+      itemEl.addEventListener('click', e => {
         e.stopPropagation();
         e.preventDefault();
         const idStr = (itemEl as HTMLElement).dataset.itemId;
@@ -515,7 +519,7 @@ export class ApiSelectControlRenderer {
 
     const loadMoreButton = dropdown.querySelector('[data-api-select-load-more]');
     if (loadMoreButton) {
-      loadMoreButton.addEventListener('click', (e) => {
+      loadMoreButton.addEventListener('click', e => {
         e.stopPropagation();
         e.preventDefault();
         this.loadMore();
@@ -528,13 +532,14 @@ export class ApiSelectControlRenderer {
       return;
     }
 
-    const hiddenInput = this.container.querySelector(`input[type="hidden"][name="${this.fieldName}"]`) as HTMLInputElement;
+    const hiddenInput = this.container.querySelector(
+      `input[type="hidden"][name="${this.fieldName}"]`
+    ) as HTMLInputElement;
     if (hiddenInput) {
-      if (this.isMultiple() && Array.isArray(this.value)) {
-        hiddenInput.value = JSON.stringify(this.value);
-      } else {
-        hiddenInput.value = String(this.value ?? '');
-      }
+      hiddenInput.value =
+        this.isMultiple() && Array.isArray(this.value)
+          ? JSON.stringify(this.value)
+          : String(this.value ?? '');
     }
   }
 
@@ -801,7 +806,7 @@ export class ApiSelectControlRenderer {
     window.removeEventListener('scroll', this.handleScrollBound, true);
 
     if (this.dropdownElement && this.dropdownElement.parentNode) {
-      this.dropdownElement.parentNode.removeChild(this.dropdownElement);
+      this.dropdownElement.remove();
       this.dropdownElement = undefined;
     }
 

@@ -40,9 +40,9 @@ import { EventDelegation } from '../EventDelegation';
 import { ApiSelectControlRenderer } from '../services/ApiSelectControlRenderer';
 import { CustomFieldControlRenderer } from '../services/CustomFieldControlRenderer';
 import { FormBuilder, TFieldConfig } from '../services/FormBuilder';
-import { SelectControlRenderer, ISelectControlOptions } from '../services/SelectControlRenderer';
 import { ModalManager } from '../services/ModalManager';
 import { RepeaterControlRenderer } from '../services/RepeaterControlRenderer';
+import { ISelectControlOptions, SelectControlRenderer } from '../services/SelectControlRenderer';
 import { SpacingControlRenderer } from '../services/SpacingControlRenderer';
 import { UIRenderer } from '../services/UIRenderer';
 
@@ -291,8 +291,7 @@ export class BlockUIController {
         renderer.render(htmlContainer);
 
         this.spacingRenderers.set(spacingConfig.field, renderer);
-      } catch {
-      }
+      } catch {}
     });
   }
 
@@ -455,10 +454,8 @@ export class BlockUIController {
           }
         }
 
-        const apiConfig: IApiSelectConfig =
-          parsedData.config ||
-          apiSelectConfigFromRepeater ||
-          {
+        const apiConfig: IApiSelectConfig = parsedData.config ||
+          apiSelectConfigFromRepeater || {
             url: parsedData.url || '',
             method: parsedData.method as THttpMethod | undefined,
             headers: parsedData.headers,
@@ -530,8 +527,7 @@ export class BlockUIController {
         await renderer.init(htmlContainer);
 
         this.apiSelectRenderers.set(fieldPath, renderer);
-      } catch {
-      }
+      } catch {}
     }
   }
 
@@ -566,7 +562,9 @@ export class BlockUIController {
         if (!fieldConfig || fieldConfig.type !== 'select') {
           continue;
         }
-        const hiddenInput = container.querySelector(`input[type="hidden"][name="${fieldName}"]`) as HTMLInputElement;
+        const hiddenInput = container.querySelector(
+          `input[type="hidden"][name="${fieldName}"]`
+        ) as HTMLInputElement;
         let currentValue: string | number | (string | number)[] | null = null;
 
         if (hiddenInput) {
@@ -579,11 +577,15 @@ export class BlockUIController {
             }
           } else {
             currentValue = inputValue || null;
-            if (currentValue && typeof currentValue === 'string' && !isNaN(Number(currentValue))) {
+            if (
+              currentValue &&
+              typeof currentValue === 'string' &&
+              !Number.isNaN(Number(currentValue))
+            ) {
               const numValue = Number(currentValue);
               const option = fieldConfig.options?.find(opt => {
                 const optValue = typeof opt.value === 'number' ? opt.value : Number(opt.value);
-                return !isNaN(optValue) && optValue === numValue;
+                return !Number.isNaN(optValue) && optValue === numValue;
               });
               if (option) {
                 currentValue = typeof option.value === 'number' ? option.value : numValue;
@@ -622,11 +624,10 @@ export class BlockUIController {
           options,
           onChange: (newValue: string | number | (string | number)[] | null) => {
             if (hiddenInput) {
-              if (fieldConfig.multiple && Array.isArray(newValue)) {
-                hiddenInput.value = JSON.stringify(newValue);
-              } else {
-                hiddenInput.value = String(newValue ?? '');
-              }
+              hiddenInput.value =
+                fieldConfig.multiple && Array.isArray(newValue)
+                  ? JSON.stringify(newValue)
+                  : String(newValue ?? '');
             }
 
             htmlPlaceholder.dataset.selectValue = JSON.stringify(newValue);
@@ -764,8 +765,7 @@ export class BlockUIController {
               }
             }
           },
-          onError: _error => {
-          },
+          onError: _error => {},
         });
 
         this.customFieldRenderers.set(fieldPath, fieldRenderer);
@@ -860,8 +860,7 @@ export class BlockUIController {
             if (typeof parsed === 'object' && parsed !== null) {
               currentValue = parsed;
             }
-          } catch {
-          }
+          } catch {}
         }
       }
 

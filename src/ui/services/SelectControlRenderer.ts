@@ -1,4 +1,8 @@
-import { BaseDropdownRenderer, IDropdownOption, IBaseDropdownRendererOptions } from './BaseDropdownRenderer';
+import {
+  BaseDropdownRenderer,
+  IBaseDropdownRendererOptions,
+  IDropdownOption,
+} from './BaseDropdownRenderer';
 
 export interface ISelectControlOptions extends IBaseDropdownRendererOptions {
   options: IDropdownOption[];
@@ -28,7 +32,7 @@ export class SelectControlRenderer extends BaseDropdownRenderer {
 
     if (this.options.length === 0) {
       content.innerHTML = '<div class="bb-dropdown__message">Нет данных</div>';
-      dropdown.appendChild(content);
+      dropdown.append(content);
       return dropdown;
     }
 
@@ -61,11 +65,11 @@ export class SelectControlRenderer extends BaseDropdownRenderer {
         });
       }
 
-      list.appendChild(item);
+      list.append(item);
     });
 
-    content.appendChild(list);
-    dropdown.appendChild(content);
+    content.append(list);
+    dropdown.append(content);
     this.attachDropdownEvents(dropdown);
     this.attachKeyboardNavigation(dropdown);
 
@@ -80,14 +84,16 @@ export class SelectControlRenderer extends BaseDropdownRenderer {
     this.updateDisplayValue();
     let savedScrollTop = 0;
     if (this.dropdownElement) {
-      const contentElement = this.dropdownElement.querySelector('.bb-dropdown__content') as HTMLElement;
+      const contentElement = this.dropdownElement.querySelector(
+        '.bb-dropdown__content'
+      ) as HTMLElement;
       if (contentElement) {
         savedScrollTop = contentElement.scrollTop;
       }
     }
 
     if (this.dropdownElement && this.dropdownElement.parentNode) {
-      this.dropdownElement.parentNode.removeChild(this.dropdownElement);
+      this.dropdownElement.remove();
       this.dropdownElement = undefined;
     }
 
@@ -107,7 +113,7 @@ export class SelectControlRenderer extends BaseDropdownRenderer {
       const dropdown = this.createDropdownElement();
       this.dropdownElement = dropdown;
       dropdown.setAttribute('tabindex', '-1');
-      document.body.appendChild(dropdown);
+      document.body.append(dropdown);
       this.updateDropdownPosition();
 
       if (savedScrollTop > 0) {
@@ -127,11 +133,9 @@ export class SelectControlRenderer extends BaseDropdownRenderer {
     if (this.multiple) {
       const currentValue = (this.value as (string | number)[]) || [];
 
-      if (currentValue.includes(optionValue)) {
-        this.value = currentValue.filter(v => v !== optionValue);
-      } else {
-        this.value = [...currentValue, optionValue];
-      }
+      this.value = currentValue.includes(optionValue)
+        ? currentValue.filter(v => v !== optionValue)
+        : [...currentValue, optionValue];
       this.updateHiddenInput();
       this.updateDropdownContent();
     } else {
@@ -195,7 +199,7 @@ export class SelectControlRenderer extends BaseDropdownRenderer {
           const clearBtn = document.createElement('button');
           clearBtn.type = 'button';
           clearBtn.className = 'bb-dropdown__clear';
-          clearBtn.setAttribute('data-select-clear', '');
+          clearBtn.dataset.selectClear = '';
           clearBtn.textContent = '✕';
           clearBtn.addEventListener('click', e => {
             e.stopPropagation();
@@ -204,9 +208,9 @@ export class SelectControlRenderer extends BaseDropdownRenderer {
           });
           const arrowElement = controlElement.querySelector('.bb-dropdown__arrow');
           if (arrowElement) {
-            controlElement.insertBefore(clearBtn, arrowElement);
+            arrowElement.before(clearBtn);
           } else {
-            controlElement.appendChild(clearBtn);
+            controlElement.append(clearBtn);
           }
         }
       }
@@ -248,7 +252,8 @@ export class SelectControlRenderer extends BaseDropdownRenderer {
       button.addEventListener('click', e => {
         e.stopPropagation();
         e.preventDefault();
-        const value = button.getAttribute('data-select-remove');
+        const htmlButton = button as HTMLElement;
+        const value = htmlButton.dataset.selectRemove;
         if (value) {
           this.removeOption(this.parseValue(value));
         }
@@ -371,11 +376,7 @@ export class SelectControlRenderer extends BaseDropdownRenderer {
   }
 
   private clearSelection(): void {
-    if (this.multiple) {
-      this.value = [];
-    } else {
-      this.value = null;
-    }
+    this.value = this.multiple ? [] : null;
 
     this.updateHiddenInput();
     this.emitChange();
@@ -397,21 +398,33 @@ export class SelectControlRenderer extends BaseDropdownRenderer {
 
   private parseValue(value: string): string | number {
     const numValue = Number(value);
-    return isNaN(numValue) ? value : numValue;
+    return Number.isNaN(numValue) ? value : numValue;
   }
 
   private attachKeyboardNavigation(dropdown: HTMLElement): void {
     dropdown.addEventListener('keydown', e => {
-      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-        e.preventDefault();
-        this.handleKeyboardNavigation(e.key);
-      } else if (e.key === 'Enter') {
-        e.preventDefault();
-        this.selectHighlightedOption();
-      } else if (e.key === 'Escape') {
-        e.preventDefault();
-        this.closeDropdown();
-        this.triggerElement?.focus();
+      switch (e.key) {
+        case 'ArrowDown':
+        case 'ArrowUp': {
+          e.preventDefault();
+          this.handleKeyboardNavigation(e.key);
+
+          break;
+        }
+        case 'Enter': {
+          e.preventDefault();
+          this.selectHighlightedOption();
+
+          break;
+        }
+        case 'Escape': {
+          e.preventDefault();
+          this.closeDropdown();
+          this.triggerElement?.focus();
+
+          break;
+        }
+        // No default
       }
     });
   }
@@ -422,7 +435,9 @@ export class SelectControlRenderer extends BaseDropdownRenderer {
     }
 
     const options = Array.from(
-      this.dropdownElement.querySelectorAll<HTMLElement>('.bb-dropdown__option:not(.bb-dropdown__option--disabled)')
+      this.dropdownElement.querySelectorAll<HTMLElement>(
+        '.bb-dropdown__option:not(.bb-dropdown__option--disabled)'
+      )
     );
 
     if (options.length === 0) {
@@ -430,9 +445,11 @@ export class SelectControlRenderer extends BaseDropdownRenderer {
     }
 
     if (key === 'ArrowDown') {
-      this.highlightedIndex = this.highlightedIndex < options.length - 1 ? this.highlightedIndex + 1 : 0;
+      this.highlightedIndex =
+        this.highlightedIndex < options.length - 1 ? this.highlightedIndex + 1 : 0;
     } else if (key === 'ArrowUp') {
-      this.highlightedIndex = this.highlightedIndex > 0 ? this.highlightedIndex - 1 : options.length - 1;
+      this.highlightedIndex =
+        this.highlightedIndex > 0 ? this.highlightedIndex - 1 : options.length - 1;
     }
 
     options.forEach(option => {
@@ -452,7 +469,9 @@ export class SelectControlRenderer extends BaseDropdownRenderer {
     }
 
     const options = Array.from(
-      this.dropdownElement.querySelectorAll<HTMLElement>('.bb-dropdown__option:not(.bb-dropdown__option--disabled)')
+      this.dropdownElement.querySelectorAll<HTMLElement>(
+        '.bb-dropdown__option:not(.bb-dropdown__option--disabled)'
+      )
     );
 
     if (this.highlightedIndex >= 0 && this.highlightedIndex < options.length) {
@@ -478,7 +497,7 @@ export class SelectControlRenderer extends BaseDropdownRenderer {
     window.removeEventListener('scroll', this.handleScrollBound, true);
 
     if (this.dropdownElement && this.dropdownElement.parentNode) {
-      this.dropdownElement.parentNode.removeChild(this.dropdownElement);
+      this.dropdownElement.remove();
       this.dropdownElement = undefined;
     }
   }
@@ -493,4 +512,3 @@ export class SelectControlRenderer extends BaseDropdownRenderer {
     this.updateDropdownContent();
   }
 }
-

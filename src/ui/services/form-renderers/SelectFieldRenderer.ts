@@ -1,7 +1,7 @@
 import { IFormFieldConfig } from '../../../core/types/form';
+import { ISelectControlOptions, SelectControlRenderer } from '../../services/SelectControlRenderer';
 import { BaseFieldRenderer } from './BaseFieldRenderer';
 import { IRenderContext } from './IRenderContext';
-import { SelectControlRenderer, ISelectControlOptions } from '../../services/SelectControlRenderer';
 
 export class SelectFieldRenderer extends BaseFieldRenderer {
   readonly fieldType = 'select';
@@ -15,7 +15,6 @@ export class SelectFieldRenderer extends BaseFieldRenderer {
     context?: IRenderContext
   ): string {
     const fieldName = this.getFieldName(context, field);
-    const placeholder = field.placeholder || 'Выберите значение';
 
     return `<div class="select-placeholder" data-field-name="${fieldName}" data-field-id="${fieldId}"></div>`;
   }
