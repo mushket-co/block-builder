@@ -35,8 +35,8 @@ export abstract class BaseFieldRenderer implements IFieldRenderer {
     context?: IRenderContext
   ): string {
     const escapedLabel = this.escapeHtml(field.label);
-    const requiredMark = required ? '<span class="required">*</span>' : '';
-    const labelClass = context?.labelClass || 'block-builder-form-label';
+    const requiredMark = required ? `<span class="${CSS_CLASSES.REQUIRED}">*</span>` : '';
+    const labelClass = context?.labelClass || CSS_CLASSES.FORM_LABEL;
 
     return `
       <label for="${fieldId}" class="${labelClass}">

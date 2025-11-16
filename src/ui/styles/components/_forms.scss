@@ -1,8 +1,3 @@
-/**
- * Стили форм по БЭМ с использованием SCSS
- */
-
-// Миксин для контролов формы
 @mixin form-control-base {
   width: 100%;
   padding: 0.75rem;
@@ -17,39 +12,37 @@
   }
 }
 
-/* Форма */
-.block-builder-form {
+.bb-form {
   display: flex;
   flex-direction: column;
   gap: var(--bb-spacing-xl);
 }
 
-/* Группа полей формы */
-.block-builder-form-group {
+.bb-form-group {
   display: flex;
   flex-direction: column;
   gap: var(--bb-spacing-sm);
 }
 
-/* Label */
-.block-builder-form-label {
+.bb-form-label {
   font-weight: 500;
   font-size: var(--bb-font-size-sm);
 
-  .required {
+  .bb-required {
     color: var(--bb-color-danger);
     margin-left: 4px;
   }
 }
 
-/* Контролы формы */
-.block-builder-form-control {
-  padding: 12px;
+.bb-form-control {
+  height: var(--bb-form-control-height);
+  padding: 0 12px;
   border: 2px solid var(--bb-border-color-light);
   border-radius: var(--bb-radius-md);
   font-size: var(--bb-font-size-sm);
   transition: border-color var(--bb-transition-base);
   font-family: var(--bb-font-family);
+  line-height: calc(var(--bb-form-control-height) - 4px);
 
   &:focus {
     outline: none;
@@ -61,7 +54,7 @@
     border-color: var(--bb-color-danger);
   }
 
-  &.block-builder-error {
+  &.bb-error {
     border-color: var(--bb-color-danger);
 
     &:focus {
@@ -71,12 +64,11 @@
   }
 }
 
-/* Ошибки валидации */
-.block-builder-form-errors {
+.bb-form-errors {
   margin-top: 4px;
   font-size: 12px;
 
-  .block-builder-error,
+  .bb-error,
   .error {
     display: block;
     color: var(--bb-color-danger);
@@ -84,8 +76,8 @@
   }
 }
 
-.block-builder-form-control.error,
-.block-builder-form-control.block-builder-error {
+.bb-form-control.error,
+.bb-form-control.bb-error {
   border-color: var(--bb-color-danger);
 
   &:focus {
@@ -94,7 +86,6 @@
   }
 }
 
-/* Анимация подсветки поля с ошибкой */
 .field-error-highlight {
   animation: errorPulse 0.6s ease-in-out;
 }
@@ -108,8 +99,7 @@
   }
 }
 
-/* Checkbox */
-.block-builder-form-checkbox {
+.bb-form-checkbox {
   display: flex;
   align-items: center;
   gap: var(--bb-spacing-sm);
@@ -128,14 +118,13 @@
   }
 }
 
-/* Radio */
-.block-builder-form-radio-group {
+.bb-form-radio-group {
   display: flex;
   flex-direction: column;
   gap: var(--bb-spacing-sm);
 }
 
-.block-builder-form-radio {
+.bb-form-radio {
   display: flex;
   align-items: center;
   gap: var(--bb-spacing-sm);
@@ -154,36 +143,33 @@
   }
 }
 
-/* Textarea */
-textarea.block-builder-form-control {
+textarea.bb-form-control {
   resize: vertical;
   min-height: 80px;
+  height: auto;
+  padding: 12px;
+  line-height: 1.5;
 }
 
-/* Select */
-select.block-builder-form-control {
+select.bb-form-control {
   cursor: pointer;
 }
 
-/* Color input */
-input[type="color"].block-builder-form-control {
+input[type="color"].bb-form-control {
   width: 60px;
   height: 40px;
   padding: 4px;
   cursor: pointer;
 }
 
-/* Number input */
-input[type="number"].block-builder-form-control {
+input[type="number"].bb-form-control {
   width: 120px;
 }
 
-/* URL input */
-input[type="url"].block-builder-form-control {
+input[type="url"].bb-form-control {
   font-family: var(--bb-font-family-mono);
 }
 
-/* Array items (для специальных форм) */
 .array-item {
   border: 1px solid var(--bb-border-color);
   border-radius: var(--bb-radius-md);
@@ -196,7 +182,6 @@ input[type="url"].block-builder-form-control {
   }
 }
 
-/* Object fields */
 .object-field {
   background: var(--bb-bg-secondary);
   padding: 1rem;

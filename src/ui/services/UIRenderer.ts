@@ -80,7 +80,12 @@ export class UIRenderer {
       return;
     }
 
-    const panelClass = `block-builder-controls${this.config.controlsFixedPosition ? ` block-builder-controls--fixed-${this.config.controlsFixedPosition}` : ''}`;
+    const fixedClass = this.config.controlsFixedPosition
+      ? this.config.controlsFixedPosition === 'top'
+        ? CSS_CLASSES.CONTROLS_FIXED_TOP
+        : CSS_CLASSES.CONTROLS_FIXED_BOTTOM
+      : '';
+    const panelClass = `${CSS_CLASSES.CONTROLS}${fixedClass ? ` ${fixedClass}` : ''}`;
     const containerClass = this.config.controlsContainerClass || '';
 
     let inlineStyles = '';
@@ -99,25 +104,29 @@ export class UIRenderer {
       }
     }
 
-    const positionClass = this.config.controlsFixedPosition === 'top' ? ' has-top-controls' : '';
+    const positionClass =
+      this.config.controlsFixedPosition === 'top' ? ` ${CSS_CLASSES.HAS_TOP_CONTROLS}` : '';
     const bottomClass =
-      this.config.controlsFixedPosition === 'bottom' ? ' has-bottom-controls' : '';
-    const appClass = `block-builder block-builder-app${this.config.controlsFixedPosition ? ' has-fixed-controls' : ''}${positionClass}${bottomClass}`;
+      this.config.controlsFixedPosition === 'bottom' ? ` ${CSS_CLASSES.HAS_BOTTOM_CONTROLS}` : '';
+    const fixedControlsClass = this.config.controlsFixedPosition
+      ? ` ${CSS_CLASSES.HAS_FIXED_CONTROLS}`
+      : '';
+    const appClass = `${CSS_CLASSES.BLOCK_BUILDER} ${CSS_CLASSES.APP}${fixedControlsClass}${positionClass}${bottomClass}`;
 
     if (this.isEdit) {
-      document.body.classList.add('bb-is-edit-mode');
+      document.body.classList.add(CSS_CLASSES.BB_IS_EDIT_MODE);
     } else {
-      document.body.classList.remove('bb-is-edit-mode');
+      document.body.classList.remove(CSS_CLASSES.BB_IS_EDIT_MODE);
     }
 
     const licenseBanner = this.renderLicenseBanner();
     const controlsHTML = this.isEdit
       ? `
       <div class="${panelClass}" ${inlineStyles}>
-        <div class="block-builder-controls-container${containerClass ? ` ${containerClass}` : ''}">
-          <div class="block-builder-controls-inner">
+        <div class="${CSS_CLASSES.CONTROLS_CONTAINER}${containerClass ? ` ${containerClass}` : ''}">
+          <div class="${CSS_CLASSES.CONTROLS_INNER}">
             ${this.renderControlButtons()}
-            <div class="block-builder-stats">
+            <div class="${CSS_CLASSES.STATS}">
               <p>Всего блоков: <span id="blocks-count">0</span></p>
             </div>
             ${this.renderLicenseBadge()}
@@ -131,27 +140,30 @@ export class UIRenderer {
     <div class="${appClass}">
       ${licenseBanner}
       ${controlsHTML}
-      <div class="block-builder-blocks" id="block-builder-blocks"></div>
+      <div class="${CSS_CLASSES.BLOCKS}" id="block-builder-blocks"></div>
     </div>
   `;
   }
 
   private renderLicenseBanner(): string {
     const license = this.config.license;
-    if (license && !license.isPro) {
-      return `
-        <div class="block-builder-license-banner">
-          <div class="block-builder-license-banner__content">
-            <span class="block-builder-license-banner__icon">⚠️</span>
-            <span class="block-builder-license-banner__text">
-              Вы используете бесплатную версию <a href="https://block-builder.ru/" target="_blank" rel="noopener noreferrer" class="bb-link-inherit">Block Builder</a>.
-              Доступно ${license.currentTypesCount} из ${license.maxBlockTypes} типов блоков.
-            </span>
-          </div>
-        </div>
-      `;
+    if (!license) {
+      return '';
     }
-    return '';
+    if (license.isPro) {
+      return '';
+    }
+    return `
+      <div class="${CSS_CLASSES.LICENSE_BANNER}">
+        <div class="${CSS_CLASSES.LICENSE_BANNER_CONTENT}">
+          <span class="${CSS_CLASSES.LICENSE_BANNER_ICON}">⚠️</span>
+          <span class="${CSS_CLASSES.LICENSE_BANNER_TEXT}">
+            Вы используете бесплатную версию <a href="https://block-builder.ru/" target="_blank" rel="noopener noreferrer" class="${CSS_CLASSES.BB_LINK_INHERIT}">Block Builder</a>.
+            Доступно ${license.currentTypesCount} из ${license.maxBlockTypes} типов блоков.
+          </span>
+        </div>
+      </div>
+    `;
   }
 
   private renderControlButtons(): string {
@@ -159,10 +171,10 @@ export class UIRenderer {
       return '';
     }
     return `
-    <button data-action="saveAllBlocksUI" class="block-builder-btn block-builder-btn--success">
+    <button data-action="saveAllBlocksUI" class="${CSS_CLASSES.BTN} ${CSS_CLASSES.BTN_SUCCESS}">
       ${saveIconHTML} Сохранить
     </button>
-    <button data-action="clearAllBlocksUI" class="block-builder-btn block-builder-btn--danger">
+    <button data-action="clearAllBlocksUI" class="${CSS_CLASSES.BTN} ${CSS_CLASSES.BTN_DANGER}">
       ${deleteIconHTML} Очистить все
     </button>
   `;
@@ -176,15 +188,15 @@ export class UIRenderer {
 
     return license.isPro
       ? `
-        <div class="block-builder-license-badge block-builder-license-badge--pro" title="PRO лицензия - Без ограничений">
-          <span class="block-builder-license-badge__icon">✓</span>
-          <span class="block-builder-license-badge__text">PRO</span>
+        <div class="${CSS_CLASSES.LICENSE_BADGE} ${CSS_CLASSES.LICENSE_BADGE_PRO}" title="PRO лицензия - Без ограничений">
+          <span class="${CSS_CLASSES.LICENSE_BADGE_ICON}">✓</span>
+          <span class="${CSS_CLASSES.LICENSE_BADGE_TEXT}">PRO</span>
         </div>
       `
       : `
-        <div class="block-builder-license-badge block-builder-license-badge--free" title="FREE лицензия - Ограничено ${license.maxBlockTypes} типами блоков">
-          <span class="block-builder-license-badge__icon">ℹ</span>
-          <span class="block-builder-license-badge__text">FREE</span>
+        <div class="${CSS_CLASSES.LICENSE_BADGE} ${CSS_CLASSES.LICENSE_BADGE_FREE}" title="FREE лицензия - Ограничено ${license.maxBlockTypes} типами блоков">
+          <span class="${CSS_CLASSES.LICENSE_BADGE_ICON}">ℹ</span>
+          <span class="${CSS_CLASSES.LICENSE_BADGE_TEXT}">FREE</span>
         </div>
       `;
   }
@@ -193,9 +205,9 @@ export class UIRenderer {
     this.isEdit = isEdit;
     this.config.isEdit = isEdit;
     if (isEdit) {
-      document.body.classList.add('bb-is-edit-mode');
+      document.body.classList.add(CSS_CLASSES.BB_IS_EDIT_MODE);
     } else {
-      document.body.classList.remove('bb-is-edit-mode');
+      document.body.classList.remove(CSS_CLASSES.BB_IS_EDIT_MODE);
     }
     this.updateControlsPanel();
   }
@@ -206,14 +218,19 @@ export class UIRenderer {
       return;
     }
 
-    const appContainer = container.querySelector('.block-builder-app');
+    const appContainer = container.querySelector(`.${CSS_CLASSES.APP}`);
     if (!appContainer) {
       return;
     }
 
-    const existingControls = appContainer.querySelector('.block-builder-controls');
+    const existingControls = appContainer.querySelector(`.${CSS_CLASSES.CONTROLS}`);
 
-    const panelClass = `block-builder-controls${this.config.controlsFixedPosition ? ` block-builder-controls--fixed-${this.config.controlsFixedPosition}` : ''}`;
+    const fixedClass = this.config.controlsFixedPosition
+      ? this.config.controlsFixedPosition === 'top'
+        ? CSS_CLASSES.CONTROLS_FIXED_TOP
+        : CSS_CLASSES.CONTROLS_FIXED_BOTTOM
+      : '';
+    const panelClass = `${CSS_CLASSES.CONTROLS}${fixedClass ? ` ${fixedClass}` : ''}`;
     const containerClass = this.config.controlsContainerClass || '';
 
     let inlineStyles = '';
@@ -235,10 +252,10 @@ export class UIRenderer {
     const controlsHTML = this.isEdit
       ? `
       <div class="${panelClass}" ${inlineStyles}>
-        <div class="block-builder-controls-container${containerClass ? ` ${containerClass}` : ''}">
-          <div class="block-builder-controls-inner">
+        <div class="${CSS_CLASSES.CONTROLS_CONTAINER}${containerClass ? ` ${containerClass}` : ''}">
+          <div class="${CSS_CLASSES.CONTROLS_INNER}">
             ${this.renderControlButtons()}
-            <div class="block-builder-stats">
+            <div class="${CSS_CLASSES.STATS}">
               <p>Всего блоков: <span id="blocks-count">${document.querySelector('#blocks-count')?.textContent || '0'}</span></p>
             </div>
             ${this.renderLicenseBadge()}
@@ -264,7 +281,7 @@ export class UIRenderer {
       tempDiv.innerHTML = controlsHTML.trim();
       const newControls = tempDiv.firstChild;
       if (newControls) {
-        const blocksContainer = appContainer.querySelector('.block-builder-blocks');
+        const blocksContainer = appContainer.querySelector(`.${CSS_CLASSES.BLOCKS}`);
         if (blocksContainer) {
           blocksContainer.before(newControls);
         } else {
@@ -285,9 +302,9 @@ export class UIRenderer {
     }
 
     const licenseBadge = this.renderLicenseBadge();
-    const statsContainer = document.querySelector('.block-builder-controls-inner');
+    const statsContainer = document.querySelector(`.${CSS_CLASSES.CONTROLS_INNER}`);
     if (statsContainer) {
-      const existingBadge = statsContainer.querySelector('.block-builder-license-badge');
+      const existingBadge = statsContainer.querySelector(`.${CSS_CLASSES.LICENSE_BADGE}`);
       if (existingBadge) {
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = licenseBadge.trim();
@@ -298,30 +315,36 @@ export class UIRenderer {
       }
     }
 
-    const licenseBanner = this.renderLicenseBanner();
     const container = document.querySelector(`#${this.config.containerId}`);
     if (container) {
-      const appContainer = container.querySelector('.block-builder-app') || container;
-      const existingBanner = appContainer.querySelector('.block-builder-license-banner');
+      const appContainer = container.querySelector(`.${CSS_CLASSES.APP}`) || container;
+      const existingBanner = appContainer.querySelector(`.${CSS_CLASSES.LICENSE_BANNER}`);
 
-      if (!licenseInfo.isPro && licenseBanner) {
+      if (licenseInfo.isPro) {
         if (existingBanner) {
-          existingBanner.outerHTML = licenseBanner;
-        } else {
-          const tempDiv = document.createElement('div');
-          tempDiv.innerHTML = licenseBanner.trim();
-          const bannerNode = tempDiv.firstChild;
+          existingBanner.remove();
+        }
+      } else {
+        const licenseBanner = this.renderLicenseBanner();
+        if (licenseBanner) {
+          if (existingBanner) {
+            existingBanner.outerHTML = licenseBanner;
+          } else {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = licenseBanner.trim();
+            const bannerNode = tempDiv.firstChild;
 
-          if (bannerNode) {
-            if (appContainer.firstChild) {
-              appContainer.insertBefore(bannerNode, appContainer.firstChild);
-            } else {
-              appContainer.append(bannerNode);
+            if (bannerNode) {
+              if (appContainer.firstChild) {
+                appContainer.insertBefore(bannerNode, appContainer.firstChild);
+              } else {
+                appContainer.append(bannerNode);
+              }
             }
           }
+        } else if (existingBanner) {
+          existingBanner.remove();
         }
-      } else if (licenseInfo.isPro && existingBanner) {
-        existingBanner.remove();
       }
     }
 
@@ -333,15 +356,15 @@ export class UIRenderer {
       return '';
     }
     return `
-    <div class="block-builder-add-block-separator">
+    <div class="${CSS_CLASSES.ADD_BLOCK_SEPARATOR}">
       <button
         data-action="showBlockTypeSelectionModal"
         data-args="[${position}]"
-        class="block-builder-add-block-btn"
+        class="${CSS_CLASSES.ADD_BLOCK_BTN}"
         title="Добавить блок"
       >
-        <span class="block-builder-add-block-btn__icon">+</span>
-        <span class="block-builder-add-block-btn__text">Добавить блок</span>
+        <span class="${CSS_CLASSES.ADD_BLOCK_BTN_ICON}">+</span>
+        <span class="${CSS_CLASSES.ADD_BLOCK_BTN_TEXT}">Добавить блок</span>
       </button>
     </div>
   `;
@@ -365,7 +388,7 @@ export class UIRenderer {
 
     if (blocksToRender.length === 0) {
       blocksContainer.innerHTML = `
-      <div class="block-builder-empty-state">
+      <div class="${CSS_CLASSES.EMPTY_STATE}">
         ${this.renderAddBlockButton(0)}
       </div>
     `;
@@ -409,9 +432,9 @@ export class UIRenderer {
     const blockControlsHTML = this.isEdit
       ? `
       <!-- Поп-апчик с контролами -->
-      <div class="block-builder-block-controls">
-        <div class="block-builder-block-controls-container ${controlsContainerClass}">
-          <div class="block-builder-block-controls-inner">
+      <div class="${CSS_CLASSES.BLOCK_CONTROLS}">
+        <div class="${CSS_CLASSES.BLOCK_CONTROLS_CONTAINER} ${controlsContainerClass}">
+          <div class="${CSS_CLASSES.BLOCK_CONTROLS_INNER}">
             ${this.renderBlockControls(block, index, totalBlocks)}
           </div>
         </div>
@@ -420,11 +443,11 @@ export class UIRenderer {
       : '';
 
     return `
-    <div class="block-builder-block ${!block.visible ? CSS_CLASSES.HIDDEN : ''}" data-block-id="${block.id}"${styleAttr}>
+    <div class="${CSS_CLASSES.BLOCK} ${!block.visible ? CSS_CLASSES.HIDDEN : ''}" data-block-id="${block.id}"${styleAttr}>
       ${blockControlsHTML}
 
       <!-- Содержимое блока -->
-      <div class="block-builder-block-content">
+      <div class="${CSS_CLASSES.BLOCK_CONTENT}">
         ${blockContent}
       </div>
     </div>
@@ -443,7 +466,7 @@ export class UIRenderer {
   private renderBlockControls(block: IBlockDto, index?: number, totalBlocks?: number): string {
     if (!this.isEdit) {
       return `
-        <button data-action="copyBlockId" data-args='["${block.id}"]' class="block-builder-control-btn" title="Копировать ID: ${block.id}">${copyIconHTML}</button>
+        <button data-action="copyBlockId" data-args='["${block.id}"]' class="${CSS_CLASSES.CONTROL_BTN}" title="Копировать ID: ${block.id}">${copyIconHTML}</button>
       `;
     }
 
@@ -456,13 +479,13 @@ export class UIRenderer {
     const moveDownDisabled = isLast ? ' disabled' : '';
 
     return `
-      <button data-action="copyBlockId" data-args='["${block.id}"]' class="block-builder-control-btn" title="Копировать ID: ${block.id}">${copyIconHTML}</button>
-      <button data-action="moveBlockUp" data-args='["${block.id}"]' class="block-builder-control-btn" title="Переместить вверх"${moveUpDisabled}>${arrowUpIconHTML}</button>
-      <button data-action="moveBlockDown" data-args='["${block.id}"]' class="block-builder-control-btn" title="Переместить вниз"${moveDownDisabled}>${arrowDownIconHTML}</button>
-      <button data-action="editBlock" data-args='["${block.id}"]' class="block-builder-control-btn" title="Редактировать">${editIconHTML}</button>
-      <button data-action="duplicateBlockUI" data-args='["${block.id}"]' class="block-builder-control-btn" title="Дублировать">${duplicateIconHTML}</button>
-      <button data-action="toggleBlockVisibility" data-args='["${block.id}"]' class="block-builder-control-btn" title="${block.visible ? 'Скрыть' : 'Показать'}">${visibilityIcon}</button>
-      <button data-action="deleteBlockUI" data-args='["${block.id}"]' class="block-builder-control-btn" title="Удалить">${deleteIconHTML}</button>
+      <button data-action="copyBlockId" data-args='["${block.id}"]' class="${CSS_CLASSES.CONTROL_BTN}" title="Копировать ID: ${block.id}">${copyIconHTML}</button>
+      <button data-action="moveBlockUp" data-args='["${block.id}"]' class="${CSS_CLASSES.CONTROL_BTN}" title="Переместить вверх"${moveUpDisabled}>${arrowUpIconHTML}</button>
+      <button data-action="moveBlockDown" data-args='["${block.id}"]' class="${CSS_CLASSES.CONTROL_BTN}" title="Переместить вниз"${moveDownDisabled}>${arrowDownIconHTML}</button>
+      <button data-action="editBlock" data-args='["${block.id}"]' class="${CSS_CLASSES.CONTROL_BTN}" title="Редактировать">${editIconHTML}</button>
+      <button data-action="duplicateBlockUI" data-args='["${block.id}"]' class="${CSS_CLASSES.CONTROL_BTN}" title="Дублировать">${duplicateIconHTML}</button>
+      <button data-action="toggleBlockVisibility" data-args='["${block.id}"]' class="${CSS_CLASSES.CONTROL_BTN}" title="${block.visible ? 'Скрыть' : 'Показать'}">${visibilityIcon}</button>
+      <button data-action="deleteBlockUI" data-args='["${block.id}"]' class="${CSS_CLASSES.CONTROL_BTN}" title="Удалить">${deleteIconHTML}</button>
     `;
   }
 
@@ -489,7 +512,7 @@ export class UIRenderer {
     const escapedTitle = this.escapeHtml(config.title || '');
     const escapedProps = this.escapeHtml(JSON.stringify(userProps, null, 2));
     return `
-    <div class="block-content-fallback">
+    <div class="${CSS_CLASSES.BLOCK_CONTENT_FALLBACK}">
       <strong>${escapedTitle}</strong>
       <pre>${escapedProps}</pre>
     </div>
@@ -511,7 +534,7 @@ export class UIRenderer {
     const userProps = this.getUserComponentProps(block.props);
 
     const containerHTML = `
-    <div id="${componentId}" class="vue-component-container">
+    <div id="${componentId}" class="${CSS_CLASSES.VUE_COMPONENT_CONTAINER}">
       <!-- Vue компонент будет монтирован здесь -->
     </div>
   `;
@@ -587,7 +610,7 @@ export class UIRenderer {
 
   private renderCustomBlock(block: IBlockDto): string {
     const containerId = `custom-block-${block.id}`;
-    return `<div id="${containerId}" class="custom-block-container" data-block-id="${block.id}"></div>`;
+    return `<div id="${containerId}" class="${CSS_CLASSES.CUSTOM_BLOCK_CONTAINER}" data-block-id="${block.id}"></div>`;
   }
 
   private initializeCustomBlocks(blocks: IBlockDto[]): void {
@@ -606,7 +629,7 @@ export class UIRenderer {
             container.dataset.customMounted = 'true';
           } catch (error) {
             const errorMessage = error instanceof Error ? error.message : String(error);
-            container.innerHTML = `<div class="bb-error-box">
+            container.innerHTML = `<div class="${CSS_CLASSES.BB_ERROR_BOX}">
             <strong>⚠️ Ошибка рендеринга:</strong><br>${errorMessage}
           </div>`;
           }
@@ -667,7 +690,7 @@ export class UIRenderer {
   }
 
   destroy(): void {
-    document.body.classList.remove('bb-is-edit-mode');
+    document.body.classList.remove(CSS_CLASSES.BB_IS_EDIT_MODE);
     this.cleanupBreakpointWatchers();
     this.vueApps.forEach((app, containerId) => {
       this.unmountVueComponent(containerId);

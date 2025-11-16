@@ -6,6 +6,41 @@
 и проект следует [Semantic Versioning](https://semver.org/lang/ru/).
 
 
+## [1.0.26] - 2025-11-16
+
+### Добавлено
+- Новые утилиты: `scrollLock` и `repeaterCountText` для улучшения UX списков и модалок
+- Типы: добавлен `src/types/vue-shim.d.ts` для корректной работы деклараций Vue в пакете
+- Типы (repeater): добавлено свойство `countLabelVariants` в `IRepeaterFieldConfig` для задания форм слова в счётчике (`one/few/many/zero`)
+- Иконки для примеров: добавлены SVG в `examples/static/icons` (accordion, button, card, divider, form, gallery, hero, image, rich-text, slider, spaced-text, spacer, tabs, text, video)
+- Scroll Lock API: возможность глобального переопределения поведения через `setScrollLockHandlers({ lock, unlock })`
+
+### Изменено
+- Block configs (icon): свойство `icon` унифицировано — ожидается URL (или путь) для `<img>`. Отрисовка и в Vue, и в Pure‑JS приводится к единому виду
+- Компоненты форм Vue3 (`FormField` семейство, `ApiSelectField.vue`, `SelectField.vue`, `CheckboxField.vue`, `RadioField.vue`, `TextField.vue`, `TextareaField.vue`, `NumberField.vue`, `ImageUploadField.vue`, `SpacingControl.vue`, `RepeaterControl.vue`) — улучшен UX, единообразие состояний, валидация и управление фокусом
+- Кастомный дропдаун (`CustomDropdown.vue`) — стабилизировано позиционирование, управление клавиатурой, сохранение/восстановление скролла, улучшена работа на мобильных с виртуальной клавиатурой
+- Рендереры и контроллеры UI (`ApiSelectControlRenderer`, `SelectControlRenderer`, `SpacingControlRenderer`, `RepeaterControlRenderer`, `CustomFieldControlRenderer`, `UIRenderer`, `ModalManager`, `BlockUIController`) — унификация API, корректное снятие обработчиков, улучшение производительности и предсказуемости состояний
+- Формы и типы (`src/core/types/form.ts`, `BlockBuilderFacade.ts`) — синхронизация типов и публичного API
+- Стили (`_base.scss`, `_utilities.scss`, `_variables.scss`, компоненты в `src/ui/styles/components/*`, `index.scss`) — унификация токенов, состояний и БЭМ-структуры; исправление визуальных артефактов
+- Примеры (`examples/*` включая `pure-js-vite`, `vue3`, `vue3-core-api`, `pure-js-cdn`, `api-usage`) — обновлены конфиги блоков и демо для новых возможностей
+- `package.json` — обновление версии и экспорта для согласованности c типами/точками входа
+- Repeater (счётчик): по умолчанию отображается только число; при наличии `countLabelVariants` — формат “число + слово”. Логика вынесена в общий util `repeaterCountText` и используется в Vue и pure‑js
+- Spacing (pure‑js): разметка унифицирована с Vue — добавлен внутренний контейнер `bb-spacing-control` внутри `bb-spacing-control-container`
+- CSS классы: повсеместная замена хардкоженных строк на `CSS_CLASSES` в JS/TS частях (поиск, скролл, селекторы)
+
+### Исправлено
+- Api Select: корректное позиционирование выпадающего списка в скроллируемых контейнерах, стабильная работа загрузки/дозагрузки и сохранение позиции скролла
+- Api Select (pure‑js): исправлен поиск контейнеров по `CSS_CLASSES.API_SELECT_CONTROL_CONTAINER` — устранено зависание “⏳ Инициализация...”
+- Select/Checkbox/Radio: корректное отображение активного/disabled/invalid состояний, синхронизация значения и отображения
+- Modal/Overlay: устранены утечки обработчиков, улучшено блокирование скролла страницы
+- UIRenderer/BlockUIController: предсказуемое удаление/размонтирование UI, корректная инициализация контролов
+- Безопасность DOM: улучшена безопасность вспомогательных утилит (`safeDOM`, `domSafe`, `formErrorHelpers`)
+- Валидация/скролл: корректный скролл к первому невалидному полю изображения внутри repeater (унификация селекторов и поиска поля)
+
+### Удалено
+- `examples/vue3/src/components/*` устаревшие компоненты демо (перенос/замена на актуальные примеры блоков)
+
+
 ## [1.0.24] - 2025-11-13
 
 ### Исправлено

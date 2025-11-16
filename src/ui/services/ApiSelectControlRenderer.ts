@@ -1,5 +1,6 @@
 import { IApiRequestParams, IApiSelectConfig, IApiSelectItem } from '../../core/types/form';
 import { ApiSelectUseCase } from '../../core/use-cases/ApiSelectUseCase';
+import { CSS_CLASSES } from '../../utils/constants';
 
 export interface IApiSelectControlOptions {
   fieldName: string;
@@ -40,6 +41,7 @@ export class ApiSelectControlRenderer {
   private handleClickOutsideBound = this.handleClickOutside.bind(this);
   private handleResizeBound = this.handleResize.bind(this);
   private handleScrollBound = this.handleScroll.bind(this);
+  private shouldRestoreScroll = false;
 
   constructor(options: IApiSelectControlOptions) {
     this.fieldName = options.fieldName;
@@ -88,6 +90,9 @@ export class ApiSelectControlRenderer {
 
     if (reset) {
       this.currentPage = 1;
+      this.shouldRestoreScroll = false;
+    } else {
+      this.shouldRestoreScroll = true;
     }
 
     this.loading = true;
@@ -137,11 +142,12 @@ export class ApiSelectControlRenderer {
   private openDropdown(): void {
     if (!this.isDropdownOpen) {
       this.isDropdownOpen = true;
+      this.shouldRestoreScroll = false;
       this.updateDropdownContent();
 
-      if (!this.loading) {
-        this.fetchData(true);
-      }
+      // Всегда обновляем первую страницу при открытии
+      this.currentPage = 1;
+      this.fetchData(true);
     }
   }
 
@@ -155,6 +161,7 @@ export class ApiSelectControlRenderer {
 
   private closeDropdown(): void {
     this.isDropdownOpen = false;
+    this.shouldRestoreScroll = false;
 
     if (this.isMultiple()) {
       this.searchQuery = '';
@@ -310,13 +317,13 @@ export class ApiSelectControlRenderer {
       return;
     }
 
-    const wrapper = this.container.querySelector('.bb-api-select__search');
+    const wrapper = this.container.querySelector(`.${CSS_CLASSES.BB_API_SELECT_SEARCH}`);
     if (!wrapper) {
       return;
     }
 
-    const oldLoader = wrapper.querySelector('.bb-api-select__loader');
-    const oldClear = wrapper.querySelector('.bb-api-select__clear');
+    const oldLoader = wrapper.querySelector(`.${CSS_CLASSES.BB_API_SELECT_LOADER}`);
+    const oldClear = wrapper.querySelector(`.${CSS_CLASSES.BB_API_SELECT_CLEAR}`);
 
     if (oldLoader) {
       oldLoader.remove();
@@ -325,19 +332,19 @@ export class ApiSelectControlRenderer {
       oldClear.remove();
     }
 
-    const toggleButton = wrapper.querySelector('.bb-api-select__toggle');
+    const toggleButton = wrapper.querySelector(`.${CSS_CLASSES.BB_API_SELECT_TOGGLE}`);
 
     if (!toggleButton) {
       return;
     }
     if (this.loading) {
       const loader = document.createElement('span');
-      loader.className = 'bb-api-select__loader';
+      loader.className = CSS_CLASSES.BB_API_SELECT_LOADER;
       loader.textContent = '⏳';
       toggleButton.before(loader);
     } else if (this.hasValue()) {
       const clear = document.createElement('span');
-      clear.className = 'bb-api-select__clear';
+      clear.className = CSS_CLASSES.BB_API_SELECT_CLEAR;
       clear.textContent = '✕';
       clear.dataset.apiSelectClear = '';
       toggleButton.before(clear);
@@ -350,8 +357,10 @@ export class ApiSelectControlRenderer {
     }
 
     let savedScrollTop = 0;
-    if (this.dropdownElement) {
+    let savedScrollHeight = 0;
+    if (this.shouldRestoreScroll && this.dropdownElement) {
       savedScrollTop = this.dropdownElement.scrollTop;
+      savedScrollHeight = this.dropdownElement.scrollHeight;
     }
 
     if (this.dropdownElement && this.dropdownElement.parentNode) {
@@ -361,12 +370,14 @@ export class ApiSelectControlRenderer {
 
     this.updateLoadingState();
 
-    const searchElement = this.container.querySelector('.bb-api-select__search') as HTMLElement;
+    const searchElement = this.container.querySelector(
+      `.${CSS_CLASSES.BB_API_SELECT_SEARCH}`
+    ) as HTMLElement;
     if (searchElement) {
       if (this.isDropdownOpen) {
-        searchElement.classList.add('bb-api-select__search--open');
+        searchElement.classList.add(CSS_CLASSES.BB_API_SELECT_SEARCH_OPEN);
       } else {
-        searchElement.classList.remove('bb-api-select__search--open');
+        searchElement.classList.remove(CSS_CLASSES.BB_API_SELECT_SEARCH_OPEN);
       }
     }
 
@@ -389,8 +400,15 @@ export class ApiSelectControlRenderer {
       this.updateDropdownPosition();
       this.attachDropdownEvents(dropdown);
 
-      if (savedScrollTop > 0) {
-        dropdown.scrollTop = savedScrollTop;
+      const newHeight = dropdown.scrollHeight;
+      if (this.shouldRestoreScroll && savedScrollHeight > 0) {
+        const delta = Math.max(0, newHeight - savedScrollHeight);
+        const distanceFromBottomPrev = savedScrollHeight - (savedScrollTop + dropdown.clientHeight);
+        const wasNearBottom = distanceFromBottomPrev >= 0 && distanceFromBottomPrev <= 48;
+        const targetTop = wasNearBottom ? savedScrollTop + delta : savedScrollTop;
+        dropdown.scrollTop = Math.max(0, targetTop);
+      } else {
+        dropdown.scrollTop = 0;
       }
     }
 
@@ -402,7 +420,9 @@ export class ApiSelectControlRenderer {
       return;
     }
 
-    const searchElement = this.container.querySelector('.bb-api-select__search') as HTMLElement;
+    const searchElement = this.container.querySelector(
+      `.${CSS_CLASSES.BB_API_SELECT_SEARCH}`
+    ) as HTMLElement;
     if (!searchElement) {
       return;
     }
@@ -421,9 +441,13 @@ export class ApiSelectControlRenderer {
 
     dropdownEl.style.left = `${rect.left}px`;
     dropdownEl.style.width = `${rect.width}px`;
-    dropdownEl.style.maxHeight = `${constrainedSpace}px`;
+    // Учитываем CSS max-height, чтобы инлайн-стиль не превышал заданный в стилях
+    const computed = window.getComputedStyle(dropdownEl);
+    const cssMax = computed.maxHeight === 'none' ? Number.POSITIVE_INFINITY : parseFloat(computed.maxHeight || '0');
+    const effectiveMax = Math.min(constrainedSpace, isFinite(cssMax) ? cssMax : constrainedSpace);
+    dropdownEl.style.maxHeight = `${effectiveMax}px`;
 
-    const dropdownHeight = Math.min(dropdownEl.scrollHeight, constrainedSpace);
+    const dropdownHeight = Math.min(dropdownEl.scrollHeight, effectiveMax);
 
     let top = shouldShowAbove
       ? rect.top - dropdownHeight - viewportMargin
@@ -453,40 +477,43 @@ export class ApiSelectControlRenderer {
     const noResultsText = this.config.noResultsText ?? 'Ничего не найдено';
 
     const dropdown = document.createElement('div');
-    dropdown.className = 'bb-api-select__dropdown';
+    dropdown.className = CSS_CLASSES.BB_API_SELECT_DROPDOWN;
 
     if (this.loading) {
-      dropdown.innerHTML = `<div class="bb-api-select__message">${loadingText}</div>`;
+      dropdown.innerHTML = `<div class="${CSS_CLASSES.BB_API_SELECT_MESSAGE}">${loadingText}</div>`;
     } else if (this.error) {
-      dropdown.innerHTML = `<div class="bb-api-select__message bb-api-select__message--error">${this.error}</div>`;
+      dropdown.innerHTML = `<div class="${CSS_CLASSES.BB_API_SELECT_MESSAGE} ${CSS_CLASSES.BB_API_SELECT_MESSAGE_ERROR}">${this.error}</div>`;
     } else if (this.items.length > 0) {
       const list = document.createElement('div');
-      list.className = 'bb-api-select__list';
+      list.className = CSS_CLASSES.BB_API_SELECT_LIST;
 
       this.items.forEach(item => {
         const itemEl = document.createElement('div');
-        itemEl.className = `bb-api-select__item ${this.isSelected(item.id) ? 'bb-api-select__item--selected' : ''}`;
+        itemEl.className = `${CSS_CLASSES.BB_API_SELECT_ITEM} ${this.isSelected(item.id) ? CSS_CLASSES.BB_API_SELECT_ITEM_SELECTED : ''}`;
         itemEl.dataset.apiSelectItem = '';
         itemEl.dataset.itemId = String(item.id);
         itemEl.dataset.itemName = item.name;
         itemEl.innerHTML = `
-        <span class="bb-api-select__item-name">${item.name}</span>
-        ${this.isSelected(item.id) ? '<span class="bb-api-select__item-check">✓</span>' : ''}
+        <span class="${CSS_CLASSES.BB_API_SELECT_ITEM_NAME}">${item.name}</span>
+        ${this.isSelected(item.id) ? `<span class="${CSS_CLASSES.BB_API_SELECT_ITEM_CHECK}">✓</span>` : ''}
       `;
         list.append(itemEl);
       });
 
       if (this.hasMore) {
         const loadMore = document.createElement('div');
-        loadMore.className = 'bb-api-select__load-more';
+        loadMore.className = CSS_CLASSES.BB_API_SELECT_LOAD_MORE;
         loadMore.dataset.apiSelectLoadMore = '';
-        loadMore.textContent = 'Загрузить еще...';
+        loadMore.textContent = 'Загрузить ещё...';
         list.append(loadMore);
       }
 
       dropdown.append(list);
     } else {
-      dropdown.innerHTML = `<div class="bb-api-select__message">${noResultsText}</div>`;
+      dropdown.innerHTML = `
+        <div class="${CSS_CLASSES.BB_API_SELECT_MESSAGE}">${noResultsText}</div>
+        <div class="${CSS_CLASSES.BB_API_SELECT_LOAD_MORE}" data-api-select-load-more>Загрузить ещё...</div>
+      `;
     }
 
     return dropdown;
@@ -548,26 +575,26 @@ export class ApiSelectControlRenderer {
       return;
     }
 
-    const oldTags = this.container.querySelector('.bb-api-select__selected');
+    const oldTags = this.container.querySelector(`.${CSS_CLASSES.BB_API_SELECT_SELECTED}`);
     if (oldTags) {
       oldTags.remove();
     }
 
     if (this.isMultiple() && this.selectedItems.length > 0) {
-      const wrapper = this.container.querySelector('.bb-api-select__wrapper');
+      const wrapper = this.container.querySelector(`.${CSS_CLASSES.BB_API_SELECT_WRAPPER}`);
       if (!wrapper) {
         return;
       }
 
       const tagsContainer = document.createElement('div');
-      tagsContainer.className = 'bb-api-select__selected';
+      tagsContainer.className = CSS_CLASSES.BB_API_SELECT_SELECTED;
 
       this.selectedItems.forEach(item => {
         const tag = document.createElement('div');
-        tag.className = 'bb-api-select__tag';
+        tag.className = CSS_CLASSES.BB_API_SELECT_TAG;
         tag.innerHTML = `
-        <span class="bb-api-select__tag-name">${item.name}</span>
-        <span class="bb-api-select__tag-remove" data-api-select-remove="${item.id}">✕</span>
+        <span class="${CSS_CLASSES.BB_API_SELECT_TAG_NAME}">${item.name}</span>
+        <span class="${CSS_CLASSES.BB_API_SELECT_TAG_REMOVE}" data-api-select-remove="${item.id}">✕</span>
       `;
         tagsContainer.append(tag);
       });
@@ -585,23 +612,23 @@ export class ApiSelectControlRenderer {
     const loadingText = this.config.loadingText ?? 'Загрузка...';
     const noResultsText = this.config.noResultsText ?? 'Ничего не найдено';
 
-    const placeholderElement = container.querySelector('.api-select-placeholder');
+    const placeholderElement = container.querySelector(`.${CSS_CLASSES.API_SELECT_PLACEHOLDER}`);
     if (placeholderElement) {
       placeholderElement.outerHTML = `
-      <div class="bb-api-select">
-        <label class="bb-api-select__label">
+      <div class="${CSS_CLASSES.BB_API_SELECT_WRAPPER}">
+        <label class="${CSS_CLASSES.BB_API_SELECT_LABEL}">
           ${this.label}
-          ${this.isRequired() ? '<span class="bb-api-select__required">*</span>' : ''}
+          ${this.isRequired() ? `<span class="${CSS_CLASSES.BB_API_SELECT_REQUIRED}">*</span>` : ''}
         </label>
         ${this.generateControlHTML(placeholder, loadingText, noResultsText)}
       </div>
     `;
     } else {
       container.innerHTML = `
-      <div class="bb-api-select">
-        <label class="bb-api-select__label">
+      <div class="${CSS_CLASSES.BB_API_SELECT_WRAPPER}">
+        <label class="${CSS_CLASSES.BB_API_SELECT_LABEL}">
           ${this.label}
-          ${this.isRequired() ? '<span class="bb-api-select__required">*</span>' : ''}
+          ${this.isRequired() ? `<span class="${CSS_CLASSES.BB_API_SELECT_REQUIRED}">*</span>` : ''}
         </label>
         ${this.generateControlHTML(placeholder, loadingText, noResultsText)}
       </div>
@@ -615,20 +642,20 @@ export class ApiSelectControlRenderer {
     noResultsText: string
   ): string {
     return `
-      <div class="bb-api-select__wrapper">
-        <div class="bb-api-select__search ${this.isDropdownOpen ? 'bb-api-select__search--open' : ''}">
+      <div class="${CSS_CLASSES.BB_API_SELECT_WRAPPER}">
+        <div class="${CSS_CLASSES.BB_API_SELECT_SEARCH} ${this.isDropdownOpen ? CSS_CLASSES.BB_API_SELECT_SEARCH_OPEN : ''}">
           <input
             type="text"
-            class="bb-api-select__input"
+            class="${CSS_CLASSES.BB_API_SELECT_INPUT}"
             placeholder="${placeholder}"
             value="${this.searchQuery}"
             data-api-select-search
           />
-          ${this.loading ? '<span class="bb-api-select__loader">⏳</span>' : ''}
-          ${!this.loading && this.hasValue() ? '<span class="bb-api-select__clear" data-api-select-clear>✕</span>' : ''}
+          ${this.loading ? `<span class="${CSS_CLASSES.BB_API_SELECT_LOADER}">⏳</span>` : ''}
+          ${!this.loading && this.hasValue() ? `<span class="${CSS_CLASSES.BB_API_SELECT_CLEAR}" data-api-select-clear>✕</span>` : ''}
           <button
             type="button"
-            class="bb-api-select__toggle ${this.isDropdownOpen ? 'bb-api-select__toggle--open' : ''}"
+            class="${CSS_CLASSES.BB_API_SELECT_TOGGLE} ${this.isDropdownOpen ? CSS_CLASSES.BB_API_SELECT_TOGGLE_OPEN : ''}"
             data-api-select-toggle
           >
             ▼
@@ -638,33 +665,36 @@ export class ApiSelectControlRenderer {
         ${
           this.isDropdownOpen
             ? `
-          <div class="bb-api-select__dropdown">
+          <div class="${CSS_CLASSES.BB_API_SELECT_DROPDOWN}">
             ${
               this.loading
-                ? `<div class="bb-api-select__message">${loadingText}</div>`
+                ? `<div class="${CSS_CLASSES.BB_API_SELECT_MESSAGE}">${loadingText}</div>`
                 : this.error
-                  ? `<div class="bb-api-select__message bb-api-select__message--error">${this.error}</div>`
+                  ? `<div class="${CSS_CLASSES.BB_API_SELECT_MESSAGE} ${CSS_CLASSES.BB_API_SELECT_MESSAGE_ERROR}">${this.error}</div>`
                   : this.items.length > 0
                     ? `
-                <div class="bb-api-select__list">
+                <div class="${CSS_CLASSES.BB_API_SELECT_LIST}">
                   ${this.items
                     .map(
                       item => `
-                    <div class="bb-api-select__item ${this.isSelected(item.id) ? 'bb-api-select__item--selected' : ''}" data-api-select-item data-item-id="${item.id}" data-item-name="${item.name}">
-                      <span class="bb-api-select__item-name">${item.name}</span>
-                      ${this.isSelected(item.id) ? '<span class="bb-api-select__item-check">✓</span>' : ''}
+                    <div class="${CSS_CLASSES.BB_API_SELECT_ITEM} ${this.isSelected(item.id) ? CSS_CLASSES.BB_API_SELECT_ITEM_SELECTED : ''}" data-api-select-item data-item-id="${item.id}" data-item-name="${item.name}">
+                      <span class="${CSS_CLASSES.BB_API_SELECT_ITEM_NAME}">${item.name}</span>
+                      ${this.isSelected(item.id) ? `<span class="${CSS_CLASSES.BB_API_SELECT_ITEM_CHECK}">✓</span>` : ''}
                     </div>
                   `
                     )
                     .join('')}
                   ${
                     this.hasMore
-                      ? '<div class="bb-api-select__load-more" data-api-select-load-more>Загрузить еще...</div>'
+                      ? `<div class="${CSS_CLASSES.BB_API_SELECT_LOAD_MORE}" data-api-select-load-more>Загрузить еще...</div>`
                       : ''
                   }
                 </div>
               `
-                    : `<div class="bb-api-select__message">${noResultsText}</div>`
+                    : `
+                <div class="${CSS_CLASSES.BB_API_SELECT_MESSAGE}">${noResultsText}</div>
+                <div class="${CSS_CLASSES.BB_API_SELECT_LOAD_MORE}" data-api-select-load-more>Загрузить...</div>
+              `
             }
           </div>
         `
@@ -675,13 +705,13 @@ export class ApiSelectControlRenderer {
       ${
         this.isMultiple() && this.selectedItems.length > 0
           ? `
-        <div class="bb-api-select__selected">
+        <div class="${CSS_CLASSES.BB_API_SELECT_SELECTED}">
           ${this.selectedItems
             .map(
               item => `
-            <div class="bb-api-select__tag">
-              <span class="bb-api-select__tag-name">${item.name}</span>
-              <span class="bb-api-select__tag-remove" data-api-select-remove="${item.id}">✕</span>
+            <div class="${CSS_CLASSES.BB_API_SELECT_TAG}">
+              <span class="${CSS_CLASSES.BB_API_SELECT_TAG_NAME}">${item.name}</span>
+              <span class="${CSS_CLASSES.BB_API_SELECT_TAG_REMOVE}" data-api-select-remove="${item.id}">✕</span>
             </div>
           `
             )
@@ -693,7 +723,7 @@ export class ApiSelectControlRenderer {
 
       ${
         this.errors[this.fieldName]
-          ? `<div class="bb-api-select__error">${this.errors[this.fieldName].join(', ')}</div>`
+          ? `<div class="${CSS_CLASSES.BB_API_SELECT_ERROR}">${this.errors[this.fieldName].join(', ')}</div>`
           : ''
       }
 

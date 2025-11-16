@@ -1,4 +1,5 @@
 import { RepeaterControlRenderer, IRepeaterControlConfig } from '../RepeaterControlRenderer';
+import { CSS_CLASSES } from '../../../utils/constants';
 
 describe('RepeaterControlRenderer', () => {
   let renderer: RepeaterControlRenderer;
@@ -83,7 +84,7 @@ describe('RepeaterControlRenderer', () => {
     renderer.render(container);
 
     expect(container.innerHTML).toBeTruthy();
-    expect(container.querySelector('.repeater-control')).toBeTruthy();
+    expect(container.querySelector(`.${CSS_CLASSES.REPEATER_CONTROL_CONTAINER}`)).toBeTruthy();
   });
 
   test('должен показать label', () => {

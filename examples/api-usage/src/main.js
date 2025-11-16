@@ -5,7 +5,7 @@ import { BlockBuilder } from '@mushket-co/block-builder/core'
 const blockConfigs = {
   text: {
     title: 'Текстовый блок',
-    icon: '📝',
+    icon: '',
     description: 'Простой текстовый блок',
     render: {
       kind: 'html',
@@ -40,7 +40,7 @@ const blockConfigs = {
   },
   image: {
     title: 'Блок изображения',
-    icon: '🖼️',
+    icon: '',
     description: 'Простой блок с изображением',
     render: {
       kind: 'html',
@@ -84,7 +84,7 @@ const blockConfigs = {
   },
   card: {
     title: 'Карточка',
-    icon: '🃏',
+    icon: '',
     description: 'Блок-карточка с заголовком и текстом',
     render: {
       kind: 'html',
@@ -140,7 +140,7 @@ const blockConfigs = {
   },
   hero: {
     title: 'Hero секция',
-    icon: '🎯',
+    icon: '',
     description: 'Главная секция с изображением и текстом',
     render: {
       kind: 'html',
@@ -329,7 +329,7 @@ async function updateDisplay() {
       <div class="block-actions">
         <button class="btn btn-secondary btn-sm" onclick="editBlock('${block.id}')">Изменить</button>
         <button class="btn btn-secondary btn-sm" onclick="duplicateBlock('${block.id}')">Дублировать</button>
-        <button class="btn btn-warning btn-sm" onclick="toggleBlockLockAPI('${block.id}')">${block.locked ? '🔓 Разблок.' : '🔒 Заблок.'}</button>
+        <button class="btn btn-warning btn-sm" onclick="toggleBlockLockAPI('${block.id}')">${block.locked ? 'Разблок.' : 'Заблок.'}</button>
         <button class="btn btn-warning btn-sm" onclick="toggleBlockVisibilityAPI('${block.id}')">${!block.visible ? '👁️ Показать' : '🙈 Скрыть'}</button>
         <button class="btn btn-danger btn-sm" onclick="deleteBlock('${block.id}')">Удалить</button>
       </div>

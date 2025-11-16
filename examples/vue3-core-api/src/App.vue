@@ -165,7 +165,7 @@ const addExampleBlocks = async () => {
     }
   ]
 
-  addLog('📝 Добавление примеров блоков...', 'info')
+  addLog('Добавление примеров блоков...', 'info')
 
   for (const block of examples) {
     await blockBuilder.createBlock(block)
@@ -296,8 +296,8 @@ const handleMoveUp = async (id) => {
     addLog(`↑ Блок ${id} перемещен вверх`, 'info')
     await loadBlocks()
   } catch (error) {
-    addLog(`❌ Ошибка перемещения: ${error.message}`, 'error')
-    console.error('❌ Ошибка:', error)
+    addLog(`Ошибка перемещения: ${error.message}`, 'error')
+    console.error('Ошибка:', error)
   }
 }
 
@@ -315,8 +315,8 @@ const handleMoveDown = async (id) => {
     addLog(`↓ Блок ${id} перемещен вниз`, 'info')
     await loadBlocks()
   } catch (error) {
-    addLog(`❌ Ошибка перемещения: ${error.message}`, 'error')
-    console.error('❌ Ошибка:', error)
+    addLog(`Ошибка перемещения: ${error.message}`, 'error')
+    console.error('Ошибка:', error)
   }
 }
 
@@ -355,7 +355,7 @@ const importBlocks = async () => {
     } catch (error) {
       addLog(`❌ Ошибка импорта: ${error.message}`, 'error')
       console.error('❌ Ошибка:', error)
-      alert('Ошибка: ' + error.message)
+      alert('❌ Ошибка: ' + error.message)
     }
   }
 
@@ -424,7 +424,7 @@ const addRandomBlocks = async () => {
     { type: 'hero', props: { title: 'Hero секция', subtitle: 'Подзаголовок', bgImage: '/1.jpeg' } }
   ]
 
-  addLog('📝 Добавление примеров блоков...', 'info')
+  addLog('Добавление примеров блоков...', 'info')
   
   for (const example of examples) {
     await blockBuilder.createBlock({

@@ -59,8 +59,12 @@
       </template>
 
       <template #after-options>
-        <div v-if="hasMore" class="bb-api-select__load-more" @click.stop="loadMore">
-          Загрузить еще...
+        <div
+          v-if="!loading && !error && (hasMore || items.length === 0)"
+          class="bb-api-select__load-more"
+          @click.stop="loadMore"
+        >
+          Загрузить ещё...
         </div>
       </template>
     </CustomDropdown>
@@ -83,7 +87,8 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 import type { IApiRequestParams, IApiSelectItem, IFormFieldConfig } from '../../core/types/form';
 import type { ApiSelectUseCase } from '../../core/use-cases/ApiSelectUseCase';
-import CustomDropdown from './CustomDropdown.vue';
+import { defineAsyncComponent } from 'vue';
+const CustomDropdown = defineAsyncComponent(() => import('./CustomDropdown.vue') as unknown as Promise<any>);
 
 type TDropdownValue = string | number | (string | number)[] | null;
 type TCustomDropdownExpose = {
@@ -93,6 +98,8 @@ type TCustomDropdownExpose = {
   updatePosition: () => void;
   saveScrollPosition: () => number;
   restoreScrollPosition: (scrollTop: number) => void;
+  saveScrollSnapshot: () => { top: number; height: number };
+  restoreScrollFromSnapshot: (snapshot: { top: number; height: number } | null) => void;
   isOpen: { value: boolean };
 };
 
@@ -177,7 +184,7 @@ const updateKnownSelections = (value: string | number | (string | number)[] | nu
     const ids = new Set(Array.isArray(value) ? value : []);
     selectedItems.value = Array.from(ids)
       .map(id => knownItems.get(id) ?? previousSelection.find(item => item.id === id))
-      .filter(Boolean);
+      .filter((i): i is IApiSelectItem => Boolean(i));
   } else if (!Array.isArray(value) && value !== null && value !== undefined && value !== '') {
     const candidate =
       knownItems.get(value) ?? previousSelection.find(item => item.id === value) ?? null;
@@ -201,8 +208,8 @@ const fetchData = async (reset = false) => {
     currentPage.value = 1;
   }
 
-  const savedScrollTop =
-    !reset && isDropdownOpen.value ? (dropdownRef.value?.saveScrollPosition() ?? 0) : 0;
+  const savedSnapshot =
+    (!reset && isDropdownOpen.value ? dropdownRef.value?.saveScrollSnapshot() : null) ?? null;
 
   loading.value = true;
   error.value = null;
@@ -226,9 +233,7 @@ const fetchData = async (reset = false) => {
     if (isDropdownOpen.value) {
       await nextTick();
       dropdownRef.value?.updatePosition();
-      if (savedScrollTop > 0) {
-        dropdownRef.value?.restoreScrollPosition(savedScrollTop);
-      }
+      dropdownRef.value?.restoreScrollFromSnapshot(savedSnapshot);
       await nextTick();
       dropdownRef.value?.updatePosition();
     }
@@ -249,11 +254,13 @@ const onSearchInput = () => {
   if (debounceTimer) {
     clearTimeout(debounceTimer);
   }
-
   debounceTimer = setTimeout(() => {
+    currentPage.value = 1;
     fetchData(true).then(() => {
       if (!isDropdownOpen.value) {
         dropdownRef.value?.open();
+      } else {
+        dropdownRef.value?.updatePosition();
       }
     });
   }, debounceMs.value);
@@ -283,9 +290,11 @@ const handleDropdownOpen = async () => {
   await nextTick();
   dropdownRef.value?.updatePosition();
 
-  if (!loading.value) {
-    fetchData(true);
-  }
+  // Всегда обновляем первую страницу при открытии
+  currentPage.value = 1;
+  await fetchData(true);
+  await nextTick();
+  dropdownRef.value?.updatePosition();
 };
 
 const handleDropdownClose = () => {
@@ -307,7 +316,19 @@ const removeItem = (id: string | number) => {
 };
 
 const loadMore = () => {
-  if (!hasMore.value || loading.value) {
+  if (loading.value) {
+    return;
+  }
+  // Если списка еще нет — стартуем с reset
+  const isFirstLoad = items.value.length === 0;
+  if (isFirstLoad) {
+    currentPage.value = 1;
+    fetchData(true).then(() => {
+      dropdownRef.value?.updatePosition();
+    });
+    return;
+  }
+  if (!hasMore.value) {
     return;
   }
   currentPage.value += 1;
@@ -317,9 +338,7 @@ const loadMore = () => {
 };
 
 const handleScrollBottom = () => {
-  if (hasMore.value && !loading.value) {
-    loadMore();
-  }
+  // Отключаем автозагрузку при скролле
 };
 
 const onValueUpdate = (value: TDropdownValue) => {

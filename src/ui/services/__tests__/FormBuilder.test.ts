@@ -1,4 +1,5 @@
 import { FormBuilder, TFieldConfig } from '../FormBuilder';
+import { CSS_CLASSES } from '../../../utils/constants';
 
 describe('FormBuilder', () => {
   let formBuilder: FormBuilder;
@@ -54,7 +55,7 @@ describe('FormBuilder', () => {
     const html = formBuilder.generateCreateFormHTML(fields);
 
     expect(html).toContain('required');
-    expect(html).toContain('<span class="required">*</span>');
+    expect(html).toContain('<span class="bb-required">*</span>');
   });
 
   test('должен сгенерировать HTML для нескольких полей', () => {
@@ -317,7 +318,7 @@ describe('FormBuilder', () => {
 
       const html = formBuilder.generateCreateFormHTML(fields);
 
-      expect(html).toContain('select-placeholder');
+      expect(html).toContain(CSS_CLASSES.SELECT_PLACEHOLDER);
       expect(html).toContain('data-field-name="country"');
       expect(html).toContain('data-field-id');
     });
@@ -338,7 +339,7 @@ describe('FormBuilder', () => {
 
       const html = formBuilder.generateCreateFormHTML(fields);
 
-      expect(html).toContain('select-placeholder');
+      expect(html).toContain(CSS_CLASSES.SELECT_PLACEHOLDER);
       expect(html).toContain('data-field-name="country"');
     });
 
@@ -353,7 +354,7 @@ describe('FormBuilder', () => {
 
       const html = formBuilder.generateCreateFormHTML(fields);
 
-      expect(html).toContain('select-placeholder');
+      expect(html).toContain(CSS_CLASSES.SELECT_PLACEHOLDER);
       expect(html).toContain('data-field-name="category"');
     });
   });
@@ -449,7 +450,7 @@ describe('FormBuilder', () => {
   });
 
   describe('HTML структура', () => {
-  test('каждое поле должно быть обернуто в block-builder-form-group', () => {
+  test('каждое поле должно быть обернуто в bb-form-group', () => {
     const fields: TFieldConfig[] = [
       {
         field: 'test',
@@ -460,7 +461,7 @@ describe('FormBuilder', () => {
 
     const html = formBuilder.generateCreateFormHTML(fields);
 
-    expect(html).toContain('class="block-builder-form-group"');
+    expect(html).toContain(`class="${CSS_CLASSES.FORM_GROUP}"`);
     expect(html).toContain('data-field-name="test"');
   });
 
@@ -476,11 +477,11 @@ describe('FormBuilder', () => {
     const html = formBuilder.generateCreateFormHTML(fields);
 
     expect(html).toContain('<label');
-    expect(html).toContain('class="block-builder-form-label"');
+    expect(html).toContain(`class="${CSS_CLASSES.FORM_LABEL}"`);
     expect(html).toContain('Поле 1');
   });
 
-  test('input должен иметь класс block-builder-form-control', () => {
+  test('input должен иметь класс bb-form-control', () => {
     const fields: TFieldConfig[] = [
       {
         field: 'test',
@@ -491,7 +492,7 @@ describe('FormBuilder', () => {
 
     const html = formBuilder.generateCreateFormHTML(fields);
 
-    expect(html).toContain('class="block-builder-form-control"');
+    expect(html).toContain(`class="${CSS_CLASSES.FORM_CONTROL}"`);
   });
   });
 

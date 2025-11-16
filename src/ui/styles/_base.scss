@@ -1,9 +1,5 @@
-/**
- * Базовые стили Block Builder
- */
-
-.block-builder,
-.block-builder-modal {
+.bb-app,
+.bb-modal {
   font-family: var(--bb-font-family);
   color: var(--bb-text-primary);
   box-sizing: border-box;
@@ -15,12 +11,6 @@
   }
 }
 
-/* Основной контейнер приложения */
-.block-builder-app {
-  font-family: var(--bb-font-family);
-}
-
-/* Утилиты для отступов */
 .bb-mt {
   &-sm { margin-top: var(--bb-spacing-sm); }
   &-md { margin-top: var(--bb-spacing-md); }
@@ -42,7 +32,6 @@
   &-xl { padding: var(--bb-spacing-xl); }
 }
 
-/* Утилиты для текста */
 .bb-text {
   &-center { text-align: center; }
   &-left { text-align: left; }
@@ -50,5 +39,9 @@
   &-muted { color: var(--bb-text-muted); }
   &-primary { color: var(--bb-color-primary); }
   &-danger { color: var(--bb-color-danger); }
+}
+
+.bb-lock-scroll {
+  overflow: hidden !important;
 }
 

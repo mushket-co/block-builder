@@ -14,25 +14,19 @@ import { defineAsyncComponent } from 'vue'
 import TextBlock from './components/TextBlock.vue'
 import ImageBlock from './components/ImageBlock.vue'
 import ButtonBlock from './components/ButtonBlock.vue'
-import CardListBlock from './components/CardListBlock.vue'
-import HeroBlock from './components/HeroBlock.vue'
-import FeatureCard from './components/FeatureCard.vue'
 import GallerySliderBlock from './components/GallerySliderBlock.vue'
-import SpacedContentBlock from './components/SpacedContentBlock.vue'
 import RichCardListBlock from './components/RichCardListBlock.vue'
 import NewsListBlock from './components/NewsListBlock.vue'
 import RichTextBlock from './components/RichTextBlock.vue'
-import TimelapseBlock from './components/TimelapseBlock.vue'
 import LinkBlock from './components/LinkBlock.vue'
 
-// ✅ АСИНХРОННЫЙ импорт компонента (загружается по требованию)
-const Counter = defineAsyncComponent(() => import('./components/Counter.vue'))
+const CardListBlock = defineAsyncComponent(() => import('./components/CardListBlock.vue'))
 
 
 export const blockConfigs = {
   richText: {
     title: 'Rich Text (с визуальным редактором)',
-    icon: '✍️',
+    icon: '/icons/rich-text.svg',
     description: 'Блок с визуальным редактором Jodit для форматированного текста',
     render: {
       kind: 'component',
@@ -91,7 +85,7 @@ export const blockConfigs = {
 
   text: {
     title: 'Текстовый блок (простой)',
-    icon: '📝',
+    icon: '/icons/text.svg',
     description: 'Добавьте текстовый контент на страницу',
     render: {
       kind: 'component',
@@ -160,7 +154,7 @@ export const blockConfigs = {
 
   image: {
     title: 'Изображение',
-    icon: '🖼️',
+    icon: '/icons/image.svg',
     description: 'Добавьте изображение на страницу',
     render: {
       kind: 'component',
@@ -209,7 +203,7 @@ export const blockConfigs = {
 
   button: {
     title: 'Кнопка',
-    icon: '🔘',
+    icon: '/icons/button.svg',
     description: 'Добавьте интерактивную кнопку',
     render: {
       kind: 'component',
@@ -272,124 +266,9 @@ export const blockConfigs = {
     }
   },
 
-  hero: {
-    title: 'Hero секция',
-    icon: '🎯',
-    description: 'Главная секция с заголовком и призывом к действию',
-    render: {
-      kind: 'component',
-      framework: 'vue',
-      component: HeroBlock
-    },
-    fields: [
-      {
-        field: 'title',
-        label: 'Заголовок',
-        type: 'text',
-        placeholder: 'Добро пожаловать',
-        rules: [{ type: 'required', message: 'Заголовок обязателен' }],
-        defaultValue: 'Добро пожаловать'
-      },
-      {
-        field: 'subtitle',
-        label: 'Подзаголовок',
-        type: 'textarea',
-        placeholder: 'Создайте что-то удивительное',
-        rules: [],
-        defaultValue: 'Создайте что-то удивительное'
-      },
-      {
-        field: 'backgroundColor',
-        label: 'Основной цвет фона',
-        type: 'color',
-        rules: [{ type: 'required', message: 'Цвет обязателен' }],
-        defaultValue: '#667eea'
-      },
-      {
-        field: 'accentColor',
-        label: 'Акцентный цвет',
-        type: 'color',
-        rules: [{ type: 'required', message: 'Акцентный цвет обязателен' }],
-        defaultValue: '#764ba2'
-      },
-      {
-        field: 'textColor',
-        label: 'Цвет текста',
-        type: 'color',
-        rules: [{ type: 'required', message: 'Цвет текста обязателен' }],
-        defaultValue: '#ffffff'
-      },
-      {
-        field: 'titleSize',
-        label: 'Размер заголовка',
-        type: 'number',
-        rules: [
-          { type: 'min', value: 20, message: 'Минимум: 20px' },
-          { type: 'max', value: 100, message: 'Максимум: 100px' }
-        ],
-        defaultValue: 48
-      },
-      {
-        field: 'subtitleSize',
-        label: 'Размер подзаголовка',
-        type: 'number',
-        rules: [
-          { type: 'min', value: 12, message: 'Минимум: 12px' },
-          { type: 'max', value: 40, message: 'Максимум: 40px' }
-        ],
-        defaultValue: 20
-      },
-      {
-        field: 'showButton',
-        label: 'Показать кнопку',
-        type: 'checkbox',
-        rules: [],
-        defaultValue: true
-      },
-      {
-        field: 'buttonText',
-        label: 'Текст кнопки',
-        type: 'text',
-        placeholder: 'Начать',
-        rules: [],
-        defaultValue: 'Начать'
-      },
-      {
-        field: 'buttonColor',
-        label: 'Цвет кнопки',
-        type: 'color',
-        rules: [],
-        defaultValue: '#ffffff'
-      },
-      {
-        field: 'buttonTextColor',
-        label: 'Цвет текста кнопки',
-        type: 'color',
-        rules: [],
-        defaultValue: '#333333'
-      },
-      {
-        field: 'showDecorations',
-        label: 'Показать декорации',
-        type: 'checkbox',
-        rules: [],
-        defaultValue: true
-      }
-    ],
-    // Пример использования padding для блока с фоном
-    spacingOptions: {
-      spacingTypes: ['padding-top', 'padding-bottom', 'margin-bottom'],
-      config: {
-        min: 0,
-        max: 200,
-        step: 10
-      }
-    }
-  },
-
   cardList: {
     title: 'Список карточек',
-    icon: '🃏',
+    icon: '/icons/card.svg',
     description: 'Сетка из карточек с изображениями и описаниями',
     render: {
       kind: 'component',
@@ -438,6 +317,7 @@ export const blockConfigs = {
         ],
         repeaterConfig: {
           itemTitle: 'Карточка',
+          countLabelVariants: { one: 'карточка', few: 'карточки', many: 'карточек', zero: 'карточек' },
           addButtonText: 'Добавить карточку',
           removeButtonText: 'Удалить',
           min: 1, // ⚠️ ИГНОРИРУЕТСЯ! т.к. нет required в rules (можно удалить все)
@@ -567,55 +447,9 @@ export const blockConfigs = {
     ]
   },
 
-  feature: {
-    title: 'Карточка возможности',
-    icon: '⭐',
-    description: 'Карточка для описания фичи или преимущества',
-    render: {
-      kind: 'component',
-      framework: 'vue',
-      component: FeatureCard
-    },
-    fields: [
-      {
-        field: 'icon',
-        label: 'Иконка (emoji)',
-        type: 'text',
-        placeholder: '🚀',
-        rules: [],
-        defaultValue: '🚀'
-      },
-      {
-        field: 'title',
-        label: 'Заголовок',
-        type: 'text',
-        placeholder: 'Быстрая работа',
-        rules: [{ type: 'required', message: 'Заголовок обязателен' }],
-        defaultValue: 'Быстрая работа'
-      },
-      {
-        field: 'description',
-        label: 'Описание',
-        type: 'textarea',
-        placeholder: 'Молниеносная скорость загрузки...',
-        rules: [{ type: 'required', message: 'Описание обязательно' }],
-        defaultValue: 'Молниеносная скорость загрузки и отличная производительность'
-      }
-    ],
-    // Демонстрация использования padding для карточки с фоном
-    spacingOptions: {
-      spacingTypes: ['padding-top', 'padding-bottom', 'margin-bottom'],
-      config: {
-        min: 0,
-        max: 100,
-        step: 5
-      }
-    }
-  },
-
   gallerySlider: {
     title: 'Слайдер галереи',
-    icon: '🎠',
+    icon: '/icons/slider.svg',
     description: '✅ НАСТОЯЩИЙ Swiper из npm пакета! (только с полноценной сборкой)',
     render: {
       kind: 'component',
@@ -740,229 +574,9 @@ export const blockConfigs = {
     ]
   },
 
-  counter: {
-    title: 'Счётчик',
-    icon: '🔢',
-    description: '✅ АСИНХРОННЫЙ компонент! Загружается только при использовании',
-    render: {
-      kind: 'component',
-      framework: 'vue',
-      component: Counter
-    },
-    fields: [
-      {
-        field: 'title',
-        label: 'Заголовок',
-        type: 'text',
-        placeholder: 'Счётчик',
-        rules: [{ type: 'required', message: 'Заголовок обязателен' }],
-        defaultValue: 'Счётчик'
-      },
-      {
-        field: 'description',
-        label: 'Описание',
-        type: 'textarea',
-        placeholder: 'Описание счётчика',
-        rules: [],
-        defaultValue: 'Интерактивный счётчик с настройками'
-      },
-      {
-        field: 'initialValue',
-        label: 'Начальное значение',
-        type: 'number',
-        rules: [{ type: 'required', message: 'Начальное значение обязательно' }],
-        defaultValue: 0
-      },
-      {
-        field: 'min',
-        label: 'Минимальное значение',
-        type: 'number',
-        rules: [{ type: 'required', message: 'Минимум обязателен' }],
-        defaultValue: 0
-      },
-      {
-        field: 'max',
-        label: 'Максимальное значение (0 = без ограничений)',
-        type: 'number',
-        rules: [],
-        defaultValue: 100
-      },
-      {
-        field: 'step',
-        label: 'Шаг изменения',
-        type: 'number',
-        rules: [
-          { type: 'required', message: 'Шаг обязателен' },
-          { type: 'min', value: 1, message: 'Минимум: 1' }
-        ],
-        defaultValue: 1
-      },
-      {
-        field: 'showReset',
-        label: 'Показать кнопку сброса',
-        type: 'checkbox',
-        rules: [],
-        defaultValue: true
-      },
-      {
-        field: 'showProgress',
-        label: 'Показать прогресс-бар',
-        type: 'checkbox',
-        rules: [],
-        defaultValue: true
-      },
-      {
-        field: 'incrementText',
-        label: 'Текст кнопки увеличения',
-        type: 'text',
-        rules: [],
-        defaultValue: 'Увеличить'
-      },
-      {
-        field: 'decrementText',
-        label: 'Текст кнопки уменьшения',
-        type: 'text',
-        rules: [],
-        defaultValue: 'Уменьшить'
-      },
-      {
-        field: 'resetText',
-        label: 'Текст кнопки сброса',
-        type: 'text',
-        rules: [],
-        defaultValue: 'Сбросить'
-      },
-      {
-        field: 'backgroundColor',
-        label: 'Цвет фона',
-        type: 'color',
-        rules: [{ type: 'required', message: 'Цвет фона обязателен' }],
-        defaultValue: '#f5f5f5'
-      },
-      {
-        field: 'primaryColor',
-        label: 'Основной цвет',
-        type: 'color',
-        rules: [{ type: 'required', message: 'Основной цвет обязателен' }],
-        defaultValue: '#007bff'
-      },
-      {
-        field: 'textColor',
-        label: 'Цвет текста',
-        type: 'color',
-        rules: [{ type: 'required', message: 'Цвет текста обязателен' }],
-        defaultValue: '#333333'
-      },
-      {
-        field: 'buttonColor',
-        label: 'Цвет кнопок',
-        type: 'color',
-        rules: [{ type: 'required', message: 'Цвет кнопок обязателен' }],
-        defaultValue: '#007bff'
-      },
-      {
-        field: 'buttonTextColor',
-        label: 'Цвет текста кнопок',
-        type: 'color',
-        rules: [{ type: 'required', message: 'Цвет текста кнопок обязателен' }],
-        defaultValue: '#ffffff'
-      },
-      {
-        field: 'titleSize',
-        label: 'Размер заголовка',
-        type: 'number',
-        rules: [
-          { type: 'min', value: 12, message: 'Минимум: 12px' },
-          { type: 'max', value: 48, message: 'Максимум: 48px' }
-        ],
-        defaultValue: 24
-      },
-      {
-        field: 'valueSize',
-        label: 'Размер значения',
-        type: 'number',
-        rules: [
-          { type: 'min', value: 24, message: 'Минимум: 24px' },
-          { type: 'max', value: 96, message: 'Максимум: 96px' }
-        ],
-        defaultValue: 48
-      },
-      {
-        field: 'borderRadius',
-        label: 'Скругление углов',
-        type: 'number',
-        rules: [
-          { type: 'min', value: 0, message: 'Минимум: 0' },
-          { type: 'max', value: 50, message: 'Максимум: 50' }
-        ],
-        defaultValue: 12
-      }
-    ]
-  },
-
-  // 🆕 ПРИМЕР: Блок с ЯВНЫМ spacing полем (не автоматическим)
-  spacedContent: {
-    title: 'Контент с отступами (ручной)',
-    icon: '📐',
-    description: 'Блок с явно определённым spacing полем',
-    render: {
-      kind: 'component',
-      framework: 'vue',
-      component: SpacedContentBlock
-    },
-    fields: [
-      {
-        field: 'title',
-        label: 'Заголовок',
-        type: 'text',
-        placeholder: 'Введите заголовок...',
-        rules: [
-          { type: 'required', message: 'Заголовок обязателен' }
-        ],
-        defaultValue: 'Заголовок секции'
-      },
-      {
-        field: 'content',
-        label: 'Контент',
-        type: 'textarea',
-        placeholder: 'Введите контент...',
-        rules: [
-          { type: 'required', message: 'Контент обязателен' }
-        ],
-        defaultValue: '<p>Это пример контента с настраиваемыми отступами.</p><p>Отступы можно настроить отдельно для каждого брекпоинта.</p>'
-      },
-      {
-        field: 'backgroundColor',
-        label: 'Цвет фона',
-        type: 'color',
-        rules: [],
-        defaultValue: '#f8f9fa'
-      }
-      // Spacing поле теперь генерируется автоматически из spacingOptions ниже
-      // Явные поля с type: 'spacing' игнорируются - все настройки в spacingOptions
-    ],
-    spacingOptions: {
-      enabled: true, // По умолчанию true, можно отключить установив false
-      // Какие типы отступов доступны (по умолчанию все 4)
-      spacingTypes: ['padding-top', 'padding-bottom', 'margin-top', 'margin-bottom'],
-      config: {
-        min: 0,
-        max: 120,
-        step: 8,
-        // Кастомные брекпоинты (когда указаны, заменяют дефолтные)
-        breakpoints: [
-          { name: 'xlarge', label: 'XL (Desktop)', maxWidth: undefined }, // Desktop без ограничения
-          { name: 'large', label: 'L (Laptop)', maxWidth: 1440 },
-          { name: 'medium', label: 'M (Tablet)', maxWidth: 1024 },
-          { name: 'small', label: 'S (Mobile)', maxWidth: 640 }
-        ]
-      }
-    }
-  },
-
   richCardList: {
-    title: '🎯 Богатые карточки (тест)',
-    icon: '💎',
+    title: 'Богатые карточки (тест)',
+    icon: '/icons/card.svg',
     description: 'Тестовый блок с множеством полей в каждой карточке',
     render: {
       kind: 'component',
@@ -1324,8 +938,8 @@ export const blockConfigs = {
 
   // 🆕 ПРИМЕР: Блок с API Select (работа с внешним API)
   newsList: {
-    title: '📰 Список новостей из API',
-    icon: '📰',
+    title: 'Список новостей из API',
+    icon: '/icons/text.svg',
     description: 'Блок отображения новостей, выбранных через API',
     render: {
       kind: 'component',
@@ -1430,93 +1044,10 @@ export const blockConfigs = {
     }
   },
 
-  timelapse: {
-    title: '⏱️ Таймлапс с этапами',
-    icon: '⏱️',
-    description: 'Таймер с последовательными этапами и обратным отсчетом',
-    render: {
-      kind: 'component',
-      framework: 'vue',
-      component: TimelapseBlock
-    },
-    fields: [
-      {
-        field: 'title',
-        label: 'Заголовок',
-        type: 'text',
-        placeholder: 'План мероприятия',
-        rules: [{ type: 'required', message: 'Заголовок обязателен' }],
-        defaultValue: 'План мероприятия'
-      },
-      {
-        field: 'stages',
-        label: 'Этапы',
-        type: 'repeater',
-        rules: [
-          { type: 'required', message: 'Необходим хотя бы один этап' }
-        ],
-        defaultValue: [
-          {
-            name: 'Регистрация участников',
-            duration: 300
-          },
-          {
-            name: 'Открытие мероприятия',
-            duration: 180
-          },
-          {
-            name: 'Основной доклад',
-            duration: 600
-          },
-          {
-            name: 'Перерыв',
-            duration: 120
-          },
-          {
-            name: 'Вопросы и ответы',
-            duration: 300
-          }
-        ],
-        repeaterConfig: {
-          itemTitle: 'Этап',
-          addButtonText: 'Добавить этап',
-          removeButtonText: 'Удалить',
-          min: 1,
-          max: 20,
-          fields: [
-            {
-              field: 'name',
-              label: 'Название этапа',
-              type: 'text',
-              placeholder: 'Введите название этапа',
-              rules: [
-                { type: 'required', message: 'Название этапа обязательно' },
-                { type: 'minLength', value: 3, message: 'Минимум 3 символа' },
-                { type: 'maxLength', value: 100, message: 'Максимум 100 символов' }
-              ],
-              defaultValue: 'Новый этап'
-            },
-            {
-              field: 'duration',
-              label: 'Длительность (секунды)',
-              type: 'number',
-              placeholder: '60',
-              rules: [
-                { type: 'required', message: 'Длительность обязательна' },
-                { type: 'min', value: 1, message: 'Минимум 1 секунда' },
-                { type: 'max', value: 7200, message: 'Максимум 7200 секунд (2 часа)' }
-              ],
-              defaultValue: 60
-            }
-          ]
-        }
-      }
-    ]
-  },
 
   link: {
     title: 'Блок ссылки',
-    icon: '🔗',
+    icon: '/icons/button.svg',
     description: 'Блок с ссылкой, выбором открытия и фоном',
     render: {
       kind: 'component',

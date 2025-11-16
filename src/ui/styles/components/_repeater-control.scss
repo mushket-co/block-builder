@@ -1,9 +1,4 @@
-/**
- * Стили для компонента RepeaterControl
- * Управление массивами объектов (карточки, слайды и т.д.)
- */
-
-.repeater-control {
+.bb-repeater-control {
   margin-bottom: 24px;
 
   &__header {
@@ -21,7 +16,7 @@
     align-items: center;
     gap: 4px;
 
-    .required {
+    .bb-required {
       color: var(--bb-color-danger);
       font-weight: bold;
     }
@@ -55,7 +50,7 @@
     }
 
     &--collapsed {
-      .repeater-control__item-fields {
+      .bb-repeater-control__item-fields {
         display: none;
       }
     }
@@ -140,16 +135,14 @@
     grid-template-columns: 1fr;
     gap: 12px;
 
-    .block-builder-form-control {
-      // Более компактный padding для repeater
+    .bb-form-control {
       padding: 8px 12px;
     }
 
-    // Стили для ошибок в контексте repeater
-    .block-builder-form-errors {
+    .bb-form-errors {
       margin-top: 4px;
 
-      .block-builder-error {
+      .bb-error {
         display: flex;
         align-items: center;
         gap: 4px;
@@ -162,16 +155,13 @@
       }
     }
 
-    // Стили для image полей в repeater
-    .image-upload-field {
-      // Label для image полей в repeater должен использовать стандартные стили
-      .block-builder-form-label {
+    .bb-image-upload-field {
+      .bb-form-label {
         font-size: 13px;
         color: var(--bb-text-secondary);
       }
 
-      // Ошибки валидации для image полей
-      .block-builder-form-errors {
+      .bb-form-errors {
         margin-top: 4px;
       }
     }
@@ -268,9 +258,8 @@
   }
 }
 
-// Интеграция со стилями block-builder
-.block-builder-form-group {
-  &.repeater-control-container {
+.bb-form-group {
+  &.bb-repeater-control-container {
     margin-bottom: 24px;
   }
 }

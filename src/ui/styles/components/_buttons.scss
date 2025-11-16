@@ -1,8 +1,3 @@
-/**
- * Стили кнопок по БЭМ с использованием SCSS
- */
-
-// Миксин для базовой кнопки
 @mixin btn-base {
   padding: 10px 20px;
   border: none;
@@ -35,7 +30,6 @@
   }
 }
 
-// Миксин для цветового варианта кнопки
 @mixin btn-variant($bg-color, $hover-color) {
   background: $bg-color;
   color: white;
@@ -45,11 +39,9 @@
   }
 }
 
-/* Базовый класс кнопки */
-.block-builder-btn {
+.bb-btn {
   @include btn-base;
 
-  /* Модификаторы размера */
   &--sm {
     padding: 6px 12px;
     font-size: var(--bb-font-size-xs);
@@ -60,7 +52,6 @@
     font-size: var(--bb-font-size-md);
   }
 
-  /* Модификаторы цвета */
   &--primary {
     @include btn-variant(var(--bb-color-primary), var(--bb-color-primary-dark));
   }
@@ -78,8 +69,7 @@
   }
 }
 
-/* Кнопки контролов блоков */
-.block-builder-control-btn {
+.bb-control-btn {
   background: none;
   border: none;
   padding: 5px 8px;
@@ -91,7 +81,6 @@
   align-items: center;
   justify-content: center;
 
-  /* Стили для SVG иконок */
   svg {
     width: 16px;
     height: 16px;
@@ -109,7 +98,6 @@
   }
 }
 
-/* Дополнительные кнопки для специальных случаев (формы массивов) */
 .btn {
   &-remove {
     padding: 0.5rem 1rem;

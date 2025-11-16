@@ -1,8 +1,3 @@
-/**
- * Утилитарные классы для замены инлайн стилей
- */
-
-/* Классы для блоков видимости */
 .bb-hidden {
   display: none !important;
 }
@@ -15,20 +10,17 @@
   display: inline-block !important;
 }
 
-/* Классы для стилей иконок */
 .bb-icon-wrapper {
   display: inline-block;
   margin-right: 6px;
   vertical-align: middle;
 }
 
-/* Классы для ссылок */
 .bb-link-inherit {
   color: inherit;
   text-decoration: underline;
 }
 
-/* Классы для предупреждений */
 .bb-warning-box {
   padding: 10px;
   border: 1px solid var(--bb-color-warning-border);
@@ -45,14 +37,12 @@
   color: var(--bb-color-danger);
 }
 
-/* Классы для placeholder блоков */
 .bb-placeholder-box {
   padding: 10px;
   border: 1px dashed var(--bb-border-color);
   border-radius: var(--bb-radius-sm);
 }
 
-/* Классы для блоков с opacity */
 .bb-opacity-visible {
   opacity: 1;
 }
@@ -65,7 +55,6 @@
   opacity: 0.3;
 }
 
-/* Классы для pointer-events */
 .bb-pointer-none {
   pointer-events: none;
 }
@@ -74,7 +63,6 @@
   pointer-events: auto;
 }
 
-/* Классы для margin */
 .bb-mb-sm {
   margin-bottom: 10px;
 }

@@ -4,6 +4,7 @@ import {
   IRepeaterItemFieldConfig,
 } from '../../core/types/form';
 import { CSS_CLASSES } from '../../utils/constants';
+import { getRepeaterCountText } from '../../utils/repeaterCountText';
 import { FieldRendererFactory } from './form-renderers/FieldRendererFactory';
 import { IRenderContext } from './form-renderers/IRenderContext';
 
@@ -173,18 +174,8 @@ export class RepeaterControlRenderer {
     return this.getFieldErrors(index, fieldName).length > 0;
   }
 
-  private getItemCountLabel(count: number): string {
-    const itemTitle = this.config.itemTitle || 'Элемент';
-    const mod10 = count % 10;
-    const mod100 = count % 100;
-
-    if (mod10 === 1 && mod100 !== 11) {
-      return itemTitle.toLowerCase();
-    } else if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) {
-      return itemTitle.toLowerCase() + 'а';
-    } else {
-      return itemTitle.toLowerCase() + 'ов';
-    }
+  private getCountText(count: number): string {
+    return getRepeaterCountText(count, (this.config as any)?.countLabelVariants as any);
   }
 
   /**
@@ -228,11 +219,11 @@ export class RepeaterControlRenderer {
       containerClass: hasError
         ? `${CSS_CLASSES.FORM_GROUP} ${CSS_CLASSES.ERROR}`
         : CSS_CLASSES.FORM_GROUP,
-      labelClass: 'block-builder-form-label',
+      labelClass: CSS_CLASSES.FORM_LABEL,
       inputClass: inputClass,
-      checkboxContainerClass: 'block-builder-form-checkbox',
-      checkboxLabelClass: 'block-builder-form-checkbox-label',
-      checkboxInputClass: 'block-builder-form-checkbox-input',
+      checkboxContainerClass: CSS_CLASSES.FORM_CHECKBOX,
+      checkboxLabelClass: CSS_CLASSES.FORM_CHECKBOX_LABEL,
+      checkboxInputClass: CSS_CLASSES.FORM_CHECKBOX_INPUT,
       fieldNamePath: fieldNamePath,
       showErrors: hasError,
       errors: errors,
@@ -313,13 +304,13 @@ export class RepeaterControlRenderer {
       .join('');
 
     return `
-    <div class="repeater-control__item ${isCollapsed ? 'repeater-control__item--collapsed' : ''}" data-item-index="${index}">
-      <div class="repeater-control__item-header">
-        <span class="repeater-control__item-title">${itemTitle} #${index + 1}</span>
-        <div class="repeater-control__item-actions">
+    <div class="${CSS_CLASSES.REPEATER_CONTROL_ITEM} ${isCollapsed ? CSS_CLASSES.REPEATER_CONTROL_ITEM_COLLAPSED : ''}" data-item-index="${index}">
+      <div class="${CSS_CLASSES.REPEATER_CONTROL_ITEM_HEADER}">
+        <span class="${CSS_CLASSES.REPEATER_CONTROL_ITEM_TITLE}">${itemTitle} #${index + 1}</span>
+        <div class="${CSS_CLASSES.REPEATER_CONTROL_ITEM_ACTIONS}">
           <button
             type="button"
-            class="repeater-control__item-btn repeater-control__item-btn--collapse"
+            class="${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN} ${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_COLLAPSE}"
             data-action="collapse"
             data-item-index="${index}"
             title="${isCollapsed ? 'Развернуть' : 'Свернуть'}"
@@ -331,7 +322,7 @@ export class RepeaterControlRenderer {
               ? `
             <button
               type="button"
-              class="repeater-control__item-btn repeater-control__item-btn--move"
+              class="${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN} ${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_MOVE}"
               data-action="move-up"
               data-item-index="${index}"
               title="Переместить вверх"
@@ -346,7 +337,7 @@ export class RepeaterControlRenderer {
               ? `
             <button
               type="button"
-              class="repeater-control__item-btn repeater-control__item-btn--move"
+              class="${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN} ${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_MOVE}"
               data-action="move-down"
               data-item-index="${index}"
               title="Переместить вниз"
@@ -358,7 +349,7 @@ export class RepeaterControlRenderer {
           }
           <button
             type="button"
-            class="repeater-control__item-btn repeater-control__item-btn--remove"
+            class="${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN} ${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_REMOVE}"
             data-action="remove"
             data-item-index="${index}"
             ${!canRemove ? 'disabled' : ''}
@@ -371,7 +362,7 @@ export class RepeaterControlRenderer {
       ${
         !isCollapsed
           ? `
-        <div class="repeater-control__item-fields">
+        <div class="${CSS_CLASSES.REPEATER_CONTROL_ITEM_FIELDS}">
           ${fieldsHTML}
         </div>
       `
@@ -390,30 +381,30 @@ export class RepeaterControlRenderer {
     const itemsHTML = this.value.map((item, index) => this.generateItemHTML(item, index)).join('');
 
     return `
-    <div class="repeater-control" data-field-name="${this.fieldName}">
-      <div class="repeater-control__header">
-        <label class="repeater-control__label">
+    <div class="${CSS_CLASSES.REPEATER_CONTROL_CONTAINER}" data-field-name="${this.fieldName}">
+      <div class="${CSS_CLASSES.REPEATER_CONTROL_HEADER}">
+        <label class="${CSS_CLASSES.REPEATER_CONTROL_LABEL}">
           ${this.label}
-          ${this.isRequired() ? '<span class="required">*</span>' : ''}
+          ${this.isRequired() ? `<span class="${CSS_CLASSES.REQUIRED}">*</span>` : ''}
         </label>
         ${
           itemCount > 0
             ? `
-          <span class="repeater-control__count">
-            ${itemCount} ${this.getItemCountLabel(itemCount)}
+          <span class="${CSS_CLASSES.REPEATER_CONTROL_COUNT}">
+            ${this.getCountText(itemCount)}
           </span>
         `
             : ''
         }
       </div>
 
-      <div class="repeater-control__items">
+      <div class="${CSS_CLASSES.REPEATER_CONTROL_ITEMS}">
         ${itemsHTML}
       </div>
 
       <button
         type="button"
-        class="repeater-control__add-btn"
+        class="${CSS_CLASSES.REPEATER_CONTROL_ADD_BTN}"
         data-action="add"
         ${!canAdd ? 'disabled' : ''}
       >
@@ -423,18 +414,18 @@ export class RepeaterControlRenderer {
       ${
         effectiveMin || max
           ? `
-        <div class="repeater-control__hint">
+        <div class="${CSS_CLASSES.REPEATER_CONTROL_HINT}">
           ${
             effectiveMin && itemCount < effectiveMin
               ? `
-            <span class="repeater-control__hint--error">Минимум: ${effectiveMin}</span>
+            <span class="${CSS_CLASSES.REPEATER_CONTROL_HINT_ERROR}">Минимум: ${effectiveMin}</span>
           `
               : ''
           }
           ${
             max && itemCount >= max
               ? `
-            <span class="repeater-control__hint--warning">Максимум: ${max}</span>
+            <span class="${CSS_CLASSES.REPEATER_CONTROL_HINT_WARNING}">Максимум: ${max}</span>
           `
               : ''
           }
@@ -468,7 +459,9 @@ export class RepeaterControlRenderer {
     const addButton = this.container.querySelector('[data-action="add"]');
     addButton?.addEventListener('click', () => this.addItem());
 
-    const actionButtons = this.container.querySelectorAll('.repeater-control__item-btn');
+    const actionButtons = this.container.querySelectorAll(
+      `.${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN}`
+    );
     actionButtons.forEach(btn => {
       btn.addEventListener('click', e => {
         const target = e.currentTarget as HTMLElement;

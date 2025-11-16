@@ -1,3 +1,4 @@
+import { CSS_CLASSES } from '../../utils/constants';
 import {
   BaseDropdownRenderer,
   IBaseDropdownRendererOptions,
@@ -23,38 +24,38 @@ export class SelectControlRenderer extends BaseDropdownRenderer {
 
   protected createDropdownElement(): HTMLElement {
     const dropdown = document.createElement('div');
-    dropdown.className = 'bb-dropdown__panel';
+    dropdown.className = CSS_CLASSES.BB_DROPDOWN_PANEL;
     dropdown.setAttribute('role', 'listbox');
     dropdown.setAttribute('aria-multiselectable', String(this.multiple));
 
     const content = document.createElement('div');
-    content.className = 'bb-dropdown__content';
+    content.className = CSS_CLASSES.BB_DROPDOWN_CONTENT;
 
     if (this.options.length === 0) {
-      content.innerHTML = '<div class="bb-dropdown__message">Нет данных</div>';
+      content.innerHTML = `<div class="${CSS_CLASSES.BB_DROPDOWN_MESSAGE}">Нет данных</div>`;
       dropdown.append(content);
       return dropdown;
     }
 
     const list = document.createElement('ul');
-    list.className = 'bb-dropdown__list';
+    list.className = CSS_CLASSES.BB_DROPDOWN_LIST;
 
     this.options.forEach(option => {
       const item = document.createElement('li');
-      item.className = 'bb-dropdown__option';
+      item.className = CSS_CLASSES.BB_DROPDOWN_OPTION;
       if (this.isOptionSelected(option.value)) {
-        item.classList.add('bb-dropdown__option--selected');
+        item.classList.add(CSS_CLASSES.BB_DROPDOWN_OPTION_SELECTED);
       }
       if (option.disabled) {
-        item.classList.add('bb-dropdown__option--disabled');
+        item.classList.add(CSS_CLASSES.BB_DROPDOWN_OPTION_DISABLED);
       }
       item.setAttribute('role', 'option');
       item.setAttribute('aria-selected', String(this.isOptionSelected(option.value)));
       item.dataset.optionValue = String(option.value);
 
       item.innerHTML = `
-        <span class="bb-dropdown__option-label">${this.escapeHtml(option.label)}</span>
-        ${this.isOptionSelected(option.value) ? '<span class="bb-dropdown__option-check">✓</span>' : ''}
+        <span class="${CSS_CLASSES.BB_DROPDOWN_OPTION_LABEL}">${this.escapeHtml(option.label)}</span>
+        ${this.isOptionSelected(option.value) ? `<span class="${CSS_CLASSES.BB_DROPDOWN_OPTION_CHECK}">✓</span>` : ''}
       `;
 
       if (!option.disabled) {
@@ -85,7 +86,7 @@ export class SelectControlRenderer extends BaseDropdownRenderer {
     let savedScrollTop = 0;
     if (this.dropdownElement) {
       const contentElement = this.dropdownElement.querySelector(
-        '.bb-dropdown__content'
+        `.${CSS_CLASSES.BB_DROPDOWN_CONTENT}`
       ) as HTMLElement;
       if (contentElement) {
         savedScrollTop = contentElement.scrollTop;
@@ -97,14 +98,16 @@ export class SelectControlRenderer extends BaseDropdownRenderer {
       this.dropdownElement = undefined;
     }
 
-    const triggerElement = this.container.querySelector('.bb-dropdown__control') as HTMLElement;
+    const triggerElement = this.container.querySelector(
+      `.${CSS_CLASSES.BB_DROPDOWN_CONTROL}`
+    ) as HTMLElement;
     if (triggerElement) {
       this.triggerElement = triggerElement;
       if (this.isDropdownOpen) {
-        triggerElement.classList.add('bb-dropdown--open');
+        triggerElement.classList.add(CSS_CLASSES.BB_DROPDOWN_OPEN);
         triggerElement.setAttribute('aria-expanded', 'true');
       } else {
-        triggerElement.classList.remove('bb-dropdown--open');
+        triggerElement.classList.remove(CSS_CLASSES.BB_DROPDOWN_OPEN);
         triggerElement.setAttribute('aria-expanded', 'false');
       }
     }
@@ -117,7 +120,9 @@ export class SelectControlRenderer extends BaseDropdownRenderer {
       this.updateDropdownPosition();
 
       if (savedScrollTop > 0) {
-        const contentElement = dropdown.querySelector('.bb-dropdown__content') as HTMLElement;
+        const contentElement = dropdown.querySelector(
+          `.${CSS_CLASSES.BB_DROPDOWN_CONTENT}`
+        ) as HTMLElement;
         if (contentElement) {
           contentElement.scrollTop = savedScrollTop;
         }
@@ -181,24 +186,24 @@ export class SelectControlRenderer extends BaseDropdownRenderer {
     }
 
     const displayValue = this.getDisplayValue();
-    const valueElement = this.container.querySelector('.bb-dropdown__value');
+    const valueElement = this.container.querySelector(`.${CSS_CLASSES.BB_DROPDOWN_VALUE}`);
     const hasValue = this.hasValue();
     const showClear = !this.isRequired() && hasValue;
 
     if (valueElement) {
       valueElement.innerHTML = displayValue
-        ? `<span class="bb-dropdown__single">${this.escapeHtml(displayValue)}</span>`
-        : `<span class="bb-dropdown__placeholder">${this.escapeHtml(this.placeholder)}</span>`;
+        ? `<span class="${CSS_CLASSES.BB_DROPDOWN_SINGLE}">${this.escapeHtml(displayValue)}</span>`
+        : `<span class="${CSS_CLASSES.BB_DROPDOWN_PLACEHOLDER}">${this.escapeHtml(this.placeholder)}</span>`;
     }
 
     const clearButton = this.container.querySelector('[data-select-clear]');
     if (showClear) {
       if (!clearButton) {
-        const controlElement = this.container.querySelector('.bb-dropdown__control');
+        const controlElement = this.container.querySelector(`.${CSS_CLASSES.BB_DROPDOWN_CONTROL}`);
         if (controlElement) {
           const clearBtn = document.createElement('button');
           clearBtn.type = 'button';
-          clearBtn.className = 'bb-dropdown__clear';
+          clearBtn.className = CSS_CLASSES.BB_DROPDOWN_CLEAR;
           clearBtn.dataset.selectClear = '';
           clearBtn.textContent = '✕';
           clearBtn.addEventListener('click', e => {
@@ -206,7 +211,7 @@ export class SelectControlRenderer extends BaseDropdownRenderer {
             e.preventDefault();
             this.clearSelection();
           });
-          const arrowElement = controlElement.querySelector('.bb-dropdown__arrow');
+          const arrowElement = controlElement.querySelector(`.${CSS_CLASSES.BB_DROPDOWN_ARROW}`);
           if (arrowElement) {
             arrowElement.before(clearBtn);
           } else {
@@ -221,14 +226,16 @@ export class SelectControlRenderer extends BaseDropdownRenderer {
     }
 
     if (this.multiple) {
-      const selectedContainer = this.container.querySelector('.bb-api-select__selected');
+      const selectedContainer = this.container.querySelector(
+        `.${CSS_CLASSES.BB_API_SELECT_SELECTED}`
+      );
       if (hasValue) {
         const tagsHtml = this.renderSelectedTags();
         if (selectedContainer) {
           selectedContainer.outerHTML = tagsHtml;
           this.attachRemoveTagHandlers();
         } else {
-          const dropdownElement = this.container.querySelector('.bb-dropdown');
+          const dropdownElement = this.container.querySelector(`.${CSS_CLASSES.BB_DROPDOWN}`);
           if (dropdownElement) {
             dropdownElement.insertAdjacentHTML('beforeend', tagsHtml);
             this.attachRemoveTagHandlers();
@@ -275,27 +282,27 @@ export class SelectControlRenderer extends BaseDropdownRenderer {
     const showClear = !this.isRequired() && hasValue;
 
     const html = `
-      <div class="bb-dropdown">
+      <div class="${CSS_CLASSES.BB_DROPDOWN}">
         <div
-          class="bb-dropdown__control ${this.isDropdownOpen ? 'bb-dropdown--open' : ''}"
+          class="${CSS_CLASSES.BB_DROPDOWN_CONTROL} ${this.isDropdownOpen ? CSS_CLASSES.BB_DROPDOWN_OPEN : ''}"
           role="combobox"
           aria-expanded="${this.isDropdownOpen}"
           aria-haspopup="listbox"
           tabindex="0"
         >
-          <div class="bb-dropdown__value">
-            ${displayValue ? `<span class="bb-dropdown__single">${this.escapeHtml(displayValue)}</span>` : `<span class="bb-dropdown__placeholder">${this.escapeHtml(this.placeholder)}</span>`}
+          <div class="${CSS_CLASSES.BB_DROPDOWN_VALUE}">
+            ${displayValue ? `<span class="${CSS_CLASSES.BB_DROPDOWN_SINGLE}">${this.escapeHtml(displayValue)}</span>` : `<span class="${CSS_CLASSES.BB_DROPDOWN_PLACEHOLDER}">${this.escapeHtml(this.placeholder)}</span>`}
           </div>
-          ${showClear ? '<button type="button" class="bb-dropdown__clear" data-select-clear>✕</button>' : ''}
-          <span class="bb-dropdown__arrow ${this.isDropdownOpen ? 'bb-dropdown__arrow--open' : ''}">▼</span>
+          ${showClear ? `<button type="button" class="${CSS_CLASSES.BB_DROPDOWN_CLEAR}" data-select-clear>✕</button>` : ''}
+          <span class="${CSS_CLASSES.BB_DROPDOWN_ARROW} ${this.isDropdownOpen ? CSS_CLASSES.BB_DROPDOWN_ARROW_OPEN : ''}">▼</span>
         </div>
         ${this.multiple && hasValue ? this.renderSelectedTags() : ''}
-        ${this.errors[this.fieldName] ? `<div class="block-builder-form-errors"><span class="error">${this.errors[this.fieldName].join(', ')}</span></div>` : ''}
+        ${this.errors[this.fieldName] ? `<div class="${CSS_CLASSES.FORM_ERRORS}"><span class="${CSS_CLASSES.ERROR}">${this.errors[this.fieldName].join(', ')}</span></div>` : ''}
         <input type="hidden" name="${this.fieldName}" value="${this.multiple && Array.isArray(this.value) ? JSON.stringify(this.value) : (this.value ?? '')}" />
       </div>
     `;
 
-    const placeholderElement = container.querySelector('.select-placeholder');
+    const placeholderElement = container.querySelector(`.${CSS_CLASSES.SELECT_PLACEHOLDER}`);
     if (placeholderElement) {
       placeholderElement.outerHTML = html;
     } else {
@@ -310,13 +317,13 @@ export class SelectControlRenderer extends BaseDropdownRenderer {
     }
 
     return `
-      <div class="bb-api-select__selected">
+      <div class="${CSS_CLASSES.BB_API_SELECT_SELECTED}">
         ${selectedOptions
           .map(
             opt => `
-          <div class="bb-api-select__tag">
-            <span class="bb-api-select__tag-name">${this.escapeHtml(opt.label)}</span>
-            <span class="bb-api-select__tag-remove" data-select-remove="${opt.value}">✕</span>
+          <div class="${CSS_CLASSES.BB_API_SELECT_TAG}">
+            <span class="${CSS_CLASSES.BB_API_SELECT_TAG_NAME}">${this.escapeHtml(opt.label)}</span>
+            <span class="${CSS_CLASSES.BB_API_SELECT_TAG_REMOVE}" data-select-remove="${opt.value}">✕</span>
           </div>
         `
           )
@@ -337,7 +344,7 @@ export class SelectControlRenderer extends BaseDropdownRenderer {
   }
 
   private attachEvents(container: HTMLElement): void {
-    const trigger = container.querySelector('.bb-dropdown__control') as HTMLElement;
+    const trigger = container.querySelector(`.${CSS_CLASSES.BB_DROPDOWN_CONTROL}`) as HTMLElement;
     if (trigger) {
       this.triggerElement = trigger;
 
@@ -436,7 +443,7 @@ export class SelectControlRenderer extends BaseDropdownRenderer {
 
     const options = Array.from(
       this.dropdownElement.querySelectorAll<HTMLElement>(
-        '.bb-dropdown__option:not(.bb-dropdown__option--disabled)'
+        `.${CSS_CLASSES.BB_DROPDOWN_OPTION}:not(.${CSS_CLASSES.BB_DROPDOWN_OPTION_DISABLED})`
       )
     );
 
@@ -453,12 +460,12 @@ export class SelectControlRenderer extends BaseDropdownRenderer {
     }
 
     options.forEach(option => {
-      option.classList.remove('bb-dropdown__option--highlighted');
+      option.classList.remove(CSS_CLASSES.BB_DROPDOWN_OPTION_HIGHLIGHTED);
     });
 
     if (this.highlightedIndex >= 0 && this.highlightedIndex < options.length) {
       const highlightedOption = options[this.highlightedIndex];
-      highlightedOption.classList.add('bb-dropdown__option--highlighted');
+      highlightedOption.classList.add(CSS_CLASSES.BB_DROPDOWN_OPTION_HIGHLIGHTED);
       highlightedOption.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }
   }
@@ -470,7 +477,7 @@ export class SelectControlRenderer extends BaseDropdownRenderer {
 
     const options = Array.from(
       this.dropdownElement.querySelectorAll<HTMLElement>(
-        '.bb-dropdown__option:not(.bb-dropdown__option--disabled)'
+        `.${CSS_CLASSES.BB_DROPDOWN_OPTION}:not(.${CSS_CLASSES.BB_DROPDOWN_OPTION_DISABLED})`
       )
     );
 

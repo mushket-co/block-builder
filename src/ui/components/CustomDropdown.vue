@@ -274,6 +274,10 @@ const open = async () => {
     return;
   }
 
+  // Сбрасываем прошлый snapshot перед открытием,
+  // чтобы не восстановить позицию от предыдущего сеанса
+  lastScrollSnapshot.value = null;
+
   isOpen.value = true;
   emit('open');
 
@@ -291,6 +295,9 @@ const close = () => {
   highlightedIndex.value = -1;
   cleanupScrollableAncestors();
   emit('close');
+
+  // После закрытия сбрасываем snapshot
+  lastScrollSnapshot.value = null;
 };
 
 const toggle = () => {
@@ -318,6 +325,62 @@ const restoreScrollPosition = (scrollTop: number) => {
     }
   });
 };
+
+type TScrollSnapshot = { top: number; height: number };
+
+const saveScrollSnapshot = (): TScrollSnapshot => {
+  const top = contentRef.value?.scrollTop ?? 0;
+  const height = contentRef.value?.scrollHeight ?? 0;
+  return { top, height };
+};
+
+const restoreScrollFromSnapshot = (snapshot: TScrollSnapshot | null | undefined) => {
+  if (!contentRef.value || !snapshot) {
+    return;
+  }
+  nextTick(() => {
+    if (!contentRef.value) {
+      return;
+    }
+    const prevTop = snapshot.top;
+    const prevHeight = snapshot.height;
+    const newHeight = contentRef.value.scrollHeight;
+    const client = contentRef.value.clientHeight;
+    // Если это первый рендер (нечего восстанавливать), остаёмся в начале
+    if (prevHeight === 0) {
+      contentRef.value.scrollTop = 0;
+      return;
+    }
+    const delta = Math.max(0, newHeight - prevHeight);
+    // Считаем расстояние до низа в прошлом состоянии
+    const distanceFromBottomPrev = prevHeight - (prevTop + client);
+    // Считаем "близко к низу" только если расстояние неотрицательное и мало
+    const wasNearBottom = distanceFromBottomPrev >= 0 && distanceFromBottomPrev <= 48;
+    const targetTop = wasNearBottom ? prevTop + delta : prevTop;
+    contentRef.value.scrollTop = Math.max(0, targetTop);
+  });
+};
+
+const lastScrollSnapshot = ref<TScrollSnapshot | null>(null);
+
+watch(
+  () => props.loading,
+  (isLoading) => {
+    if (!isOpen.value) {
+      return;
+    }
+    if (isLoading) {
+      lastScrollSnapshot.value = saveScrollSnapshot();
+    } else {
+      // Восстанавливаем позицию после обновления списка
+      nextTick(() => {
+        restoreScrollFromSnapshot(lastScrollSnapshot.value);
+        // Обновляем позицию панели (мог изменииться размер)
+        nextTick(() => updatePosition());
+      });
+    }
+  }
+);
 
 const updatePosition = () => {
   if (!isOpen.value || !triggerRef.value || !panelRef.value) {
@@ -685,6 +748,8 @@ defineExpose({
   updatePosition,
   saveScrollPosition,
   restoreScrollPosition,
+  saveScrollSnapshot,
+  restoreScrollFromSnapshot,
   isOpen,
 });
 </script>

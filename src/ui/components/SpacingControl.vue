@@ -1,9 +1,9 @@
 <template>
-  <div class="spacing-control">
-    <div class="spacing-control__header">
-      <label class="spacing-control__label">
+  <div class="bb-spacing-control">
+    <div class="bb-spacing-control__header">
+      <label class="bb-spacing-control__label">
         {{ label }}
-        <span v-if="required" class="required">*</span>
+        <span v-if="required" class="bb-required">*</span>
       </label>
     </div>
 
@@ -11,34 +11,34 @@
       ⚠️ {{ getAdvancedSpacingRestrictionMessage() }}
     </div>
 
-    <div class="spacing-control__breakpoints">
+    <div class="bb-spacing-control__breakpoints">
       <button
         v-for="bp in allBreakpoints"
         :key="bp.name"
         type="button"
-        class="spacing-control__breakpoint-btn"
-        :class="{ 'spacing-control__breakpoint-btn--active': currentBreakpoint === bp.name }"
+        class="bb-spacing-control__breakpoint-btn"
+        :class="{ 'bb-spacing-control__breakpoint-btn--active': currentBreakpoint === bp.name }"
         @click="currentBreakpoint = bp.name"
       >
         {{ bp.label }}
       </button>
     </div>
 
-    <div class="spacing-control__groups">
+    <div class="bb-spacing-control__groups">
       <div
         v-for="spacingType in availableSpacingTypes"
         :key="spacingType"
-        class="spacing-control__group"
+        class="bb-spacing-control__group"
       >
-        <label :for="getFieldId(spacingType)" class="spacing-control__group-label">
+        <label :for="getFieldId(spacingType)" class="bb-spacing-control__group-label">
           {{ getSpacingLabel(spacingType) }}
         </label>
 
-        <div class="spacing-control__slider-wrapper">
+        <div class="bb-spacing-control__slider-wrapper">
           <input
             :id="getFieldId(spacingType)"
             type="range"
-            class="spacing-control__slider"
+            class="bb-spacing-control__slider"
             :min="minValue"
             :max="maxValue"
             :step="stepValue"
@@ -47,21 +47,21 @@
           />
           <input
             type="number"
-            class="spacing-control__value-input"
+            class="bb-spacing-control__value-input"
             :min="minValue"
             :max="maxValue"
             :step="stepValue"
             :value="getSpacingValue(spacingType)"
             @input="handleValueInputChange(spacingType, $event)"
           />
-          <span class="spacing-control__unit">px</span>
+          <span class="bb-spacing-control__unit">px</span>
         </div>
       </div>
     </div>
 
-    <div v-if="showPreview" class="spacing-control__preview">
-      <div class="spacing-control__preview-title">CSS переменные:</div>
-      <pre class="spacing-control__preview-code">{{ getCSSVariablesPreview() }}</pre>
+    <div v-if="showPreview" class="bb-spacing-control__preview">
+      <div class="bb-spacing-control__preview-title">CSS переменные:</div>
+      <pre class="bb-spacing-control__preview-code">{{ getCSSVariablesPreview() }}</pre>
     </div>
   </div>
 </template>
@@ -333,7 +333,7 @@ export default {
 
 <style scoped>
 /* 
- * Стили spacing-control уже включены в @mushket-co/block-builder/index.esm.css
+ * Стили bb-spacing-control уже включены в @mushket-co/block-builder/index.esm.css
  * Импортируйте стили отдельно: import '@mushket-co/block-builder/index.esm.css'
  */
 </style>

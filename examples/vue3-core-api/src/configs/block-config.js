@@ -11,7 +11,7 @@ import HeroBlock from '../components/blocks/HeroBlock.vue'
 export const blockConfigs = {
   text: {
     title: 'Текстовый блок',
-    icon: '📝',
+    icon: '',
     description: 'Простой текстовый блок',
     render: {
       kind: 'component',
@@ -41,7 +41,7 @@ export const blockConfigs = {
   },
   image: {
     title: 'Блок изображения',
-    icon: '🖼️',
+    icon: '',
     description: 'Простой блок с изображением',
     render: {
       kind: 'component',
@@ -65,7 +65,7 @@ export const blockConfigs = {
   },
   card: {
     title: 'Карточка',
-    icon: '🃏',
+    icon: '',
     description: 'Блок-карточка с заголовком и текстом',
     render: {
       kind: 'component',
@@ -101,7 +101,7 @@ export const blockConfigs = {
   },
   hero: {
     title: 'Hero секция',
-    icon: '🎯',
+    icon: '',
     description: 'Главная секция с текстом',
     render: {
       kind: 'component',

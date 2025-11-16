@@ -1,8 +1,3 @@
-/**
- * CSS переменные для Block Builder
- * Можно кастомизировать через переопределение переменных
- */
-
 :root {
   /* Цвета бренда */
   --bb-color-primary: #667eea;
@@ -104,5 +99,7 @@
   --bb-color-gradient-end: #764ba2;
   --bb-color-gradient-success-start: #10b981;
   --bb-color-gradient-success-end: #059669;
+  /* Controls */
+  --bb-form-control-height: 40px;
 }
 

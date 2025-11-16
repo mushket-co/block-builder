@@ -1,4 +1,5 @@
 import { SpacingControlRenderer, ISpacingControlConfig } from '../SpacingControlRenderer';
+import { CSS_CLASSES } from '../../../utils/constants';
 
 describe('SpacingControlRenderer', () => {
   let renderer: SpacingControlRenderer;
@@ -72,7 +73,7 @@ describe('SpacingControlRenderer', () => {
     renderer.render(container);
 
     expect(container.innerHTML).toBeTruthy();
-    expect(container.querySelector('.spacing-control')).toBeTruthy();
+    expect(container.querySelector(`.${CSS_CLASSES.SPACING_CONTROL_CONTAINER}`)).toBeTruthy();
   });
 
   test('должен показать label', () => {

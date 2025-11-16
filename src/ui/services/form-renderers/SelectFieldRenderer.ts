@@ -1,4 +1,5 @@
 import { IFormFieldConfig } from '../../../core/types/form';
+import { CSS_CLASSES } from '../../../utils/constants';
 import { ISelectControlOptions, SelectControlRenderer } from '../../services/SelectControlRenderer';
 import { BaseFieldRenderer } from './BaseFieldRenderer';
 import { IRenderContext } from './IRenderContext';
@@ -16,7 +17,7 @@ export class SelectFieldRenderer extends BaseFieldRenderer {
   ): string {
     const fieldName = this.getFieldName(context, field);
 
-    return `<div class="select-placeholder" data-field-name="${fieldName}" data-field-id="${fieldId}"></div>`;
+    return `<div class="${CSS_CLASSES.SELECT_PLACEHOLDER}" data-field-name="${fieldName}" data-field-id="${fieldId}"></div>`;
   }
 
   async renderControl(
@@ -26,7 +27,9 @@ export class SelectFieldRenderer extends BaseFieldRenderer {
     context?: IRenderContext
   ): Promise<void> {
     const fieldName = this.getFieldName(context, field);
-    const placeholder = container.querySelector('.select-placeholder') as HTMLElement;
+    const placeholder = container.querySelector(
+      `.${CSS_CLASSES.SELECT_PLACEHOLDER}`
+    ) as HTMLElement;
 
     if (!placeholder) {
       return;

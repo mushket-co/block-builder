@@ -45,7 +45,7 @@ export class ApiSelectFieldRenderer extends BaseFieldRenderer {
         ${combinedDataAttributes}
         data-api-select-config="${configJson}"
       >
-        <div class="api-select-placeholder bb-placeholder-box">
+        <div class="${CSS_CLASSES.API_SELECT_PLACEHOLDER} ${CSS_CLASSES.BB_PLACEHOLDER_BOX}">
           ⏳ Инициализация API Select...
         </div>
       </div>

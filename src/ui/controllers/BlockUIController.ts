@@ -141,12 +141,12 @@ export class BlockUIController {
 
     const licenseWarningHTML = !licenseInfo.isPro
       ? `
-      <div class="block-builder-license-warning">
-        <div class="block-builder-license-warning__header">
-          <span class="block-builder-license-warning__icon">⚠️</span>
-          <strong class="block-builder-license-warning__title">Бесплатная версия <a href="https://block-builder.ru/" target="_blank" rel="noopener noreferrer" class="bb-link-inherit">Block Builder</a></strong>
+      <div class="${CSS_CLASSES.LICENSE_WARNING}">
+        <div class="${CSS_CLASSES.LICENSE_WARNING_HEADER}">
+          <span class="${CSS_CLASSES.LICENSE_WARNING_ICON}">⚠️</span>
+          <strong class="${CSS_CLASSES.LICENSE_WARNING_TITLE}">Бесплатная версия <a href="https://block-builder.ru/" target="_blank" rel="noopener noreferrer" class="${CSS_CLASSES.BB_LINK_INHERIT}">Block Builder</a></strong>
         </div>
-        <p class="block-builder-license-warning__text">
+        <p class="${CSS_CLASSES.LICENSE_WARNING_TEXT}">
           Вы используете ограниченную бесплатную версию.<br>
           Доступно <strong>${currentBlockTypesCount} из ${licenseInfo.maxBlockTypes}</strong> типов блоков.
         </p>
@@ -156,27 +156,33 @@ export class BlockUIController {
 
     const blockTypesHTML = Object.entries(this.config.blockConfigs)
       .map(([type, config]) => {
-        const title = config.title || type;
-        const icon = config.icon || '📦';
+        const title = (config.title as string) || type;
+        const icon = config.icon as string | undefined;
         const args =
           position !== undefined
             ? JSON.stringify([type, position])
             : JSON.stringify([type, undefined]);
+
+        // icon теперь всегда опциональная ссылка для img
+        const iconHTML = icon
+          ? `<img src="${this.escapeHtml(icon)}" alt="${this.escapeHtml(title)}" class="${CSS_CLASSES.BLOCK_TYPE_CARD_ICON_IMG}" />`
+          : '';
+
         return `
         <button
           data-action="showAddBlockFormAtPosition"
           data-args='${args}'
-          class="block-builder-block-type-card"
+          class="${CSS_CLASSES.BLOCK_TYPE_CARD}"
         >
-          <span class="block-builder-block-type-card__icon">${icon}</span>
-          <span class="block-builder-block-type-card__title">${title}</span>
+          <span class="${CSS_CLASSES.BLOCK_TYPE_CARD_ICON}">${iconHTML}</span>
+          <span class="${CSS_CLASSES.BLOCK_TYPE_CARD_TITLE}">${title}</span>
         </button>
       `;
       })
       .join('');
 
     const bodyHTML = `
-    <div class="block-builder-block-type-selection">
+    <div class="${CSS_CLASSES.BLOCK_TYPE_SELECTION}">
       ${licenseWarningHTML}
       ${blockTypesHTML}
     </div>
@@ -189,6 +195,7 @@ export class BlockUIController {
       onCancel: () => this.modalManager.closeModal(),
       submitButtonText: UI_STRINGS.cancelButtonText,
       hideSubmitButton: true,
+      preventBodyScroll: true,
     });
   }
 
@@ -211,7 +218,7 @@ export class BlockUIController {
     );
 
     const formHTML = `
-    <form id="${FORM_ID_PREFIX}" class="block-builder-form">
+    <form id="${FORM_ID_PREFIX}" class="${CSS_CLASSES.FORM}">
       ${this.formBuilder.generateCreateFormHTML(fields)}
     </form>
     `;
@@ -226,6 +233,7 @@ export class BlockUIController {
         this.modalManager.closeModal();
       },
       submitButtonText: UI_STRINGS.addButtonText,
+      preventBodyScroll: true,
     });
 
     this.currentFormFields.clear();
@@ -324,6 +332,12 @@ export class BlockUIController {
           addButtonText?: string;
           removeButtonText?: string;
           itemTitle?: string;
+          countLabelVariants?: {
+            one: string;
+            few: string;
+            many: string;
+            zero?: string;
+          };
           min?: number;
           max?: number;
           defaultItemValue?: Record<string, unknown>;
@@ -341,6 +355,7 @@ export class BlockUIController {
           addButtonText: parsed.addButtonText,
           removeButtonText: parsed.removeButtonText,
           itemTitle: parsed.itemTitle,
+          countLabelVariants: parsed.countLabelVariants,
           min: parsed.min,
           max: parsed.max,
           defaultItemValue: parsed.defaultItemValue,
@@ -385,11 +400,13 @@ export class BlockUIController {
     if (!this.licenseService.canUseApiSelect()) {
       const containers = document.querySelectorAll(`.${CSS_CLASSES.API_SELECT_CONTROL_CONTAINER}`);
       containers.forEach(container => {
-        const placeholder = container.querySelector('.api-select-placeholder') as HTMLElement;
+        const placeholder = container.querySelector(
+          `.${CSS_CLASSES.API_SELECT_PLACEHOLDER}`
+        ) as HTMLElement;
         if (placeholder) {
-          placeholder.classList.remove('bb-placeholder-box');
+          placeholder.classList.remove(CSS_CLASSES.BB_PLACEHOLDER_BOX);
           placeholder.innerHTML = `
-            <div class="bb-warning-box">
+            <div class="${CSS_CLASSES.BB_WARNING_BOX}">
               ⚠️ ${this.licenseService.getFeatureChecker().getFeatureRestrictionMessage(LicenseFeature.API_SELECT)}
             </div>
           `;
@@ -400,7 +417,7 @@ export class BlockUIController {
 
     this.cleanupApiSelectControls();
 
-    const containers = document.querySelectorAll('.api-select-control-container');
+    const containers = document.querySelectorAll(`.${CSS_CLASSES.API_SELECT_CONTROL_CONTAINER}`);
 
     for (const container of Array.from(containers)) {
       const htmlContainer = container as HTMLElement;
@@ -541,7 +558,7 @@ export class BlockUIController {
   private async initializeSelectControls(): Promise<void> {
     this.cleanupSelectControls();
 
-    const placeholders = document.querySelectorAll('.select-placeholder');
+    const placeholders = document.querySelectorAll(`.${CSS_CLASSES.SELECT_PLACEHOLDER}`);
 
     for (const placeholder of Array.from(placeholders)) {
       const htmlPlaceholder = placeholder as HTMLElement;
@@ -553,7 +570,7 @@ export class BlockUIController {
       }
 
       try {
-        const container = htmlPlaceholder.closest('.block-builder-form-group') as HTMLElement;
+        const container = htmlPlaceholder.closest(`.${CSS_CLASSES.FORM_GROUP}`) as HTMLElement;
         if (!container) {
           continue;
         }
@@ -657,12 +674,14 @@ export class BlockUIController {
         `.${CSS_CLASSES.CUSTOM_FIELD_CONTROL_CONTAINER}`
       );
       containers.forEach(container => {
-        const placeholder = container.querySelector('.custom-field-placeholder') as HTMLElement;
+        const placeholder = container.querySelector(
+          `.${CSS_CLASSES.CUSTOM_FIELD_PLACEHOLDER}`
+        ) as HTMLElement;
         if (placeholder) {
           placeholder.removeAttribute('style');
-          placeholder.classList.remove('bb-placeholder-box');
+          placeholder.classList.remove(CSS_CLASSES.BB_PLACEHOLDER_BOX);
           placeholder.innerHTML = `
-            <div class="bb-warning-box">
+            <div class="${CSS_CLASSES.BB_WARNING_BOX}">
               ⚠️ ${this.licenseService.getFeatureChecker().getFeatureRestrictionMessage(LicenseFeature.CUSTOM_FIELDS)}
             </div>
           `;
@@ -677,7 +696,7 @@ export class BlockUIController {
 
     this.cleanupCustomFieldControls();
 
-    const containers = document.querySelectorAll('.custom-field-control-container');
+    const containers = document.querySelectorAll(`.${CSS_CLASSES.CUSTOM_FIELD_CONTROL_CONTAINER}`);
 
     for (const container of Array.from(containers)) {
       const htmlContainer = container as HTMLElement;
@@ -711,7 +730,7 @@ export class BlockUIController {
         }
 
         let renderContainer = htmlContainer.querySelector(
-          '.custom-field-placeholder'
+          `.${CSS_CLASSES.CUSTOM_FIELD_PLACEHOLDER}`
         ) as HTMLElement;
         if (!renderContainer) {
           renderContainer = htmlContainer;
@@ -776,7 +795,7 @@ export class BlockUIController {
   }
 
   private initializeImageUploadControls(): void {
-    const containers = document.querySelectorAll('.image-upload-field');
+    const containers = document.querySelectorAll(`.${CSS_CLASSES.IMAGE_UPLOAD_FIELD}`);
 
     containers.forEach(container => {
       const htmlContainer = container as HTMLElement;
@@ -794,12 +813,20 @@ export class BlockUIController {
       const hiddenInput = htmlContainer.querySelector(
         'input[type="hidden"][data-image-value="true"]'
       ) as HTMLInputElement;
-      const preview = htmlContainer.querySelector('.image-upload-field__preview') as HTMLElement;
+      const preview = htmlContainer.querySelector(
+        `.${CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW}`
+      ) as HTMLElement;
       const previewImg = preview?.querySelector('img') as HTMLImageElement;
       const label = htmlContainer.querySelector('label[for]') as HTMLLabelElement;
-      const labelText = label?.querySelector('.image-upload-field__label-text') as HTMLElement;
-      const loadingText = label?.querySelector('.image-upload-field__loading-text') as HTMLElement;
-      const errorDiv = htmlContainer.querySelector('.image-upload-field__error') as HTMLElement;
+      const labelText = label?.querySelector(
+        `.${CSS_CLASSES.IMAGE_UPLOAD_FIELD_LABEL_TEXT}`
+      ) as HTMLElement;
+      const loadingText = label?.querySelector(
+        `.${CSS_CLASSES.IMAGE_UPLOAD_FIELD_LOADING_TEXT}`
+      ) as HTMLElement;
+      const errorDiv = htmlContainer.querySelector(
+        `.${CSS_CLASSES.IMAGE_UPLOAD_FIELD_ERROR}`
+      ) as HTMLElement;
 
       if (!fileInput || !hiddenInput) {
         return;
@@ -893,7 +920,7 @@ export class BlockUIController {
       const self = this;
 
       const clearBtn = container.querySelector(
-        '.image-upload-field__preview-clear'
+        `.${CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW_CLEAR}`
       ) as HTMLButtonElement;
       if (clearBtn) {
         clearBtn.addEventListener('click', () => {
@@ -944,16 +971,16 @@ export class BlockUIController {
 
         if (errorDiv) {
           errorDiv.style.display = 'none';
-          errorDiv.classList.add('bb-hidden');
+          errorDiv.classList.add(CSS_CLASSES.BB_HIDDEN);
           errorDiv.textContent = '';
         }
         if (labelText) {
           labelText.style.display = 'none';
-          labelText.classList.add('bb-hidden');
+          labelText.classList.add(CSS_CLASSES.BB_HIDDEN);
         }
         if (loadingText) {
           loadingText.style.display = 'inline';
-          loadingText.classList.remove('bb-hidden');
+          loadingText.classList.remove(CSS_CLASSES.BB_HIDDEN);
         }
         if (label) {
           label.style.pointerEvents = 'none';
@@ -1020,7 +1047,7 @@ export class BlockUIController {
             previewImg.src = imageUrl;
             previewImg.style.display = 'block';
             if (preview) {
-              preview.classList.remove('bb-hidden');
+              preview.classList.remove(CSS_CLASSES.BB_HIDDEN);
               preview.style.display = 'block';
               preview.style.position = 'relative';
               preview.style.marginBottom = '12px';
@@ -1028,22 +1055,22 @@ export class BlockUIController {
             if (labelText) {
               labelText.textContent = 'Изменить файл';
               labelText.style.display = 'inline';
-              labelText.classList.remove('bb-hidden');
+              labelText.classList.remove(CSS_CLASSES.BB_HIDDEN);
             }
           } else if (previewImg && preview) {
-            preview.classList.add('bb-hidden');
+            preview.classList.add(CSS_CLASSES.BB_HIDDEN);
             preview.style.display = 'none';
             if (labelText) {
               labelText.textContent = 'Выберите изображение';
               labelText.style.display = 'inline';
-              labelText.classList.remove('bb-hidden');
+              labelText.classList.remove(CSS_CLASSES.BB_HIDDEN);
             }
           }
 
           if (container) {
             container.classList.remove(CSS_CLASSES.ERROR);
             const fileErrorDiv = container.querySelector(
-              '.image-upload-field__file .image-upload-field__error'
+              `.${CSS_CLASSES.IMAGE_UPLOAD_FIELD_FILE} .${CSS_CLASSES.IMAGE_UPLOAD_FIELD_ERROR}`
             ) as HTMLElement;
             if (fileErrorDiv) {
               fileErrorDiv.style.display = 'none';
@@ -1058,16 +1085,16 @@ export class BlockUIController {
           if (errorDiv) {
             errorDiv.textContent = error.message || 'Ошибка при загрузке файла';
             errorDiv.style.display = 'block';
-            errorDiv.classList.remove('bb-hidden');
+            errorDiv.classList.remove(CSS_CLASSES.BB_HIDDEN);
           }
           if (labelText) {
             labelText.style.display = 'inline';
-            labelText.classList.remove('bb-hidden');
+            labelText.classList.remove(CSS_CLASSES.BB_HIDDEN);
           }
         } finally {
           if (loadingText) {
             loadingText.style.display = 'none';
-            loadingText.classList.add('bb-hidden');
+            loadingText.classList.add(CSS_CLASSES.BB_HIDDEN);
           }
           if (label) {
             label.style.pointerEvents = 'auto';
@@ -1081,10 +1108,12 @@ export class BlockUIController {
   }
 
   private showCustomFieldError(container: HTMLElement, message: string): void {
-    const placeholder = container.querySelector('.custom-field-placeholder') as HTMLElement;
+    const placeholder = container.querySelector(
+      `.${CSS_CLASSES.CUSTOM_FIELD_PLACEHOLDER}`
+    ) as HTMLElement;
     if (placeholder) {
       placeholder.removeAttribute('style');
-      placeholder.classList.remove('bb-placeholder-box');
+      placeholder.classList.remove(CSS_CLASSES.BB_PLACEHOLDER_BOX);
       placeholder.innerHTML = '';
       const errorDiv = document.createElement('div');
       errorDiv.style.cssText =
@@ -1204,7 +1233,7 @@ export class BlockUIController {
     );
 
     const formHTML = `
-    <form id="${FORM_ID_PREFIX}" class="block-builder-form">
+    <form id="${FORM_ID_PREFIX}" class="${CSS_CLASSES.FORM}">
       ${this.formBuilder.generateEditFormHTML(fields, block.props)}
     </form>
     `;
@@ -1396,7 +1425,7 @@ export class BlockUIController {
 
   private showNotification(message: string, type: 'success' | 'error' | 'info' = 'info'): void {
     const notification = document.createElement('div');
-    notification.className = 'block-builder-notification';
+    notification.className = CSS_CLASSES.NOTIFICATION;
     notification.textContent = message;
 
     const colors = {
@@ -1522,7 +1551,7 @@ export class BlockUIController {
       return;
     }
 
-    const modalBody = document.querySelector('.block-builder-modal-body') as HTMLElement;
+    const modalBody = document.querySelector(`.${CSS_CLASSES.MODAL_BODY}`) as HTMLElement;
     if (!modalBody) {
       return;
     }
@@ -1604,24 +1633,24 @@ export class BlockUIController {
 
     document
       .querySelectorAll(
-        '.block-builder-form-errors .block-builder-error, .image-upload-field__error'
+        `.${CSS_CLASSES.FORM_ERRORS} .${CSS_CLASSES.ERROR}, .${CSS_CLASSES.IMAGE_UPLOAD_FIELD_ERROR}`
       )
       .forEach(errorEl => {
         let field: HTMLElement | null = null;
         let repeaterIndex: string | null = null;
         let fieldName: string | null = null;
 
-        const isImageField = errorEl.classList.contains('image-upload-field__error');
+        const isImageField = errorEl.classList.contains(CSS_CLASSES.IMAGE_UPLOAD_FIELD_ERROR);
 
         if (isImageField) {
-          const imageField = errorEl.closest('.image-upload-field') as HTMLElement;
+          const imageField = errorEl.closest(`.${CSS_CLASSES.IMAGE_UPLOAD_FIELD}`) as HTMLElement;
           if (imageField) {
             field = imageField;
             repeaterIndex = imageField.dataset.repeaterIndex || null;
             fieldName = imageField.dataset.repeaterItemField || null;
           }
         } else {
-          field = errorEl.closest('.block-builder-form-group') as HTMLElement;
+          field = errorEl.closest(`.${CSS_CLASSES.FORM_GROUP}`) as HTMLElement;
           if (field) {
             const input = field.querySelector('input, textarea, select') as HTMLElement;
             if (input) {
@@ -1632,7 +1661,9 @@ export class BlockUIController {
         }
 
         if (repeaterIndex !== null && fieldName) {
-          const repeaterControl = field?.closest('.repeater-control') as HTMLElement;
+          const repeaterControl = field?.closest(
+            `.${CSS_CLASSES.REPEATER_CONTROL_CONTAINER}`
+          ) as HTMLElement;
           if (repeaterControl) {
             const repeaterFieldName = repeaterControl.dataset.fieldName;
             if (repeaterFieldName) {
@@ -1705,6 +1736,15 @@ export class BlockUIController {
 
   getIsEdit(): boolean {
     return this.isEdit;
+  }
+
+  private escapeHtml(text: string | number | null | undefined): string {
+    if (text === null || text === undefined) {
+      return '';
+    }
+    const div = document.createElement('div');
+    div.textContent = String(text);
+    return div.innerHTML;
   }
 
   destroy(): void {

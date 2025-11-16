@@ -1,3 +1,5 @@
+import { ERROR_MESSAGES } from './constants';
+
 export function decodeHTMLEntities(text: string): string {
   const textarea = document.createElement('textarea');
   textarea.textContent = text;
@@ -14,13 +16,14 @@ export function setSafeHTML(element: HTMLElement, html: string): void {
     element.append(temp.firstChild);
   }
 }
+
 export function parseJSONFromAttribute(attrValue: string): unknown {
   try {
     const decoded = decodeHTMLEntities(attrValue);
     return JSON.parse(decoded);
   } catch (error) {
     throw new Error(
-      `Failed to parse JSON from attribute: ${error instanceof Error ? error.message : 'Unknown error'}`
+      `Не удалось распарсить JSON из атрибута: ${error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR}`
     );
   }
 }

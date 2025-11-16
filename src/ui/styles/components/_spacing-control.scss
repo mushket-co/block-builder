@@ -1,10 +1,4 @@
-/**
- * Стили для SpacingControl компонента
- * БЭМ методология: Block Element Modifier
- */
-
-/* Блок: spacing-control */
-.spacing-control {
+.bb-spacing-control {
   display: flex;
   flex-direction: column;
   gap: var(--bb-spacing-lg);
@@ -14,28 +8,25 @@
   border: 1px solid var(--bb-border-color-light);
 }
 
-/* Элемент: header */
-.spacing-control__header {
+.bb-spacing-control__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-/* Элемент: label */
-.spacing-control__label {
+.bb-spacing-control__label {
   font-weight: 600;
   color: var(--bb-text-primary);
   font-size: var(--bb-font-size-md);
   margin: 0;
 
-  .required {
+  .bb-required {
     color: var(--bb-color-danger);
     margin-left: 4px;
   }
 }
 
-/* Элемент: breakpoints */
-.spacing-control__breakpoints {
+.bb-spacing-control__breakpoints {
   display: flex;
   gap: var(--bb-spacing-sm);
   flex-wrap: wrap;
@@ -44,8 +35,7 @@
   border-radius: var(--bb-radius-md);
 }
 
-/* Элемент: breakpoint-btn */
-.spacing-control__breakpoint-btn {
+.bb-spacing-control__breakpoint-btn {
   padding: var(--bb-spacing-sm) var(--bb-spacing-lg);
   background-color: var(--bb-bg-primary);
   border: 2px solid var(--bb-border-color);
@@ -67,7 +57,6 @@
       box-shadow: 0 0 0 3px var(--bb-color-primary-shadow-light);
   }
 
-  /* Модификатор: active */
   &--active {
     background-color: var(--bb-color-primary);
     border-color: var(--bb-color-primary);
@@ -81,15 +70,13 @@
   }
 }
 
-/* Элемент: groups */
-.spacing-control__groups {
+.bb-spacing-control__groups {
   display: flex;
   flex-direction: column;
   gap: var(--bb-spacing-lg);
 }
 
-/* Элемент: group */
-.spacing-control__group {
+.bb-spacing-control__group {
   display: flex;
   flex-direction: column;
   gap: var(--bb-spacing-sm);
@@ -98,24 +85,21 @@
   border-radius: var(--bb-radius-md);
 }
 
-/* Элемент: group-label */
-.spacing-control__group-label {
+.bb-spacing-control__group-label {
   font-size: var(--bb-font-size-sm);
   font-weight: 500;
   color: var(--bb-text-primary);
   margin-bottom: var(--bb-spacing-xs);
 }
 
-/* Элемент: slider-wrapper */
-.spacing-control__slider-wrapper {
+.bb-spacing-control__slider-wrapper {
   display: grid;
   grid-template-columns: 1fr auto auto;
   align-items: center;
   gap: var(--bb-spacing-md);
 }
 
-/* Элемент: slider (стандартный input[type=range]) */
-.spacing-control__slider {
+.bb-spacing-control__slider {
   width: 100%;
   height: 8px;
   cursor: pointer;
@@ -124,7 +108,6 @@
   appearance: none;
   background: transparent;
 
-  /* Трек для WebKit (Chrome, Safari, Edge) */
   &::-webkit-slider-runnable-track {
     width: 100%;
     height: 8px;
@@ -132,7 +115,6 @@
     border-radius: 100px;
   }
 
-  /* Трек для Firefox */
   &::-moz-range-track {
     width: 100%;
     height: 8px;
@@ -141,7 +123,6 @@
     border: none;
   }
 
-  /* Ползунок для WebKit */
   &::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
@@ -163,7 +144,6 @@
     }
   }
 
-  /* Ползунок для Firefox */
   &::-moz-range-thumb {
     width: 20px;
     height: 20px;
@@ -181,7 +161,6 @@
     }
   }
 
-  /* Заполненная часть трека (для Firefox) */
   &::-moz-range-progress {
     height: 8px;
     background: linear-gradient(
@@ -192,7 +171,6 @@
     border-radius: 100px;
   }
 
-  /* Фокус */
   &:focus {
     outline: none;
 
@@ -206,8 +184,7 @@
   }
 }
 
-/* Элемент: value-input */
-.spacing-control__value-input {
+.bb-spacing-control__value-input {
   width: 70px;
   padding: var(--bb-spacing-sm);
   border: 2px solid var(--bb-border-color-light);
@@ -223,46 +200,40 @@
       box-shadow: 0 0 0 3px var(--bb-color-primary-shadow-light);
   }
 
-  /* Убираем стрелки в Chrome, Safari, Edge, Opera */
   &::-webkit-outer-spin-button,
   &::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
   }
 
-  /* Убираем стрелки в Firefox */
   &[type='number'] {
     appearance: textfield;
     -moz-appearance: textfield;
   }
 }
 
-/* Элемент: unit */
-.spacing-control__unit {
+.bb-spacing-control__unit {
   font-size: var(--bb-font-size-sm);
   font-weight: 500;
   color: var(--bb-text-tertiary);
   user-select: none;
 }
 
-/* Элемент: preview */
-.spacing-control__preview {
+.bb-spacing-control__preview {
   padding: var(--bb-spacing-md);
   background-color: var(--bb-bg-primary);
   border-radius: var(--bb-radius-md);
   border: 1px solid var(--bb-border-color-light);
 }
 
-/* Элемент: preview-title */
-.spacing-control__preview-title {
+.bb-spacing-control__preview-title {
   font-size: var(--bb-font-size-sm);
   font-weight: 600;
   color: var(--bb-text-primary);
   margin-bottom: var(--bb-spacing-sm);
 }
 
-/* Элемент: preview-code */
-.spacing-control__preview-code {
+.bb-spacing-control__preview-code {
   margin: 0;
   padding: var(--bb-spacing-md);
   background-color: var(--bb-color-code-bg);
@@ -274,52 +245,49 @@
   white-space: pre;
   line-height: 1.6;
 
-  /* Подсветка синтаксиса для CSS */
   &::before {
     content: '';
   }
 }
 
-/* Адаптивность для мобильных устройств */
 @media (max-width: 767px) {
-  .spacing-control {
+  .bb-spacing-control {
     padding: var(--bb-spacing-md);
   }
 
-  .spacing-control__breakpoints {
+  .bb-spacing-control__breakpoints {
     gap: var(--bb-spacing-xs);
   }
 
-  .spacing-control__breakpoint-btn {
+  .bb-spacing-control__breakpoint-btn {
     padding: var(--bb-spacing-xs) var(--bb-spacing-md);
     font-size: var(--bb-font-size-xs);
   }
 
-  .spacing-control__slider-wrapper {
+  .bb-spacing-control__slider-wrapper {
     grid-template-columns: 1fr;
     gap: var(--bb-spacing-sm);
   }
 
-  .spacing-control__value-input {
+  .bb-spacing-control__value-input {
     width: 100%;
   }
 
-  .spacing-control__unit {
+  .bb-spacing-control__unit {
     display: none;
   }
 
-  .spacing-control__preview-code {
+  .bb-spacing-control__preview-code {
     font-size: 10px;
   }
 }
 
-/* Адаптивность для планшетов */
 @media (min-width: 768px) and (max-width: 1199px) {
-  .spacing-control__slider-wrapper {
+  .bb-spacing-control__slider-wrapper {
     gap: var(--bb-spacing-sm);
   }
 
-  .spacing-control__value-input {
+  .bb-spacing-control__value-input {
     width: 60px;
   }
 }

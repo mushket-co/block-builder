@@ -1,4 +1,5 @@
 import { IFormFieldConfig } from '../../../core/types/form';
+import { CSS_CLASSES } from '../../../utils/constants';
 import { BaseFieldRenderer } from './BaseFieldRenderer';
 import { IRenderContext } from './IRenderContext';
 
@@ -13,9 +14,9 @@ export class RadioFieldRenderer extends BaseFieldRenderer {
     context?: IRenderContext
   ): string {
     const escapedLabel = this.escapeHtml(field.label);
-    const requiredMark = required ? '<span class="required">*</span>' : '';
+    const requiredMark = required ? `<span class="${CSS_CLASSES.REQUIRED}">*</span>` : '';
     const options = field.options || [];
-    const labelClass = context?.labelClass || 'block-builder-form-label';
+    const labelClass = context?.labelClass || CSS_CLASSES.FORM_LABEL;
     const fieldName = this.getFieldName(context, field);
     const dataAttributes = this.getInputDataAttributes(context);
 
@@ -28,18 +29,18 @@ export class RadioFieldRenderer extends BaseFieldRenderer {
         const isChecked = option.value === value ? 'checked' : '';
 
         return `
-        <label class="block-builder-form-radio">
+        <label class="${CSS_CLASSES.FORM_RADIO}">
           <input
             type="radio"
             id="${optionId}"
             name="${fieldName}"
             value="${escapedOptionValue}"
-            class="block-builder-form-radio-input"
+            class="${CSS_CLASSES.FORM_RADIO_INPUT}"
             ${isChecked}
             ${required}
             ${dataAttributes}
           />
-          <span class="block-builder-form-radio-label">${escapedOptionLabel}</span>
+          <span class="${CSS_CLASSES.FORM_RADIO_LABEL}">${escapedOptionLabel}</span>
         </label>
       `;
       })
@@ -49,7 +50,7 @@ export class RadioFieldRenderer extends BaseFieldRenderer {
       <label class="${labelClass}">
         ${escapedLabel} ${requiredMark}
       </label>
-      <div class="block-builder-form-radio-group">
+      <div class="${CSS_CLASSES.FORM_RADIO_GROUP}">
         ${radioOptionsHTML}
       </div>
     `;

@@ -1,3 +1,5 @@
+import { ERROR_MESSAGES } from './constants';
+
 export function escapeHtml(text: string | number | null | undefined): string {
   if (text === null || text === undefined) {
     return '';
@@ -30,13 +32,14 @@ export function decodeHtmlEntities(text: string): string {
   textarea.innerHTML = text;
   return textarea.value;
 }
+
 export function parseJsonFromHtmlAttribute(text: string): unknown {
   try {
     const decoded = decodeHtmlEntities(text);
     return JSON.parse(decoded);
   } catch (error) {
     throw new Error(
-      `Failed to parse JSON from HTML attribute: ${error instanceof Error ? error.message : 'Unknown error'}`
+      `Не удалось распарсить JSON из HTML атрибута: ${error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR}`
     );
   }
 }

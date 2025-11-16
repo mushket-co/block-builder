@@ -62,7 +62,7 @@ export function findFieldElement(
     }
 
     element = containerElement.querySelector(
-      `.image-upload-field[data-field-name="${errorInfo.fieldKey}"]`
+      `.${CSS_CLASSES.IMAGE_UPLOAD_FIELD}[data-field-name="${errorInfo.fieldKey}"]`
     ) as HTMLElement;
     if (element) {
       return element;
@@ -76,7 +76,7 @@ export function findFieldElement(
   }
 
   let repeaterContainer = containerElement.querySelector(
-    `.repeater-control[data-field-name="${errorInfo.repeaterFieldName}"]`
+    `.${CSS_CLASSES.REPEATER_CONTROL_CONTAINER}[data-field-name="${errorInfo.repeaterFieldName}"]`
   ) as HTMLElement;
 
   if (!repeaterContainer) {
@@ -89,7 +89,7 @@ export function findFieldElement(
     return null;
   }
 
-  const repeaterItems = repeaterContainer.querySelectorAll('.repeater-control__item');
+  const repeaterItems = repeaterContainer.querySelectorAll(`.${CSS_CLASSES.REPEATER_CONTROL_ITEM}`);
   const itemIndex = errorInfo.repeaterIndex || 0;
 
   if (itemIndex >= repeaterItems.length) {
@@ -110,7 +110,7 @@ export function findFieldElement(
   }
 
   const imageUploadFields = targetItem.querySelectorAll<HTMLElement>(
-    `.image-upload-field[data-repeater-item-field="${errorInfo.nestedFieldName}"]`
+    `.${CSS_CLASSES.IMAGE_UPLOAD_FIELD}[data-repeater-item-field="${errorInfo.nestedFieldName}"]`
   );
 
   for (const el of Array.from(imageUploadFields)) {
@@ -135,7 +135,7 @@ export function findFieldElement(
   }
 
   const lastTry = targetItem.querySelector(
-    `.image-upload-field[data-field-name*="${errorInfo.nestedFieldName}"]`
+    `.${CSS_CLASSES.IMAGE_UPLOAD_FIELD}[data-field-name*="${errorInfo.nestedFieldName}"]`
   ) as HTMLElement;
   if (lastTry) {
     return lastTry;
@@ -192,7 +192,7 @@ function getScrollContainer(element: HTMLElement): HTMLElement | null {
   return null;
 }
 export function focusElement(element: HTMLElement): void {
-  if (element.classList.contains('image-upload-field')) {
+  if (element.classList.contains(CSS_CLASSES.IMAGE_UPLOAD_FIELD)) {
     setTimeout(() => {
       element.classList.add(CSS_CLASSES.ERROR);
       element.classList.add('field-error-highlight');

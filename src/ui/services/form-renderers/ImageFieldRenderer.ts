@@ -16,7 +16,7 @@ export class ImageFieldRenderer extends BaseFieldRenderer {
     const escapedLabel = this.escapeHtml(field.label);
     // Для image полей используем стандартный label класс из контекста, если передан
     // Иначе используем стандартный block-builder-form-label
-    const labelClass = context?.labelClass || 'block-builder-form-label';
+    const labelClass = context?.labelClass || CSS_CLASSES.FORM_LABEL;
     const fieldName = this.getFieldName(context, field);
 
     const getImageUrl = (val: any): string => {
@@ -83,26 +83,26 @@ export class ImageFieldRenderer extends BaseFieldRenderer {
 
     const content = `
       <label for="${fieldId}" class="${labelClass}">
-        ${escapedLabel} ${required ? '<span class="required">*</span>' : ''}
+        ${escapedLabel} ${required ? `<span class="${CSS_CLASSES.REQUIRED}">*</span>` : ''}
       </label>
-      <div class="image-upload-field__preview${hasImage ? '' : ' bb-hidden'}">
-        <img src="${this.escapeHtml(imageUrl)}" alt="${escapedLabel}" class="image-upload-field__preview-img" />
-        <button type="button" class="image-upload-field__preview-clear" ${clearButtonDataAttrs.join(' ')} title="Удалить изображение">×</button>
+      <div class="${CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW}${hasImage ? '' : ` ${CSS_CLASSES.BB_HIDDEN}`}">
+        <img src="${this.escapeHtml(imageUrl)}" alt="${escapedLabel}" class="${CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW_IMG}" />
+        <button type="button" class="${CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW_CLEAR}" ${clearButtonDataAttrs.join(' ')} title="Удалить изображение">×</button>
       </div>
-      <div class="image-upload-field__file">
+      <div class="${CSS_CLASSES.IMAGE_UPLOAD_FIELD_FILE}">
         <input
           type="file"
           id="${fieldId}"
           name="${fieldName}"
           accept="image/*"
-          class="image-upload-field__file-input"
+          class="${CSS_CLASSES.IMAGE_UPLOAD_FIELD_FILE_INPUT}"
           ${fileInputDataAttrs.join(' ')}
         />
-        <label for="${fieldId}" class="image-upload-field__file-label">
-          <span class="image-upload-field__label-text">${hasImage ? 'Изменить файл' : 'Выберите изображение'}</span>
-          <span class="image-upload-field__loading-text bb-hidden">⏳ Загрузка...</span>
+        <label for="${fieldId}" class="${CSS_CLASSES.IMAGE_UPLOAD_FIELD_FILE_LABEL}">
+          <span class="${CSS_CLASSES.IMAGE_UPLOAD_FIELD_LABEL_TEXT}">${hasImage ? 'Изменить файл' : 'Выберите изображение'}</span>
+          <span class="${CSS_CLASSES.IMAGE_UPLOAD_FIELD_LOADING_TEXT} ${CSS_CLASSES.BB_HIDDEN}">⏳ Загрузка...</span>
         </label>
-        <span class="image-upload-field__error bb-hidden"></span>
+        <span class="${CSS_CLASSES.IMAGE_UPLOAD_FIELD_ERROR} ${CSS_CLASSES.BB_HIDDEN}"></span>
       </div>
       ${
         context?.showErrors && context.errors && context.errors.length > 0
@@ -113,8 +113,8 @@ export class ImageFieldRenderer extends BaseFieldRenderer {
     `;
 
     const containerClass = context?.containerClass
-      ? `${context.containerClass} image-upload-field${errorClass ? ` ${errorClass}` : ''}`
-      : `${CSS_CLASSES.FORM_GROUP} image-upload-field${errorClass ? ` ${errorClass}` : ''}`;
+      ? `${context.containerClass} ${CSS_CLASSES.IMAGE_UPLOAD_FIELD}${errorClass ? ` ${errorClass}` : ''}`
+      : `${CSS_CLASSES.FORM_GROUP} ${CSS_CLASSES.IMAGE_UPLOAD_FIELD}${errorClass ? ` ${errorClass}` : ''}`;
 
     // Собираем data-атрибуты для контейнера
     const containerDataAttrs: string[] = [`data-field-name="${fieldName}"`];

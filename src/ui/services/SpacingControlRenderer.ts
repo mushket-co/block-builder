@@ -1,5 +1,6 @@
 import { LicenseFeature, LicenseFeatureChecker } from '../../core/services/LicenseFeatureChecker';
 import { IBreakpoint, ISpacingFieldConfig, TSpacingType } from '../../core/types/form';
+import { CSS_CLASSES } from '../../utils/constants';
 import { DEFAULT_BREAKPOINTS, ISpacingData } from '../../utils/spacingHelpers';
 
 export interface ISpacingControlOptions {
@@ -146,20 +147,24 @@ export class SpacingControlRenderer {
     const sliderWrapper = this.container.querySelector(`[data-spacing-type="${spacingType}"]`);
 
     if (sliderWrapper) {
-      const slider = sliderWrapper.querySelector('.spacing-control__slider') as HTMLInputElement;
+      const slider = sliderWrapper.querySelector(
+        `.${CSS_CLASSES.SPACING_CONTROL_SLIDER}`
+      ) as HTMLInputElement;
       if (slider) {
         slider.value = value.toString();
       }
 
       const valueInput = sliderWrapper.querySelector(
-        '.spacing-control__value-input'
+        `.${CSS_CLASSES.SPACING_CONTROL_VALUE_INPUT}`
       ) as HTMLInputElement;
       if (valueInput) {
         valueInput.value = value.toString();
       }
     }
 
-    const previewCode = this.container.querySelector('.spacing-control__preview-code');
+    const previewCode = this.container.querySelector(
+      `.${CSS_CLASSES.SPACING_CONTROL_PREVIEW_CODE}`
+    );
     if (previewCode) {
       previewCode.textContent = this.generateCSSPreview();
     }
@@ -179,15 +184,15 @@ export class SpacingControlRenderer {
     const step = this.config.step || 1;
 
     return `
-    <div class="spacing-control__group">
-      <label class="spacing-control__group-label">
+    <div class="${CSS_CLASSES.SPACING_CONTROL_GROUP}">
+      <label class="${CSS_CLASSES.SPACING_CONTROL_GROUP_LABEL}">
         ${this.getSpacingLabel(spacingType)}
       </label>
 
-      <div class="spacing-control__slider-wrapper" data-spacing-type="${spacingType}">
+      <div class="${CSS_CLASSES.SPACING_CONTROL_SLIDER_WRAPPER}" data-spacing-type="${spacingType}">
         <input
           type="range"
-          class="spacing-control__slider"
+          class="${CSS_CLASSES.SPACING_CONTROL_SLIDER}"
           min="${min}"
           max="${max}"
           step="${step}"
@@ -196,14 +201,14 @@ export class SpacingControlRenderer {
         />
         <input
           type="number"
-          class="spacing-control__value-input"
+          class="${CSS_CLASSES.SPACING_CONTROL_VALUE_INPUT}"
           min="${min}"
           max="${max}"
           step="${step}"
           value="${value}"
           data-spacing-type="${spacingType}"
         />
-        <span class="spacing-control__unit">px</span>
+        <span class="${CSS_CLASSES.SPACING_CONTROL_UNIT}">px</span>
       </div>
     </div>
   `;
@@ -241,7 +246,7 @@ export class SpacingControlRenderer {
         return `
         <button
           type="button"
-          class="spacing-control__breakpoint-btn ${isActive ? 'spacing-control__breakpoint-btn--active' : ''}"
+          class="${CSS_CLASSES.SPACING_CONTROL_BREAKPOINT_BTN} ${isActive ? CSS_CLASSES.SPACING_CONTROL_BREAKPOINT_BTN_ACTIVE : ''}"
           data-breakpoint="${bp.name}"
         >
           ${bp.label}
@@ -254,27 +259,29 @@ export class SpacingControlRenderer {
     const restrictionHTML = this.generateAdvancedSpacingRestrictionHTML();
 
     return `
-    <div class="spacing-control" data-field-name="${this.fieldName}">
-      <div class="spacing-control__header">
-        <label class="spacing-control__label">
-          ${this.label}
-          ${this.required ? '<span class="required">*</span>' : ''}
-        </label>
-      </div>
+    <div class="${CSS_CLASSES.SPACING_CONTROL_CONTAINER}" data-field-name="${this.fieldName}">
+      <div class="${CSS_CLASSES.SPACING_CONTROL}">
+        <div class="${CSS_CLASSES.SPACING_CONTROL_HEADER}">
+          <label class="${CSS_CLASSES.SPACING_CONTROL_LABEL}">
+            ${this.label}
+            ${this.required ? `<span class="${CSS_CLASSES.REQUIRED}">*</span>` : ''}
+          </label>
+        </div>
 
-      ${restrictionHTML}
+        ${restrictionHTML}
 
-      <div class="spacing-control__breakpoints">
-        ${breakpointsHTML}
-      </div>
+        <div class="${CSS_CLASSES.SPACING_CONTROL_BREAKPOINTS}">
+          ${breakpointsHTML}
+        </div>
 
-      <div class="spacing-control__groups">
-        ${groupsHTML}
-      </div>
+        <div class="${CSS_CLASSES.SPACING_CONTROL_GROUPS}">
+          ${groupsHTML}
+        </div>
 
-      <div class="spacing-control__preview">
-        <div class="spacing-control__preview-title">CSS переменные:</div>
-        <pre class="spacing-control__preview-code">${this.generateCSSPreview()}</pre>
+        <div class="${CSS_CLASSES.SPACING_CONTROL_PREVIEW}">
+          <div class="${CSS_CLASSES.SPACING_CONTROL_PREVIEW_TITLE}">CSS переменные:</div>
+          <pre class="${CSS_CLASSES.SPACING_CONTROL_PREVIEW_CODE}">${this.generateCSSPreview()}</pre>
+        </div>
       </div>
     </div>
   `;
@@ -291,7 +298,9 @@ export class SpacingControlRenderer {
       return;
     }
 
-    const breakpointButtons = this.container.querySelectorAll('.spacing-control__breakpoint-btn');
+    const breakpointButtons = this.container.querySelectorAll(
+      `.${CSS_CLASSES.SPACING_CONTROL_BREAKPOINT_BTN}`
+    );
     breakpointButtons.forEach(btn => {
       btn.addEventListener('click', e => {
         const breakpoint = (e.currentTarget as HTMLElement).dataset.breakpoint;
@@ -301,7 +310,7 @@ export class SpacingControlRenderer {
       });
     });
 
-    const sliders = this.container.querySelectorAll('.spacing-control__slider');
+    const sliders = this.container.querySelectorAll(`.${CSS_CLASSES.SPACING_CONTROL_SLIDER}`);
     sliders.forEach(slider => {
       slider.addEventListener('input', e => {
         const target = e.target as HTMLInputElement;
@@ -311,7 +320,9 @@ export class SpacingControlRenderer {
       });
     });
 
-    const valueInputs = this.container.querySelectorAll('.spacing-control__value-input');
+    const valueInputs = this.container.querySelectorAll(
+      `.${CSS_CLASSES.SPACING_CONTROL_VALUE_INPUT}`
+    );
     valueInputs.forEach(input => {
       input.addEventListener('input', e => {
         const target = e.target as HTMLInputElement;

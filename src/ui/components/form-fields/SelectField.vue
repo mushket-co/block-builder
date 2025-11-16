@@ -1,7 +1,7 @@
 <template>
-  <label v-if="showLabel" :for="fieldId" class="block-builder-form-label">
+  <label v-if="showLabel" :for="fieldId" class="bb-form-label">
     {{ label }}
-    <span v-if="required" class="required">*</span>
+    <span v-if="required" class="bb-required">*</span>
   </label>
   <CustomDropdown
     :model-value="modelValue"
@@ -11,7 +11,7 @@
     :invalid="showError"
     @update:model-value="handleUpdate"
   />
-  <div v-if="showError && error" class="block-builder-form-errors">
+  <div v-if="showError && error" class="bb-form-errors">
     <span :class="CSS_CLASSES.ERROR">{{ error }}</span>
   </div>
 </template>

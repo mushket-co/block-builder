@@ -1,23 +1,23 @@
 <template>
-  <label class="block-builder-form-label">
+  <label class="bb-form-label">
     {{ label }}
-    <span v-if="required" class="required">*</span>
+    <span v-if="required" class="bb-required">*</span>
   </label>
-  <div class="block-builder-form-radio-group">
-    <label v-for="option in options" :key="option.value" class="block-builder-form-radio">
+  <div class="bb-form-radio-group">
+    <label v-for="option in options" :key="option.value" class="bb-form-radio">
       <input
         :id="`${fieldId}-${option.value}`"
         :checked="modelValue === option.value"
         type="radio"
         :name="fieldId"
         :value="option.value"
-        class="block-builder-form-radio-input"
+        class="bb-form-radio-input"
         @change="handleChange(option.value)"
       />
-      <span class="block-builder-form-radio-label">{{ option.label }}</span>
+      <span class="bb-form-radio-label">{{ option.label }}</span>
     </label>
   </div>
-  <div v-if="showError && error" class="block-builder-form-errors">
+  <div v-if="showError && error" class="bb-form-errors">
     <span :class="CSS_CLASSES.ERROR">{{ error }}</span>
   </div>
 </template>

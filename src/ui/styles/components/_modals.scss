@@ -1,8 +1,3 @@
-/**
- * Стили модальных окон по БЭМ с использованием SCSS
- */
-
-// Анимации
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -19,8 +14,7 @@
   }
 }
 
-/* Оверлей модального окна */
-.block-builder-modal {
+.bb-modal {
   position: fixed;
   top: 0;
   left: 0;
@@ -34,20 +28,23 @@
   animation: fadeIn var(--bb-transition-slow);
 }
 
-/* Контент модального окна */
-.block-builder-modal-content {
+.bb-modal-content {
   background: white;
   border-radius: var(--bb-radius-lg);
   box-shadow: var(--bb-shadow-lg);
   max-width: 500px;
   width: 90%;
-  max-height: 80vh;
+  max-height: 80%;
   overflow-y: auto;
   animation: slideIn var(--bb-transition-slow);
+  touch-action: pan-y;
+
+  @media (max-width: 768px) {
+    max-height: 90%;
+  }
 }
 
-/* Заголовок модального окна */
-.block-builder-modal-header {
+.bb-modal-header {
   padding: var(--bb-spacing-xl);
   border-bottom: 1px solid var(--bb-border-color-light);
   display: flex;
@@ -61,8 +58,7 @@
   }
 }
 
-/* Кнопка закрытия модального окна */
-.block-builder-modal-close {
+.bb-modal-close {
   background: none;
   border: none;
   font-size: 24px;
@@ -82,13 +78,11 @@
   }
 }
 
-/* Тело модального окна */
-.block-builder-modal-body {
+.bb-modal-body {
   padding: var(--bb-spacing-xl);
 }
 
-/* Footer модального окна */
-.block-builder-modal-footer {
+.bb-modal-footer {
   padding: var(--bb-spacing-xl);
   border-top: 1px solid var(--bb-border-color-light);
   display: flex;
@@ -96,8 +90,7 @@
   justify-content: flex-end;
 }
 
-/* Предупреждение о бесплатной версии */
-.block-builder-license-warning {
+.bb-license-warning {
   background: linear-gradient(135deg, var(--bb-color-gradient-start) 0%, var(--bb-color-gradient-end) 100%);
   color: white;
   padding: 16px 20px;
@@ -127,8 +120,7 @@
   }
 }
 
-/* Баннер о бесплатной версии на странице */
-.block-builder-license-banner {
+.bb-license-banner {
   background: linear-gradient(135deg, var(--bb-color-gradient-start) 0%, var(--bb-color-gradient-end) 100%);
   color: white;
   padding: 12px 20px;
@@ -155,8 +147,7 @@
   }
 }
 
-/* Плашка статуса лицензии в панели управления */
-.block-builder-license-badge {
+.bb-license-badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -182,7 +173,7 @@
     letter-spacing: 0.3px;
   }
 
-  &.block-builder-license-badge--pro {
+  &.bb-license-badge--pro {
     background: linear-gradient(135deg, var(--bb-color-gradient-success-start) 0%, var(--bb-color-gradient-success-end) 100%);
     color: var(--bb-text-white);
       box-shadow: 0 2px 8px var(--bb-color-success-shadow);
@@ -193,7 +184,7 @@
     }
   }
 
-  &.block-builder-license-badge--free {
+  &.bb-license-badge--free {
     background: linear-gradient(135deg, var(--bb-color-gradient-start) 0%, var(--bb-color-gradient-end) 100%);
     color: var(--bb-text-white);
     box-shadow: 0 2px 8px var(--bb-color-primary-shadow);

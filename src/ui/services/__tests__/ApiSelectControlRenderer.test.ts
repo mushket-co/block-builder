@@ -1,5 +1,6 @@
 import { ApiSelectControlRenderer, IApiSelectControlConfig } from '../ApiSelectControlRenderer';
 import { ApiSelectUseCase } from '../../../core/use-cases/ApiSelectUseCase';
+import { CSS_CLASSES } from '../../../utils/constants';
 
 describe('ApiSelectControlRenderer', () => {
   let renderer: ApiSelectControlRenderer;
@@ -105,7 +106,7 @@ describe('ApiSelectControlRenderer', () => {
     renderer.render(container);
 
     expect(container.innerHTML).toBeTruthy();
-    expect(container.querySelector('.bb-api-select')).toBeTruthy();
+    expect(container.querySelector(`.${CSS_CLASSES.BB_API_SELECT_WRAPPER}`)).toBeTruthy();
   });
 
   test('должен показать label', () => {

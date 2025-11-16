@@ -1,9 +1,9 @@
 <template>
   <div :class="appClass">
-    <div v-if="!licenseInfoComputed.isPro" class="block-builder-license-banner">
-      <div class="block-builder-license-banner__content">
-        <span class="block-builder-license-banner__icon">⚠️</span>
-        <span class="block-builder-license-banner__text">
+    <div v-if="!licenseInfoComputed.isPro" class="bb-license-banner">
+      <div class="bb-license-banner__content">
+        <span class="bb-license-banner__icon">⚠️</span>
+        <span class="bb-license-banner__text">
           Вы используете бесплатную версию
           <a
             href="https://block-builder.ru/"
@@ -19,29 +19,19 @@
 
     <div
       v-if="props.isEdit"
-      :class="['block-builder-controls', controlsFixedClass]"
+      :class="['bb-controls', controlsFixedClass]"
       :style="controlsInlineStyles"
     >
-      <div
-        :class="['block-builder-controls-container', props.controlsContainerClass].filter(Boolean)"
-      >
-        <div class="block-builder-controls-inner">
-          <button
-            v-if="props.isEdit"
-            class="block-builder-btn block-builder-btn--success"
-            @click="handleSave"
-          >
+      <div :class="['bb-controls-container', props.controlsContainerClass].filter(Boolean)">
+        <div class="bb-controls-inner">
+          <button v-if="props.isEdit" class="bb-btn bb-btn--success" @click="handleSave">
             <span class="bb-icon-wrapper" v-html="saveIconHTML" /> Сохранить
           </button>
-          <button
-            v-if="props.isEdit"
-            class="block-builder-btn block-builder-btn--danger"
-            @click="handleClearAll"
-          >
+          <button v-if="props.isEdit" class="bb-btn bb-btn--danger" @click="handleClearAll">
             <span class="bb-icon-wrapper" v-html="deleteIconHTML" /> Очистить все
           </button>
 
-          <div class="block-builder-stats">
+          <div class="bb-stats">
             <p>
               Всего блоков: <span>{{ props.isEdit ? blocks.length : visibleBlocks.length }}</span>
             </p>
@@ -50,10 +40,8 @@
           <div
             v-if="licenseInfoComputed"
             :class="[
-              'block-builder-license-badge',
-              licenseInfoComputed.isPro
-                ? 'block-builder-license-badge--pro'
-                : 'block-builder-license-badge--free',
+              'bb-license-badge',
+              licenseInfoComputed.isPro ? 'bb-license-badge--pro' : 'bb-license-badge--free',
             ]"
             :title="
               licenseInfoComputed.isPro
@@ -61,10 +49,10 @@
                 : `FREE лицензия - Ограничено ${licenseInfoComputed.maxBlockTypes} типами блоков`
             "
           >
-            <span class="block-builder-license-badge__icon">
+            <span class="bb-license-badge__icon">
               {{ licenseInfoComputed.isPro ? '✓' : 'ℹ' }}
             </span>
-            <span class="block-builder-license-badge__text">
+            <span class="bb-license-badge__text">
               {{ licenseInfoComputed.isPro ? 'PRO' : 'FREE' }}
             </span>
           </div>
@@ -72,47 +60,44 @@
       </div>
     </div>
 
-    <div class="block-builder-blocks">
-      <div v-if="visibleBlocks.length === 0" class="block-builder-empty-state">
-        <div v-if="props.isEdit" class="block-builder-add-block-separator">
+    <div class="bb-blocks">
+      <div v-if="visibleBlocks.length === 0" class="bb-empty-state">
+        <div v-if="props.isEdit" class="bb-add-block-separator">
           <button
-            class="block-builder-add-block-btn"
+            class="bb-add-block-btn"
             title="Добавить блок"
             @click="openBlockTypeSelectionModal(0)"
           >
-            <span class="block-builder-add-block-btn__icon">+</span>
-            <span class="block-builder-add-block-btn__text">Добавить блок</span>
+            <span class="bb-add-block-btn__icon">+</span>
+            <span class="bb-add-block-btn__text">Добавить блок</span>
           </button>
         </div>
       </div>
 
       <template v-else>
-        <div v-if="props.isEdit" class="block-builder-add-block-separator">
+        <div v-if="props.isEdit" class="bb-add-block-separator">
           <button
-            class="block-builder-add-block-btn"
+            class="bb-add-block-btn"
             title="Добавить блок"
             @click="openBlockTypeSelectionModal(0)"
           >
-            <span class="block-builder-add-block-btn__icon">+</span>
-            <span class="block-builder-add-block-btn__text">Добавить блок</span>
+            <span class="bb-add-block-btn__icon">+</span>
+            <span class="bb-add-block-btn__text">Добавить блок</span>
           </button>
         </div>
 
         <template v-for="(block, index) in visibleBlocks" :key="block.id">
           <div
-            class="block-builder-block"
+            class="bb-block"
             :class="{ [CSS_CLASSES.HIDDEN]: !block.visible }"
             :data-block-id="block.id"
             :style="getBlockSpacingStyles(block)"
           >
-            <div v-if="props.isEdit" class="block-builder-block-controls">
-              <div
-                class="block-builder-block-controls-container"
-                :class="props.controlsContainerClass"
-              >
-                <div class="block-builder-block-controls-inner">
+            <div v-if="props.isEdit" class="bb-block-controls">
+              <div class="bb-block-controls-container" :class="props.controlsContainerClass">
+                <div class="bb-block-controls-inner">
                   <button
-                    class="block-builder-control-btn"
+                    class="bb-control-btn"
                     title="Копировать ID: {{ block.id }}"
                     @click="handleCopyId(block.id)"
                   >
@@ -120,7 +105,7 @@
                   </button>
                   <button
                     v-if="props.isEdit"
-                    class="block-builder-control-btn"
+                    class="bb-control-btn"
                     title="Переместить вверх"
                     :disabled="index === 0"
                     @click="handleMoveUp(block.id)"
@@ -129,7 +114,7 @@
                   </button>
                   <button
                     v-if="props.isEdit"
-                    class="block-builder-control-btn"
+                    class="bb-control-btn"
                     title="Переместить вниз"
                     :disabled="index === visibleBlocks.length - 1"
                     @click="handleMoveDown(block.id)"
@@ -138,7 +123,7 @@
                   </button>
                   <button
                     v-if="props.isEdit"
-                    class="block-builder-control-btn"
+                    class="bb-control-btn"
                     title="Редактировать"
                     @click="openEditModal(block)"
                   >
@@ -146,7 +131,7 @@
                   </button>
                   <button
                     v-if="props.isEdit"
-                    class="block-builder-control-btn"
+                    class="bb-control-btn"
                     title="Дублировать"
                     @click="handleDuplicateBlock(block.id)"
                   >
@@ -154,7 +139,7 @@
                   </button>
                   <button
                     v-if="props.isEdit"
-                    class="block-builder-control-btn"
+                    class="bb-control-btn"
                     :title="getBlockVisibilityTooltip(block)"
                     @click="handleToggleVisibility(block.id)"
                   >
@@ -162,7 +147,7 @@
                   </button>
                   <button
                     v-if="props.isEdit"
-                    class="block-builder-control-btn"
+                    class="bb-control-btn"
                     title="Удалить"
                     @click="handleDeleteBlock(block.id)"
                   >
@@ -172,49 +157,45 @@
               </div>
             </div>
 
-            <div class="block-builder-block-content">
+            <div class="bb-block-content">
               <component
                 :is="getVueComponent(block)"
                 v-if="isVueComponent(block)"
                 v-bind="getUserComponentProps(block)"
               />
-              <div v-else class="block-content-fallback">
+              <div v-else class="bb-block-content-fallback">
                 <strong>{{ getBlockTitle(block) }}</strong>
                 <pre>{{ JSON.stringify(getUserComponentProps(block), null, 2) }}</pre>
               </div>
             </div>
           </div>
 
-          <div v-if="props.isEdit" class="block-builder-add-block-separator">
+          <div v-if="props.isEdit" class="bb-add-block-separator">
             <button
-              class="block-builder-add-block-btn"
+              class="bb-add-block-btn"
               title="Добавить блок"
               @click="openBlockTypeSelectionModal(index + 1)"
             >
-              <span class="block-builder-add-block-btn__icon">+</span>
-              <span class="block-builder-add-block-btn__text">Добавить блок</span>
+              <span class="bb-add-block-btn__icon">+</span>
+              <span class="bb-add-block-btn__text">Добавить блок</span>
             </button>
           </div>
         </template>
       </template>
     </div>
 
-    <div
-      v-if="showTypeSelectionModal"
-      class="block-builder-modal"
-      @mousedown="closeTypeSelectionModal"
-    >
-      <div class="block-builder-modal-content" @mousedown.stop>
-        <div class="block-builder-modal-header">
+    <div v-if="showTypeSelectionModal" class="bb-modal" @mousedown="closeTypeSelectionModal">
+      <div class="bb-modal-content" @mousedown.stop>
+        <div class="bb-modal-header">
           <h3>Выберите тип блока</h3>
-          <button class="block-builder-modal-close" @click="closeTypeSelectionModal">×</button>
+          <button class="bb-modal-close" @click="closeTypeSelectionModal">×</button>
         </div>
 
-        <div class="block-builder-modal-body">
-          <div v-if="!licenseInfoComputed.isPro" class="block-builder-license-warning">
-            <div class="block-builder-license-warning__header">
-              <span class="block-builder-license-warning__icon">⚠️</span>
-              <strong class="block-builder-license-warning__title"
+        <div class="bb-modal-body">
+          <div v-if="!licenseInfoComputed.isPro" class="bb-license-warning">
+            <div class="bb-license-warning__header">
+              <span class="bb-license-warning__icon">⚠️</span>
+              <strong class="bb-license-warning__title"
                 >Бесплатная версия
                 <a
                   href="https://block-builder.ru/"
@@ -225,7 +206,7 @@
                 ></strong
               >
             </div>
-            <p class="block-builder-license-warning__text">
+            <p class="bb-license-warning__text">
               Вы используете ограниченную бесплатную версию.<br />
               Доступно
               <strong
@@ -235,17 +216,23 @@
             </p>
           </div>
 
-          <div class="block-builder-block-type-selection">
+          <div class="bb-block-type-selection">
             <button
               v-for="blockType in limitedBlockTypes"
               :key="blockType.type"
-              class="block-builder-block-type-card"
+              class="bb-block-type-card"
               @click="selectBlockType(blockType.type)"
             >
-              <span class="block-builder-block-type-card__icon">
-                {{ getBlockConfig(blockType.type)?.icon || '📦' }}
+              <span class="bb-block-type-card__icon">
+                <img
+                  v-if="getBlockConfig(blockType.type)?.icon"
+                  :src="getBlockConfig(blockType.type)?.icon"
+                  :alt="blockType.label"
+                  class="bb-block-type-card__icon-img"
+                />
+                <span v-else>📦</span>
               </span>
-              <span class="block-builder-block-type-card__title">
+              <span class="bb-block-type-card__title">
                 {{ blockType.label }}
               </span>
             </button>
@@ -254,17 +241,17 @@
       </div>
     </div>
 
-    <div v-if="showModal" class="block-builder-modal" @mousedown="handleOverlayClick">
-      <div class="block-builder-modal-content" @mousedown.stop>
-        <div class="block-builder-modal-header">
+    <div v-if="showModal" class="bb-modal" @mousedown="handleOverlayClick">
+      <div class="bb-modal-content" @mousedown.stop>
+        <div class="bb-modal-header">
           <h3>
             {{ modalMode === 'create' ? 'Создать' : 'Редактировать' }} {{ currentBlockType?.label }}
           </h3>
-          <button class="block-builder-modal-close" @click="closeModal">×</button>
+          <button class="bb-modal-close" @click="closeModal">×</button>
         </div>
 
-        <div class="block-builder-modal-body">
-          <form class="block-builder-form" @submit.prevent="handleSubmit">
+        <div class="bb-modal-body">
+          <form class="bb-form" @submit.prevent="handleSubmit">
             <FormField
               v-for="field in currentBlockFields"
               :key="field.field"
@@ -317,6 +304,7 @@
                   :add-button-text="slotField.repeaterConfig?.addButtonText"
                   :remove-button-text="slotField.repeaterConfig?.removeButtonText"
                   :item-title="slotField.repeaterConfig?.itemTitle"
+                  :count-label-variants="slotField.repeaterConfig?.countLabelVariants"
                   :min="slotField.repeaterConfig?.min"
                   :max="slotField.repeaterConfig?.max"
                   :default-item-value="slotField.repeaterConfig?.defaultItemValue"
@@ -329,7 +317,7 @@
                   @update:model-value="formData[slotField.field] = $event"
                 />
 
-                <div v-else-if="slotField.type === 'api-select'" class="block-builder-form-group">
+                <div v-else-if="slotField.type === 'api-select'" class="bb-form-group">
                   <ApiSelectField
                     v-if="isApiSelectAvailable(slotField) && props.apiSelectUseCase"
                     :model-value="slotModelValue"
@@ -342,10 +330,10 @@
                   <div v-else class="bb-warning-box">⚠️ {{ getApiSelectRestrictionMessage() }}</div>
                 </div>
 
-                <div v-else-if="slotField.type === 'custom'" class="block-builder-form-group">
-                  <label :for="slotFieldId" class="block-builder-form-label">
+                <div v-else-if="slotField.type === 'custom'" class="bb-form-group">
+                  <label :for="slotFieldId" class="bb-form-label">
                     {{ slotField.label }}
-                    <span v-if="isFieldRequired(slotField)" class="required">*</span>
+                    <span v-if="isFieldRequired(slotField)" class="bb-required">*</span>
                   </label>
                   <CustomField
                     v-if="
@@ -370,19 +358,9 @@
           </form>
         </div>
 
-        <div class="block-builder-modal-footer">
-          <button
-            type="button"
-            class="block-builder-btn block-builder-btn--secondary"
-            @click="closeModal"
-          >
-            Отмена
-          </button>
-          <button
-            type="submit"
-            class="block-builder-btn block-builder-btn--primary"
-            @click="handleSubmit"
-          >
+        <div class="bb-modal-footer">
+          <button type="button" class="bb-btn bb-btn--secondary" @click="closeModal">Отмена</button>
+          <button type="submit" class="bb-btn bb-btn--primary" @click="handleSubmit">
             {{ modalMode === 'create' ? 'Создать' : 'Сохранить' }}
           </button>
         </div>
@@ -404,6 +382,7 @@ import { addSpacingFieldToFields } from '../../utils/blockSpacingHelpers';
 import { getBlockInlineStyles, watchBreakpointChanges } from '../../utils/breakpointHelpers';
 import {
   CSS_CLASSES,
+  ERROR_MESSAGES,
   NOTIFICATION_DISPLAY_DURATION_MS,
   REPEATER_ACCORDION_ANIMATION_DELAY_MS,
 } from '../../utils/constants';
@@ -416,10 +395,11 @@ import {
   scrollToFirstError,
 } from '../../utils/formErrorHelpers';
 import { logger } from '../../utils/logger';
+import { lockBodyScroll, unlockBodyScroll } from '../../utils/scrollLock';
 import { ISpacingData } from '../../utils/spacingHelpers';
 import { UniversalValidator } from '../../utils/universalValidation';
 import Icon from '../icons/Icon.vue';
-import { saveIconHTML } from '../icons/iconHelpers';
+import { deleteIconHTML, saveIconHTML } from '../icons/iconHelpers';
 import { initIcons } from '../icons/index';
 import ApiSelectField from './ApiSelectField.vue';
 import CustomField from './CustomField.vue';
@@ -478,6 +458,7 @@ const componentRegistry = blockService.getComponentRegistry();
 const blocks = ref<IBlock[]>([]);
 const showModal = ref(false);
 const showTypeSelectionModal = ref(false);
+const isAnyModalOpen = computed(() => showModal.value || showTypeSelectionModal.value);
 const modalMode = ref<'create' | 'edit'>('create');
 const currentType = ref<string | null>(null);
 const currentBlockId = ref<TBlockId | null>(null);
@@ -561,7 +542,7 @@ const controlsFixedClass = computed(() => {
   if (!props.controlsFixedPosition) {
     return '';
   }
-  return `block-builder-controls--fixed-${props.controlsFixedPosition}`;
+  return `bb-controls--fixed-${props.controlsFixedPosition}`;
 });
 
 const controlsInlineStyles = computed(() => {
@@ -585,11 +566,11 @@ const controlsInlineStyles = computed(() => {
 
 const appClass = computed(() => {
   return {
-    'block-builder-app': true,
+    'bb-app': true,
     'block-builder': true,
-    'has-fixed-controls': !!props.controlsFixedPosition,
-    'has-top-controls': props.controlsFixedPosition === 'top',
-    'has-bottom-controls': props.controlsFixedPosition === 'bottom',
+    'bb-has-fixed-controls': !!props.controlsFixedPosition,
+    'bb-has-top-controls': props.controlsFixedPosition === 'top',
+    'bb-has-bottom-controls': props.controlsFixedPosition === 'bottom',
   };
 });
 
@@ -747,7 +728,7 @@ const loadInitialBlocks = async () => {
   } catch (error) {
     logger.error('Ошибка загрузки начальных блоков:', error);
     alert(
-      `Ошибка загрузки начальных блоков: ${error instanceof Error ? error.message : 'Unknown error'}`
+      `Ошибка загрузки начальных блоков: ${error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR}`
     );
   }
 };
@@ -896,7 +877,7 @@ const openEditModal = (block: IBlock) => {
 const handleOverlayClick = (event: MouseEvent) => {
   const target = event.target as HTMLElement;
 
-  if (target.classList.contains('block-builder-modal')) {
+  if (target.classList.contains('bb-modal')) {
     closeModal();
   }
 };
@@ -1030,7 +1011,8 @@ const handleDuplicateBlock = async (id: TBlockId) => {
   } catch (error) {
     logger.error('Ошибка дублирования блока:', error);
     alert(
-      'Ошибка дублирования блока: ' + (error instanceof Error ? error.message : 'Unknown error')
+      'Ошибка дублирования блока: ' +
+        (error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR)
     );
   }
 };
@@ -1052,7 +1034,10 @@ const handleDeleteBlock = async (id: TBlockId) => {
       (emit as any)('block-deleted', id);
     } catch (error) {
       logger.error('Ошибка удаления блока:', error);
-      alert('Ошибка удаления блока: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      alert(
+        'Ошибка удаления блока: ' +
+          (error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR)
+      );
     }
   }
 };
@@ -1128,7 +1113,7 @@ const handleCopyId = async (blockId: TBlockId) => {
 
 const showNotification = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
   const notification = document.createElement('div');
-  notification.className = 'block-builder-notification';
+  notification.className = 'bb-notification';
   notification.textContent = message;
 
   const colors = {
@@ -1191,7 +1176,9 @@ const handleClearAll = async () => {
       blocks.value = [];
     } catch (error) {
       logger.error('Ошибка очистки блоков:', error);
-      alert(`Ошибка очистки блоков: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      alert(
+        `Ошибка очистки блоков: ${error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR}`
+      );
     }
   }
 };
@@ -1250,7 +1237,7 @@ const cleanupBreakpointWatchers = () => {
 const handleValidationErrors = async () => {
   await nextTick();
 
-  const modalContent = document.querySelector('.block-builder-modal-body') as HTMLElement;
+  const modalContent = document.querySelector(`.${CSS_CLASSES.MODAL_BODY}`) as HTMLElement;
 
   if (!modalContent) {
     return;
@@ -1341,7 +1328,7 @@ const openRepeaterAccordion = async (
       }
     }
   } else {
-    const modalContent = document.querySelector('.block-builder-modal-body') as HTMLElement;
+    const modalContent = document.querySelector(`.${CSS_CLASSES.MODAL_BODY}`) as HTMLElement;
     if (modalContent) {
       const errorKey = Object.keys(formErrors).find(key => {
         const errorInfo = parseErrorKey(key);
@@ -1383,9 +1370,9 @@ const openRepeaterAccordion = async (
 
 const updateBodyEditModeClass = (isEdit: boolean | undefined) => {
   if (isEdit) {
-    document.body.classList.add('bb-is-edit-mode');
+    document.body.classList.add(CSS_CLASSES.BB_IS_EDIT_MODE);
   } else {
-    document.body.classList.remove('bb-is-edit-mode');
+    document.body.classList.remove(CSS_CLASSES.BB_IS_EDIT_MODE);
   }
 };
 
@@ -1393,6 +1380,18 @@ watch(
   () => props.isEdit,
   (newValue: boolean | undefined) => {
     updateBodyEditModeClass(newValue);
+  },
+  { immediate: true }
+);
+
+watch(
+  isAnyModalOpen,
+  (isOpen: boolean) => {
+    if (isOpen) {
+      lockBodyScroll();
+    } else {
+      unlockBodyScroll();
+    }
   },
   { immediate: true }
 );
@@ -1415,6 +1414,7 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   cleanupBreakpointWatchers();
-  document.body.classList.remove('bb-is-edit-mode');
+  document.body.classList.remove(CSS_CLASSES.BB_IS_EDIT_MODE);
+  unlockBodyScroll();
 });
 </script>

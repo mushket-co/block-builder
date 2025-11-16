@@ -11,6 +11,7 @@ import { LicenseService } from './core/services/LicenseService';
 import { IBlockDto, ICreateBlockDto, IUpdateBlockDto } from './core/types';
 import { ApiSelectUseCase } from './core/use-cases/ApiSelectUseCase';
 import { BlockManagementUseCase } from './core/use-cases/BlockManagementUseCase';
+import { ERROR_MESSAGES } from './utils/constants';
 import { logger } from './utils/logger';
 
 export interface IBlockBuilderOptions {
@@ -259,7 +260,7 @@ export class BlockBuilderFacade {
       }
     } catch (error) {
       throw new Error(
-        `Не удалось загрузить начальные блоки: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Не удалось загрузить начальные блоки: ${error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR}`
       );
     }
   }

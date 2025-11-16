@@ -55,8 +55,8 @@ describe('UIRenderer', () => {
   test('должен отрендерить основной контейнер', () => {
     uiRenderer.renderContainer();
 
-    const appContainer = container.querySelector('.block-builder-app');
-    
+    const appContainer = container.querySelector(`.${CSS_CLASSES.APP}`);
+
     expect(appContainer).toBeTruthy();
   });
 
@@ -64,32 +64,32 @@ describe('UIRenderer', () => {
     uiRenderer.renderContainer();
 
     const blocksContainer = document.getElementById('block-builder-blocks');
-    
+
     expect(blocksContainer).toBeTruthy();
   });
 
   test('должен создать область для кнопок управления', () => {
     uiRenderer.renderContainer();
 
-    const controlsContainer = container.querySelector('.block-builder-controls');
-    
+    const controlsContainer = container.querySelector(`.${CSS_CLASSES.CONTROLS}`);
+
     expect(controlsContainer).toBeTruthy();
   });
 
   test('должен создать кнопку "Сохранить"', () => {
     uiRenderer.renderContainer();
-    
+
     const saveButton = container.querySelector('button[data-action="saveAllBlocksUI"]');
-    
+
     expect(saveButton).toBeTruthy();
     expect(saveButton?.textContent).toContain('Сохранить');
   });
 
   test('должен создать кнопку "Очистить все"', () => {
     uiRenderer.renderContainer();
-    
+
     const clearButton = container.querySelector('button[data-action="clearAllBlocksUI"]');
-    
+
     expect(clearButton).toBeTruthy();
     expect(clearButton?.textContent).toContain('Очистить все');
   });
@@ -98,7 +98,7 @@ describe('UIRenderer', () => {
     uiRenderer.renderContainer();
 
     const blocksCount = document.getElementById('blocks-count');
-    
+
     expect(blocksCount).toBeTruthy();
     expect(blocksCount?.textContent).toBe('0');
   });
@@ -122,9 +122,9 @@ describe('UIRenderer', () => {
   test('должен показать пустое состояние когда блоков нет', () => {
     uiRenderer.renderBlocks([]);
 
-    const emptyState = container.querySelector('.block-builder-empty-state');
-    const addBlockBtn = container.querySelector('.block-builder-add-block-btn');
-    
+    const emptyState = container.querySelector(`.${CSS_CLASSES.EMPTY_STATE}`);
+    const addBlockBtn = container.querySelector(`.${CSS_CLASSES.ADD_BLOCK_BTN}`);
+
     expect(emptyState).toBeTruthy();
     expect(addBlockBtn).toBeTruthy();
   });
@@ -133,7 +133,7 @@ describe('UIRenderer', () => {
     uiRenderer.renderBlocks([]);
 
     const blocksCount = document.getElementById('blocks-count');
-    
+
     expect(blocksCount?.textContent).toBe('0');
   });
 
@@ -157,7 +157,7 @@ describe('UIRenderer', () => {
     uiRenderer.renderBlocks(blocks);
 
     const blockElement = container.querySelector('[data-block-id="block-1"]');
-    
+
     expect(blockElement).toBeTruthy();
   });
 
@@ -194,7 +194,7 @@ describe('UIRenderer', () => {
     uiRenderer.renderBlocks(blocks);
 
     const blocksCount = document.getElementById('blocks-count');
-    
+
     expect(blocksCount?.textContent).toBe('2');
   });
 
@@ -231,8 +231,8 @@ describe('UIRenderer', () => {
     uiRenderer.renderBlocks(blocks);
 
     // Должно быть 3 кнопки: перед первым, между блоками, после последнего
-    const addButtons = container.querySelectorAll('.block-builder-add-block-btn');
-    
+    const addButtons = container.querySelectorAll(`.${CSS_CLASSES.ADD_BLOCK_BTN}`);
+
     expect(addButtons.length).toBe(3);
   });
 
@@ -256,7 +256,7 @@ describe('UIRenderer', () => {
     uiRenderer.renderBlocks(blocks);
 
     const blockElement = container.querySelector('[data-block-id="block-1"]');
-    
+
     // Проверяем что блок отрендерен
     expect(blockElement).toBeTruthy();
     // UIRenderer рендерит все блоки, видимость управляется через класс hidden
@@ -283,7 +283,7 @@ describe('UIRenderer', () => {
     uiRenderer.renderBlocks(blocks);
 
     const blockElement = container.querySelector('[data-block-id="block-1"]');
-    
+
     expect(blockElement).toBeNull();
   });
 
@@ -312,8 +312,8 @@ describe('UIRenderer', () => {
     uiRenderer.renderBlocks([]);
 
     const blocksCount = document.getElementById('blocks-count');
-    const emptyState = container.querySelector('.block-builder-empty-state');
-    
+    const emptyState = container.querySelector(`.${CSS_CLASSES.EMPTY_STATE}`);
+
     expect(blocksCount?.textContent).toBe('0');
     expect(emptyState).toBeTruthy();
   });
@@ -357,7 +357,7 @@ describe('UIRenderer', () => {
     uiRenderer.renderBlocks(blocks);
 
     const blocksCount = document.getElementById('blocks-count');
-    
+
     expect(blocksCount?.textContent).toBe('2');
   });
 
@@ -365,7 +365,7 @@ describe('UIRenderer', () => {
     uiRenderer.renderBlocks([]);
 
     const blocksCount = document.getElementById('blocks-count');
-    
+
     expect(blocksCount?.textContent).toBe('0');
   });
 
@@ -383,18 +383,18 @@ describe('UIRenderer', () => {
         version: 1
       }
     }]);
-    
+
     expect(document.getElementById('blocks-count')?.textContent).toBe('1');
 
     uiRenderer.renderBlocks([
       { id: 'block-1', type: 'text', settings: {}, props: {}, visible: true, locked: false, metadata: { createdAt: new Date(), updatedAt: new Date(), version: 1 }},
       { id: 'block-2', type: 'text', settings: {}, props: {}, visible: true, locked: false, metadata: { createdAt: new Date(), updatedAt: new Date(), version: 1 }}
     ]);
-    
+
     expect(document.getElementById('blocks-count')?.textContent).toBe('2');
 
     uiRenderer.renderBlocks([]);
-    
+
     expect(document.getElementById('blocks-count')?.textContent).toBe('0');
   });
   });
@@ -403,8 +403,8 @@ describe('UIRenderer', () => {
   test('полный цикл рендеринга', () => {
     // Создаем контейнер
     uiRenderer.renderContainer();
-    
-    expect(container.querySelector('.block-builder-app')).toBeTruthy();
+
+    expect(container.querySelector(`.${CSS_CLASSES.APP}`)).toBeTruthy();
     expect(document.getElementById('blocks-count')?.textContent).toBe('0');
 
     // Рендерим блоки

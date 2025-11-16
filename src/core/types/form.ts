@@ -56,6 +56,16 @@ export interface IRepeaterFieldConfig {
   addButtonText?: string;
   removeButtonText?: string;
   itemTitle?: string;
+  /**
+   * Опциональные формы лейбла для счетчика (русская множественная форма)
+   * Пример: { one: 'карточка', few: 'карточки', many: 'карточек', zero: 'карточек' }
+   */
+  countLabelVariants?: {
+    one: string;
+    few: string;
+    many: string;
+    zero?: string;
+  };
   min?: number;
   max?: number;
   defaultItemValue?: Record<string, unknown>;

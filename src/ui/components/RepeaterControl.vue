@@ -1,28 +1,28 @@
 <template>
-  <div class="repeater-control" :data-field-name="fieldName">
-    <div class="repeater-control__header">
-      <label class="repeater-control__label">
+  <div class="bb-repeater-control" :data-field-name="fieldName">
+    <div class="bb-repeater-control__header">
+      <label class="bb-repeater-control__label">
         {{ label }}
-        <span v-if="isRequired" class="required">*</span>
+        <span v-if="isRequired" class="bb-required">*</span>
       </label>
-      <span v-if="itemCount > 0" class="repeater-control__count">
-        {{ itemCount }} {{ getItemCountLabel(itemCount) }}
+      <span v-if="itemCount > 0" class="bb-repeater-control__count">
+        {{ getCountText(itemCount) }}
       </span>
     </div>
 
-    <div class="repeater-control__items">
+    <div class="bb-repeater-control__items">
       <div
         v-for="(item, index) in items"
         :key="item._id"
-        class="repeater-control__item"
-        :class="{ 'repeater-control__item--collapsed': collapsedItems[item._id] }"
+        class="bb-repeater-control__item"
+        :class="{ 'bb-repeater-control__item--collapsed': collapsedItems[item._id] }"
       >
-        <div class="repeater-control__item-header">
-          <span class="repeater-control__item-title"> {{ itemTitle }} #{{ index + 1 }} </span>
-          <div class="repeater-control__item-actions">
+        <div class="bb-repeater-control__item-header">
+          <span class="bb-repeater-control__item-title"> {{ itemTitle }} #{{ index + 1 }} </span>
+          <div class="bb-repeater-control__item-actions">
             <button
               type="button"
-              class="repeater-control__item-btn repeater-control__item-btn--collapse"
+              class="bb-repeater-control__item-btn bb-repeater-control__item-btn--collapse"
               :title="collapsedItems[item._id] ? 'Развернуть' : 'Свернуть'"
               @click="toggleCollapse(item._id)"
             >
@@ -31,7 +31,7 @@
             <button
               v-if="index > 0"
               type="button"
-              class="repeater-control__item-btn repeater-control__item-btn--move"
+              class="bb-repeater-control__item-btn bb-repeater-control__item-btn--move"
               title="Переместить вверх"
               @click="moveItem(index, index - 1)"
             >
@@ -40,7 +40,7 @@
             <button
               v-if="index < items.length - 1"
               type="button"
-              class="repeater-control__item-btn repeater-control__item-btn--move"
+              class="bb-repeater-control__item-btn bb-repeater-control__item-btn--move"
               title="Переместить вниз"
               @click="moveItem(index, index + 1)"
             >
@@ -48,7 +48,7 @@
             </button>
             <button
               type="button"
-              class="repeater-control__item-btn repeater-control__item-btn--remove"
+              class="bb-repeater-control__item-btn bb-repeater-control__item-btn--remove"
               :disabled="!canRemove"
               :title="removeButtonText"
               @click="removeItem(index)"
@@ -58,7 +58,7 @@
           </div>
         </div>
 
-        <div v-if="!collapsedItems[item._id]" class="repeater-control__item-fields">
+        <div v-if="!collapsedItems[item._id]" class="bb-repeater-control__item-fields">
           <FormField
             v-for="field in fields"
             :key="field.field"
@@ -88,12 +88,9 @@
               </template>
 
               <template v-else-if="slotField.type === 'custom'">
-                <label
-                  :for="getFieldId(item._id, slotField.field)"
-                  class="block-builder-form-label"
-                >
+                <label :for="getFieldId(item._id, slotField.field)" class="bb-form-label">
                   {{ slotField.label }}
-                  <span v-if="isFieldRequired(slotField)" class="required">*</span>
+                  <span v-if="isFieldRequired(slotField)" class="bb-required">*</span>
                 </label>
                 <CustomField
                   v-if="
@@ -128,15 +125,18 @@
       </div>
     </div>
 
-    <button type="button" class="repeater-control__add-btn" :disabled="!canAdd" @click="addItem">
+    <button type="button" class="bb-repeater-control__add-btn" :disabled="!canAdd" @click="addItem">
       + {{ addButtonText }}
     </button>
 
-    <div v-if="effectiveMin || max" class="repeater-control__hint">
-      <span v-if="effectiveMin && itemCount < effectiveMin" class="repeater-control__hint--error">
+    <div v-if="effectiveMin || max" class="bb-repeater-control__hint">
+      <span
+        v-if="effectiveMin && itemCount < effectiveMin"
+        class="bb-repeater-control__hint--error"
+      >
         {{ repeaterMinText }} {{ effectiveMin }}
       </span>
-      <span v-else-if="max && itemCount >= max" class="repeater-control__hint--warning">
+      <span v-else-if="max && itemCount >= max" class="bb-repeater-control__hint--warning">
         {{ repeaterMaxText }} {{ max }}
       </span>
     </div>
@@ -147,6 +147,7 @@
 import { computed, onMounted, ref, watch } from 'vue';
 
 import { CSS_CLASSES, UI_STRINGS } from '../../utils/constants';
+import { getRepeaterCountText } from '../../utils/repeaterCountText';
 import ApiSelectField from './ApiSelectField.vue';
 import CustomField from './CustomField.vue';
 import { FormField } from './form-fields';
@@ -205,6 +206,11 @@ export default {
     itemTitle: {
       type: String,
       default: UI_STRINGS.repeaterItem,
+    },
+
+    countLabelVariants: {
+      type: Object,
+      default: null,
     },
 
     min: {
@@ -438,17 +444,8 @@ export default {
       return getFieldErrors(index, fieldName).length > 0;
     };
 
-    const getItemCountLabel = count => {
-      const mod10 = count % 10;
-      const mod100 = count % 100;
-
-      if (mod10 === 1 && mod100 !== 11) {
-        return props.itemTitle.toLowerCase();
-      } else if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) {
-        return props.itemTitle.toLowerCase() + 'а';
-      } else {
-        return props.itemTitle.toLowerCase() + 'ов';
-      }
+    const getCountText = count => {
+      return getRepeaterCountText(count, props.countLabelVariants || undefined);
     };
 
     const repeaterMinText = computed(() => {
@@ -501,7 +498,7 @@ export default {
       toggleCollapse,
       getFieldId,
       isFieldRequired,
-      getItemCountLabel,
+      getCountText,
       getFieldErrors,
       hasFieldError,
       expandItem,
@@ -523,6 +520,4 @@ export default {
 };
 </script>
 
-<style>
-/* Стили будут в отдельном файле */
-</style>
+<style></style>

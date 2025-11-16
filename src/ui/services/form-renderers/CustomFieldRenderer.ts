@@ -25,7 +25,7 @@ export class CustomFieldRenderer extends BaseFieldRenderer {
     }).replaceAll('"', '&quot;');
 
     const escapedLabel = this.escapeHtml(field.label);
-    const requiredMark = required ? '<span class="required">*</span>' : '';
+    const requiredMark = required ? `<span class="${CSS_CLASSES.REQUIRED}">*</span>` : '';
     const baseContainerClass = context?.containerClass || CSS_CLASSES.FORM_GROUP;
     const containerClass = baseContainerClass.includes(CSS_CLASSES.CUSTOM_FIELD_CONTROL_CONTAINER)
       ? baseContainerClass
@@ -40,10 +40,10 @@ export class CustomFieldRenderer extends BaseFieldRenderer {
     }`;
 
     const content = `
-      <label class="block-builder-form-label">
+      <label class="${CSS_CLASSES.FORM_LABEL}">
         ${escapedLabel} ${requiredMark}
       </label>
-      <div class="custom-field-placeholder bb-placeholder-box">
+      <div class="${CSS_CLASSES.CUSTOM_FIELD_PLACEHOLDER} ${CSS_CLASSES.BB_PLACEHOLDER_BOX}">
         ⏳ Инициализация кастомного поля...
       </div>
     `;

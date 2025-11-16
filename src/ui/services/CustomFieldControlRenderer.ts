@@ -3,6 +3,7 @@ import {
   ICustomFieldRenderer,
   ICustomFieldRenderResult,
 } from '../../core/ports/CustomFieldRenderer';
+import { CSS_CLASSES } from '../../utils/constants';
 
 export interface ICustomFieldControlOptions {
   fieldName: string;
@@ -60,9 +61,9 @@ export class CustomFieldControlRenderer {
         this.container.append(result.element);
       }
 
-      if (this.container.classList.contains('custom-field-placeholder')) {
+      if (this.container.classList.contains(CSS_CLASSES.CUSTOM_FIELD_PLACEHOLDER)) {
         this.container.removeAttribute('style');
-        this.container.classList.remove('bb-placeholder-box');
+        this.container.classList.remove(CSS_CLASSES.BB_PLACEHOLDER_BOX);
       }
     } catch (error) {
       this.showError(`Ошибка инициализации поля: ${error}`);
@@ -98,12 +99,12 @@ export class CustomFieldControlRenderer {
   }
 
   private showError(message: string): void {
-    if (this.container.classList.contains('custom-field-placeholder')) {
+    if (this.container.classList.contains(CSS_CLASSES.CUSTOM_FIELD_PLACEHOLDER)) {
       this.container.removeAttribute('style');
-      this.container.classList.remove('bb-placeholder-box');
+      this.container.classList.remove(CSS_CLASSES.BB_PLACEHOLDER_BOX);
     }
     this.container.innerHTML = `
-      <div class="bb-error-box">
+      <div class="${CSS_CLASSES.BB_ERROR_BOX}">
         ❌ ${message}
       </div>
     `;

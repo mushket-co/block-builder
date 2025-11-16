@@ -1,4 +1,4 @@
-.image-upload-field {
+.bb-image-upload-field {
   &__label {
     display: block;
     margin-bottom: 8px;
@@ -123,9 +123,8 @@
     color: var(--bb-color-danger);
   }
 
-  // Стили для ошибок валидации
-  &.block-builder-error {
-    .image-upload-field__file-label {
+  &.bb-error {
+    .bb-image-upload-field__file-label {
       border-color: var(--bb-color-danger);
       background-color: var(--bb-color-danger-bg);
     }

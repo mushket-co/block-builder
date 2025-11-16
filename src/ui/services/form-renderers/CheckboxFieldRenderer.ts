@@ -1,4 +1,5 @@
 import { IFormFieldConfig } from '../../../core/types/form';
+import { CSS_CLASSES } from '../../../utils/constants';
 import { BaseFieldRenderer } from './BaseFieldRenderer';
 import { IRenderContext } from './IRenderContext';
 
@@ -14,9 +15,9 @@ export class CheckboxFieldRenderer extends BaseFieldRenderer {
   ): string {
     const escapedLabel = this.escapeHtml(field.label);
     const checked = value ? 'checked' : '';
-    const checkboxContainerClass = context?.checkboxContainerClass || 'block-builder-form-checkbox';
-    const checkboxLabelClass = context?.checkboxLabelClass || 'block-builder-form-checkbox-label';
-    const checkboxInputClass = context?.checkboxInputClass || 'block-builder-form-checkbox-input';
+    const checkboxContainerClass = context?.checkboxContainerClass || CSS_CLASSES.FORM_CHECKBOX;
+    const checkboxLabelClass = context?.checkboxLabelClass || CSS_CLASSES.FORM_CHECKBOX_LABEL;
+    const checkboxInputClass = context?.checkboxInputClass || CSS_CLASSES.FORM_CHECKBOX_INPUT;
     const fieldName = this.getFieldName(context, field);
     const dataAttributes = this.getInputDataAttributes(context);
 

@@ -1,18 +1,18 @@
 <template>
-  <label :for="fieldId" class="block-builder-form-checkbox">
+  <label :for="fieldId" class="bb-form-checkbox">
     <input
       :id="fieldId"
       :checked="modelValue"
       type="checkbox"
-      class="block-builder-form-checkbox-input"
+      class="bb-form-checkbox-input"
       @change="handleChange"
     />
-    <span class="block-builder-form-checkbox-label">
+    <span class="bb-form-checkbox-label">
       {{ label }}
-      <span v-if="required" class="required">*</span>
+      <span v-if="required" class="bb-required">*</span>
     </span>
   </label>
-  <div v-if="showError && error" class="block-builder-form-errors">
+  <div v-if="showError && error" class="bb-form-errors">
     <span :class="CSS_CLASSES.ERROR">{{ error }}</span>
   </div>
 </template>

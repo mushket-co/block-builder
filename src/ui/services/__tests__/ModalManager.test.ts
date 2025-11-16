@@ -1,4 +1,5 @@
 import { ModalManager, IModalOptions } from '../ModalManager';
+import { CSS_CLASSES } from '../../../utils/constants';
 
 describe('ModalManager', () => {
   let modalManager: ModalManager;
@@ -31,14 +32,14 @@ describe('ModalManager', () => {
     const modal = document.getElementById('block-builder-modal');
 
     expect(modal).toBeTruthy();
-    expect(modal?.classList.contains('block-builder-modal')).toBe(true);
+    expect(modal?.classList.contains(CSS_CLASSES.MODAL)).toBe(true);
   });
 
   test('должен отобразить заголовок', () => {
     const options = createBasicOptions();
     modalManager.showModal(options);
 
-    const header = document.querySelector('.block-builder-modal-header h3');
+    const header = document.querySelector(`.${CSS_CLASSES.MODAL_HEADER} h3`);
 
     expect(header?.textContent).toBe('Тест модалка');
   });
@@ -47,7 +48,7 @@ describe('ModalManager', () => {
     const options = createBasicOptions();
     modalManager.showModal(options);
 
-    const body = document.querySelector('.block-builder-modal-body');
+    const body = document.querySelector(`.${CSS_CLASSES.MODAL_BODY}`);
 
     expect(body?.innerHTML).toContain('<p>Тестовый контент</p>');
   });
@@ -56,7 +57,7 @@ describe('ModalManager', () => {
     const options = createBasicOptions();
     modalManager.showModal(options);
 
-    const footer = document.querySelector('.block-builder-modal-footer');
+    const footer = document.querySelector(`.${CSS_CLASSES.MODAL_FOOTER}`);
     const buttons = footer?.querySelectorAll('button');
 
     expect(buttons?.length).toBe(2);
@@ -72,7 +73,7 @@ describe('ModalManager', () => {
     };
     modalManager.showModal(options);
 
-    const footer = document.querySelector('.block-builder-modal-footer');
+    const footer = document.querySelector(`.${CSS_CLASSES.MODAL_FOOTER}`);
     const buttons = footer?.querySelectorAll('button');
 
     expect(buttons?.[0].textContent?.trim()).toBe('Закрыть');
@@ -86,7 +87,7 @@ describe('ModalManager', () => {
     };
     modalManager.showModal(options);
 
-    const footer = document.querySelector('.block-builder-modal-footer');
+    const footer = document.querySelector(`.${CSS_CLASSES.MODAL_FOOTER}`);
 
     expect(footer).toBeNull();
   });
@@ -116,7 +117,7 @@ describe('ModalManager', () => {
     });
 
     const modals = document.querySelectorAll('#block-builder-modal');
-    const header = document.querySelector('.block-builder-modal-header h3');
+    const header = document.querySelector(`.${CSS_CLASSES.MODAL_HEADER} h3`);
 
     expect(modals.length).toBe(1);
     expect(header?.textContent).toBe('Второе окно');

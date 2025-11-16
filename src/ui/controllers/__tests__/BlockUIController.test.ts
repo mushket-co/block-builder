@@ -64,7 +64,7 @@ describe('BlockUIController', () => {
     blockConfigs: {
       'text': {
         title: 'Текстовый блок',
-        icon: '📝',
+        icon: '',
         fields: [
           {
             field: 'content',
@@ -75,7 +75,7 @@ describe('BlockUIController', () => {
       },
       'button': {
         title: 'Кнопка',
-        icon: '🔘',
+        icon: '',
         fields: [
           {
             field: 'label',
@@ -363,7 +363,7 @@ describe('BlockUIController', () => {
 
     expect(textConfig).toBeDefined();
     expect(textConfig.title).toBe('Текстовый блок');
-    expect(textConfig.icon).toBe('📝');
+    expect(textConfig.icon).toBe('');
   });
 
   test('должен обработать несуществующий тип блока', () => {
