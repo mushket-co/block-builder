@@ -45,3 +45,4 @@ export {
   validateSpacing,
 } from './utils/spacingHelpers';
 export { UniversalValidator } from './utils/universalValidation';
+export { setScrollLockHandlers, lockBodyScroll, unlockBodyScroll } from './utils/scrollLock';
