@@ -5,10 +5,7 @@ export type TCountLabelVariants = {
   zero?: string;
 };
 
-export function getRepeaterCountText(
-  count: number,
-  variants?: TCountLabelVariants
-): string {
+export function getRepeaterCountText(count: number, variants?: TCountLabelVariants): string {
   if (!variants) {
     return `${count}`;
   }

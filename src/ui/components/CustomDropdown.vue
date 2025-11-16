@@ -365,7 +365,7 @@ const lastScrollSnapshot = ref<TScrollSnapshot | null>(null);
 
 watch(
   () => props.loading,
-  (isLoading) => {
+  isLoading => {
     if (!isOpen.value) {
       return;
     }

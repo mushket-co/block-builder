@@ -84,11 +84,14 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { defineAsyncComponent } from 'vue';
 
 import type { IApiRequestParams, IApiSelectItem, IFormFieldConfig } from '../../core/types/form';
 import type { ApiSelectUseCase } from '../../core/use-cases/ApiSelectUseCase';
-import { defineAsyncComponent } from 'vue';
-const CustomDropdown = defineAsyncComponent(() => import('./CustomDropdown.vue') as unknown as Promise<any>);
+
+const CustomDropdown = defineAsyncComponent(
+  () => import('./CustomDropdown.vue') as unknown as Promise<any>
+);
 
 type TDropdownValue = string | number | (string | number)[] | null;
 type TCustomDropdownExpose = {
@@ -184,7 +187,7 @@ const updateKnownSelections = (value: string | number | (string | number)[] | nu
     const ids = new Set(Array.isArray(value) ? value : []);
     selectedItems.value = Array.from(ids)
       .map(id => knownItems.get(id) ?? previousSelection.find(item => item.id === id))
-      .filter((i): i is IApiSelectItem => Boolean(i));
+      .filter(Boolean);
   } else if (!Array.isArray(value) && value !== null && value !== undefined && value !== '') {
     const candidate =
       knownItems.get(value) ?? previousSelection.find(item => item.id === value) ?? null;

@@ -443,8 +443,14 @@ export class ApiSelectControlRenderer {
     dropdownEl.style.width = `${rect.width}px`;
     // Учитываем CSS max-height, чтобы инлайн-стиль не превышал заданный в стилях
     const computed = window.getComputedStyle(dropdownEl);
-    const cssMax = computed.maxHeight === 'none' ? Number.POSITIVE_INFINITY : parseFloat(computed.maxHeight || '0');
-    const effectiveMax = Math.min(constrainedSpace, isFinite(cssMax) ? cssMax : constrainedSpace);
+    const cssMax =
+      computed.maxHeight === 'none'
+        ? Number.POSITIVE_INFINITY
+        : Number.parseFloat(computed.maxHeight || '0');
+    const effectiveMax = Math.min(
+      constrainedSpace,
+      Number.isFinite(cssMax) ? cssMax : constrainedSpace
+    );
     dropdownEl.style.maxHeight = `${effectiveMax}px`;
 
     const dropdownHeight = Math.min(dropdownEl.scrollHeight, effectiveMax);
