@@ -27,7 +27,7 @@ import {
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { afterRender } from '../../utils/domReady';
 import { parseJSONFromAttribute } from '../../utils/domSafe';
-import { parseErrorKey, scrollToFirstError } from '../../utils/formErrorHelpers';
+import { getFirstErrorKey, parseErrorKey, scrollToFirstError } from '../../utils/formErrorHelpers';
 import { logger } from '../../utils/logger';
 import { UniversalValidator } from '../../utils/universalValidation';
 import { EventDelegation } from '../EventDelegation';
@@ -1702,7 +1702,7 @@ export class BlockUIController {
   }
 
   private handleScrollToFirstError(errors: Record<string, string[]>): void {
-    const firstErrorKey = Object.keys(errors)[0];
+    const firstErrorKey = getFirstErrorKey(errors);
     if (!firstErrorKey) {
       return;
     }
@@ -1744,14 +1744,19 @@ export class BlockUIController {
 
     const allErrors = errors || this.getRepeaterErrors();
 
-    const firstErrorKey = Object.keys(allErrors).find(key => {
+    const filteredErrors: Record<string, string[]> = {};
+    for (const key of Object.keys(allErrors)) {
       const errorInfo = parseErrorKey(key);
-      return (
+      if (
         errorInfo.isRepeaterField &&
         errorInfo.repeaterFieldName === repeaterFieldName &&
         errorInfo.repeaterIndex === itemIndex
-      );
-    });
+      ) {
+        filteredErrors[key] = allErrors[key];
+      }
+    }
+
+    const firstErrorKey = getFirstErrorKey(filteredErrors);
 
     const hasNestedPath =
       firstErrorKey && firstErrorKey.includes('[') && firstErrorKey.split('[').length > 2;

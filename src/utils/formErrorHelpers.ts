@@ -28,6 +28,41 @@ export function parseErrorKey(errorKey: string): IFirstErrorInfo {
     isRepeaterField: false,
   };
 }
+function parseNestedPath(path: string): Array<{ fieldName: string; index: number }> {
+  const parts: Array<{ fieldName: string; index: number }> = [];
+  let remainingPath = path;
+  
+  while (remainingPath) {
+    const repeaterMatch = remainingPath.match(/^([A-Z_a-z]+)\[(\d+)]/);
+    if (repeaterMatch) {
+      parts.push({
+        fieldName: repeaterMatch[1],
+        index: Number.parseInt(repeaterMatch[2], 10),
+      });
+      remainingPath = remainingPath.slice(repeaterMatch[0].length);
+      if (remainingPath.startsWith('.')) {
+        remainingPath = remainingPath.slice(1);
+      } else {
+        break;
+      }
+    } else {
+      const fieldMatch = remainingPath.match(/^([A-Z_a-z]+)/);
+      if (fieldMatch) {
+        remainingPath = remainingPath.slice(fieldMatch[0].length);
+        if (remainingPath.startsWith('.')) {
+          remainingPath = remainingPath.slice(1);
+        } else {
+          break;
+        }
+      } else {
+        break;
+      }
+    }
+  }
+  
+  return parts;
+}
+
 export function getFirstErrorKey(errors: Record<string, string[]>): string | null {
   const errorKeys = Object.keys(errors);
   if (errorKeys.length === 0) {
@@ -48,7 +83,37 @@ export function getFirstErrorKey(errors: Record<string, string[]>): string | nul
         const bName = bInfo.repeaterFieldName || '';
         return aName.localeCompare(bName);
       }
-      return (aInfo.repeaterIndex || 0) - (bInfo.repeaterIndex || 0);
+      const indexDiff = (aInfo.repeaterIndex || 0) - (bInfo.repeaterIndex || 0);
+      if (indexDiff !== 0) {
+        return indexDiff;
+      }
+      
+      if (aInfo.nestedPath && bInfo.nestedPath) {
+        const aPath = parseNestedPath(aInfo.nestedPath);
+        const bPath = parseNestedPath(bInfo.nestedPath);
+        
+        for (let i = 0; i < Math.max(aPath.length, bPath.length); i++) {
+          if (i >= aPath.length) {
+            return -1;
+          }
+          if (i >= bPath.length) {
+            return 1;
+          }
+          
+          const aPart = aPath[i];
+          const bPart = bPath[i];
+          
+          if (aPart.fieldName !== bPart.fieldName) {
+            return aPart.fieldName.localeCompare(bPart.fieldName);
+          }
+          
+          if (aPart.index !== bPart.index) {
+            return aPart.index - bPart.index;
+          }
+        }
+      }
+      
+      return a.localeCompare(b);
     }
     return a.localeCompare(b);
   });

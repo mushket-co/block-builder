@@ -391,6 +391,7 @@ import { copyToClipboard } from '../../utils/copyToClipboard';
 import {
   findFieldElement,
   focusElement,
+  getFirstErrorKey,
   parseErrorKey,
   scrollToElement,
   scrollToFirstError,
@@ -1236,29 +1237,37 @@ const cleanupBreakpointWatchers = () => {
 };
 
 const handleValidationErrors = async () => {
+  console.log('[handleValidationErrors] Начало');
   await nextTick();
 
   const modalContent = document.querySelector(`.${CSS_CLASSES.MODAL_BODY}`) as HTMLElement;
 
   if (!modalContent) {
+    console.log('[handleValidationErrors] modalContent не найден');
     return;
   }
 
   setTimeout(async () => {
-    const firstErrorKey = Object.keys(formErrors)[0];
+    console.log('[handleValidationErrors] formErrors:', formErrors);
+    const firstErrorKey = getFirstErrorKey(formErrors);
+    console.log('[handleValidationErrors] firstErrorKey:', firstErrorKey);
     if (!firstErrorKey) {
+      console.log('[handleValidationErrors] Нет ошибок');
       return;
     }
 
     const errorInfo = parseErrorKey(firstErrorKey);
+    console.log('[handleValidationErrors] errorInfo:', errorInfo);
 
     if (errorInfo.isRepeaterField && errorInfo.repeaterFieldName) {
+      console.log('[handleValidationErrors] Открываем репитер:', errorInfo.repeaterFieldName, errorInfo.repeaterIndex);
       await openRepeaterAccordion(
         errorInfo.repeaterFieldName,
         errorInfo.repeaterIndex || 0,
         firstErrorKey
       );
     } else {
+      console.log('[handleValidationErrors] Не репитер, скроллим к ошибке');
       scrollToFirstError(modalContent, formErrors, {
         offset: 40,
         behavior: 'smooth',
@@ -1272,49 +1281,182 @@ const handleValidationErrors = async () => {
  * Рекурсивное открытие всех аккордеонов на пути к ошибке
  */
 const openNestedRepeaterAccordions = async (errorKey: string): Promise<void> => {
+  console.log('[openNestedRepeaterAccordions] Начало. errorKey:', errorKey);
   const errorInfo = parseErrorKey(errorKey);
+  console.log('[openNestedRepeaterAccordions] errorInfo:', errorInfo);
   if (!errorInfo.isRepeaterField || !errorInfo.nestedPath) {
+    console.log('[openNestedRepeaterAccordions] Выход: не репитер или нет nestedPath');
     return;
   }
 
   const modalContent = document.querySelector(`.${CSS_CLASSES.MODAL_BODY}`) as HTMLElement;
   if (!modalContent) {
+    console.log('[openNestedRepeaterAccordions] Выход: modalContent не найден');
     return;
   }
 
   const pathParts = errorInfo.nestedPath.split('.');
+  console.log('[openNestedRepeaterAccordions] pathParts:', pathParts);
   let currentFieldName = errorInfo.repeaterFieldName || '';
   let currentIndex = errorInfo.repeaterIndex || 0;
   let currentContainer: HTMLElement | null = modalContent;
 
+  console.log('[openNestedRepeaterAccordions] Открываем первый уровень:', currentFieldName, currentIndex);
   await openRepeaterAccordion(currentFieldName, currentIndex, undefined, true);
   await nextTick();
-  await new Promise(resolve => setTimeout(resolve, REPEATER_ACCORDION_ANIMATION_DELAY_MS));
+
+  let firstLevelRepeaterContainer = modalContent.querySelector(
+    `.bb-repeater-control[data-field-name="${currentFieldName}"]`
+  ) as HTMLElement;
+  console.log('[openNestedRepeaterAccordions] firstLevelRepeaterContainer найден через .bb-repeater-control (первая попытка):', !!firstLevelRepeaterContainer);
+
+  if (!firstLevelRepeaterContainer) {
+    firstLevelRepeaterContainer = modalContent.querySelector(
+      `.${CSS_CLASSES.REPEATER_CONTROL_CONTAINER}[data-field-name="${currentFieldName}"]`
+    ) as HTMLElement;
+    console.log('[openNestedRepeaterAccordions] firstLevelRepeaterContainer найден через .bb-repeater-control-container (первая попытка):', !!firstLevelRepeaterContainer);
+  }
+
+  if (!firstLevelRepeaterContainer) {
+    await nextTick();
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    
+    firstLevelRepeaterContainer = modalContent.querySelector(
+      `.bb-repeater-control[data-field-name="${currentFieldName}"]`
+    ) as HTMLElement;
+    console.log('[openNestedRepeaterAccordions] firstLevelRepeaterContainer найден (вторая попытка):', !!firstLevelRepeaterContainer);
+  }
+
+  if (!firstLevelRepeaterContainer) {
+    const allRepeaters = modalContent.querySelectorAll('.bb-repeater-control, .bb-repeater-control-container');
+    console.log('[openNestedRepeaterAccordions] Всего репитеров найдено:', allRepeaters.length);
+    for (const repeater of Array.from(allRepeaters)) {
+      const fieldNameAttr = (repeater as HTMLElement).dataset.fieldName || '';
+      console.log('[openNestedRepeaterAccordions] Проверяем repeater с data-field-name:', fieldNameAttr);
+      if (fieldNameAttr === currentFieldName) {
+        firstLevelRepeaterContainer = repeater as HTMLElement;
+        console.log('[openNestedRepeaterAccordions] Найден через перебор всех репитеров');
+        break;
+      }
+    }
+  }
+
+  if (firstLevelRepeaterContainer) {
+    const firstLevelItems = firstLevelRepeaterContainer.querySelectorAll(
+      `.${CSS_CLASSES.REPEATER_CONTROL_ITEM}`
+    );
+    console.log('[openNestedRepeaterAccordions] firstLevelItems.length:', firstLevelItems.length, 'currentIndex:', currentIndex);
+    if (currentIndex < firstLevelItems.length) {
+      const firstLevelItem = firstLevelItems[currentIndex] as HTMLElement;
+      currentContainer = firstLevelItem;
+      console.log('[openNestedRepeaterAccordions] firstLevelItem найден, установлен как currentContainer');
+      console.log('[openNestedRepeaterAccordions] firstLevelItem классы:', firstLevelItem.className);
+      console.log('[openNestedRepeaterAccordions] firstLevelItem collapsed:', firstLevelItem.classList.contains(CSS_CLASSES.REPEATER_CONTROL_ITEM_COLLAPSED));
+    } else {
+      console.log('[openNestedRepeaterAccordions] ВНИМАНИЕ: currentIndex >= firstLevelItems.length');
+    }
+  } else {
+    console.log('[openNestedRepeaterAccordions] ВНИМАНИЕ: firstLevelRepeaterContainer не найден после всех попыток');
+    console.log('[openNestedRepeaterAccordions] modalContent HTML (первые 1000 символов):', modalContent.innerHTML.substring(0, 1000));
+  }
 
   for (const part of pathParts) {
+    console.log('[openNestedRepeaterAccordions] Обрабатываем part:', part);
     const repeaterMatch = part.match(/^([A-Z_a-z]+)\[(\d+)]$/);
 
     if (repeaterMatch) {
       const fieldName = repeaterMatch[1];
       const index = Number.parseInt(repeaterMatch[2], 10);
+      console.log('[openNestedRepeaterAccordions] Вложенный репитер найден:', fieldName, 'index:', index);
 
       if (!currentContainer) {
+        console.log('[openNestedRepeaterAccordions] Выход: currentContainer отсутствует');
         return;
       }
 
-      const repeaterContainer = currentContainer.querySelector(
-        `.${CSS_CLASSES.REPEATER_CONTROL_CONTAINER}[data-field-name*="${fieldName}"]`
+      await nextTick();
+
+      console.log('[openNestedRepeaterAccordions] Ищем repeaterContainer в currentContainer');
+      console.log('[openNestedRepeaterAccordions] currentContainer:', currentContainer);
+      console.log('[openNestedRepeaterAccordions] CSS_CLASSES.REPEATER_CONTROL_CONTAINER:', CSS_CLASSES.REPEATER_CONTROL_CONTAINER);
+      
+      let repeaterContainer = currentContainer.querySelector(
+        `.bb-repeater-control[data-field-name*="${fieldName}"]`
       ) as HTMLElement;
+      console.log('[openNestedRepeaterAccordions] Первая попытка поиска repeaterContainer через .bb-repeater-control:', !!repeaterContainer);
 
       if (!repeaterContainer) {
+        repeaterContainer = currentContainer.querySelector(
+          `.${CSS_CLASSES.REPEATER_CONTROL_CONTAINER}[data-field-name*="${fieldName}"]`
+        ) as HTMLElement;
+        console.log('[openNestedRepeaterAccordions] Первая попытка поиска repeaterContainer через .bb-repeater-control-container:', !!repeaterContainer);
+      }
+
+      if (!repeaterContainer) {
+        const allRepeaters = currentContainer.querySelectorAll(
+          '.bb-repeater-control, .bb-repeater-control-container'
+        );
+        console.log('[openNestedRepeaterAccordions] Найдено репитеров в currentContainer:', allRepeaters.length);
+        for (const repeater of Array.from(allRepeaters)) {
+          const containerFieldName = (repeater as HTMLElement).dataset.fieldName || '';
+          console.log('[openNestedRepeaterAccordions] Проверяем repeater с fieldName:', containerFieldName, 'ищем:', fieldName);
+          if (containerFieldName.includes(fieldName) || containerFieldName === fieldName) {
+            repeaterContainer = repeater as HTMLElement;
+            console.log('[openNestedRepeaterAccordions] Найден подходящий repeaterContainer через поиск по всем репитерам');
+            break;
+          }
+        }
+      }
+
+      if (!repeaterContainer) {
+        await nextTick();
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        console.log('[openNestedRepeaterAccordions] Вторая попытка поиска repeaterContainer');
+        
+        repeaterContainer = currentContainer.querySelector(
+          `.bb-repeater-control[data-field-name*="${fieldName}"]`
+        ) as HTMLElement;
+        console.log('[openNestedRepeaterAccordions] Вторая попытка через .bb-repeater-control:', !!repeaterContainer);
+        
+        if (!repeaterContainer) {
+          repeaterContainer = currentContainer.querySelector(
+            `.${CSS_CLASSES.REPEATER_CONTROL_CONTAINER}[data-field-name*="${fieldName}"]`
+          ) as HTMLElement;
+          console.log('[openNestedRepeaterAccordions] Вторая попытка через .bb-repeater-control-container:', !!repeaterContainer);
+        }
+        
+        if (!repeaterContainer) {
+          const allRepeaters = currentContainer.querySelectorAll(
+            '.bb-repeater-control, .bb-repeater-control-container'
+          );
+          console.log('[openNestedRepeaterAccordions] Вторая попытка: найдено репитеров:', allRepeaters.length);
+          for (const repeater of Array.from(allRepeaters)) {
+            const containerFieldName = (repeater as HTMLElement).dataset.fieldName || '';
+            console.log('[openNestedRepeaterAccordions] Вторая попытка: проверяем repeater с fieldName:', containerFieldName);
+            if (containerFieldName.includes(fieldName) || containerFieldName === fieldName) {
+              repeaterContainer = repeater as HTMLElement;
+              console.log('[openNestedRepeaterAccordions] Найден repeaterContainer во второй попытке');
+              break;
+            }
+          }
+        }
+      }
+
+      if (!repeaterContainer) {
+        console.log('[openNestedRepeaterAccordions] ВНИМАНИЕ: repeaterContainer не найден для fieldName:', fieldName);
+        console.log('[openNestedRepeaterAccordions] currentContainer HTML:', currentContainer.innerHTML.substring(0, 500));
         return;
       }
 
+      console.log('[openNestedRepeaterAccordions] repeaterContainer найден, data-field-name:', repeaterContainer.dataset.fieldName);
+      
       const repeaterItems = repeaterContainer.querySelectorAll(
         `.${CSS_CLASSES.REPEATER_CONTROL_ITEM}`
       );
+      console.log('[openNestedRepeaterAccordions] repeaterItems.length:', repeaterItems.length, 'требуемый index:', index);
 
       if (index >= repeaterItems.length) {
+        console.log('[openNestedRepeaterAccordions] ВНИМАНИЕ: index >= repeaterItems.length');
         return;
       }
 
@@ -1322,28 +1464,88 @@ const openNestedRepeaterAccordions = async (errorKey: string): Promise<void> => 
       const isCollapsed = targetItem.classList.contains(
         CSS_CLASSES.REPEATER_CONTROL_ITEM_COLLAPSED
       );
+      console.log('[openNestedRepeaterAccordions] targetItem найден, isCollapsed:', isCollapsed);
 
       if (isCollapsed) {
-        const collapseButton = targetItem.querySelector(
-          `.${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_COLLAPSE}`
-        ) as HTMLElement;
-        if (collapseButton) {
-          collapseButton.click();
-          await nextTick();
-          await new Promise(resolve =>
-            setTimeout(resolve, REPEATER_ACCORDION_ANIMATION_DELAY_MS)
-          );
+        console.log('[openNestedRepeaterAccordions] Пытаемся открыть аккордеон');
+        let opened = false;
+        
+        const nestedRepeaterWrapper = repeaterContainer.closest(
+          `.${CSS_CLASSES.REPEATER_CONTROL_ITEM}`
+        ) as HTMLElement | null;
+        console.log('[openNestedRepeaterAccordions] nestedRepeaterWrapper найден:', !!nestedRepeaterWrapper);
+        
+        if (nestedRepeaterWrapper) {
+          const nestedRepeaterVueComponent = (nestedRepeaterWrapper as any).__vueParentComponent;
+          console.log('[openNestedRepeaterAccordions] nestedRepeaterVueComponent найден:', !!nestedRepeaterVueComponent);
+          if (nestedRepeaterVueComponent?.exposed) {
+            const exposed = nestedRepeaterVueComponent.exposed;
+            console.log('[openNestedRepeaterAccordions] exposed методы:', Object.keys(exposed));
+            if (exposed.isItemCollapsed && exposed.isItemCollapsed(index) && exposed.expandItem) {
+              console.log('[openNestedRepeaterAccordions] Открываем через Vue компонент (exposed)');
+              exposed.expandItem(index);
+              opened = true;
+              await nextTick();
+              await new Promise(resolve =>
+                setTimeout(resolve, Math.min(REPEATER_ACCORDION_ANIMATION_DELAY_MS, 150))
+              );
+            }
+          }
         }
+        
+        if (!opened) {
+          const nestedRepeaterComponent = repeaterRefs.get(fieldName);
+          console.log('[openNestedRepeaterAccordions] Пробуем repeaterRefs.get:', fieldName, 'найден:', !!nestedRepeaterComponent);
+          console.log('[openNestedRepeaterAccordions] repeaterRefs ключи:', Array.from(repeaterRefs.keys()));
+          if (nestedRepeaterComponent && nestedRepeaterComponent.isItemCollapsed && nestedRepeaterComponent.isItemCollapsed(index) && nestedRepeaterComponent.expandItem) {
+            console.log('[openNestedRepeaterAccordions] Открываем через repeaterRefs компонент');
+            nestedRepeaterComponent.expandItem(index);
+            opened = true;
+            await nextTick();
+            await new Promise(resolve =>
+              setTimeout(resolve, Math.min(REPEATER_ACCORDION_ANIMATION_DELAY_MS, 150))
+            );
+          }
+        }
+        
+        if (!opened) {
+          console.log('[openNestedRepeaterAccordions] Пробуем открыть через клик по кнопке');
+          const collapseButton = targetItem.querySelector(
+            `.${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_COLLAPSE}`
+          ) as HTMLElement;
+          console.log('[openNestedRepeaterAccordions] collapseButton найден:', !!collapseButton);
+          if (collapseButton) {
+            console.log('[openNestedRepeaterAccordions] Кликаем по кнопке');
+            collapseButton.click();
+            await nextTick();
+            await new Promise(resolve =>
+              setTimeout(resolve, Math.min(REPEATER_ACCORDION_ANIMATION_DELAY_MS, 150))
+            );
+            opened = true;
+          }
+        }
+        
+        console.log('[openNestedRepeaterAccordions] Аккордеон открыт:', opened);
+      } else {
+        console.log('[openNestedRepeaterAccordions] Аккордеон уже открыт');
       }
+
+      await nextTick();
+      await new Promise(resolve => requestAnimationFrame(resolve));
 
       currentContainer = targetItem;
       currentFieldName = fieldName;
       currentIndex = index;
+      console.log('[openNestedRepeaterAccordions] Обновлен currentContainer на targetItem');
+    } else {
+      console.log('[openNestedRepeaterAccordions] part не соответствует паттерну репитера:', part);
     }
   }
+  
+  console.log('[openNestedRepeaterAccordions] Завершение обработки всех pathParts');
 
   await nextTick();
-  await new Promise(resolve => setTimeout(resolve, 200));
+  await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 };
 
 /**
@@ -1355,58 +1557,82 @@ const openRepeaterAccordion = async (
   errorKey?: string,
   skipScroll: boolean = false
 ): Promise<void> => {
+  console.log('[openRepeaterAccordion] Начало:', repeaterFieldName, itemIndex, errorKey, skipScroll);
   await nextTick();
 
   const repeaterComponent = repeaterRefs.get(repeaterFieldName);
+  console.log('[openRepeaterAccordion] repeaterComponent найден:', !!repeaterComponent);
+  console.log('[openRepeaterAccordion] repeaterRefs ключи:', Array.from(repeaterRefs.keys()));
 
-  if (
-    repeaterComponent &&
-    repeaterComponent.isItemCollapsed &&
-    repeaterComponent.isItemCollapsed(itemIndex) &&
-    repeaterComponent.expandItem
-  ) {
-    repeaterComponent.expandItem(itemIndex);
-    await nextTick();
-    await new Promise(resolve => setTimeout(resolve, REPEATER_ACCORDION_ANIMATION_DELAY_MS));
+  if (repeaterComponent) {
+    const isCollapsed = repeaterComponent.isItemCollapsed && repeaterComponent.isItemCollapsed(itemIndex);
+    console.log('[openRepeaterAccordion] isItemCollapsed:', isCollapsed);
+    
+    if (isCollapsed && repeaterComponent.expandItem) {
+      console.log('[openRepeaterAccordion] Открываем первый уровень через компонент');
+      repeaterComponent.expandItem(itemIndex);
+      await nextTick();
+      await new Promise(resolve => setTimeout(resolve, Math.min(REPEATER_ACCORDION_ANIMATION_DELAY_MS, 150)));
+    } else {
+      console.log('[openRepeaterAccordion] Аккордеон уже открыт или метод expandItem недоступен');
+    }
+  } else {
+    console.log('[openRepeaterAccordion] Компонент не найден');
   }
 
   const hasNestedPath = errorKey && errorKey.includes('[') && errorKey.split('[').length > 2;
+  console.log('[openRepeaterAccordion] hasNestedPath:', hasNestedPath);
 
   if (hasNestedPath) {
+    console.log('[openRepeaterAccordion] Открываем вложенные аккордеоны');
     await openNestedRepeaterAccordions(errorKey);
-    await nextTick();
-    await new Promise(resolve => setTimeout(resolve, 200));
   }
 
   if (skipScroll) {
     return;
   }
 
-  await nextTick();
-  await new Promise(resolve => {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        resolve(undefined);
-      });
-    });
-  });
+      await nextTick();
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
   const modalContent = document.querySelector(`.${CSS_CLASSES.MODAL_BODY}`) as HTMLElement;
   if (modalContent) {
-    const foundErrorKey =
-      errorKey ||
-      Object.keys(formErrors).find(key => {
+    let foundErrorKey = errorKey;
+    
+    if (!foundErrorKey) {
+      const filteredErrors: Record<string, string[]> = {};
+      for (const key of Object.keys(formErrors)) {
         const errorInfo = parseErrorKey(key);
-        return (
+        if (
           errorInfo.isRepeaterField &&
           errorInfo.repeaterFieldName === repeaterFieldName &&
           errorInfo.repeaterIndex === itemIndex
-        );
-      });
+        ) {
+          filteredErrors[key] = formErrors[key];
+        }
+      }
+      foundErrorKey = getFirstErrorKey(filteredErrors);
+    }
 
     if (foundErrorKey) {
       const errorInfo = parseErrorKey(foundErrorKey);
-      const fieldElement = findFieldElement(modalContent, errorInfo);
+      
+      await nextTick();
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      
+      let fieldElement = findFieldElement(modalContent, errorInfo);
+      
+      if (!fieldElement) {
+        await nextTick();
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        fieldElement = findFieldElement(modalContent, errorInfo);
+      }
+
+      if (!fieldElement) {
+        await nextTick();
+        await new Promise(resolve => setTimeout(resolve, 50));
+        fieldElement = findFieldElement(modalContent, errorInfo);
+      }
 
       if (fieldElement) {
         scrollToElement(fieldElement, {
@@ -1415,18 +1641,48 @@ const openRepeaterAccordion = async (
         });
         focusElement(fieldElement);
       } else {
-        scrollToFirstError(modalContent, formErrors, {
+        const filteredErrors: Record<string, string[]> = {};
+        for (const key of Object.keys(formErrors)) {
+          const keyInfo = parseErrorKey(key);
+          if (
+            keyInfo.isRepeaterField &&
+            keyInfo.repeaterFieldName === repeaterFieldName &&
+            keyInfo.repeaterIndex === itemIndex
+          ) {
+            filteredErrors[key] = formErrors[key];
+          }
+        }
+        scrollToFirstError(modalContent, filteredErrors, {
           offset: 40,
           behavior: 'smooth',
           autoFocus: true,
         });
       }
     } else {
-      scrollToFirstError(modalContent, formErrors, {
-        offset: 40,
-        behavior: 'smooth',
-        autoFocus: true,
-      });
+      const filteredErrors: Record<string, string[]> = {};
+      for (const key of Object.keys(formErrors)) {
+        const errorInfo = parseErrorKey(key);
+        if (
+          errorInfo.isRepeaterField &&
+          errorInfo.repeaterFieldName === repeaterFieldName &&
+          errorInfo.repeaterIndex === itemIndex
+        ) {
+          filteredErrors[key] = formErrors[key];
+        }
+      }
+      if (Object.keys(filteredErrors).length > 0) {
+        scrollToFirstError(modalContent, filteredErrors, {
+          offset: 40,
+          behavior: 'smooth',
+          autoFocus: true,
+        });
+      } else {
+        scrollToFirstError(modalContent, formErrors, {
+          offset: 40,
+          behavior: 'smooth',
+          autoFocus: true,
+        });
+      }
     }
   }
 };
@@ -1481,3 +1737,4 @@ onBeforeUnmount(() => {
   unlockBodyScroll();
 });
 </script>
+
