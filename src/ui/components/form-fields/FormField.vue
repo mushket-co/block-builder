@@ -1,5 +1,8 @@
 <template>
-  <div :class="containerClass || CSS_CLASSES.FORM_GROUP" :data-field-name="field.field">
+  <div
+    :class="containerClass || CSS_CLASSES.FORM_GROUP"
+    :data-field-name="fieldPath || field.field"
+  >
     <TextField
       v-if="field.type === 'text'"
       :field-id="fieldId"
@@ -133,6 +136,7 @@ interface Props {
   error?: string;
   showLabel?: boolean;
   containerClass?: string;
+  fieldPath?: string;
 }
 
 withDefaults(defineProps<Props>(), {
@@ -141,6 +145,7 @@ withDefaults(defineProps<Props>(), {
   error: '',
   showLabel: true,
   containerClass: '',
+  fieldPath: undefined,
 });
 
 const emit = defineEmits<{

@@ -17,6 +17,9 @@ export interface IRepeaterControlOptions {
   value?: any[];
   onChange?: (value: any[]) => void;
   onAfterRender?: () => void;
+  nestingDepth?: number;
+  maxNestingDepth?: number;
+  parentFieldPath?: string;
 }
 
 export class RepeaterControlRenderer {
@@ -31,6 +34,10 @@ export class RepeaterControlRenderer {
   private container?: HTMLElement;
   private collapsedItems: Set<number> = new Set();
   private rendererFactory: FieldRendererFactory;
+  private nestingDepth: number;
+  private maxNestingDepth: number;
+  private parentFieldPath: string;
+  private nestedRenderers: Map<string, RepeaterControlRenderer> = new Map();
 
   constructor(options: IRepeaterControlOptions) {
     this.fieldName = options.fieldName;
@@ -41,6 +48,9 @@ export class RepeaterControlRenderer {
     this.value = options.value || [];
     this.onChange = options.onChange;
     this.onAfterRender = options.onAfterRender;
+    this.nestingDepth = options.nestingDepth || 0;
+    this.maxNestingDepth = options.maxNestingDepth ?? 2;
+    this.parentFieldPath = options.parentFieldPath || '';
     this.rendererFactory = FieldRendererFactory.getInstance();
 
     const effectiveMin = this.getEffectiveMin();
@@ -93,6 +103,9 @@ export class RepeaterControlRenderer {
             newItem[field.field] = apiSelectConfig?.multiple ? [] : null;
             break;
           }
+          case 'repeater':
+            newItem[field.field] = [];
+            break;
           case 'custom':
             newItem[field.field] = '';
             break;
@@ -157,6 +170,7 @@ export class RepeaterControlRenderer {
 
   private safeRender(): void {
     if (this.container) {
+      this.nestedRenderers.clear();
       this.render(this.container);
     }
   }
@@ -166,6 +180,14 @@ export class RepeaterControlRenderer {
   }
 
   private getFieldErrors(index: number, fieldName: string): string[] {
+    if (this.parentFieldPath) {
+      const relativeKey = `[${index}].${fieldName}`;
+      const relativeError = this.errors[relativeKey];
+      if (relativeError) {
+        return relativeError;
+      }
+    }
+
     const errorKey = `${this.fieldName}[${index}].${fieldName}`;
     return this.errors[errorKey] || [];
   }
@@ -236,16 +258,78 @@ export class RepeaterControlRenderer {
         ...context.containerDataAttributes,
         'field-name': fieldNamePath,
       };
-      context.inputDataAttributes = {
-        ...context.inputDataAttributes,
-        'repeater-field-name': this.fieldName,
-        'item-field-name': field.field,
-      };
+    }
+
+    if (field.type === 'repeater' && this.canNestRepeater(field)) {
+      return this.generateNestedRepeaterHTML(field, itemIndex, value);
     }
 
     const renderer = this.rendererFactory.getRenderer(field.type);
 
     return renderer.render(fieldId, formFieldConfig, value, required, context);
+  }
+
+  private canNestRepeater(field: IRepeaterItemFieldConfig): boolean {
+    const maxDepth = field.repeaterConfig?.maxNestingDepth ?? this.maxNestingDepth;
+    return this.nestingDepth < maxDepth;
+  }
+
+  private getFullFieldPath(index: number, fieldName: string): string {
+    if (this.parentFieldPath) {
+      return `${this.parentFieldPath}[${index}].${fieldName}`;
+    }
+    return `${this.fieldName}[${index}].${fieldName}`;
+  }
+
+  private getNestedErrors(index: number, fieldName: string): Record<string, string[]> {
+    const basePath = this.getFullFieldPath(index, fieldName);
+    const nestedErrors: Record<string, string[]> = {};
+
+    Object.keys(this.errors).forEach(key => {
+      if (key.startsWith(`${basePath}[`)) {
+        const relativeKey = key.slice(basePath.length);
+        nestedErrors[relativeKey] = this.errors[key];
+      } else if (this.parentFieldPath && key.startsWith(`[${index}].${fieldName}[`)) {
+        const relativeKey = key.slice(`[${index}].${fieldName}`.length);
+        nestedErrors[relativeKey] = this.errors[key];
+      }
+    });
+
+    return nestedErrors;
+  }
+
+  private generateNestedRepeaterHTML(
+    field: IRepeaterItemFieldConfig,
+    itemIndex: number,
+    value: any
+  ): string {
+    const nestedFieldName = this.getFullFieldPath(itemIndex, field.field);
+    const nestedValue = Array.isArray(value) ? value : [];
+    const nestedErrors = this.getNestedErrors(itemIndex, field.field);
+    const nestedConfig = field.repeaterConfig || { fields: [] };
+
+    const containerId = `nested-repeater-${nestedFieldName.replaceAll(/[.[\]]/g, '-')}`;
+
+    const nestedRenderer = new RepeaterControlRenderer({
+      fieldName: nestedFieldName,
+      label: field.label,
+      rules: field.rules || [],
+      errors: nestedErrors,
+      config: nestedConfig,
+      value: nestedValue,
+      onChange: (newValue: any[]) => {
+        this.onFieldChange(itemIndex, field.field, newValue);
+      },
+      nestingDepth: this.nestingDepth + 1,
+      maxNestingDepth: nestedConfig.maxNestingDepth ?? this.maxNestingDepth,
+      parentFieldPath: this.getFullFieldPath(itemIndex, field.field),
+    });
+
+    this.nestedRenderers.set(`${itemIndex}-${field.field}`, nestedRenderer);
+
+    return `<div class="${CSS_CLASSES.FORM_GROUP}" data-field-name="${nestedFieldName}">
+      <div class="${CSS_CLASSES.REPEATER_CONTROL_CONTAINER}" data-nested-repeater="${containerId}" data-field-name="${nestedFieldName}"></div>
+    </div>`;
   }
 
   private escapeHtml(text: string): string {
@@ -445,10 +529,59 @@ export class RepeaterControlRenderer {
     });
     container.innerHTML = this.generateHTML();
     this.attachEventListeners();
+    this.renderNestedRepeaters();
 
     if (this.onAfterRender) {
       this.onAfterRender();
     }
+
+    const event = new CustomEvent('repeater-rendered', {
+      bubbles: true,
+      detail: { container },
+    });
+    container.dispatchEvent(event);
+  }
+
+  private renderNestedRepeaters(): void {
+    if (!this.container) {
+      return;
+    }
+
+    this.nestedRenderers.forEach(renderer => {
+      const nestedFieldName = renderer.fieldName;
+
+      let nestedContainer = this.container?.querySelector(
+        `[data-nested-repeater][data-field-name="${nestedFieldName}"]`
+      ) as HTMLElement;
+
+      if (!nestedContainer) {
+        nestedContainer = this.container?.querySelector(
+          `[data-field-name="${nestedFieldName}"]`
+        ) as HTMLElement;
+      }
+
+      if (!nestedContainer) {
+        const allContainers = this.container?.querySelectorAll(`[data-field-name]`) || [];
+        for (const container of Array.from(allContainers)) {
+          const fieldName = (container as HTMLElement).dataset.fieldName;
+          if (fieldName === nestedFieldName) {
+            nestedContainer = container as HTMLElement;
+            break;
+          }
+        }
+      }
+
+      if (nestedContainer) {
+        const targetContainer = nestedContainer.querySelector(
+          `.${CSS_CLASSES.REPEATER_CONTROL_CONTAINER}`
+        ) as HTMLElement;
+        if (targetContainer) {
+          renderer.render(targetContainer);
+        } else {
+          renderer.render(nestedContainer);
+        }
+      }
+    });
   }
 
   private attachEventListeners(): void {
@@ -515,6 +648,14 @@ export class RepeaterControlRenderer {
 
   public updateErrors(errors: Record<string, string[]>): void {
     this.errors = errors;
+
+    this.nestedRenderers.forEach((renderer, key) => {
+      const [itemIndexStr, fieldName] = key.split('-');
+      const itemIndex = Number.parseInt(itemIndexStr, 10);
+      const nestedErrors = this.getNestedErrors(itemIndex, fieldName);
+      renderer.updateErrors(nestedErrors);
+    });
+
     if (this.container) {
       this.render(this.container);
     }
@@ -528,6 +669,11 @@ export class RepeaterControlRenderer {
   }
 
   public destroy(): void {
+    this.nestedRenderers.forEach(renderer => {
+      renderer.destroy();
+    });
+    this.nestedRenderers.clear();
+
     if (this.container) {
       this.container.innerHTML = '';
       this.container = undefined;

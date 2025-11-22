@@ -41,7 +41,7 @@ export interface IBlockSpacingOptions {
 export interface IRepeaterItemFieldConfig {
   field: string;
   label: string;
-  type: Exclude<TFieldType, 'repeater' | 'spacing'>;
+  type: Exclude<TFieldType, 'spacing'>;
   placeholder?: string;
   defaultValue?: unknown;
   options?: { value: string | number; label: string; disabled?: boolean }[];
@@ -50,6 +50,7 @@ export interface IRepeaterItemFieldConfig {
   apiSelectConfig?: IApiSelectConfig;
   customFieldConfig?: ICustomFieldConfig;
   imageUploadConfig?: IImageUploadConfig;
+  repeaterConfig?: IRepeaterFieldConfig;
 }
 export interface IRepeaterFieldConfig {
   fields: IRepeaterItemFieldConfig[];
@@ -69,6 +70,11 @@ export interface IRepeaterFieldConfig {
   min?: number;
   max?: number;
   defaultItemValue?: Record<string, unknown>;
+  /**
+   * Максимальная глубина вложенности репитеров (по умолчанию 2)
+   * Используется для предотвращения бесконечной рекурсии
+   */
+  maxNestingDepth?: number;
 }
 export type THttpMethod = 'GET' | 'POST';
 export interface IApiSelectItem {

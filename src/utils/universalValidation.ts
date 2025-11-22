@@ -2,6 +2,7 @@ import {
   IFormData,
   IFormFieldConfig,
   IFormGenerationConfig,
+  IRepeaterItemFieldConfig,
   IValidationResult,
   IValidationRule,
 } from '../core/types';
@@ -127,22 +128,16 @@ export const UniversalValidator = {
       if (fieldConfig.type === 'repeater' && fieldConfig.repeaterConfig) {
         const arrayValue = formData[fieldConfig.field];
         if (Array.isArray(arrayValue)) {
-          const repeaterFields = fieldConfig.repeaterConfig.fields || [];
-          arrayValue.forEach((item, index) => {
-            for (const repeaterField of repeaterFields) {
-              if (repeaterField.rules && repeaterField.rules.length > 0) {
-                const fieldErrors = this.validateField(
-                  item[repeaterField.field],
-                  repeaterField.rules
-                );
-                if (fieldErrors.length > 0) {
-                  const errorKey = `${fieldConfig.field}[${index}].${repeaterField.field}`;
-                  formErrors[errorKey] = fieldErrors;
-                  isValid = false;
-                }
-              }
-            }
-          });
+          this.validateRepeaterRecursive(
+            fieldConfig.field,
+            arrayValue,
+            fieldConfig.repeaterConfig.fields || [],
+            formErrors,
+            ''
+          );
+          if (Object.keys(formErrors).some(key => key.startsWith(fieldConfig.field))) {
+            isValid = false;
+          }
         }
       }
     }
@@ -156,6 +151,42 @@ export const UniversalValidator = {
   },
   createFormValidator(formFields: IFormFieldConfig[]) {
     return (formData: IFormData) => this.validateForm(formData, formFields);
+  },
+
+  validateRepeaterRecursive(
+    baseFieldPath: string,
+    arrayValue: any[],
+    repeaterFields: IRepeaterItemFieldConfig[],
+    formErrors: Record<string, string[]>,
+    parentPath: string = ''
+  ): void {
+    const fullPath = parentPath ? `${parentPath}.${baseFieldPath}` : baseFieldPath;
+
+    arrayValue.forEach((item, index) => {
+      for (const repeaterField of repeaterFields) {
+        const fieldPath = `${fullPath}[${index}].${repeaterField.field}`;
+
+        if (repeaterField.rules && repeaterField.rules.length > 0) {
+          const fieldErrors = this.validateField(item[repeaterField.field], repeaterField.rules);
+          if (fieldErrors.length > 0) {
+            formErrors[fieldPath] = fieldErrors;
+          }
+        }
+
+        if (repeaterField.type === 'repeater' && repeaterField.repeaterConfig) {
+          const nestedArrayValue = item[repeaterField.field];
+          if (Array.isArray(nestedArrayValue)) {
+            this.validateRepeaterRecursive(
+              repeaterField.field,
+              nestedArrayValue,
+              repeaterField.repeaterConfig.fields || [],
+              formErrors,
+              `${fullPath}[${index}]`
+            );
+          }
+        }
+      }
+    });
   },
 };
 export const FormUtils = {

@@ -250,78 +250,6 @@ export const blockConfigs = {
     ]
   },
 
-  button: {
-    title: 'Кнопка',
-    icon: '/icons/button.svg',
-    description: 'Интерактивная кнопка',
-    render: {
-      kind: 'html',
-      template: (props) => `
-        <div class="button-block" style="text-align: center; margin: 20px 0;">
-          <div class="container">
-            <button
-              class="custom-button"
-              style="
-                background-color: ${props.backgroundColor};
-                color: ${props.color};
-                border-radius: ${props.borderRadius}px;
-                padding: ${props.padding};
-                border: none;
-                cursor: pointer;
-                font-size: 16px;
-                font-weight: 500;
-                transition: all 0.2s ease;
-                padding: 20px;
-              "
-              onclick="this.textContent='Загрузка...'; setTimeout(() => this.textContent='${props.text.replace(/'/g, "\\'")}', 1000)"
-              onmouseover="this.style.transform='scale(1.05)'; this.style.filter='brightness(1.1)'"
-              onmouseout="this.style.transform='scale(1)'; this.style.filter='brightness(1)'"
-            >
-              ${props.text}
-            </button>
-          </div>
-        </div>
-      `
-    },
-    fields: [
-      {
-        field: 'text',
-        label: 'Текст кнопки',
-        type: 'text',
-        placeholder: 'Нажми меня',
-        rules: [
-          { type: 'required', message: 'Текст кнопки обязателен' },
-          { type: 'minLength', value: 1, message: 'Текст не может быть пустым' }
-        ],
-        defaultValue: 'Нажми меня'
-      },
-      {
-        field: 'backgroundColor',
-        label: 'Цвет фона',
-        type: 'color',
-        rules: [{ type: 'required', message: 'Цвет обязателен' }],
-        defaultValue: '#007bff'
-      },
-      {
-        field: 'color',
-        label: 'Цвет текста',
-        type: 'color',
-        rules: [{ type: 'required', message: 'Цвет текста обязателен' }],
-        defaultValue: '#ffffff'
-      },
-      {
-        field: 'borderRadius',
-        label: 'Скругление',
-        type: 'number',
-        rules: [
-          { type: 'min', value: 0, message: 'Минимум: 0' },
-          { type: 'max', value: 50, message: 'Максимум: 50' }
-        ],
-        defaultValue: 4
-      }
-    ]
-  },
-
   gallerySlider: {
     title: 'Слайдер галереи',
     icon: '/icons/slider.svg',
@@ -1445,7 +1373,6 @@ export const blockConfigs = {
     }
   },
 
-  // ✅ ПРИМЕР: Блок с API Select
   newsList: {
     title: 'Список новостей из API',
     icon: '/icons/text.svg',
@@ -1717,6 +1644,343 @@ export const blockConfigs = {
         label: 'Цвет фона',
         type: 'color',
         defaultValue: '#f0f0f0'
+      }
+    ]
+  },
+
+  nestedRepeater: {
+    title: 'Каталог с вложенными репитерами',
+    icon: '/icons/card.svg',
+    description: 'Демонстрация вложенных репитеров: категории (1-й уровень) → товары (2-й уровень)',
+    render: {
+      kind: 'html',
+      template: (props) => {
+        const getImageUrl = (img) => {
+          if (!img) return '';
+          if (typeof img === 'string') return img;
+          if (typeof img === 'object' && img !== null) {
+            return img.src || '';
+          }
+          return '';
+        };
+
+        const formatPrice = (price) => {
+          if (typeof price === 'number') {
+            return new Intl.NumberFormat('ru-RU', {
+              style: 'currency',
+              currency: 'RUB'
+            }).format(price);
+          }
+          return price;
+        };
+
+        const categories = props.categories || [];
+
+        const categoriesHTML = categories.map((category, categoryIndex) => {
+          const products = category.products || [];
+          const productsHTML = products.map((product, productIndex) => {
+            const imageUrl = getImageUrl(product.image);
+            const thumbnailUrl = getImageUrl(product.thumbnail);
+            return `
+              <div class="product" style="
+                background: #f8f9fa;
+                border-radius: 8px;
+                padding: 16px;
+                transition: transform 0.2s, box-shadow 0.2s;
+              ">
+                ${imageUrl || thumbnailUrl ? `
+                  <div class="product-images" style="
+                    display: flex;
+                    gap: 8px;
+                    margin-bottom: 12px;
+                  ">
+                    ${imageUrl ? `
+                      <div class="product-image" style="
+                        flex: 1;
+                        height: 180px;
+                        border-radius: 6px;
+                        overflow: hidden;
+                        background: #e9ecef;
+                      ">
+                        <img src="${imageUrl}" alt="${product.name || ''}" style="
+                          width: 100%;
+                          height: 100%;
+                          object-fit: cover;
+                        " />
+                      </div>
+                    ` : ''}
+                    ${thumbnailUrl ? `
+                      <div class="product-thumbnail" style="
+                        width: 100px;
+                        height: 180px;
+                        border-radius: 6px;
+                        overflow: hidden;
+                        background: #e9ecef;
+                        border: 2px solid #007bff;
+                      ">
+                        <img src="${thumbnailUrl}" alt="${product.name || ''} - миниатюра" style="
+                          width: 100%;
+                          height: 100%;
+                          object-fit: cover;
+                        " />
+                      </div>
+                    ` : ''}
+                  </div>
+                ` : ''}
+                <div class="product-info">
+                  <h4 style="
+                    font-size: 18px;
+                    margin: 0 0 8px 0;
+                    color: #333;
+                    font-weight: 600;
+                  ">${product.name || `Товар ${productIndex + 1}`}</h4>
+                  ${product.description ? `
+                    <p style="
+                      font-size: 14px;
+                      color: #666;
+                      margin: 0 0 8px 0;
+                      line-height: 1.4;
+                    ">${product.description}</p>
+                  ` : ''}
+                  ${product.price ? `
+                    <div style="
+                      font-size: 20px;
+                      font-weight: 700;
+                      color: #007bff;
+                      margin-top: 8px;
+                    ">${formatPrice(product.price)}</div>
+                  ` : ''}
+                </div>
+              </div>
+            `;
+          }).join('');
+
+          return `
+            <div class="category" style="
+              background: white;
+              border-radius: 12px;
+              padding: 24px;
+              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            ">
+              <div class="category-header" style="
+                margin-bottom: 24px;
+                padding-bottom: 16px;
+                border-bottom: 2px solid #e9ecef;
+              ">
+                <h3 style="
+                  font-size: 24px;
+                  margin: 0 0 8px 0;
+                  color: #333;
+                  font-weight: 600;
+                ">${category.name || `Категория ${categoryIndex + 1}`}</h3>
+                ${category.description ? `
+                  <p style="
+                    font-size: 16px;
+                    color: #666;
+                    margin: 0;
+                    line-height: 1.5;
+                  ">${category.description}</p>
+                ` : ''}
+              </div>
+              <div class="products" style="
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 20px;
+              ">
+                ${productsHTML}
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        return `
+          <div class="nested-repeater-block" style="
+            padding: 40px 20px;
+            background: #f8f9fa;
+          ">
+            <div class="container" style="
+              max-width: 1200px;
+              margin: 0 auto;
+            ">
+              ${props.title ? `
+                <h2 style="
+                  text-align: center;
+                  font-size: 36px;
+                  margin-bottom: 16px;
+                  color: #333;
+                  font-weight: 700;
+                ">${props.title}</h2>
+              ` : ''}
+              ${props.description ? `
+                <p style="
+                  text-align: center;
+                  font-size: 18px;
+                  color: #666;
+                  margin-bottom: 40px;
+                ">${props.description}</p>
+              ` : ''}
+              <div class="categories" style="
+                display: flex;
+                flex-direction: column;
+                gap: 32px;
+              ">
+                ${categoriesHTML}
+              </div>
+            </div>
+          </div>
+        `;
+      }
+    },
+    fields: [
+      {
+        field: 'title',
+        label: 'Заголовок каталога',
+        type: 'text',
+        placeholder: 'Каталог товаров',
+        rules: [],
+        defaultValue: 'Каталог товаров'
+      },
+      {
+        field: 'description',
+        label: 'Описание каталога',
+        type: 'textarea',
+        placeholder: 'Описание каталога товаров',
+        rules: [],
+        defaultValue: ''
+      },
+      {
+        field: 'categories',
+        label: 'Категории',
+        type: 'repeater',
+        rules: [
+          { type: 'required', message: 'Необходима хотя бы одна категория' }
+        ],
+        defaultValue: [
+          {
+            name: 'Электроника',
+            description: 'Современные гаджеты и устройства',
+            products: [
+              {
+                name: 'Смартфон',
+                description: 'Современный смартфон с отличной камерой',
+                price: 29999,
+                image: ''
+              },
+              {
+                name: 'Ноутбук',
+                description: 'Мощный ноутбук для работы и игр',
+                price: 59999,
+                image: ''
+              }
+            ]
+          }
+        ],
+        repeaterConfig: {
+          itemTitle: 'Категория',
+          addButtonText: 'Добавить категорию',
+          removeButtonText: 'Удалить категорию',
+          min: 1,
+          max: 10,
+          maxNestingDepth: 2,
+          fields: [
+            {
+              field: 'name',
+              label: 'Название категории',
+              type: 'text',
+              placeholder: 'Название категории',
+              rules: [
+                { type: 'required', message: 'Название категории обязательно' },
+                { type: 'minLength', value: 2, message: 'Минимум 2 символа' }
+              ],
+              defaultValue: ''
+            },
+            {
+              field: 'description',
+              label: 'Описание категории',
+              type: 'textarea',
+              placeholder: 'Описание категории',
+              rules: [],
+              defaultValue: ''
+            },
+            {
+              field: 'products',
+              label: 'Товары',
+              type: 'repeater',
+              rules: [
+                { type: 'required', message: 'Необходим хотя бы один товар' }
+              ],
+              defaultValue: [],
+              repeaterConfig: {
+                itemTitle: 'Товар',
+                addButtonText: 'Добавить товар',
+                removeButtonText: 'Удалить товар',
+                min: 1,
+                max: 20,
+                maxNestingDepth: 2,
+                fields: [
+                  {
+                    field: 'name',
+                    label: 'Название товара',
+                    type: 'text',
+                    placeholder: 'Название товара',
+                    rules: [
+                      { type: 'required', message: 'Название товара обязательно' },
+                      { type: 'minLength', value: 2, message: 'Минимум 2 символа' }
+                    ],
+                    defaultValue: ''
+                  },
+                  {
+                    field: 'description',
+                    label: 'Описание товара',
+                    type: 'textarea',
+                    placeholder: 'Описание товара',
+                    rules: [],
+                    defaultValue: ''
+                  },
+                  {
+                    field: 'price',
+                    label: 'Цена',
+                    type: 'number',
+                    placeholder: '0',
+                    rules: [
+                      { type: 'required', message: 'Цена обязательна' },
+                      { type: 'min', value: 0, message: 'Цена не может быть отрицательной' }
+                    ],
+                    defaultValue: 0
+                  },
+                  {
+                    field: 'image',
+                    label: 'Изображение товара',
+                    type: 'image',
+                    rules: [],
+                    defaultValue: ''
+                  },
+                  {
+                    field: 'thumbnail',
+                    label: 'Миниатюра товара',
+                    type: 'image',
+                    rules: [],
+                    defaultValue: '',
+                    imageUploadConfig: {
+                      uploadUrl: '/api/upload',
+                      fileParamName: 'file',
+                      maxFileSize: 5 * 1024 * 1024,
+                      uploadHeaders: {
+                        'Authorization': 'Bearer token'
+                      },
+                      responseMapper: (response) => {
+                        return response.data?.url || response.url || '';
+                      },
+                      onUploadError: (error) => {
+                        console.error('Ошибка загрузки миниатюры:', error);
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
       }
     ]
   }

@@ -308,6 +308,7 @@
                   :min="slotField.repeaterConfig?.min"
                   :max="slotField.repeaterConfig?.max"
                   :default-item-value="slotField.repeaterConfig?.defaultItemValue"
+                  :max-nesting-depth="slotField.repeaterConfig?.maxNestingDepth ?? 2"
                   :api-select-use-case="props.apiSelectUseCase"
                   :is-api-select-available="isApiSelectAvailable"
                   :get-api-select-restriction-message="getApiSelectRestrictionMessage"
@@ -1252,7 +1253,11 @@ const handleValidationErrors = async () => {
     const errorInfo = parseErrorKey(firstErrorKey);
 
     if (errorInfo.isRepeaterField && errorInfo.repeaterFieldName) {
-      await openRepeaterAccordion(errorInfo.repeaterFieldName, errorInfo.repeaterIndex || 0);
+      await openRepeaterAccordion(
+        errorInfo.repeaterFieldName,
+        errorInfo.repeaterIndex || 0,
+        firstErrorKey
+      );
     } else {
       scrollToFirstError(modalContent, formErrors, {
         offset: 40,
@@ -1264,73 +1269,133 @@ const handleValidationErrors = async () => {
 };
 
 /**
+ * Рекурсивное открытие всех аккордеонов на пути к ошибке
+ */
+const openNestedRepeaterAccordions = async (errorKey: string): Promise<void> => {
+  const errorInfo = parseErrorKey(errorKey);
+  if (!errorInfo.isRepeaterField || !errorInfo.nestedPath) {
+    return;
+  }
+
+  const modalContent = document.querySelector(`.${CSS_CLASSES.MODAL_BODY}`) as HTMLElement;
+  if (!modalContent) {
+    return;
+  }
+
+  const pathParts = errorInfo.nestedPath.split('.');
+  let currentFieldName = errorInfo.repeaterFieldName || '';
+  let currentIndex = errorInfo.repeaterIndex || 0;
+  let currentContainer: HTMLElement | null = modalContent;
+
+  await openRepeaterAccordion(currentFieldName, currentIndex, undefined, true);
+  await nextTick();
+  await new Promise(resolve => setTimeout(resolve, REPEATER_ACCORDION_ANIMATION_DELAY_MS));
+
+  for (const part of pathParts) {
+    const repeaterMatch = part.match(/^([A-Z_a-z]+)\[(\d+)]$/);
+
+    if (repeaterMatch) {
+      const fieldName = repeaterMatch[1];
+      const index = Number.parseInt(repeaterMatch[2], 10);
+
+      if (!currentContainer) {
+        return;
+      }
+
+      const repeaterContainer = currentContainer.querySelector(
+        `.${CSS_CLASSES.REPEATER_CONTROL_CONTAINER}[data-field-name*="${fieldName}"]`
+      ) as HTMLElement;
+
+      if (!repeaterContainer) {
+        return;
+      }
+
+      const repeaterItems = repeaterContainer.querySelectorAll(
+        `.${CSS_CLASSES.REPEATER_CONTROL_ITEM}`
+      );
+
+      if (index >= repeaterItems.length) {
+        return;
+      }
+
+      const targetItem = repeaterItems[index] as HTMLElement;
+      const isCollapsed = targetItem.classList.contains(
+        CSS_CLASSES.REPEATER_CONTROL_ITEM_COLLAPSED
+      );
+
+      if (isCollapsed) {
+        const collapseButton = targetItem.querySelector(
+          `.${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_COLLAPSE}`
+        ) as HTMLElement;
+        if (collapseButton) {
+          collapseButton.click();
+          await nextTick();
+          await new Promise(resolve =>
+            setTimeout(resolve, REPEATER_ACCORDION_ANIMATION_DELAY_MS)
+          );
+        }
+      }
+
+      currentContainer = targetItem;
+      currentFieldName = fieldName;
+      currentIndex = index;
+    }
+  }
+
+  await nextTick();
+  await new Promise(resolve => setTimeout(resolve, 200));
+};
+
+/**
  * Открытие аккордеона в repeater для конкретного элемента
  */
 const openRepeaterAccordion = async (
   repeaterFieldName: string,
-  itemIndex: number
+  itemIndex: number,
+  errorKey?: string,
+  skipScroll: boolean = false
 ): Promise<void> => {
   await nextTick();
 
   const repeaterComponent = repeaterRefs.get(repeaterFieldName);
 
-  if (!repeaterComponent) {
+  if (
+    repeaterComponent &&
+    repeaterComponent.isItemCollapsed &&
+    repeaterComponent.isItemCollapsed(itemIndex) &&
+    repeaterComponent.expandItem
+  ) {
+    repeaterComponent.expandItem(itemIndex);
+    await nextTick();
+    await new Promise(resolve => setTimeout(resolve, REPEATER_ACCORDION_ANIMATION_DELAY_MS));
+  }
+
+  const hasNestedPath = errorKey && errorKey.includes('[') && errorKey.split('[').length > 2;
+
+  if (hasNestedPath) {
+    await openNestedRepeaterAccordions(errorKey);
+    await nextTick();
+    await new Promise(resolve => setTimeout(resolve, 200));
+  }
+
+  if (skipScroll) {
     return;
   }
 
-  if (repeaterComponent.isItemCollapsed && repeaterComponent.isItemCollapsed(itemIndex)) {
-    if (repeaterComponent.expandItem) {
-      repeaterComponent.expandItem(itemIndex);
+  await nextTick();
+  await new Promise(resolve => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        resolve(undefined);
+      });
+    });
+  });
 
-      await nextTick();
-
-      await new Promise(resolve => setTimeout(resolve, REPEATER_ACCORDION_ANIMATION_DELAY_MS));
-
-      await nextTick();
-      await new Promise(resolve => setTimeout(resolve, 50));
-
-      const modalContent = document.querySelector(`.${CSS_CLASSES.MODAL_BODY}`) as HTMLElement;
-      if (modalContent) {
-        const errorKey = Object.keys(formErrors).find(key => {
-          const errorInfo = parseErrorKey(key);
-          return (
-            errorInfo.isRepeaterField &&
-            errorInfo.repeaterFieldName === repeaterFieldName &&
-            errorInfo.repeaterIndex === itemIndex
-          );
-        });
-
-        if (errorKey) {
-          const errorInfo = parseErrorKey(errorKey);
-
-          const fieldElement = findFieldElement(modalContent, errorInfo);
-
-          if (fieldElement) {
-            scrollToElement(fieldElement, {
-              offset: 40,
-              behavior: 'smooth',
-            });
-            focusElement(fieldElement);
-          } else {
-            scrollToFirstError(modalContent, formErrors, {
-              offset: 40,
-              behavior: 'smooth',
-              autoFocus: true,
-            });
-          }
-        } else {
-          scrollToFirstError(modalContent, formErrors, {
-            offset: 40,
-            behavior: 'smooth',
-            autoFocus: true,
-          });
-        }
-      }
-    }
-  } else {
-    const modalContent = document.querySelector(`.${CSS_CLASSES.MODAL_BODY}`) as HTMLElement;
-    if (modalContent) {
-      const errorKey = Object.keys(formErrors).find(key => {
+  const modalContent = document.querySelector(`.${CSS_CLASSES.MODAL_BODY}`) as HTMLElement;
+  if (modalContent) {
+    const foundErrorKey =
+      errorKey ||
+      Object.keys(formErrors).find(key => {
         const errorInfo = parseErrorKey(key);
         return (
           errorInfo.isRepeaterField &&
@@ -1339,24 +1404,16 @@ const openRepeaterAccordion = async (
         );
       });
 
-      if (errorKey) {
-        const errorInfo = parseErrorKey(errorKey);
+    if (foundErrorKey) {
+      const errorInfo = parseErrorKey(foundErrorKey);
+      const fieldElement = findFieldElement(modalContent, errorInfo);
 
-        const fieldElement = findFieldElement(modalContent, errorInfo);
-
-        if (fieldElement) {
-          scrollToElement(fieldElement, {
-            offset: 40,
-            behavior: 'smooth',
-          });
-          focusElement(fieldElement);
-        } else {
-          scrollToFirstError(modalContent, formErrors, {
-            offset: 40,
-            behavior: 'smooth',
-            autoFocus: true,
-          });
-        }
+      if (fieldElement) {
+        scrollToElement(fieldElement, {
+          offset: 40,
+          behavior: 'smooth',
+        });
+        focusElement(fieldElement);
       } else {
         scrollToFirstError(modalContent, formErrors, {
           offset: 40,
@@ -1364,6 +1421,12 @@ const openRepeaterAccordion = async (
           autoFocus: true,
         });
       }
+    } else {
+      scrollToFirstError(modalContent, formErrors, {
+        offset: 40,
+        behavior: 'smooth',
+        autoFocus: true,
+      });
     }
   }
 };

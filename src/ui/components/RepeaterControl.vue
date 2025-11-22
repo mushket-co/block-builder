@@ -64,6 +64,7 @@
             :key="field.field"
             :field="field"
             :field-id="getFieldId(item._id, field.field)"
+            :field-path="getFullFieldPath(index, field.field)"
             :model-value="item[field.field]"
             :required="isFieldRequired(field)"
             :error="hasFieldError(index, field.field) ? getFieldErrors(index, field.field)[0] : ''"
@@ -117,6 +118,37 @@
                 :data-repeater-field="fieldName"
                 :data-repeater-index="index"
                 :data-repeater-item-field="slotField.field"
+                @update:model-value="updateItemField(index, slotField.field, $event)"
+              />
+
+              <RepeaterControl
+                v-else-if="slotField.type === 'repeater' && canNestRepeater(slotField)"
+                :model-value="slotModelValue || []"
+                :field-name="slotField.field"
+                :label="slotField.label"
+                :fields="slotField.repeaterConfig?.fields || []"
+                :rules="slotField.rules || []"
+                :errors="getNestedErrors(index, slotField.field)"
+                :add-button-text="slotField.repeaterConfig?.addButtonText"
+                :remove-button-text="slotField.repeaterConfig?.removeButtonText"
+                :item-title="slotField.repeaterConfig?.itemTitle"
+                :count-label-variants="slotField.repeaterConfig?.countLabelVariants"
+                :min="slotField.repeaterConfig?.min"
+                :max="slotField.repeaterConfig?.max"
+                :default-item-value="slotField.repeaterConfig?.defaultItemValue"
+                :api-select-use-case="apiSelectUseCaseValue"
+                :is-api-select-available="isApiSelectAvailable"
+                :get-api-select-restriction-message="getApiSelectRestrictionMessage"
+                :custom-field-renderer-registry="customFieldRendererRegistryValue"
+                :is-custom-field-available="isCustomFieldAvailable"
+                :get-custom-field-restriction-message="getCustomFieldRestrictionMessage"
+                :nesting-depth="nestingDepth + 1"
+                :max-nesting-depth="slotField.repeaterConfig?.maxNestingDepth ?? maxNestingDepth"
+                :parent-field-path="
+                  getRepeaterBasePath()
+                    ? `${getRepeaterBasePath()}[${index}].${slotField.field}`
+                    : `${props.fieldName}[${index}].${slotField.field}`
+                "
                 @update:model-value="updateItemField(index, slotField.field, $event)"
               />
             </template>
@@ -257,6 +289,21 @@ export default {
       type: Function,
       default: () => 'Кастомные поля недоступны.',
     },
+
+    nestingDepth: {
+      type: Number,
+      default: 0,
+    },
+
+    maxNestingDepth: {
+      type: Number,
+      default: 2,
+    },
+
+    parentFieldPath: {
+      type: String,
+      default: '',
+    },
   },
 
   emits: ['update:modelValue'],
@@ -325,6 +372,9 @@ export default {
               break;
             case 'api-select':
               newItem[field.field] = field.apiSelectConfig?.multiple ? [] : null;
+              break;
+            case 'repeater':
+              newItem[field.field] = [];
               break;
             case 'custom':
               newItem[field.field] = '';
@@ -435,9 +485,54 @@ export default {
       return field.rules?.some(rule => rule.type === 'required');
     };
 
+    const getFullFieldPath = (index, fieldName) => {
+      if (props.parentFieldPath) {
+        return `${props.parentFieldPath}[${index}].${fieldName}`;
+      }
+      return `${props.fieldName}[${index}].${fieldName}`;
+    };
+
+    const getRepeaterBasePath = () => {
+      if (props.parentFieldPath) {
+        return props.parentFieldPath;
+      }
+      return props.fieldName;
+    };
+
     const getFieldErrors = (index, fieldName) => {
-      const errorKey = `${props.fieldName}[${index}].${fieldName}`;
-      return props.errors[errorKey] || [];
+      if (!props.errors || Object.keys(props.errors).length === 0) {
+        return [];
+      }
+
+      const errorKey = getFullFieldPath(index, fieldName);
+      const directError = props.errors[errorKey];
+      if (directError && Array.isArray(directError) && directError.length > 0) {
+        return directError;
+      }
+
+      return [];
+    };
+
+    const getNestedFieldName = (index, fieldName) => {
+      return fieldName;
+    };
+
+    const getNestedErrors = (index, fieldName) => {
+      const basePath = getFullFieldPath(index, fieldName);
+      const nestedErrors = {};
+
+      Object.keys(props.errors).forEach(key => {
+        if (key.startsWith(`${basePath}[`) || key === basePath) {
+          nestedErrors[key] = props.errors[key];
+        }
+      });
+
+      return nestedErrors;
+    };
+
+    const canNestRepeater = field => {
+      const maxDepth = field.repeaterConfig?.maxNestingDepth ?? props.maxNestingDepth;
+      return props.nestingDepth < maxDepth;
     };
 
     const hasFieldError = (index, fieldName) => {
@@ -514,6 +609,11 @@ export default {
       apiSelectUseCaseValue,
       customFieldRendererRegistryValue,
       formErrors,
+      getFullFieldPath,
+      getNestedFieldName,
+      getNestedErrors,
+      canNestRepeater,
+      getRepeaterBasePath,
       CSS_CLASSES,
     };
   },

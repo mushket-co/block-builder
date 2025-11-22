@@ -35,6 +35,7 @@ export { FetchHttpClient } from './infrastructure/http/FetchHttpClient';
 export { MemoryComponentRegistry } from './infrastructure/registries/MemoryComponentRegistry';
 export { MemoryBlockRepositoryImpl } from './infrastructure/repositories/MemoryBlockRepositoryImpl';
 export { buildBlockHierarchy, cloneBlock, getAllChildren, isChildOf } from './utils/blockHelpers';
+export { lockBodyScroll, setScrollLockHandlers, unlockBodyScroll } from './utils/scrollLock';
 export {
   DEFAULT_BREAKPOINTS,
   generateSpacingCSS,
@@ -45,4 +46,3 @@ export {
   validateSpacing,
 } from './utils/spacingHelpers';
 export { UniversalValidator } from './utils/universalValidation';
-export { setScrollLockHandlers, lockBodyScroll, unlockBodyScroll } from './utils/scrollLock';

@@ -27,13 +27,7 @@ import {
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { afterRender } from '../../utils/domReady';
 import { parseJSONFromAttribute } from '../../utils/domSafe';
-import {
-  findFieldElement,
-  focusElement,
-  parseErrorKey,
-  scrollToElement,
-  scrollToFirstError,
-} from '../../utils/formErrorHelpers';
+import { parseErrorKey, scrollToFirstError } from '../../utils/formErrorHelpers';
 import { logger } from '../../utils/logger';
 import { UniversalValidator } from '../../utils/universalValidation';
 import { EventDelegation } from '../EventDelegation';
@@ -119,6 +113,10 @@ export class BlockUIController {
     this.modalManager = new ModalManager();
 
     this.registerEventHandlers();
+
+    document.addEventListener('repeater-rendered', () => {
+      this.initializeImageUploadControls();
+    });
   }
 
   async init(): Promise<void> {
@@ -794,6 +792,66 @@ export class BlockUIController {
     }
   }
 
+  private findNestedRepeaterRenderer(fieldPath: string): RepeaterControlRenderer | null {
+    for (const [key, renderer] of this.repeaterRenderers.entries()) {
+      if (fieldPath.startsWith(key + '[')) {
+        const pathParts = fieldPath.split('.');
+        if (pathParts.length > 1) {
+          let currentRenderer: any = renderer;
+          for (let i = 1; i < pathParts.length; i++) {
+            const part = pathParts[i];
+            const match = part.match(/^([A-Z_a-z]+)\[(\d+)]$/);
+
+            if (match && currentRenderer) {
+              const nestedFieldName = match[1];
+              const nestedIndex = Number.parseInt(match[2], 10);
+              const nestedValue = currentRenderer.value;
+              if (nestedValue && nestedValue[nestedIndex]) {
+                const nestedRenderers = currentRenderer.nestedRenderers;
+                if (nestedRenderers) {
+                  const nestedKey = `${nestedIndex}-${nestedFieldName}`;
+                  currentRenderer = nestedRenderers.get(nestedKey);
+                  if (!currentRenderer) {
+                    break;
+                  }
+                } else {
+                  break;
+                }
+              } else {
+                break;
+              }
+            } else if (!match && currentRenderer && i === pathParts.length - 1) {
+              const nestedFieldName = part;
+              const nestedRenderers = currentRenderer.nestedRenderers;
+              if (nestedRenderers) {
+                const previousPart = pathParts[i - 1];
+                const previousMatch = previousPart.match(/^([A-Z_a-z]+)\[(\d+)]$/);
+                if (previousMatch) {
+                  const previousIndex = Number.parseInt(previousMatch[2], 10);
+                  const nestedKey = `${previousIndex}-${nestedFieldName}`;
+                  currentRenderer = nestedRenderers.get(nestedKey);
+                  if (!currentRenderer) {
+                    break;
+                  }
+                } else {
+                  break;
+                }
+              } else {
+                break;
+              }
+            } else {
+              break;
+            }
+          }
+          if (currentRenderer && currentRenderer !== renderer) {
+            return currentRenderer;
+          }
+        }
+      }
+    }
+    return null;
+  }
+
   private initializeImageUploadControls(): void {
     const containers = document.querySelectorAll(`.${CSS_CLASSES.IMAGE_UPLOAD_FIELD}`);
 
@@ -844,22 +902,89 @@ export class BlockUIController {
       const repeaterIndex = htmlContainer.dataset.repeaterIndex;
       const repeaterItemField = htmlContainer.dataset.repeaterItemField;
 
-      let imageUploadConfig: any = undefined;
-      let responseMapper: any = undefined;
+      const getResponseMapper = (): any => {
+        let imageUploadConfig: any = undefined;
+        let responseMapper: any = undefined;
 
+        if (repeaterField && repeaterItemField) {
+          const repeaterFieldsMap = this.repeaterFieldConfigs.get(repeaterField);
+          if (repeaterFieldsMap) {
+            const itemFieldConfig = repeaterFieldsMap.get(repeaterItemField);
+            if (itemFieldConfig) {
+              imageUploadConfig = itemFieldConfig.imageUploadConfig;
+              responseMapper = imageUploadConfig?.responseMapper;
+            }
+          } else {
+            const pathParts = repeaterField.split('.');
+            if (pathParts.length >= 2) {
+              const parentRepeaterField = pathParts[0].split('[')[0];
+              const nestedRepeaterField = pathParts.at(-1);
+
+              const parentRepeaterFieldsMap = this.repeaterFieldConfigs.get(parentRepeaterField);
+              if (parentRepeaterFieldsMap && nestedRepeaterField) {
+                const nestedRepeaterFieldConfig = parentRepeaterFieldsMap.get(nestedRepeaterField);
+                if (nestedRepeaterFieldConfig && nestedRepeaterFieldConfig.repeaterConfig?.fields) {
+                  const itemFieldConfig = nestedRepeaterFieldConfig.repeaterConfig.fields.find(
+                    (f: any) => f.field === repeaterItemField
+                  );
+                  if (itemFieldConfig) {
+                    imageUploadConfig = itemFieldConfig.imageUploadConfig;
+                    responseMapper = imageUploadConfig?.responseMapper;
+                  }
+                }
+              }
+            }
+
+            if (!responseMapper) {
+              const nestedRenderer = this.findNestedRepeaterRenderer(repeaterField);
+              if (nestedRenderer) {
+                const nestedConfig = (nestedRenderer as any).config;
+                if (nestedConfig && nestedConfig.fields) {
+                  const fieldConfig = nestedConfig.fields.find(
+                    (f: any) => f.field === repeaterItemField
+                  );
+                  if (fieldConfig) {
+                    imageUploadConfig = fieldConfig.imageUploadConfig;
+                    responseMapper = imageUploadConfig?.responseMapper;
+                  }
+                }
+              }
+            }
+          }
+        } else {
+          const fieldConfig = this.currentFormFields.get(fieldName);
+          imageUploadConfig = fieldConfig?.imageUploadConfig;
+          responseMapper = imageUploadConfig?.responseMapper;
+        }
+
+        return responseMapper;
+      };
+
+      let imageUploadConfig: any = undefined;
       if (repeaterField && repeaterItemField) {
         const repeaterFieldsMap = this.repeaterFieldConfigs.get(repeaterField);
         if (repeaterFieldsMap) {
           const itemFieldConfig = repeaterFieldsMap.get(repeaterItemField);
           if (itemFieldConfig) {
             imageUploadConfig = itemFieldConfig.imageUploadConfig;
-            responseMapper = imageUploadConfig?.responseMapper;
+          }
+        } else {
+          const nestedRenderer = this.findNestedRepeaterRenderer(repeaterField);
+          if (nestedRenderer) {
+            const nestedConfig = (nestedRenderer as any).config;
+            if (nestedConfig && nestedConfig.fields) {
+              const fieldConfig = nestedConfig.fields.find(
+                (f: any) => f.field === repeaterItemField
+              );
+              if (fieldConfig) {
+                imageUploadConfig = fieldConfig.imageUploadConfig;
+              }
+            }
           }
         }
       } else {
         const fieldConfig = this.currentFormFields.get(fieldName);
         imageUploadConfig = fieldConfig?.imageUploadConfig;
-        responseMapper = imageUploadConfig?.responseMapper;
       }
 
       const finalConfig = {
@@ -878,6 +1003,15 @@ export class BlockUIController {
           const rendererValue = (repeaterRenderer as any).value;
           if (rendererValue && rendererValue[index] !== undefined) {
             currentValue = rendererValue[index][repeaterItemField];
+          }
+        } else {
+          const nestedRenderer = this.findNestedRepeaterRenderer(repeaterField);
+          if (nestedRenderer) {
+            const index = Number.parseInt(repeaterIndex, 10);
+            const nestedValue = (nestedRenderer as any).value;
+            if (nestedValue && nestedValue[index] !== undefined) {
+              currentValue = nestedValue[index][repeaterItemField];
+            }
           }
         }
       } else {
@@ -941,6 +1075,16 @@ export class BlockUIController {
               if (rendererValue && rendererValue[index] !== undefined) {
                 rendererValue[index][repeaterItemField] = '';
                 (repeaterRenderer as any).emitChange();
+              }
+            } else {
+              const nestedRenderer = self.findNestedRepeaterRenderer(repeaterField);
+              if (nestedRenderer) {
+                const index = Number.parseInt(repeaterIndex, 10);
+                const nestedValue = (nestedRenderer as any).value;
+                if (nestedValue && nestedValue[index] !== undefined) {
+                  nestedValue[index][repeaterItemField] = '';
+                  (nestedRenderer as any).emitChange();
+                }
               }
             }
           }
@@ -1008,6 +1152,8 @@ export class BlockUIController {
 
             const responseData = await response.json();
 
+            const responseMapper = getResponseMapper();
+
             result =
               responseMapper && typeof responseMapper === 'function'
                 ? responseMapper(responseData)
@@ -1030,11 +1176,51 @@ export class BlockUIController {
                 rendererValue[index][repeaterItemField] = result;
                 (repeaterRenderer as any).emitChange();
               }
+            } else {
+              const nestedRenderer = self.findNestedRepeaterRenderer(repeaterField);
+              if (nestedRenderer) {
+                const index = Number.parseInt(repeaterIndex, 10);
+                const nestedValue = (nestedRenderer as any).value;
+                if (nestedValue && nestedValue[index] !== undefined) {
+                  nestedValue[index][repeaterItemField] = result;
+                  (nestedRenderer as any).emitChange();
+                }
+              }
             }
           }
 
-          hiddenInput.value =
-            typeof result === 'object' && result !== null ? JSON.stringify(result) : result || '';
+          if (repeaterField && repeaterIndex && repeaterItemField) {
+            const repeaterRenderer = self.repeaterRenderers.get(repeaterField);
+            const nestedRenderer = repeaterRenderer
+              ? null
+              : self.findNestedRepeaterRenderer(repeaterField);
+            const targetRenderer = repeaterRenderer || nestedRenderer;
+
+            if (targetRenderer) {
+              const index = Number.parseInt(repeaterIndex, 10);
+              const rendererValue = (targetRenderer as any).value;
+              if (rendererValue && rendererValue[index] !== undefined) {
+                const currentValue = rendererValue[index][repeaterItemField];
+                hiddenInput.value =
+                  typeof currentValue === 'object' && currentValue !== null
+                    ? JSON.stringify(currentValue)
+                    : currentValue || '';
+              } else {
+                hiddenInput.value =
+                  typeof result === 'object' && result !== null
+                    ? JSON.stringify(result)
+                    : result || '';
+              }
+            } else {
+              hiddenInput.value =
+                typeof result === 'object' && result !== null
+                  ? JSON.stringify(result)
+                  : result || '';
+            }
+          } else {
+            hiddenInput.value =
+              typeof result === 'object' && result !== null ? JSON.stringify(result) : result || '';
+          }
 
           let imageUrl = '';
           if (typeof result === 'string') {
@@ -1567,65 +1753,119 @@ export class BlockUIController {
       );
     });
 
+    const hasNestedPath =
+      firstErrorKey && firstErrorKey.includes('[') && firstErrorKey.split('[').length > 2;
+
     if (renderer.isItemCollapsed(itemIndex)) {
       renderer.expandItem(itemIndex);
 
       setTimeout(() => {
         this.showValidationErrors(allErrors, true);
 
-        setTimeout(() => {
-          if (firstErrorKey) {
-            const errorInfo = parseErrorKey(firstErrorKey);
-            const fieldElement = findFieldElement(modalBody, errorInfo);
-            if (fieldElement) {
-              scrollToElement(fieldElement, {
-                offset: 40,
-                behavior: 'smooth',
-              });
-              focusElement(fieldElement);
-            } else {
-              scrollToFirstError(modalBody, allErrors, {
-                offset: 40,
-                behavior: 'smooth',
-                autoFocus: true,
-              });
-            }
-          } else {
+        if (hasNestedPath && firstErrorKey) {
+          this.openNestedRepeaterAccordions(firstErrorKey, allErrors);
+        } else {
+          setTimeout(() => {
             scrollToFirstError(modalBody, allErrors, {
               offset: 40,
               behavior: 'smooth',
               autoFocus: true,
             });
-          }
-        }, ERROR_RENDER_DELAY_MS);
+          }, ERROR_RENDER_DELAY_MS);
+        }
       }, REPEATER_ACCORDION_ANIMATION_DELAY_MS);
     } else {
-      setTimeout(() => {
-        if (firstErrorKey) {
-          const errorInfo = parseErrorKey(firstErrorKey);
-          const fieldElement = findFieldElement(modalBody, errorInfo);
-          if (fieldElement) {
-            scrollToElement(fieldElement, {
-              offset: 40,
-              behavior: 'smooth',
-            });
-            focusElement(fieldElement);
-          } else {
-            scrollToFirstError(modalBody, allErrors, {
-              offset: 40,
-              behavior: 'smooth',
-              autoFocus: true,
-            });
-          }
-        } else {
+      if (hasNestedPath && firstErrorKey) {
+        this.openNestedRepeaterAccordions(firstErrorKey, allErrors);
+      } else {
+        setTimeout(() => {
           scrollToFirstError(modalBody, allErrors, {
             offset: 40,
             behavior: 'smooth',
             autoFocus: true,
           });
-        }
-      }, ERROR_RENDER_DELAY_MS);
+        }, ERROR_RENDER_DELAY_MS);
+      }
     }
+  }
+
+  private openNestedRepeaterAccordions(errorKey: string, errors: Record<string, string[]>): void {
+    const errorInfo = parseErrorKey(errorKey);
+    if (!errorInfo.isRepeaterField || !errorInfo.nestedPath) {
+      return;
+    }
+
+    const modalBody = document.querySelector(`.${CSS_CLASSES.MODAL_BODY}`) as HTMLElement;
+    if (!modalBody) {
+      return;
+    }
+
+    const pathParts = errorInfo.nestedPath.split('.');
+    let currentContainer: HTMLElement | null = modalBody;
+
+    const openAccordions = async (): Promise<void> => {
+      for (const part of pathParts) {
+        const repeaterMatch = part.match(/^([A-Z_a-z]+)\[(\d+)]$/);
+
+        if (repeaterMatch) {
+          const fieldName = repeaterMatch[1];
+          const index = Number.parseInt(repeaterMatch[2], 10);
+
+          if (!currentContainer) {
+            return;
+          }
+
+          const repeaterContainer = currentContainer.querySelector(
+            `.${CSS_CLASSES.REPEATER_CONTROL_CONTAINER}[data-field-name*="${fieldName}"]`
+          ) as HTMLElement;
+
+          if (!repeaterContainer) {
+            return;
+          }
+
+          const repeaterItems = repeaterContainer.querySelectorAll(
+            `.${CSS_CLASSES.REPEATER_CONTROL_ITEM}`
+          );
+
+          if (index >= repeaterItems.length) {
+            return;
+          }
+
+          const targetItem = repeaterItems[index] as HTMLElement;
+          const isCollapsed = targetItem.classList.contains(
+            CSS_CLASSES.REPEATER_CONTROL_ITEM_COLLAPSED
+          );
+
+          if (isCollapsed) {
+            const collapseButton = targetItem.querySelector(
+              `.${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_COLLAPSE}`
+            ) as HTMLElement;
+            if (collapseButton) {
+              collapseButton.click();
+              await new Promise(resolve =>
+                setTimeout(resolve, REPEATER_ACCORDION_ANIMATION_DELAY_MS)
+              );
+            }
+          }
+
+          currentContainer = targetItem;
+        }
+      }
+
+      await new Promise(resolve => setTimeout(resolve, 400));
+
+      this.showValidationErrors(errors, true);
+
+      await new Promise(resolve => setTimeout(resolve, ERROR_RENDER_DELAY_MS));
+
+      scrollToFirstError(modalBody, errors, {
+        offset: 40,
+        behavior: 'smooth',
+        autoFocus: true,
+      });
+    };
+
+    void openAccordions();
   }
 
   private getRepeaterErrors(): Record<string, string[]> {
