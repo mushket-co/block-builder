@@ -39,6 +39,8 @@ export class CustomFieldRenderer extends BaseFieldRenderer {
       extraDataAttributes ? ` ${extraDataAttributes}` : ''
     }`;
 
+    const errorsHtml = this.renderErrors(context);
+
     const content = `
       <label class="${CSS_CLASSES.FORM_LABEL}">
         ${escapedLabel} ${requiredMark}
@@ -46,6 +48,7 @@ export class CustomFieldRenderer extends BaseFieldRenderer {
       <div class="${CSS_CLASSES.CUSTOM_FIELD_PLACEHOLDER} ${CSS_CLASSES.BB_PLACEHOLDER_BOX}">
         ⏳ Инициализация кастомного поля...
       </div>
+      ${errorsHtml}
     `;
 
     return `

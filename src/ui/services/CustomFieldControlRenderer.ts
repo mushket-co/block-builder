@@ -22,6 +22,7 @@ export class CustomFieldControlRenderer {
   private renderResult: ICustomFieldRenderResult | null = null;
   private currentValue: any;
   private onChange: (value: any) => void;
+  private fieldName: string;
 
   constructor(
     container: HTMLElement,
@@ -32,6 +33,7 @@ export class CustomFieldControlRenderer {
     this.renderer = renderer;
     this.currentValue = options.value;
     this.onChange = options.onChange;
+    this.fieldName = options.fieldName;
 
     const context: ICustomFieldContext = {
       fieldName: options.fieldName,
@@ -89,6 +91,41 @@ export class CustomFieldControlRenderer {
       return this.renderResult.validate();
     }
     return null;
+  }
+
+  updateErrors(errors: Record<string, string[]>): void {
+    const fieldErrors = errors[this.fieldName];
+    const hasError = fieldErrors && fieldErrors.length > 0;
+    const errorMessage = hasError ? fieldErrors[0] : null;
+
+    const formGroup = this.container.closest(`.${CSS_CLASSES.FORM_GROUP}`) as HTMLElement;
+    if (formGroup) {
+      if (hasError) {
+        formGroup.classList.add(CSS_CLASSES.ERROR);
+      } else {
+        formGroup.classList.remove(CSS_CLASSES.ERROR);
+      }
+    }
+
+    let errorContainer = formGroup?.querySelector(`.${CSS_CLASSES.FORM_ERRORS}`) as HTMLElement;
+
+    if (hasError && errorMessage) {
+      if (!errorContainer) {
+        errorContainer = document.createElement('div');
+        errorContainer.className = CSS_CLASSES.FORM_ERRORS;
+        formGroup?.append(errorContainer);
+      }
+      errorContainer.innerHTML = `<span class="${CSS_CLASSES.ERROR}">${this.escapeHtml(errorMessage)}</span>`;
+      errorContainer.style.display = '';
+    } else if (errorContainer) {
+      errorContainer.style.display = 'none';
+    }
+  }
+
+  private escapeHtml(text: string): string {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
   }
 
   destroy(): void {

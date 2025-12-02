@@ -11,15 +11,11 @@
     :invalid="showError"
     @update:model-value="handleUpdate"
   />
-  <div v-if="showError && error" class="bb-form-errors">
-    <span :class="CSS_CLASSES.ERROR">{{ error }}</span>
-  </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
 
-import { CSS_CLASSES } from '../../../utils/constants';
 import CustomDropdown from '../CustomDropdown.vue';
 
 interface IOption {

@@ -1,5 +1,3 @@
-import { logger } from '../utils/logger';
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type TEventHandler = (...args: any[]) => void | Promise<void>;
 
@@ -52,23 +50,20 @@ export class EventDelegation {
         let args: any[] = [];
         if (argsAttr) {
           if (argsAttr.length > 10_000) {
-            logger.warn('EventDelegation: args слишком большие, игнорируем');
             return;
           }
           try {
             args = JSON.parse(argsAttr);
             if (!Array.isArray(args)) {
-              logger.warn('EventDelegation: args должен быть массивом');
               args = [];
             }
-          } catch (error) {
-            logger.warn('EventDelegation: ошибка парсинга args:', error);
+          } catch {
             return;
           }
         }
         handler(...args);
-      } catch (error) {
-        logger.error('EventDelegation: ошибка выполнения обработчика:', error);
+      } catch {
+        // Игнорируем ошибки выполнения обработчика
       }
     }
   }

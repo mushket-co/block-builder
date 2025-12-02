@@ -113,6 +113,9 @@
       @update:model-value="handleUpdate"
     />
     <slot v-else :field="field" :field-id="fieldId" :model-value="modelValue" :error="error" />
+    <div v-if="error" :class="CSS_CLASSES.FORM_ERRORS">
+      <span :class="CSS_CLASSES.ERROR">{{ error }}</span>
+    </div>
   </div>
 </template>
 

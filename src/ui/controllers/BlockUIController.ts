@@ -1,44 +1,30 @@
 import { ICustomFieldRendererRegistry } from '../../core/ports/CustomFieldRenderer';
-import { LicenseFeature } from '../../core/services/LicenseFeatureChecker';
 import { LicenseService } from '../../core/services/LicenseService';
 import { IBlockDto, ICreateBlockDto } from '../../core/types';
 import { TRenderRef } from '../../core/types/common';
-import {
-  IApiSelectConfig,
-  IApiSelectResponse,
-  IBlockSpacingOptions,
-  IFormFieldConfig,
-  IRepeaterFieldConfig,
-  IRepeaterItemFieldConfig,
-  ISpacingFieldConfig,
-  THttpMethod,
-} from '../../core/types/form';
+import { IBlockSpacingOptions, IFormFieldConfig } from '../../core/types/form';
 import { ApiSelectUseCase } from '../../core/use-cases/ApiSelectUseCase';
 import { BlockManagementUseCase } from '../../core/use-cases/BlockManagementUseCase';
 import { addSpacingFieldToFields } from '../../utils/blockSpacingHelpers';
 import {
   CSS_CLASSES,
   ERROR_RENDER_DELAY_MS,
-  FORM_ID_PREFIX,
-  NOTIFICATION_DISPLAY_DURATION_MS,
   REPEATER_ACCORDION_ANIMATION_DELAY_MS,
   UI_STRINGS,
 } from '../../utils/constants';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { afterRender } from '../../utils/domReady';
-import { parseJSONFromAttribute } from '../../utils/domSafe';
 import { getFirstErrorKey, parseErrorKey, scrollToFirstError } from '../../utils/formErrorHelpers';
-import { logger } from '../../utils/logger';
-import { UniversalValidator } from '../../utils/universalValidation';
 import { EventDelegation } from '../EventDelegation';
-import { ApiSelectControlRenderer } from '../services/ApiSelectControlRenderer';
-import { CustomFieldControlRenderer } from '../services/CustomFieldControlRenderer';
+import { ControlInitializerFactory } from '../services/ControlInitializerFactory';
+import { ControlManager } from '../services/ControlManager';
 import { FormBuilder, TFieldConfig } from '../services/FormBuilder';
+import { ImageUploadControlInitializer } from '../services/ImageUploadControlInitializer';
 import { ModalManager } from '../services/ModalManager';
+import { notificationService } from '../services/NotificationService';
 import { RepeaterControlRenderer } from '../services/RepeaterControlRenderer';
-import { ISelectControlOptions, SelectControlRenderer } from '../services/SelectControlRenderer';
-import { SpacingControlRenderer } from '../services/SpacingControlRenderer';
 import { UIRenderer } from '../services/UIRenderer';
+import { FormController } from './FormController';
 
 export interface IBlockUIControllerConfig {
   containerId: string;
@@ -71,11 +57,7 @@ export class BlockUIController {
   private customFieldRendererRegistry?: ICustomFieldRendererRegistry;
   private blocks: IBlockDto[] = [];
   private onSave?: (blocks: IBlockDto[]) => Promise<boolean> | boolean;
-  private spacingRenderers: Map<string, SpacingControlRenderer> = new Map();
   private repeaterRenderers: Map<string, RepeaterControlRenderer> = new Map();
-  private apiSelectRenderers: Map<string, ApiSelectControlRenderer> = new Map();
-  private selectRenderers: Map<string, SelectControlRenderer> = new Map();
-  private customFieldRenderers: Map<string, CustomFieldControlRenderer> = new Map();
   private eventDelegation: EventDelegation;
   private licenseService: LicenseService;
   private originalBlockConfigs?: Record<
@@ -85,6 +67,8 @@ export class BlockUIController {
   private currentFormFields: Map<string, TFieldConfig> = new Map();
   private repeaterFieldConfigs: Map<string, Map<string, TFieldConfig>> = new Map();
   private isEdit: boolean;
+  private controlManager: ControlManager;
+  private formController: FormController;
 
   constructor(config: IBlockUIControllerConfig) {
     this.config = config;
@@ -111,11 +95,58 @@ export class BlockUIController {
     });
     this.formBuilder = new FormBuilder();
     this.modalManager = new ModalManager();
+    this.controlManager = new ControlManager();
+    this.formController = new FormController({
+      formBuilder: this.formBuilder,
+      modalManager: this.modalManager,
+      controlManager: this.controlManager,
+      onValidationError: (errors: Record<string, string[]>) => {
+        this.handleScrollToFirstError(errors);
+      },
+    });
+
+    ControlInitializerFactory.setupControlManager(this.controlManager, {
+      licenseService: this.licenseService,
+      apiSelectUseCase: this.apiSelectUseCase,
+      customFieldRendererRegistry: this.customFieldRendererRegistry,
+      getCurrentFormFields: () => this.currentFormFields,
+      getRepeaterFieldConfigs: () => this.repeaterFieldConfigs,
+      getRepeaterRenderers: () => this.repeaterRenderers,
+      findNestedRepeaterRenderer: (fieldPath: string) => this.findNestedRepeaterRenderer(fieldPath),
+      onAfterRepeaterRender: () => {
+        // Убрано - используем только событие repeater-rendered
+      },
+    });
 
     this.registerEventHandlers();
 
-    document.addEventListener('repeater-rendered', () => {
-      this.initializeImageUploadControls();
+    let repeaterRenderTimeout: ReturnType<typeof setTimeout> | null = null;
+    document.addEventListener('repeater-rendered', (event: Event) => {
+      const customEvent = event as CustomEvent<{ container: HTMLElement }>;
+      const container = customEvent.detail?.container;
+
+      if (repeaterRenderTimeout) {
+        clearTimeout(repeaterRenderTimeout);
+      }
+
+      repeaterRenderTimeout = setTimeout(() => {
+        if (container) {
+          const isRepeaterContainer = container.classList.contains(
+            CSS_CLASSES.REPEATER_CONTROL_CONTAINER
+          );
+          if (isRepeaterContainer) {
+            const itemsContainer = container.querySelector(
+              `.${CSS_CLASSES.REPEATER_CONTROL_ITEMS}`
+            ) as HTMLElement;
+            if (itemsContainer) {
+              void this.controlManager.initializeControlsInContainer(itemsContainer);
+            }
+          } else {
+            void this.controlManager.initializeControlsInContainer(container);
+          }
+        }
+        repeaterRenderTimeout = null;
+      }, 50);
     });
   }
 
@@ -215,25 +246,26 @@ export class BlockUIController {
       this.licenseService.getFeatureChecker()
     );
 
-    const formHTML = `
-    <form id="${FORM_ID_PREFIX}" class="${CSS_CLASSES.FORM}">
-      ${this.formBuilder.generateCreateFormHTML(fields)}
-    </form>
-    `;
+    this.prepareFormFields(fields);
 
-    this.modalManager.showModal({
-      title: `${config.title} ${UI_STRINGS.addBlockTitle}`,
-      bodyHTML: formHTML,
-      onSubmit: () => this.handleCreateBlock(type, fields, position),
-      onCancel: () => {
-        this.currentFormFields.clear();
-        this.repeaterFieldConfigs.clear();
-        this.modalManager.closeModal();
-      },
-      submitButtonText: UI_STRINGS.addButtonText,
-      preventBodyScroll: true,
+    this.formController.showCreateForm(
+      `${config.title} ${UI_STRINGS.addBlockTitle}`,
+      fields,
+      async (formData: Record<string, any>) => {
+        return await this.handleCreateBlock(type, fields, position, formData);
+      }
+    );
+
+    afterRender(() => {
+      const modalBody = document.querySelector(`.${CSS_CLASSES.MODAL_BODY}`) as HTMLElement;
+      if (modalBody) {
+        this.controlManager.clearFlagsInContainer(modalBody);
+      }
+      this.initializeImageUploadControls();
     });
+  }
 
+  private prepareFormFields(fields: TFieldConfig[]): void {
     this.currentFormFields.clear();
     this.repeaterFieldConfigs.clear();
     fields.forEach(field => {
@@ -246,551 +278,15 @@ export class BlockUIController {
         this.repeaterFieldConfigs.set(field.field, repeaterFieldsMap);
       }
     });
-
-    afterRender(async () => {
-      this.initializeSpacingControls();
-      this.initializeRepeaterControls();
-      await this.initializeApiSelectControls();
-      await this.initializeSelectControls();
-      this.initializeImageUploadControls();
-      await this.initializeCustomFieldControls();
-    });
   }
 
   showAddBlockForm(type: string): void {
     this.showAddBlockFormAtPosition(type);
   }
 
-  private initializeSpacingControls(): void {
-    this.cleanupSpacingControls();
-
-    const containers = document.querySelectorAll(`.${CSS_CLASSES.SPACING_CONTROL_CONTAINER}`);
-
-    containers.forEach(container => {
-      const htmlContainer = container as HTMLElement;
-      const config = htmlContainer.dataset.spacingConfig;
-      if (!config) {
-        return;
-      }
-
-      try {
-        const spacingConfig = parseJSONFromAttribute(config) as {
-          field: string;
-          label: string;
-          required?: boolean;
-          config?: ISpacingFieldConfig;
-          value?: unknown;
-        };
-
-        const renderer = new SpacingControlRenderer({
-          fieldName: spacingConfig.field,
-          label: spacingConfig.label,
-          required: spacingConfig.required,
-          config: spacingConfig.config,
-          value: (spacingConfig.value as Record<string, Record<string, number>>) || {},
-          licenseFeatureChecker: this.licenseService.getFeatureChecker(),
-          onChange: value => {
-            htmlContainer.dataset.spacingValue = JSON.stringify(value);
-          },
-        });
-
-        renderer.render(htmlContainer);
-
-        this.spacingRenderers.set(spacingConfig.field, renderer);
-      } catch {}
-    });
-  }
-
-  private cleanupSpacingControls(): void {
-    this.spacingRenderers.forEach(renderer => {
-      renderer.destroy();
-    });
-    this.spacingRenderers.clear();
-  }
-
-  private initializeRepeaterControls(): void {
-    this.cleanupRepeaterControls();
-
-    const containers = document.querySelectorAll(`.${CSS_CLASSES.REPEATER_CONTROL_CONTAINER}`);
-
-    containers.forEach(container => {
-      const htmlContainer = container as HTMLElement;
-      const config = htmlContainer.dataset.repeaterConfig;
-      if (!config) {
-        return;
-      }
-
-      try {
-        const parsed = parseJSONFromAttribute(config) as {
-          field: string;
-          label: string;
-          rules?: unknown[];
-          value?: unknown[];
-          fields?: IRepeaterItemFieldConfig[];
-          addButtonText?: string;
-          removeButtonText?: string;
-          itemTitle?: string;
-          countLabelVariants?: {
-            one: string;
-            few: string;
-            many: string;
-            zero?: string;
-          };
-          min?: number;
-          max?: number;
-          defaultItemValue?: Record<string, unknown>;
-        };
-
-        if (!parsed.field || !parsed.label) {
-          logger.warn('Repeater config missing required fields (field, label)');
-          return;
-        }
-
-        const self = this;
-
-        const repeaterFieldConfig: IRepeaterFieldConfig = {
-          fields: (parsed.fields || []) as IRepeaterItemFieldConfig[],
-          addButtonText: parsed.addButtonText,
-          removeButtonText: parsed.removeButtonText,
-          itemTitle: parsed.itemTitle,
-          countLabelVariants: parsed.countLabelVariants,
-          min: parsed.min,
-          max: parsed.max,
-          defaultItemValue: parsed.defaultItemValue,
-        };
-
-        const renderer = new RepeaterControlRenderer({
-          fieldName: parsed.field,
-          label: parsed.label,
-          rules: (parsed.rules as Array<{ type: string; message?: string; value?: unknown }>) || [],
-          config: repeaterFieldConfig,
-          value: (parsed.value as unknown[]) || [],
-          onChange: value => {
-            htmlContainer.dataset.repeaterValue = JSON.stringify(value);
-          },
-          onAfterRender: () => {
-            self.initializeImageUploadControls();
-            void self.initializeApiSelectControls();
-            void self.initializeCustomFieldControls();
-          },
-        });
-
-        renderer.render(container as HTMLElement);
-
-        this.repeaterRenderers.set(parsed.field, renderer);
-      } catch (error) {
-        logger.error('Ошибка инициализации repeater контрола:', error);
-        if (error instanceof Error) {
-          logger.error('Детали ошибки:', error.message, error.stack);
-        }
-      }
-    });
-  }
-
-  private cleanupRepeaterControls(): void {
-    this.repeaterRenderers.forEach(renderer => {
-      renderer.destroy();
-    });
-    this.repeaterRenderers.clear();
-  }
-
-  private async initializeApiSelectControls(): Promise<void> {
-    if (!this.licenseService.canUseApiSelect()) {
-      const containers = document.querySelectorAll(`.${CSS_CLASSES.API_SELECT_CONTROL_CONTAINER}`);
-      containers.forEach(container => {
-        const placeholder = container.querySelector(
-          `.${CSS_CLASSES.API_SELECT_PLACEHOLDER}`
-        ) as HTMLElement;
-        if (placeholder) {
-          placeholder.classList.remove(CSS_CLASSES.BB_PLACEHOLDER_BOX);
-          placeholder.innerHTML = `
-            <div class="${CSS_CLASSES.BB_WARNING_BOX}">
-              ⚠️ ${this.licenseService.getFeatureChecker().getFeatureRestrictionMessage(LicenseFeature.API_SELECT)}
-            </div>
-          `;
-        }
-      });
-      return;
-    }
-
-    this.cleanupApiSelectControls();
-
-    const containers = document.querySelectorAll(`.${CSS_CLASSES.API_SELECT_CONTROL_CONTAINER}`);
-
-    for (const container of Array.from(containers)) {
-      const htmlContainer = container as HTMLElement;
-      const config = htmlContainer.dataset.apiSelectConfig;
-      if (!config) {
-        continue;
-      }
-
-      try {
-        const parsedData = parseJSONFromAttribute(config) as {
-          field: string;
-          fieldPath?: string;
-          label: string;
-          rules?: unknown[];
-          config?: IApiSelectConfig;
-          value?: unknown;
-          multiple?: boolean;
-          url?: string;
-          method?: string;
-          headers?: Record<string, string>;
-          searchParam?: string;
-          pageParam?: string;
-          limitParam?: string;
-          limit?: number;
-          debounceMs?: number;
-          responseMapper?: unknown;
-          dataPath?: string;
-          idField?: string;
-          nameField?: string;
-          minSearchLength?: number;
-          placeholder?: string;
-          noResultsText?: string;
-          loadingText?: string;
-          errorText?: string;
-        };
-
-        const repeaterFieldName = htmlContainer.dataset.repeaterField;
-        const repeaterIndexStr = htmlContainer.dataset.repeaterIndex;
-        const repeaterItemField = htmlContainer.dataset.repeaterItemField || parsedData.field;
-        const fieldPath = parsedData.fieldPath || parsedData.field;
-        const isRepeaterContext = Boolean(repeaterFieldName);
-
-        let apiSelectConfigFromRepeater: IApiSelectConfig | undefined;
-        if (isRepeaterContext && repeaterFieldName && repeaterItemField) {
-          const repeaterFieldsMap = this.repeaterFieldConfigs.get(repeaterFieldName);
-          if (repeaterFieldsMap) {
-            const itemFieldConfig = repeaterFieldsMap.get(repeaterItemField);
-            if (itemFieldConfig && itemFieldConfig.type === 'api-select') {
-              apiSelectConfigFromRepeater = itemFieldConfig.apiSelectConfig;
-            }
-          }
-        }
-
-        const apiConfig: IApiSelectConfig = parsedData.config ||
-          apiSelectConfigFromRepeater || {
-            url: parsedData.url || '',
-            method: parsedData.method as THttpMethod | undefined,
-            headers: parsedData.headers,
-            searchParam: parsedData.searchParam,
-            pageParam: parsedData.pageParam,
-            limitParam: parsedData.limitParam,
-            limit: parsedData.limit,
-            debounceMs: parsedData.debounceMs,
-            responseMapper: parsedData.responseMapper as
-              | ((response: unknown) => IApiSelectResponse)
-              | undefined,
-            dataPath: parsedData.dataPath,
-            idField: parsedData.idField,
-            nameField: parsedData.nameField,
-            minSearchLength: parsedData.minSearchLength,
-            placeholder: parsedData.placeholder,
-            noResultsText: parsedData.noResultsText,
-            loadingText: parsedData.loadingText,
-            errorText: parsedData.errorText,
-            multiple: parsedData.multiple,
-          };
-
-        let initialValue: string | number | (string | number)[] | null =
-          (parsedData.value as string | number | (string | number)[] | null | undefined) ||
-          (apiConfig.multiple ? [] : null);
-
-        if (isRepeaterContext && repeaterFieldName && typeof repeaterIndexStr === 'string') {
-          const repeaterRenderer = this.repeaterRenderers.get(repeaterFieldName);
-          if (repeaterRenderer) {
-            const index = Number.parseInt(repeaterIndexStr, 10);
-            const rendererValue = (repeaterRenderer as any).value;
-            if (
-              Array.isArray(rendererValue) &&
-              rendererValue[index] &&
-              Object.hasOwn(rendererValue[index], repeaterItemField)
-            ) {
-              initialValue = rendererValue[index][repeaterItemField];
-            }
-          }
-        }
-
-        const renderer = new ApiSelectControlRenderer({
-          fieldName: parsedData.field,
-          label: parsedData.label,
-          rules:
-            (parsedData.rules as Array<{ type: string; message?: string; value?: unknown }>) || [],
-          config: apiConfig,
-          value: initialValue,
-          apiSelectUseCase: this.apiSelectUseCase,
-          onChange: value => {
-            htmlContainer.dataset.apiSelectValue = JSON.stringify(value);
-
-            if (isRepeaterContext && repeaterFieldName && typeof repeaterIndexStr === 'string') {
-              const repeaterRenderer = this.repeaterRenderers.get(repeaterFieldName);
-              if (repeaterRenderer) {
-                const index = Number.parseInt(repeaterIndexStr, 10);
-                const rendererValue = (repeaterRenderer as any).value;
-                if (Array.isArray(rendererValue) && rendererValue[index]) {
-                  rendererValue[index][repeaterItemField] = value;
-                  if (typeof (repeaterRenderer as any).emitChange === 'function') {
-                    (repeaterRenderer as any).emitChange();
-                  }
-                }
-              }
-            }
-          },
-        });
-
-        await renderer.init(htmlContainer);
-
-        this.apiSelectRenderers.set(fieldPath, renderer);
-      } catch {}
-    }
-  }
-
-  private cleanupApiSelectControls(): void {
-    this.apiSelectRenderers.forEach(renderer => {
-      renderer.destroy();
-    });
-    this.apiSelectRenderers.clear();
-  }
-
-  private async initializeSelectControls(): Promise<void> {
-    this.cleanupSelectControls();
-
-    const placeholders = document.querySelectorAll(`.${CSS_CLASSES.SELECT_PLACEHOLDER}`);
-
-    for (const placeholder of Array.from(placeholders)) {
-      const htmlPlaceholder = placeholder as HTMLElement;
-      const fieldName = htmlPlaceholder.dataset.fieldName;
-      const fieldId = htmlPlaceholder.dataset.fieldId;
-
-      if (!fieldName || !fieldId) {
-        continue;
-      }
-
-      try {
-        const container = htmlPlaceholder.closest(`.${CSS_CLASSES.FORM_GROUP}`) as HTMLElement;
-        if (!container) {
-          continue;
-        }
-
-        const fieldConfig = this.currentFormFields.get(fieldName);
-        if (!fieldConfig || fieldConfig.type !== 'select') {
-          continue;
-        }
-        const hiddenInput = container.querySelector(
-          `input[type="hidden"][name="${fieldName}"]`
-        ) as HTMLInputElement;
-        let currentValue: string | number | (string | number)[] | null = null;
-
-        if (hiddenInput) {
-          const inputValue = hiddenInput.value;
-          if (fieldConfig.multiple) {
-            try {
-              currentValue = JSON.parse(inputValue || '[]');
-            } catch {
-              currentValue = [];
-            }
-          } else {
-            currentValue = inputValue || null;
-            if (
-              currentValue &&
-              typeof currentValue === 'string' &&
-              !Number.isNaN(Number(currentValue))
-            ) {
-              const numValue = Number(currentValue);
-              const option = fieldConfig.options?.find(opt => {
-                const optValue = typeof opt.value === 'number' ? opt.value : Number(opt.value);
-                return !Number.isNaN(optValue) && optValue === numValue;
-              });
-              if (option) {
-                currentValue = typeof option.value === 'number' ? option.value : numValue;
-              }
-            }
-          }
-        } else {
-          const defaultValue = fieldConfig.defaultValue;
-          if (fieldConfig.multiple) {
-            currentValue = Array.isArray(defaultValue) ? defaultValue : [];
-          } else {
-            if (defaultValue === null || defaultValue === undefined || defaultValue === '') {
-              currentValue = null;
-            } else if (typeof defaultValue === 'string' || typeof defaultValue === 'number') {
-              currentValue = defaultValue;
-            } else {
-              currentValue = null;
-            }
-          }
-        }
-
-        const options = (fieldConfig.options || []).map(opt => ({
-          value: opt.value,
-          label: opt.label,
-          disabled: opt.disabled || false,
-        }));
-
-        const selectOptions: ISelectControlOptions = {
-          fieldName,
-          label: fieldConfig.label || '',
-          rules: fieldConfig.rules || [],
-          errors: {},
-          value: currentValue,
-          multiple: fieldConfig.multiple || false,
-          placeholder: fieldConfig.placeholder || 'Выберите значение',
-          options,
-          onChange: (newValue: string | number | (string | number)[] | null) => {
-            if (hiddenInput) {
-              hiddenInput.value =
-                fieldConfig.multiple && Array.isArray(newValue)
-                  ? JSON.stringify(newValue)
-                  : String(newValue ?? '');
-            }
-
-            htmlPlaceholder.dataset.selectValue = JSON.stringify(newValue);
-          },
-        };
-
-        const renderer = new SelectControlRenderer(selectOptions);
-        await renderer.init(htmlPlaceholder);
-
-        this.selectRenderers.set(fieldName, renderer);
-      } catch (error) {
-        logger.error('Ошибка инициализации select контрола', error);
-      }
-    }
-  }
-
-  private cleanupSelectControls(): void {
-    this.selectRenderers.forEach(renderer => {
-      renderer.destroy();
-    });
-    this.selectRenderers.clear();
-  }
-
-  private async initializeCustomFieldControls(): Promise<void> {
-    if (!this.licenseService.canUseCustomFields()) {
-      const containers = document.querySelectorAll(
-        `.${CSS_CLASSES.CUSTOM_FIELD_CONTROL_CONTAINER}`
-      );
-      containers.forEach(container => {
-        const placeholder = container.querySelector(
-          `.${CSS_CLASSES.CUSTOM_FIELD_PLACEHOLDER}`
-        ) as HTMLElement;
-        if (placeholder) {
-          placeholder.removeAttribute('style');
-          placeholder.classList.remove(CSS_CLASSES.BB_PLACEHOLDER_BOX);
-          placeholder.innerHTML = `
-            <div class="${CSS_CLASSES.BB_WARNING_BOX}">
-              ⚠️ ${this.licenseService.getFeatureChecker().getFeatureRestrictionMessage(LicenseFeature.CUSTOM_FIELDS)}
-            </div>
-          `;
-        }
-      });
-      return;
-    }
-
-    if (!this.customFieldRendererRegistry) {
-      return;
-    }
-
-    this.cleanupCustomFieldControls();
-
-    const containers = document.querySelectorAll(`.${CSS_CLASSES.CUSTOM_FIELD_CONTROL_CONTAINER}`);
-
-    for (const container of Array.from(containers)) {
-      const htmlContainer = container as HTMLElement;
-      const config = htmlContainer.dataset.customFieldConfig;
-      if (!config) {
-        continue;
-      }
-
-      try {
-        const customFieldConfig = parseJSONFromAttribute(config) as {
-          field: string;
-          fieldPath?: string;
-          label: string;
-          value?: unknown;
-          required?: boolean;
-          rendererId?: string;
-          options?: unknown;
-        };
-
-        if (!customFieldConfig.rendererId) {
-          continue;
-        }
-
-        const renderer = this.customFieldRendererRegistry.get(customFieldConfig.rendererId);
-        if (!renderer) {
-          this.showCustomFieldError(
-            htmlContainer,
-            `Рендерер "${customFieldConfig.rendererId}" не зарегистрирован`
-          );
-          continue;
-        }
-
-        let renderContainer = htmlContainer.querySelector(
-          `.${CSS_CLASSES.CUSTOM_FIELD_PLACEHOLDER}`
-        ) as HTMLElement;
-        if (!renderContainer) {
-          renderContainer = htmlContainer;
-        }
-
-        const repeaterFieldName = htmlContainer.dataset.repeaterField;
-        const repeaterIndexStr = htmlContainer.dataset.repeaterIndex;
-        const repeaterItemField =
-          htmlContainer.dataset.repeaterItemField || customFieldConfig.field;
-        const fieldPath = customFieldConfig.fieldPath || customFieldConfig.field;
-        const isRepeaterContext = Boolean(repeaterFieldName);
-
-        let initialValue = customFieldConfig.value;
-
-        if (isRepeaterContext && repeaterFieldName && typeof repeaterIndexStr === 'string') {
-          const repeaterRenderer = this.repeaterRenderers.get(repeaterFieldName);
-          if (repeaterRenderer) {
-            const index = Number.parseInt(repeaterIndexStr, 10);
-            const rendererValue = (repeaterRenderer as any).value;
-            if (
-              Array.isArray(rendererValue) &&
-              rendererValue[index] &&
-              Object.hasOwn(rendererValue[index], repeaterItemField)
-            ) {
-              initialValue = rendererValue[index][repeaterItemField];
-            }
-          }
-        }
-
-        const fieldRenderer = new CustomFieldControlRenderer(renderContainer, renderer, {
-          fieldName: customFieldConfig.field,
-          label: customFieldConfig.label,
-          value: initialValue,
-          required: customFieldConfig.required || false,
-          rendererId: customFieldConfig.rendererId,
-          options: customFieldConfig.options as Record<string, unknown> | undefined,
-          onChange: value => {
-            htmlContainer.dataset.customFieldValue = JSON.stringify(value);
-
-            if (isRepeaterContext && repeaterFieldName && typeof repeaterIndexStr === 'string') {
-              const repeaterRenderer = this.repeaterRenderers.get(repeaterFieldName);
-              if (repeaterRenderer) {
-                const index = Number.parseInt(repeaterIndexStr, 10);
-                const rendererValue = (repeaterRenderer as any).value;
-                if (Array.isArray(rendererValue) && rendererValue[index]) {
-                  rendererValue[index][repeaterItemField] = value;
-                  if (typeof (repeaterRenderer as any).emitChange === 'function') {
-                    (repeaterRenderer as any).emitChange();
-                  }
-                }
-              }
-            }
-          },
-          onError: _error => {},
-        });
-
-        this.customFieldRenderers.set(fieldPath, fieldRenderer);
-      } catch (error) {
-        this.showCustomFieldError(htmlContainer, `Ошибка: ${error}`);
-      }
-    }
-  }
+  /**
+   * @deprecated Используйте initializeAllControls() через ControlManager
+   */
 
   private findNestedRepeaterRenderer(fieldPath: string): RepeaterControlRenderer | null {
     for (const [key, renderer] of this.repeaterRenderers.entries()) {
@@ -854,442 +350,15 @@ export class BlockUIController {
 
   private initializeImageUploadControls(): void {
     const containers = document.querySelectorAll(`.${CSS_CLASSES.IMAGE_UPLOAD_FIELD}`);
+    const initializer = new ImageUploadControlInitializer({
+      getCurrentFormFields: () => this.currentFormFields,
+      getRepeaterFieldConfigs: () => this.repeaterFieldConfigs,
+      getRepeaterRenderers: () => this.repeaterRenderers,
+      findNestedRepeaterRenderer: (fieldPath: string) => this.findNestedRepeaterRenderer(fieldPath),
+    });
 
     containers.forEach(container => {
-      const htmlContainer = container as HTMLElement;
-      const fieldName = htmlContainer.dataset.fieldName;
-      if (!fieldName) {
-        return;
-      }
-
-      if (Object.hasOwn(htmlContainer.dataset, 'imageInitialized')) {
-        return;
-      }
-      htmlContainer.dataset.imageInitialized = 'true';
-
-      const fileInput = htmlContainer.querySelector('input[type="file"]') as HTMLInputElement;
-      const hiddenInput = htmlContainer.querySelector(
-        'input[type="hidden"][data-image-value="true"]'
-      ) as HTMLInputElement;
-      const preview = htmlContainer.querySelector(
-        `.${CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW}`
-      ) as HTMLElement;
-      const previewImg = preview?.querySelector('img') as HTMLImageElement;
-      const label = htmlContainer.querySelector('label[for]') as HTMLLabelElement;
-      const labelText = label?.querySelector(
-        `.${CSS_CLASSES.IMAGE_UPLOAD_FIELD_LABEL_TEXT}`
-      ) as HTMLElement;
-      const loadingText = label?.querySelector(
-        `.${CSS_CLASSES.IMAGE_UPLOAD_FIELD_LOADING_TEXT}`
-      ) as HTMLElement;
-      const errorDiv = htmlContainer.querySelector(
-        `.${CSS_CLASSES.IMAGE_UPLOAD_FIELD_ERROR}`
-      ) as HTMLElement;
-
-      if (!fileInput || !hiddenInput) {
-        return;
-      }
-
-      const configStr = fileInput.dataset.config || '{}';
-      let config: any = {};
-      try {
-        config = JSON.parse(configStr.replaceAll('&quot;', '"'));
-      } catch (error) {
-        logger.error('Ошибка парсинга конфига изображения:', error);
-      }
-
-      const repeaterField = htmlContainer.dataset.repeaterField;
-      const repeaterIndex = htmlContainer.dataset.repeaterIndex;
-      const repeaterItemField = htmlContainer.dataset.repeaterItemField;
-
-      const getResponseMapper = (): any => {
-        let imageUploadConfig: any = undefined;
-        let responseMapper: any = undefined;
-
-        if (repeaterField && repeaterItemField) {
-          const repeaterFieldsMap = this.repeaterFieldConfigs.get(repeaterField);
-          if (repeaterFieldsMap) {
-            const itemFieldConfig = repeaterFieldsMap.get(repeaterItemField);
-            if (itemFieldConfig) {
-              imageUploadConfig = itemFieldConfig.imageUploadConfig;
-              responseMapper = imageUploadConfig?.responseMapper;
-            }
-          } else {
-            const pathParts = repeaterField.split('.');
-            if (pathParts.length >= 2) {
-              const parentRepeaterField = pathParts[0].split('[')[0];
-              const nestedRepeaterField = pathParts.at(-1);
-
-              const parentRepeaterFieldsMap = this.repeaterFieldConfigs.get(parentRepeaterField);
-              if (parentRepeaterFieldsMap && nestedRepeaterField) {
-                const nestedRepeaterFieldConfig = parentRepeaterFieldsMap.get(nestedRepeaterField);
-                if (nestedRepeaterFieldConfig && nestedRepeaterFieldConfig.repeaterConfig?.fields) {
-                  const itemFieldConfig = nestedRepeaterFieldConfig.repeaterConfig.fields.find(
-                    (f: any) => f.field === repeaterItemField
-                  );
-                  if (itemFieldConfig) {
-                    imageUploadConfig = itemFieldConfig.imageUploadConfig;
-                    responseMapper = imageUploadConfig?.responseMapper;
-                  }
-                }
-              }
-            }
-
-            if (!responseMapper) {
-              const nestedRenderer = this.findNestedRepeaterRenderer(repeaterField);
-              if (nestedRenderer) {
-                const nestedConfig = (nestedRenderer as any).config;
-                if (nestedConfig && nestedConfig.fields) {
-                  const fieldConfig = nestedConfig.fields.find(
-                    (f: any) => f.field === repeaterItemField
-                  );
-                  if (fieldConfig) {
-                    imageUploadConfig = fieldConfig.imageUploadConfig;
-                    responseMapper = imageUploadConfig?.responseMapper;
-                  }
-                }
-              }
-            }
-          }
-        } else {
-          const fieldConfig = this.currentFormFields.get(fieldName);
-          imageUploadConfig = fieldConfig?.imageUploadConfig;
-          responseMapper = imageUploadConfig?.responseMapper;
-        }
-
-        return responseMapper;
-      };
-
-      let imageUploadConfig: any = undefined;
-      if (repeaterField && repeaterItemField) {
-        const repeaterFieldsMap = this.repeaterFieldConfigs.get(repeaterField);
-        if (repeaterFieldsMap) {
-          const itemFieldConfig = repeaterFieldsMap.get(repeaterItemField);
-          if (itemFieldConfig) {
-            imageUploadConfig = itemFieldConfig.imageUploadConfig;
-          }
-        } else {
-          const nestedRenderer = this.findNestedRepeaterRenderer(repeaterField);
-          if (nestedRenderer) {
-            const nestedConfig = (nestedRenderer as any).config;
-            if (nestedConfig && nestedConfig.fields) {
-              const fieldConfig = nestedConfig.fields.find(
-                (f: any) => f.field === repeaterItemField
-              );
-              if (fieldConfig) {
-                imageUploadConfig = fieldConfig.imageUploadConfig;
-              }
-            }
-          }
-        }
-      } else {
-        const fieldConfig = this.currentFormFields.get(fieldName);
-        imageUploadConfig = fieldConfig?.imageUploadConfig;
-      }
-
-      const finalConfig = {
-        uploadUrl: imageUploadConfig?.uploadUrl || config.uploadUrl || '',
-        fileParamName: imageUploadConfig?.fileParamName || config.fileParamName || 'file',
-        maxFileSize: imageUploadConfig?.maxFileSize || config.maxFileSize || 10 * 1024 * 1024,
-        uploadHeaders: imageUploadConfig?.uploadHeaders || config.uploadHeaders || {},
-      };
-
-      let currentValue: any = hiddenInput.value;
-
-      if (repeaterField && repeaterIndex && repeaterItemField) {
-        const repeaterRenderer = this.repeaterRenderers.get(repeaterField);
-        if (repeaterRenderer) {
-          const index = Number.parseInt(repeaterIndex, 10);
-          const rendererValue = (repeaterRenderer as any).value;
-          if (rendererValue && rendererValue[index] !== undefined) {
-            currentValue = rendererValue[index][repeaterItemField];
-          }
-        } else {
-          const nestedRenderer = this.findNestedRepeaterRenderer(repeaterField);
-          if (nestedRenderer) {
-            const index = Number.parseInt(repeaterIndex, 10);
-            const nestedValue = (nestedRenderer as any).value;
-            if (nestedValue && nestedValue[index] !== undefined) {
-              currentValue = nestedValue[index][repeaterItemField];
-            }
-          }
-        }
-      } else {
-        if (currentValue) {
-          try {
-            const parsed = JSON.parse(currentValue.replaceAll('&quot;', '"'));
-            if (typeof parsed === 'object' && parsed !== null) {
-              currentValue = parsed;
-            }
-          } catch {}
-        }
-      }
-
-      if (currentValue) {
-        try {
-          let imageUrl = '';
-          if (typeof currentValue === 'string') {
-            imageUrl = currentValue;
-          } else if (typeof currentValue === 'object' && currentValue !== null) {
-            imageUrl = currentValue.src || currentValue.url || '';
-          }
-
-          if (imageUrl && previewImg) {
-            previewImg.src = imageUrl;
-            previewImg.style.display = 'block';
-            if (preview) {
-              preview.style.display = 'block';
-              preview.style.position = 'relative';
-              preview.style.marginBottom = '12px';
-            }
-            if (labelText) {
-              labelText.textContent = 'Изменить файл';
-            }
-          }
-        } catch (error) {
-          logger.error('Ошибка инициализации preview:', error);
-        }
-      }
-
-      const self = this;
-
-      const clearBtn = container.querySelector(
-        `.${CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW_CLEAR}`
-      ) as HTMLButtonElement;
-      if (clearBtn) {
-        clearBtn.addEventListener('click', () => {
-          fileInput.value = '';
-          hiddenInput.value = '';
-          if (preview) {
-            preview.style.display = 'none';
-          }
-          if (labelText) {
-            labelText.textContent = 'Выберите изображение';
-          }
-
-          if (repeaterField && repeaterIndex && repeaterItemField) {
-            const repeaterRenderer = self.repeaterRenderers.get(repeaterField);
-            if (repeaterRenderer) {
-              const index = Number.parseInt(repeaterIndex, 10);
-              const rendererValue = (repeaterRenderer as any).value;
-              if (rendererValue && rendererValue[index] !== undefined) {
-                rendererValue[index][repeaterItemField] = '';
-                (repeaterRenderer as any).emitChange();
-              }
-            } else {
-              const nestedRenderer = self.findNestedRepeaterRenderer(repeaterField);
-              if (nestedRenderer) {
-                const index = Number.parseInt(repeaterIndex, 10);
-                const nestedValue = (nestedRenderer as any).value;
-                if (nestedValue && nestedValue[index] !== undefined) {
-                  nestedValue[index][repeaterItemField] = '';
-                  (nestedRenderer as any).emitChange();
-                }
-              }
-            }
-          }
-        });
-      }
-
-      fileInput.addEventListener('change', async e => {
-        const file = (e.target as HTMLInputElement).files?.[0];
-        if (!file) {
-          return;
-        }
-
-        if (!file.type.startsWith('image/')) {
-          if (errorDiv) {
-            errorDiv.textContent = 'Пожалуйста, выберите файл изображения';
-            errorDiv.style.display = 'block';
-          }
-          return;
-        }
-
-        if (finalConfig.maxFileSize && file.size > finalConfig.maxFileSize) {
-          if (errorDiv) {
-            errorDiv.textContent = `Размер файла не должен превышать ${Math.round(finalConfig.maxFileSize / 1024 / 1024)}MB`;
-            errorDiv.style.display = 'block';
-          }
-          return;
-        }
-
-        if (errorDiv) {
-          errorDiv.style.display = 'none';
-          errorDiv.classList.add(CSS_CLASSES.BB_HIDDEN);
-          errorDiv.textContent = '';
-        }
-        if (labelText) {
-          labelText.style.display = 'none';
-          labelText.classList.add(CSS_CLASSES.BB_HIDDEN);
-        }
-        if (loadingText) {
-          loadingText.style.display = 'inline';
-          loadingText.classList.remove(CSS_CLASSES.BB_HIDDEN);
-        }
-        if (label) {
-          label.style.pointerEvents = 'none';
-          label.style.opacity = '0.7';
-          label.style.cursor = 'not-allowed';
-        }
-        fileInput.disabled = true;
-
-        try {
-          let result: any;
-
-          if (finalConfig.uploadUrl) {
-            const formData = new FormData();
-            formData.append(finalConfig.fileParamName, file);
-
-            const response = await fetch(finalConfig.uploadUrl, {
-              method: 'POST',
-              headers: finalConfig.uploadHeaders,
-              body: formData,
-            });
-
-            if (!response.ok) {
-              throw new Error('Ошибка загрузки: ' + response.statusText);
-            }
-
-            const responseData = await response.json();
-
-            const responseMapper = getResponseMapper();
-
-            result =
-              responseMapper && typeof responseMapper === 'function'
-                ? responseMapper(responseData)
-                : responseData;
-          } else {
-            result = await new Promise<string>((resolve, reject) => {
-              const reader = new FileReader();
-              reader.addEventListener('load', e => resolve(e.target?.result as string));
-              reader.addEventListener('error', reject);
-              reader.readAsDataURL(file);
-            });
-          }
-
-          if (repeaterField && repeaterIndex && repeaterItemField) {
-            const repeaterRenderer = self.repeaterRenderers.get(repeaterField);
-            if (repeaterRenderer) {
-              const index = Number.parseInt(repeaterIndex, 10);
-              const rendererValue = (repeaterRenderer as any).value;
-              if (rendererValue && rendererValue[index] !== undefined) {
-                rendererValue[index][repeaterItemField] = result;
-                (repeaterRenderer as any).emitChange();
-              }
-            } else {
-              const nestedRenderer = self.findNestedRepeaterRenderer(repeaterField);
-              if (nestedRenderer) {
-                const index = Number.parseInt(repeaterIndex, 10);
-                const nestedValue = (nestedRenderer as any).value;
-                if (nestedValue && nestedValue[index] !== undefined) {
-                  nestedValue[index][repeaterItemField] = result;
-                  (nestedRenderer as any).emitChange();
-                }
-              }
-            }
-          }
-
-          if (repeaterField && repeaterIndex && repeaterItemField) {
-            const repeaterRenderer = self.repeaterRenderers.get(repeaterField);
-            const nestedRenderer = repeaterRenderer
-              ? null
-              : self.findNestedRepeaterRenderer(repeaterField);
-            const targetRenderer = repeaterRenderer || nestedRenderer;
-
-            if (targetRenderer) {
-              const index = Number.parseInt(repeaterIndex, 10);
-              const rendererValue = (targetRenderer as any).value;
-              if (rendererValue && rendererValue[index] !== undefined) {
-                const currentValue = rendererValue[index][repeaterItemField];
-                hiddenInput.value =
-                  typeof currentValue === 'object' && currentValue !== null
-                    ? JSON.stringify(currentValue)
-                    : currentValue || '';
-              } else {
-                hiddenInput.value =
-                  typeof result === 'object' && result !== null
-                    ? JSON.stringify(result)
-                    : result || '';
-              }
-            } else {
-              hiddenInput.value =
-                typeof result === 'object' && result !== null
-                  ? JSON.stringify(result)
-                  : result || '';
-            }
-          } else {
-            hiddenInput.value =
-              typeof result === 'object' && result !== null ? JSON.stringify(result) : result || '';
-          }
-
-          let imageUrl = '';
-          if (typeof result === 'string') {
-            imageUrl = result;
-          } else if (typeof result === 'object' && result !== null) {
-            imageUrl = result.src || '';
-          }
-
-          if (imageUrl && previewImg) {
-            previewImg.src = imageUrl;
-            previewImg.style.display = 'block';
-            if (preview) {
-              preview.classList.remove(CSS_CLASSES.BB_HIDDEN);
-              preview.style.display = 'block';
-              preview.style.position = 'relative';
-              preview.style.marginBottom = '12px';
-            }
-            if (labelText) {
-              labelText.textContent = 'Изменить файл';
-              labelText.style.display = 'inline';
-              labelText.classList.remove(CSS_CLASSES.BB_HIDDEN);
-            }
-          } else if (previewImg && preview) {
-            preview.classList.add(CSS_CLASSES.BB_HIDDEN);
-            preview.style.display = 'none';
-            if (labelText) {
-              labelText.textContent = 'Выберите изображение';
-              labelText.style.display = 'inline';
-              labelText.classList.remove(CSS_CLASSES.BB_HIDDEN);
-            }
-          }
-
-          if (container) {
-            container.classList.remove(CSS_CLASSES.ERROR);
-            const fileErrorDiv = container.querySelector(
-              `.${CSS_CLASSES.IMAGE_UPLOAD_FIELD_FILE} .${CSS_CLASSES.IMAGE_UPLOAD_FIELD_ERROR}`
-            ) as HTMLElement;
-            if (fileErrorDiv) {
-              fileErrorDiv.style.display = 'none';
-              fileErrorDiv.textContent = '';
-            }
-          }
-
-          const changeEvent = new Event('change', { bubbles: true });
-          hiddenInput.dispatchEvent(changeEvent);
-        } catch (error: any) {
-          logger.error('ImageUpload error:', error);
-          if (errorDiv) {
-            errorDiv.textContent = error.message || 'Ошибка при загрузке файла';
-            errorDiv.style.display = 'block';
-            errorDiv.classList.remove(CSS_CLASSES.BB_HIDDEN);
-          }
-          if (labelText) {
-            labelText.style.display = 'inline';
-            labelText.classList.remove(CSS_CLASSES.BB_HIDDEN);
-          }
-        } finally {
-          if (loadingText) {
-            loadingText.style.display = 'none';
-            loadingText.classList.add(CSS_CLASSES.BB_HIDDEN);
-          }
-          if (label) {
-            label.style.pointerEvents = 'auto';
-            label.style.opacity = '1';
-            label.style.cursor = 'pointer';
-          }
-          fileInput.disabled = false;
-        }
-      });
+      initializer.initialize(container as HTMLElement);
     });
   }
 
@@ -1309,59 +378,19 @@ export class BlockUIController {
     }
   }
 
-  private cleanupCustomFieldControls(): void {
-    this.customFieldRenderers.forEach(renderer => {
-      renderer.destroy();
-    });
-    this.customFieldRenderers.clear();
-  }
-
-  private getFormDataWithSpacing(formId: string): Record<string, any> {
-    const props = this.modalManager.getFormData(formId);
-
-    this.spacingRenderers.forEach((renderer, fieldName) => {
-      props[fieldName] = renderer.getValue();
-    });
-
-    this.repeaterRenderers.forEach((renderer, fieldName) => {
-      props[fieldName] = renderer.getValue();
-    });
-
-    this.apiSelectRenderers.forEach((renderer, fieldName) => {
-      if (!fieldName.includes('[')) {
-        props[fieldName] = renderer.getValue();
-      }
-    });
-
-    this.customFieldRenderers.forEach((renderer, fieldName) => {
-      if (!fieldName.includes('[')) {
-        props[fieldName] = renderer.getValue();
-      }
-    });
-
-    return props;
-  }
-
   private async handleCreateBlock(
     type: string,
     fields: TFieldConfig[],
-    position?: number
-  ): Promise<void> {
-    const props = this.getFormDataWithSpacing(FORM_ID_PREFIX);
-
-    const validation = UniversalValidator.validateForm(props, fields);
-    if (!validation.isValid) {
-      this.showValidationErrors(validation.errors);
-      return;
-    }
-
+    position: number | undefined,
+    formData: Record<string, any>
+  ): Promise<boolean> {
     try {
       const blockConfig = this.config.blockConfigs[type];
 
       const createData: ICreateBlockDto = {
         type,
         settings: {},
-        props,
+        props: formData,
         visible: true,
         locked: false,
       };
@@ -1376,10 +405,11 @@ export class BlockUIController {
         await this.insertBlockAtPosition(newBlock.id, position);
       }
 
-      this.modalManager.closeModal();
       await this.refreshBlocks();
+      return true;
     } catch {
       this.showError(UI_STRINGS.blockCreationError);
+      return false;
     }
   }
 
@@ -1418,67 +448,46 @@ export class BlockUIController {
       this.licenseService.getFeatureChecker()
     );
 
-    const formHTML = `
-    <form id="${FORM_ID_PREFIX}" class="${CSS_CLASSES.FORM}">
-      ${this.formBuilder.generateEditFormHTML(fields, block.props)}
-    </form>
-    `;
+    this.prepareFormFields(fields);
 
-    this.modalManager.showModal({
-      title: `${config.title} ${UI_STRINGS.editBlockTitle}`,
-      bodyHTML: formHTML,
-      onSubmit: () => this.handleUpdateBlock(blockId, block.type, fields),
-      onCancel: () => {
-        this.currentFormFields.clear();
-        this.repeaterFieldConfigs.clear();
-        this.modalManager.closeModal();
-      },
-      submitButtonText: UI_STRINGS.saveButtonText,
-    });
-
-    this.currentFormFields.clear();
-    this.repeaterFieldConfigs.clear();
-    fields.forEach(field => {
-      this.currentFormFields.set(field.field, field);
-      if (field.type === 'repeater' && field.repeaterConfig?.fields) {
-        const repeaterFieldsMap = new Map<string, TFieldConfig>();
-        field.repeaterConfig.fields.forEach((repeaterField: TFieldConfig) => {
-          repeaterFieldsMap.set(repeaterField.field, repeaterField);
-        });
-        this.repeaterFieldConfigs.set(field.field, repeaterFieldsMap);
+    this.formController.showEditForm(
+      `${config.title} ${UI_STRINGS.editBlockTitle}`,
+      fields,
+      block.props,
+      async (formData: Record<string, any>) => {
+        return await this.handleUpdateBlock(blockId, block.type, fields, formData);
       }
-    });
+    );
 
-    afterRender(async () => {
-      this.initializeSpacingControls();
-      this.initializeRepeaterControls();
-      await this.initializeApiSelectControls();
-      await this.initializeSelectControls();
+    afterRender(() => {
+      const modalBody = document.querySelector(`.${CSS_CLASSES.MODAL_BODY}`) as HTMLElement;
+      if (modalBody) {
+        this.controlManager.clearFlagsInContainer(modalBody);
+      }
       this.initializeImageUploadControls();
-      await this.initializeCustomFieldControls();
     });
+  }
+
+  private async initializeAllControls(): Promise<void> {
+    await new Promise(resolve => setTimeout(resolve, 0));
+    await this.controlManager.initializeControlsInContainer(document.body);
+    this.initializeImageUploadControls();
   }
 
   private async handleUpdateBlock(
     blockId: string,
     type: string,
-    fields: TFieldConfig[]
-  ): Promise<void> {
-    const props = this.getFormDataWithSpacing(FORM_ID_PREFIX);
-
-    const validation = UniversalValidator.validateForm(props, fields);
-    if (!validation.isValid) {
-      this.showValidationErrors(validation.errors);
-      return;
-    }
-
+    fields: TFieldConfig[],
+    formData: Record<string, any>
+  ): Promise<boolean> {
     try {
-      await this.config.useCase.updateBlock(blockId, { props });
+      await this.config.useCase.updateBlock(blockId, { props: formData });
 
-      this.modalManager.closeModal();
       await this.refreshBlocks();
+      return true;
     } catch {
       this.showError(UI_STRINGS.blockUpdateError);
+      return false;
     }
   }
 
@@ -1610,35 +619,7 @@ export class BlockUIController {
   }
 
   private showNotification(message: string, type: 'success' | 'error' | 'info' = 'info'): void {
-    const notification = document.createElement('div');
-    notification.className = CSS_CLASSES.NOTIFICATION;
-    notification.textContent = message;
-
-    const colors = {
-      success: '#4caf50',
-      error: '#dc3545',
-      info: '#007bff',
-    };
-
-    notification.style.cssText = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: ${colors[type]};
-    color: white;
-    padding: 12px 20px;
-    border-radius: 4px;
-    z-index: 10000;
-    font-size: 14px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    animation: fadeIn 0.3s ease-in-out;
-  `;
-    document.body.append(notification);
-
-    setTimeout(() => {
-      notification.style.animation = 'fadeOut 0.3s ease-in-out';
-      setTimeout(() => notification.remove(), 300);
-    }, NOTIFICATION_DISPLAY_DURATION_MS);
+    notificationService.show(message, type);
   }
 
   private showValidationErrors(
@@ -1658,25 +639,39 @@ export class BlockUIController {
 
       const input = document.querySelector(`[name="${fieldName}"]`) as HTMLElement;
       if (input) {
-        input.classList.add(CSS_CLASSES.ERROR);
-
         const formGroup = input.closest(`.${CSS_CLASSES.FORM_GROUP}`) as HTMLElement;
+
         if (formGroup) {
           formGroup.classList.add(CSS_CLASSES.ERROR);
+
+          const imageUploadField = formGroup.querySelector(
+            `.${CSS_CLASSES.IMAGE_UPLOAD_FIELD}`
+          ) as HTMLElement;
+          if (imageUploadField) {
+            const errorSpan = imageUploadField.querySelector(
+              `.${CSS_CLASSES.IMAGE_UPLOAD_FIELD_ERROR}`
+            ) as HTMLElement;
+            if (errorSpan && fieldErrors.length > 0) {
+              errorSpan.textContent = fieldErrors[0];
+              errorSpan.classList.remove(CSS_CLASSES.BB_HIDDEN);
+            }
+          } else {
+            input.classList.add(CSS_CLASSES.ERROR);
+
+            const errorContainer = document.createElement('div');
+            errorContainer.className = CSS_CLASSES.FORM_ERRORS;
+            errorContainer.dataset.field = fieldName;
+
+            fieldErrors.forEach(error => {
+              const errorSpan = document.createElement('span');
+              errorSpan.className = CSS_CLASSES.ERROR;
+              errorSpan.textContent = error;
+              errorContainer.append(errorSpan);
+            });
+
+            input.parentElement?.append(errorContainer);
+          }
         }
-
-        const errorContainer = document.createElement('div');
-        errorContainer.className = CSS_CLASSES.FORM_ERRORS;
-        errorContainer.dataset.field = fieldName;
-
-        fieldErrors.forEach(error => {
-          const errorSpan = document.createElement('span');
-          errorSpan.className = CSS_CLASSES.ERROR;
-          errorSpan.textContent = error;
-          errorContainer.append(errorSpan);
-        });
-
-        input.parentElement?.append(errorContainer);
       }
     });
 
@@ -1714,6 +709,7 @@ export class BlockUIController {
     } else {
       setTimeout(() => {
         const modalBody = document.querySelector(`.${CSS_CLASSES.MODAL_BODY}`) as HTMLElement;
+        const modalContent = document.querySelector(`.${CSS_CLASSES.MODAL_CONTENT}`) as HTMLElement;
         if (!modalBody) {
           return;
         }
@@ -1721,6 +717,7 @@ export class BlockUIController {
           offset: 40,
           behavior: 'smooth',
           autoFocus: true,
+          scrollContainer: modalContent || undefined,
         });
       }, ERROR_RENDER_DELAY_MS);
     }
@@ -1761,6 +758,14 @@ export class BlockUIController {
     const hasNestedPath =
       firstErrorKey && firstErrorKey.includes('[') && firstErrorKey.split('[').length > 2;
 
+    const repeaterContainer = modalBody.querySelector(
+      `.${CSS_CLASSES.REPEATER_CONTROL_CONTAINER}[data-field-name="${repeaterFieldName}"]`
+    ) as HTMLElement;
+
+    if (!repeaterContainer) {
+      return;
+    }
+
     if (renderer.isItemCollapsed(itemIndex)) {
       renderer.expandItem(itemIndex);
 
@@ -1771,24 +776,60 @@ export class BlockUIController {
           this.openNestedRepeaterAccordions(firstErrorKey, allErrors);
         } else {
           setTimeout(() => {
-            scrollToFirstError(modalBody, allErrors, {
-              offset: 40,
-              behavior: 'smooth',
-              autoFocus: true,
-            });
-          }, ERROR_RENDER_DELAY_MS);
+            const repeaterItems = repeaterContainer.querySelectorAll(
+              `.${CSS_CLASSES.REPEATER_CONTROL_ITEM}`
+            );
+            const targetItem = repeaterItems[itemIndex] as HTMLElement;
+            if (targetItem) {
+              const itemFieldsContainer = targetItem.querySelector(
+                `.${CSS_CLASSES.REPEATER_CONTROL_ITEM_FIELDS}`
+              ) as HTMLElement;
+
+              if (!itemFieldsContainer) {
+                return;
+              }
+
+              const modalContent = document.querySelector(
+                `.${CSS_CLASSES.MODAL_CONTENT}`
+              ) as HTMLElement;
+              scrollToFirstError(itemFieldsContainer, filteredErrors, {
+                offset: 40,
+                behavior: 'smooth',
+                autoFocus: true,
+                scrollContainer: modalContent || undefined,
+              });
+            }
+          }, ERROR_RENDER_DELAY_MS + 100);
         }
-      }, REPEATER_ACCORDION_ANIMATION_DELAY_MS);
+      }, REPEATER_ACCORDION_ANIMATION_DELAY_MS + 100);
     } else {
       if (hasNestedPath && firstErrorKey) {
         this.openNestedRepeaterAccordions(firstErrorKey, allErrors);
       } else {
         setTimeout(() => {
-          scrollToFirstError(modalBody, allErrors, {
-            offset: 40,
-            behavior: 'smooth',
-            autoFocus: true,
-          });
+          const repeaterItems = repeaterContainer.querySelectorAll(
+            `.${CSS_CLASSES.REPEATER_CONTROL_ITEM}`
+          );
+          const targetItem = repeaterItems[itemIndex] as HTMLElement;
+          if (targetItem) {
+            const itemFieldsContainer = targetItem.querySelector(
+              `.${CSS_CLASSES.REPEATER_CONTROL_ITEM_FIELDS}`
+            ) as HTMLElement;
+
+            if (!itemFieldsContainer) {
+              return;
+            }
+
+            const modalContent = document.querySelector(
+              `.${CSS_CLASSES.MODAL_CONTENT}`
+            ) as HTMLElement;
+            scrollToFirstError(itemFieldsContainer, filteredErrors, {
+              offset: 40,
+              behavior: 'smooth',
+              autoFocus: true,
+              scrollContainer: modalContent || undefined,
+            });
+          }
         }, ERROR_RENDER_DELAY_MS);
       }
     }
@@ -1863,10 +904,12 @@ export class BlockUIController {
 
       await new Promise(resolve => setTimeout(resolve, ERROR_RENDER_DELAY_MS));
 
+      const modalContent = document.querySelector(`.${CSS_CLASSES.MODAL_CONTENT}`) as HTMLElement;
       scrollToFirstError(modalBody, errors, {
         offset: 40,
         behavior: 'smooth',
         autoFocus: true,
+        scrollContainer: modalContent || undefined,
       });
     };
 
@@ -1928,10 +971,12 @@ export class BlockUIController {
 
   private closeModalWithCleanup(): void {
     this.clearValidationErrors();
-    this.cleanupSpacingControls();
-    this.cleanupRepeaterControls();
-    this.cleanupApiSelectControls();
-    this.cleanupCustomFieldControls();
+    const modalBody = document.querySelector(`.${CSS_CLASSES.MODAL_BODY}`) as HTMLElement;
+    if (modalBody) {
+      this.controlManager.destroyControlsInContainer(modalBody);
+    } else {
+      this.controlManager.destroyAll();
+    }
     this.modalManager.closeModal();
   }
 
@@ -1993,10 +1038,7 @@ export class BlockUIController {
   }
 
   destroy(): void {
-    this.cleanupSpacingControls();
-    this.cleanupRepeaterControls();
-    this.cleanupApiSelectControls();
-    this.cleanupCustomFieldControls();
+    this.controlManager.destroyAll();
     this.modalManager.closeModal();
     this.eventDelegation.destroy();
     this.uiRenderer.destroy();

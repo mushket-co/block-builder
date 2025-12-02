@@ -75,10 +75,6 @@
         <span class="bb-api-select__tag-remove" @click="removeItem(item.id)">✕</span>
       </div>
     </div>
-
-    <div v-if="validationError" class="bb-api-select__error">
-      {{ validationError }}
-    </div>
   </div>
 </template>
 

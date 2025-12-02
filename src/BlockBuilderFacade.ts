@@ -12,7 +12,6 @@ import { IBlockDto, ICreateBlockDto, IUpdateBlockDto } from './core/types';
 import { ApiSelectUseCase } from './core/use-cases/ApiSelectUseCase';
 import { BlockManagementUseCase } from './core/use-cases/BlockManagementUseCase';
 import { ERROR_MESSAGES } from './utils/constants';
-import { logger } from './utils/logger';
 
 export interface IBlockBuilderOptions {
   containerId?: string;
@@ -283,21 +282,14 @@ export class BlockBuilderFacade {
       await this.repository.clear();
 
       if (allBlocksToReload.length > 0) {
-        const blockConfigsKeys = Object.keys(this.originalBlockConfigs || this.blockConfigs);
-        if (blockConfigsKeys.length === 0) {
-          logger.warn(
-            '⚠️ BlockBuilderFacade: Конфигурация блоков недоступна, используем типы из самих блоков'
-          );
-        }
-
         await this.loadInitialBlocks(allBlocksToReload);
       }
 
       await this.uiController.refreshBlocks();
 
       this.updateUIForLicenseChange();
-    } catch (error) {
-      logger.error('Ошибка перезагрузки блоков:', error);
+    } catch {
+      // Игнорируем ошибки перезагрузки блоков
     }
   }
 

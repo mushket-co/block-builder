@@ -527,6 +527,10 @@ export class RepeaterControlRenderer {
       const htmlEl = el as HTMLElement;
       delete htmlEl.dataset.imageInitialized;
     });
+    container.querySelectorAll('[data-control-initialized]').forEach(el => {
+      const htmlEl = el as HTMLElement;
+      delete htmlEl.dataset.controlInitialized;
+    });
     container.innerHTML = this.generateHTML();
     this.attachEventListeners();
     this.renderNestedRepeaters();
@@ -647,6 +651,8 @@ export class RepeaterControlRenderer {
   }
 
   public updateErrors(errors: Record<string, string[]>): void {
+    const previousErrors = this.errors;
+
     this.errors = errors;
 
     this.nestedRenderers.forEach((renderer, key) => {
@@ -656,9 +662,125 @@ export class RepeaterControlRenderer {
       renderer.updateErrors(nestedErrors);
     });
 
-    if (this.container) {
-      this.render(this.container);
+    if (this.container && Object.keys(errors).length > 0) {
+      this.updateErrorsInDOM();
+    } else if (
+      this.container &&
+      Object.keys(errors).length === 0 &&
+      Object.keys(previousErrors).length > 0
+    ) {
+      this.updateErrorsInDOM();
     }
+  }
+
+  private updateErrorsInDOM(): void {
+    if (!this.container) {
+      return;
+    }
+
+    const currentErrors = { ...this.errors };
+
+    const items = this.container.querySelectorAll(`.${CSS_CLASSES.REPEATER_CONTROL_ITEM}`);
+
+    items.forEach((item, index) => {
+      const itemElement = item as HTMLElement;
+      const fields = itemElement.querySelectorAll(`.${CSS_CLASSES.FORM_GROUP}`);
+
+      fields.forEach(fieldGroup => {
+        const fieldElement = fieldGroup as HTMLElement;
+        let fieldNameAttr =
+          fieldElement.dataset.fieldName ||
+          fieldElement.dataset.fieldPath ||
+          fieldElement.dataset.repeaterItemField ||
+          fieldElement.querySelector('[name]')?.getAttribute('name') ||
+          fieldElement.querySelector('[data-field-name]')?.getAttribute('data-field-name');
+
+        if (!fieldNameAttr) {
+          return;
+        }
+
+        if (fieldNameAttr.includes('[') && fieldNameAttr.includes(']')) {
+          const match = fieldNameAttr.match(/\[(\d+)]\.(.+)$/);
+          if (match) {
+            fieldNameAttr = match[2];
+          } else {
+            const parts = fieldNameAttr.split('.');
+            fieldNameAttr = parts.at(-1);
+          }
+        }
+
+        const fullFieldPath = `${this.fieldName}[${index}].${fieldNameAttr}`;
+        const fieldErrors = currentErrors[fullFieldPath];
+        const hasError = fieldErrors && fieldErrors.length > 0;
+
+        if (hasError) {
+          fieldElement.classList.add(CSS_CLASSES.ERROR);
+
+          const imageUploadField = fieldElement.querySelector(
+            `.${CSS_CLASSES.IMAGE_UPLOAD_FIELD}`
+          ) as HTMLElement;
+          if (imageUploadField) {
+            const errorSpan = imageUploadField.querySelector(
+              `.${CSS_CLASSES.IMAGE_UPLOAD_FIELD_ERROR}`
+            ) as HTMLElement;
+            if (errorSpan && fieldErrors.length > 0) {
+              errorSpan.textContent = fieldErrors[0];
+              errorSpan.classList.remove(CSS_CLASSES.BB_HIDDEN);
+            }
+          } else {
+            const input = fieldElement.querySelector('input, textarea, select') as HTMLElement;
+            if (input) {
+              input.classList.add(CSS_CLASSES.ERROR);
+            }
+
+            let errorContainer = fieldElement.querySelector(
+              `.${CSS_CLASSES.FORM_ERRORS}`
+            ) as HTMLElement;
+            if (!errorContainer) {
+              errorContainer = document.createElement('div');
+              errorContainer.className = CSS_CLASSES.FORM_ERRORS;
+              errorContainer.dataset.field = fullFieldPath;
+              fieldElement.append(errorContainer);
+            }
+
+            errorContainer.innerHTML = '';
+            fieldErrors.forEach(error => {
+              const errorSpan = document.createElement('span');
+              errorSpan.className = CSS_CLASSES.ERROR;
+              errorSpan.textContent = error;
+              errorContainer.append(errorSpan);
+            });
+          }
+        } else {
+          fieldElement.classList.remove(CSS_CLASSES.ERROR);
+
+          const input = fieldElement.querySelector('input, textarea, select') as HTMLElement;
+          if (input) {
+            input.classList.remove(CSS_CLASSES.ERROR);
+          }
+
+          const errorContainer = fieldElement.querySelector(
+            `.${CSS_CLASSES.FORM_ERRORS}`
+          ) as HTMLElement;
+          if (errorContainer) {
+            errorContainer.remove();
+          }
+
+          const imageUploadField = fieldElement.querySelector(
+            `.${CSS_CLASSES.IMAGE_UPLOAD_FIELD}`
+          ) as HTMLElement;
+          if (imageUploadField) {
+            const errorSpan = imageUploadField.querySelector(
+              `.${CSS_CLASSES.IMAGE_UPLOAD_FIELD_ERROR}`
+            ) as HTMLElement;
+            if (errorSpan) {
+              errorSpan.textContent = '';
+              errorSpan.classList.add(CSS_CLASSES.BB_HIDDEN);
+            }
+          }
+        }
+      });
+    });
   }
 
   public setValue(value: any[]): void {

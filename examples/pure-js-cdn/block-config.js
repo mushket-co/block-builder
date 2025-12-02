@@ -48,8 +48,7 @@ export const blockConfigs = {
         type: 'textarea',
         placeholder: 'Введите ваш текст...',
         rules: [
-          { type: 'required', message: 'Текст обязателен' },
-          { type: 'minLength', value: 1, message: 'Текст не может быть пустым' }
+          { type: 'required', message: 'Текст обязателен' }
         ],
         defaultValue: ''
       },
@@ -168,8 +167,7 @@ export const blockConfigs = {
         type: 'text',
         placeholder: 'Нажми меня',
         rules: [
-          { type: 'required', message: 'Текст кнопки обязателен' },
-          { type: 'minLength', value: 1, message: 'Текст не может быть пустым' }
+          { type: 'required', message: 'Текст кнопки обязателен' }
         ],
         defaultValue: 'Кнопка'
       },
@@ -313,12 +311,13 @@ export const blockConfigs = {
       {
         field: 'card1_link',
         label: 'Карточка 1 - Ссылка',
-        type: 'url',
-        placeholder: 'https://example.com',
+        type: 'text',
+        placeholder: '/news/123/ или https://example.com',
         rules: [
-          { type: 'required', message: 'Ссылка обязательна' }
+          { type: 'required', message: 'Ссылка обязательна' },
+          { type: 'minLength', value: 1, message: 'Ссылка не может быть пустой' }
         ],
-        defaultValue: 'https://example.com'
+        defaultValue: ''
       },
       {
         field: 'card1_image',
@@ -362,12 +361,13 @@ export const blockConfigs = {
       {
         field: 'card2_link',
         label: 'Карточка 2 - Ссылка',
-        type: 'url',
-        placeholder: 'https://example.com',
+        type: 'text',
+        placeholder: '/news/123/ или https://example.com',
         rules: [
-          { type: 'required', message: 'Ссылка обязательна' }
+          { type: 'required', message: 'Ссылка обязательна' },
+          { type: 'minLength', value: 1, message: 'Ссылка не может быть пустой' }
         ],
-        defaultValue: 'https://example.com'
+        defaultValue: ''
       },
       {
         field: 'card2_image',
@@ -411,12 +411,13 @@ export const blockConfigs = {
       {
         field: 'card3_link',
         label: 'Карточка 3 - Ссылка',
-        type: 'url',
-        placeholder: 'https://example.com',
+        type: 'text',
+        placeholder: '/news/123/ или https://example.com',
         rules: [
-          { type: 'required', message: 'Ссылка обязательна' }
+          { type: 'required', message: 'Ссылка обязательна' },
+          { type: 'minLength', value: 1, message: 'Ссылка не может быть пустой' }
         ],
-        defaultValue: 'https://example.com'
+        defaultValue: ''
       },
       {
         field: 'card3_image',

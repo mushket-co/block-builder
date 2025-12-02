@@ -98,15 +98,16 @@ export function createWysiwygEditor(container, options = {}) {
   const editorDomElement = editor.editor
   editorDomElement.addEventListener('paste', handlePaste)
 
-  // Обработчик изменений
-  editor.events.on('change', () => {
-    onChange(editor.value)
-  })
-
-  // Устанавливаем начальное значение
+  // Устанавливаем начальное значение ДО регистрации обработчика изменений
+  // чтобы избежать вызова onChange при инициализации
   if (value) {
     editor.value = value
   }
+
+  // Обработчик изменений регистрируем ПОСЛЕ установки начального значения
+  editor.events.on('change', () => {
+    onChange(editor.value)
+  })
 
   // Публичный API
   return {

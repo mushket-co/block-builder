@@ -45,8 +45,6 @@
       </label>
       <span v-if="fileError" class="bb-image-upload-field__error">{{ fileError }}</span>
     </div>
-
-    <div v-if="error" class="bb-image-upload-field__error">{{ error }}</div>
   </div>
 </template>
 

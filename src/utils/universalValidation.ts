@@ -21,16 +21,44 @@ export const UniversalValidator = {
     const errors: string[] = [];
     for (const rule of rules) {
       switch (rule.type) {
-        case 'required':
-          if (
-            value === null ||
-            value === undefined ||
-            value === '' ||
-            (Array.isArray(value) && value.length === 0)
-          ) {
+        case 'required': {
+          let isEmpty = false;
+          if (value === null || value === undefined || value === '') {
+            isEmpty = true;
+          } else if (Array.isArray(value) && value.length === 0) {
+            isEmpty = true;
+          } else if (typeof value === 'string') {
+            const trimmed = value.trim();
+            if (trimmed === '') {
+              isEmpty = true;
+            } else {
+              const hasHtmlTags = /<[^>]+>/.test(trimmed);
+              if (hasHtmlTags) {
+                const textContent = trimmed
+                  .replaceAll(/<[^>]*>/g, '')
+                  .replaceAll('&nbsp;', ' ')
+                  .replaceAll('&amp;', '&')
+                  .replaceAll('&lt;', '<')
+                  .replaceAll('&gt;', '>')
+                  .replaceAll('&quot;', '"')
+                  .replaceAll('&#39;', "'")
+                  .trim();
+                if (
+                  textContent === '' ||
+                  textContent === '<br>' ||
+                  trimmed === '<p></p>' ||
+                  trimmed === '<p><br></p>'
+                ) {
+                  isEmpty = true;
+                }
+              }
+            }
+          }
+          if (isEmpty) {
             errors.push(rule.message || 'Поле обязательно для заполнения');
           }
           break;
+        }
         case 'email':
           if (typeof value === 'string' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
             errors.push(rule.message || 'Некорректный email адрес');

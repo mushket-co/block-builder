@@ -11,9 +11,6 @@
     :class="inputClass"
     @input="handleInput"
   />
-  <div v-if="showError && error" class="bb-form-errors">
-    <span :class="CSS_CLASSES.ERROR">{{ error }}</span>
-  </div>
 </template>
 
 <script setup lang="ts">
@@ -50,8 +47,6 @@ const inputClass = computed(() => {
   const baseClass = CSS_CLASSES.FORM_CONTROL;
   return props.error ? `${baseClass} ${CSS_CLASSES.ERROR}` : baseClass;
 });
-
-const showError = computed(() => !!props.error);
 
 const handleInput = (event: Event) => {
   const target = event.target as HTMLTextAreaElement;

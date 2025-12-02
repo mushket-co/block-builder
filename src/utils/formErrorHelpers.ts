@@ -31,7 +31,7 @@ export function parseErrorKey(errorKey: string): IFirstErrorInfo {
 function parseNestedPath(path: string): Array<{ fieldName: string; index: number }> {
   const parts: Array<{ fieldName: string; index: number }> = [];
   let remainingPath = path;
-  
+
   while (remainingPath) {
     const repeaterMatch = remainingPath.match(/^([A-Z_a-z]+)\[(\d+)]/);
     if (repeaterMatch) {
@@ -59,7 +59,7 @@ function parseNestedPath(path: string): Array<{ fieldName: string; index: number
       }
     }
   }
-  
+
   return parts;
 }
 
@@ -87,11 +87,11 @@ export function getFirstErrorKey(errors: Record<string, string[]>): string | nul
       if (indexDiff !== 0) {
         return indexDiff;
       }
-      
+
       if (aInfo.nestedPath && bInfo.nestedPath) {
         const aPath = parseNestedPath(aInfo.nestedPath);
         const bPath = parseNestedPath(bInfo.nestedPath);
-        
+
         for (let i = 0; i < Math.max(aPath.length, bPath.length); i++) {
           if (i >= aPath.length) {
             return -1;
@@ -99,20 +99,20 @@ export function getFirstErrorKey(errors: Record<string, string[]>): string | nul
           if (i >= bPath.length) {
             return 1;
           }
-          
+
           const aPart = aPath[i];
           const bPart = bPath[i];
-          
+
           if (aPart.fieldName !== bPart.fieldName) {
             return aPart.fieldName.localeCompare(bPart.fieldName);
           }
-          
+
           if (aPart.index !== bPart.index) {
             return aPart.index - bPart.index;
           }
         }
       }
-      
+
       return a.localeCompare(b);
     }
     return a.localeCompare(b);
@@ -124,75 +124,13 @@ export function findFieldElement(
   errorInfo: IFirstErrorInfo
 ): HTMLElement | null {
   if (!errorInfo.isRepeaterField) {
-    let element = containerElement.querySelector(
+    const element = containerElement.querySelector(
       `[data-field-name="${errorInfo.fieldKey}"]`
     ) as HTMLElement;
-    if (element) {
-      return element;
-    }
-
-    element = containerElement.querySelector(
-      `.${CSS_CLASSES.IMAGE_UPLOAD_FIELD}[data-field-name="${errorInfo.fieldKey}"]`
-    ) as HTMLElement;
-    if (element) {
-      return element;
-    }
-
-    return (
-      (containerElement.querySelector(
-        `.${CSS_CLASSES.FORM_GROUP}[data-field-name="${errorInfo.fieldKey}"]`
-      ) as HTMLElement) || null
-    );
+    return element || null;
   }
 
   const fullFieldPath = `${errorInfo.repeaterFieldName}[${errorInfo.repeaterIndex}].${errorInfo.nestedPath || errorInfo.nestedFieldName}`;
-
-  const fullPathElement = containerElement.querySelector(
-    `[data-field-name="${fullFieldPath}"]`
-  ) as HTMLElement;
-  if (fullPathElement) {
-    const input = fullPathElement.querySelector('input, textarea, select') as HTMLElement;
-    return input || fullPathElement;
-  }
-
-  if (errorInfo.nestedPath && errorInfo.nestedPath.includes('[')) {
-    let repeaterContainer = containerElement.querySelector(
-      `.${CSS_CLASSES.REPEATER_CONTROL_CONTAINER}[data-field-name="${errorInfo.repeaterFieldName}"]`
-    ) as HTMLElement;
-
-    if (!repeaterContainer) {
-      repeaterContainer = containerElement.querySelector(
-        `[data-field-name="${errorInfo.repeaterFieldName}"]`
-      ) as HTMLElement;
-    }
-
-    if (repeaterContainer) {
-      const repeaterItems = repeaterContainer.querySelectorAll(
-        `.${CSS_CLASSES.REPEATER_CONTROL_ITEM}`
-      );
-      const itemIndex = errorInfo.repeaterIndex || 0;
-
-      if (itemIndex < repeaterItems.length) {
-        const targetItem = repeaterItems[itemIndex] as HTMLElement;
-        const nestedField = findNestedRepeaterField(
-          targetItem,
-          errorInfo.nestedPath,
-          errorInfo.repeaterIndex || 0
-        );
-        if (nestedField) {
-          return nestedField;
-        }
-      }
-    }
-
-    const fallbackElement = containerElement.querySelector(
-      `[data-field-name*="${fullFieldPath}"]`
-    ) as HTMLElement;
-    if (fallbackElement) {
-      const input = fallbackElement.querySelector('input, textarea, select') as HTMLElement;
-      return input || fallbackElement;
-    }
-  }
 
   let repeaterContainer = containerElement.querySelector(
     `.${CSS_CLASSES.REPEATER_CONTROL_CONTAINER}[data-field-name="${errorInfo.repeaterFieldName}"]`
@@ -220,45 +158,29 @@ export function findFieldElement(
     return null;
   }
 
-  let fieldElement = targetItem.querySelector(
-    `[data-field-name="${fullFieldPath}"]`
-  ) as HTMLElement;
-  if (fieldElement) {
-    const input = fieldElement.querySelector('input, textarea, select') as HTMLElement;
-    return input || fieldElement;
-  }
-
-  const imageUploadFields = targetItem.querySelectorAll<HTMLElement>(
-    `.${CSS_CLASSES.IMAGE_UPLOAD_FIELD}[data-repeater-item-field="${errorInfo.nestedFieldName}"]`
-  );
-
-  for (const el of Array.from(imageUploadFields)) {
-    const repeaterIndexAttr = el.dataset.repeaterIndex;
-    if (repeaterIndexAttr !== undefined && repeaterIndexAttr !== null) {
-      const repeaterIndexNum = Number.parseInt(repeaterIndexAttr, 10);
-      if (!Number.isNaN(repeaterIndexNum) && repeaterIndexNum === errorInfo.repeaterIndex) {
-        return el;
-      }
+  if (errorInfo.nestedPath && errorInfo.nestedPath.includes('[')) {
+    const nestedField = findNestedRepeaterField(
+      targetItem,
+      errorInfo.nestedPath,
+      errorInfo.repeaterIndex || 0
+    );
+    if (nestedField) {
+      return nestedField;
     }
   }
 
-  if (imageUploadFields.length === 1) {
-    return imageUploadFields[0] as HTMLElement;
-  }
-
-  fieldElement = targetItem.querySelector(
-    `[data-field-name*="${errorInfo.nestedFieldName}"]`
+  const fieldElement = targetItem.querySelector(
+    `[data-field-name="${fullFieldPath}"]`
   ) as HTMLElement;
   if (fieldElement) {
-    const input = fieldElement.querySelector('input, textarea, select') as HTMLElement;
-    return input || fieldElement;
+    return fieldElement;
   }
 
-  const lastTry = targetItem.querySelector(
-    `.${CSS_CLASSES.IMAGE_UPLOAD_FIELD}[data-field-name*="${errorInfo.nestedFieldName}"]`
+  const fallbackElement = targetItem.querySelector(
+    `[data-field-name*="${errorInfo.nestedFieldName}"]`
   ) as HTMLElement;
-  if (lastTry) {
-    return lastTry;
+  if (fallbackElement) {
+    return fallbackElement;
   }
 
   return null;
@@ -329,40 +251,10 @@ function findNestedRepeaterField(
     } else {
       if (currentContainer && i === pathParts.length - 1) {
         const fieldName = part;
-
         const fieldElement = currentContainer.querySelector(
           `[data-field-name*="${fieldName}"]`
         ) as HTMLElement;
-
-        if (!fieldElement) {
-          const formGroup = currentContainer.querySelector(
-            `.${CSS_CLASSES.FORM_GROUP}[data-field-name*="${fieldName}"]`
-          ) as HTMLElement;
-          if (formGroup) {
-            const input = formGroup.querySelector('input, textarea, select') as HTMLElement;
-            return input || formGroup;
-          }
-        }
-
-        if (!fieldElement) {
-          const allInputs = currentContainer.querySelectorAll('input, textarea, select');
-          for (const input of Array.from(allInputs)) {
-            const htmlInput = input as HTMLElement;
-            const fieldId = htmlInput.id || htmlInput.getAttribute('name') || '';
-            const closestFieldName =
-              htmlInput.closest(`[data-field-name]`)?.getAttribute('data-field-name') || '';
-            if (fieldId.includes(fieldName) || closestFieldName.includes(fieldName)) {
-              return htmlInput;
-            }
-          }
-        }
-
-        if (fieldElement) {
-          const input = fieldElement.querySelector('input, textarea, select') as HTMLElement;
-          return input || fieldElement;
-        }
-
-        return fieldElement;
+        return fieldElement || null;
       }
     }
   }
@@ -405,36 +297,20 @@ export function scrollToElement(
   }
 
   const performScroll = () => {
-    let elementTop = 0;
-    let containerTop = 0;
+    const elementRect = element.getBoundingClientRect();
+    const containerRect = scrollContainer.getBoundingClientRect();
 
-    if (scrollContainer.contains(element)) {
-      let currentElement: HTMLElement | null = element;
-      while (currentElement && currentElement !== scrollContainer) {
-        elementTop += currentElement.offsetTop;
-        currentElement = currentElement.offsetParent as HTMLElement | null;
-      }
-      containerTop = scrollContainer.offsetTop;
-    } else {
-      const elementRect = element.getBoundingClientRect();
-      const containerRect = scrollContainer.getBoundingClientRect();
-      elementTop = elementRect.top - containerRect.top + scrollContainer.scrollTop;
-      containerTop = 0;
-    }
+    const elementTopRelativeToContainer =
+      elementRect.top - containerRect.top + scrollContainer.scrollTop;
+    const targetScrollTop = elementTopRelativeToContainer - offset;
 
-    let targetScrollTop = elementTop - containerTop - offset;
     const maxScrollTop = Math.max(0, scrollContainer.scrollHeight - scrollContainer.clientHeight);
-
-    if (targetScrollTop < 0) {
-      targetScrollTop = 0;
-    } else if (maxScrollTop > 0 && targetScrollTop > maxScrollTop) {
-      targetScrollTop = maxScrollTop;
-    }
+    const finalScrollTop = Math.max(0, Math.min(targetScrollTop, maxScrollTop));
 
     if (behavior === 'smooth') {
-      smoothScrollElement(scrollContainer, targetScrollTop);
+      smoothScrollElement(scrollContainer, finalScrollTop);
     } else {
-      scrollContainer.scrollTop = targetScrollTop;
+      scrollContainer.scrollTop = finalScrollTop;
     }
   };
 
@@ -593,6 +469,19 @@ function isFormField(
     element instanceof HTMLSelectElement
   );
 }
+
+function findFirstErrorElementInDOM(containerElement: HTMLElement): HTMLElement | null {
+  const firstErrorFormGroup = containerElement.querySelector(
+    `.${CSS_CLASSES.FORM_GROUP}.${CSS_CLASSES.ERROR}`
+  ) as HTMLElement;
+
+  if (!firstErrorFormGroup) {
+    return null;
+  }
+
+  return firstErrorFormGroup;
+}
+
 export function scrollToFirstError(
   containerElement: HTMLElement,
   errors: Record<string, string[]>,
@@ -600,24 +489,43 @@ export function scrollToFirstError(
     offset?: number;
     behavior?: ScrollBehavior;
     autoFocus?: boolean;
+    scrollContainer?: HTMLElement;
   } = {}
 ): IFirstErrorInfo | null {
-  const firstErrorKey = getFirstErrorKey(errors);
-  if (!firstErrorKey) {
+  if (Object.keys(errors).length === 0) {
     return null;
   }
-  const errorInfo = parseErrorKey(firstErrorKey);
-  const fieldElement = findFieldElement(containerElement, errorInfo);
 
-  if (!fieldElement) {
-    return errorInfo;
-  }
-  scrollToElement(fieldElement, {
-    offset: options.offset,
-    behavior: options.behavior,
-  });
-  if (options.autoFocus !== false) {
-    focusElement(fieldElement);
-  }
-  return errorInfo;
+  setTimeout(() => {
+    let fieldElement = findFirstErrorElementInDOM(containerElement);
+
+    if (!fieldElement) {
+      const firstErrorKey = getFirstErrorKey(errors);
+      if (firstErrorKey) {
+        const errorInfo = parseErrorKey(firstErrorKey);
+        fieldElement = findFieldElement(containerElement, errorInfo);
+      }
+    }
+
+    if (!fieldElement) {
+      return;
+    }
+
+    const scrollContainer = options.scrollContainer;
+
+    scrollToElement(fieldElement, {
+      offset: options.offset,
+      behavior: options.behavior,
+      container: scrollContainer,
+    });
+
+    setTimeout(() => {
+      if (options.autoFocus !== false) {
+        focusElement(fieldElement);
+      }
+    }, 100);
+  }, 300);
+
+  const firstErrorKey = getFirstErrorKey(errors);
+  return firstErrorKey ? parseErrorKey(firstErrorKey) : null;
 }

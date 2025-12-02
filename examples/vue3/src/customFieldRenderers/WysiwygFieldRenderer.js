@@ -30,7 +30,7 @@ export class WysiwygFieldRenderer {
     // Создаем Vue приложение с компонентом редактора
     const app = createApp(WysiwygEditor, {
       modelValue: context.value || '',
-      isError: false,
+      isError: !!context.error,
       mode: context.options?.mode || 'default',
       'onUpdate:modelValue': (newValue) => {
         // Вызываем onChange callback при изменении значения
@@ -40,6 +40,9 @@ export class WysiwygFieldRenderer {
 
     // Монтируем приложение
     const instance = app.mount(wrapper)
+    
+    // Сохраняем ссылку на instance для обновления ошибки
+    let currentError = context.error || ''
 
     // Возвращаем результат с методами управления
     return {

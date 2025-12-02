@@ -6,7 +6,6 @@
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 import type { ICustomFieldRendererRegistry } from '../../core/ports/CustomFieldRenderer';
-import { logger } from '../../utils/logger';
 
 interface Props {
   field: any;
@@ -63,8 +62,8 @@ const initializeRenderer = async () => {
 
   try {
     rendererInstance = await renderer.render(containerRef.value, context);
-  } catch (error) {
-    logger.error('Ошибка инициализации кастомного поля:', error);
+  } catch {
+    // Игнорируем ошибки инициализации кастомного поля
   }
 };
 

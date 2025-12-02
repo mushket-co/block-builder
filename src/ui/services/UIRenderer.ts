@@ -4,7 +4,6 @@ import { IBreakpoint } from '../../core/types/form';
 import { getBlockInlineStyles, watchBreakpointChanges } from '../../utils/breakpointHelpers';
 import { CSS_CLASSES } from '../../utils/constants';
 import { afterRender } from '../../utils/domReady';
-import { logger } from '../../utils/logger';
 import { ISpacingData } from '../../utils/spacingHelpers';
 import { EventDelegation } from '../EventDelegation';
 import {
@@ -601,8 +600,8 @@ export class UIRenderer {
     if (app) {
       try {
         app.unmount();
-      } catch (error) {
-        logger.warn(`Ошибка при удалении Vue приложения ${containerId}:`, error);
+      } catch {
+        // Игнорируем ошибки при удалении Vue приложения
       }
       this.vueApps.delete(containerId);
     }

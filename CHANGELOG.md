@@ -6,6 +6,43 @@
 и проект следует [Semantic Versioning](https://semver.org/lang/ru/).
 
 
+## [1.0.30] - 2025-01-XX
+
+### Добавлено
+- **Vue Composables**: Добавлены композаблы для разделения логики компонентов (`useBlockForm`, `useBlocks`, `useModals`, `useLicense`) в `src/ui/composables/`
+- **ControlManager**: Новый централизованный менеджер для управления жизненным циклом контролов форм (инициализация, отслеживание активных контролов, корректное удаление)
+- **ControlInitializerFactory**: Фабрика для создания и регистрации инициализаторов контролов различных типов (ApiSelect, CustomField, ImageUpload, Repeater, Select, Spacing)
+- **Система инициализаторов контролов**: Добавлены отдельные инициализаторы для каждого типа контрола в `src/ui/services/control-initializers/` (ApiSelectControlInitializer, CustomFieldControlInitializer, ImageUploadControlInitializerWrapper, RepeaterControlInitializer, SelectControlInitializer, SpacingControlInitializer)
+- **FormController**: Новый контроллер для управления формами создания и редактирования блоков с поддержкой валидации и обработки ошибок
+- **NotificationService**: Сервис для отображения уведомлений пользователю (success, error, info) с автоматическим скрытием
+- **ValidationErrorHandler**: Обработчик ошибок валидации с автоматическим раскрытием аккордеонов репитеров и скроллом к первому полю с ошибкой
+- **FieldControlRegistry**: Реестр для управления контролами полей форм
+- **IControlRenderer и IControlInitializer**: Интерфейсы для унификации работы с контролами и их инициализаторами
+- **domClassHelpers**: Утилиты для работы с CSS классами DOM элементов
+- **Экспорт composables**: Добавлен экспорт всех composables через `src/ui/composables/index.ts`
+
+### Изменено
+- **BlockBuilder.vue**: Рефакторинг на использование composables (`useBlockForm`, `useBlocks`, `useModals`, `useLicense`) для улучшения читаемости и переиспользования логики
+- **BlockUIController.ts**: Переработан для использования новой системы управления контролами через `ControlManager` и `ControlInitializerFactory`; добавлена интеграция с `FormController`
+- **UIRenderer.ts**: Обновлен для работы с новой системой инициализации контролов через `ControlManager`
+- **RepeaterControlRenderer.ts**: Адаптирован для работы с новой системой инициализаторов; улучшена интеграция с `ControlManager`
+- **CustomFieldControlRenderer.ts**: Обновлен для использования новой архитектуры инициализации контролов
+- **ApiSelectControlRenderer.ts**: Интегрирован с новой системой управления контролами
+- **EventDelegation.ts**: Улучшена обработка событий и интеграция с новой системой контролов
+- **formErrorHelpers.ts**: Расширена функциональность для работы с новой системой валидации и обработки ошибок
+- **universalValidation.ts**: Улучшена валидация форм с поддержкой новой архитектуры
+- **logger.ts**: Обновлен для лучшей интеграции с системой уведомлений
+- **Компоненты форм Vue3**: Обновлены компоненты (`FormField`, `ApiSelectField`, `ImageUploadField`, `CheckboxField`, `ColorField`, `NumberField`, `RadioField`, `SelectField`, `TextField`, `TextareaField`) для работы с новой системой управления контролами
+- **Примеры**: Обновлены примеры в `examples/vue3`, `examples/pure-js-vite`, `examples/pure-js-cdn` для демонстрации новой архитектуры
+- **Примеры кастомных полей**: Обновлены примеры WYSIWYG редактора (`WysiwygFieldRenderer`) в `examples/vue3` и `examples/pure-js-vite` для корректной работы с новой системой управления контролами через `ControlManager` и `CustomFieldControlInitializer`; улучшена интеграция с валидацией и обработкой ошибок
+
+### Исправлено
+- **Утечки памяти контролов**: Исправлены утечки памяти при удалении контролов - теперь контролы корректно удаляются через `ControlManager.destroyControl()` и `destroyControlsInContainer()`
+- **Инициализация контролов**: Исправлена проблема повторной инициализации контролов - добавлена проверка флага `data-control-initialized` для предотвращения дублирования
+- **Обработка ошибок валидации**: Улучшена обработка и отображение ошибок валидации с автоматическим раскрытием вложенных репитеров и скроллом к первому полю с ошибкой
+- **Синхронизация значений контролов**: Исправлена синхронизация значений между контролами и данными формы при валидации и отправке формы
+
+
 ## [1.0.28] - 2025-11-22
 
 ### Добавлено

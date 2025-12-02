@@ -17,16 +17,9 @@
       <span class="bb-form-radio-label">{{ option.label }}</span>
     </label>
   </div>
-  <div v-if="showError && error" class="bb-form-errors">
-    <span :class="CSS_CLASSES.ERROR">{{ error }}</span>
-  </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-
-import { CSS_CLASSES } from '../../../utils/constants';
-
 interface Option {
   value: string | number;
   label: string;
@@ -41,7 +34,7 @@ interface Props {
   options?: Option[];
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   modelValue: undefined,
   label: '',
   required: false,
@@ -52,8 +45,6 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   'update:modelValue': [value: string | number];
 }>();
-
-const showError = computed(() => !!props.error);
 
 const handleChange = (value: string | number) => {
   emit('update:modelValue', value);

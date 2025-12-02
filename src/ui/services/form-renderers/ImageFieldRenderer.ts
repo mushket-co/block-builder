@@ -104,12 +104,8 @@ export class ImageFieldRenderer extends BaseFieldRenderer {
         </label>
         <span class="${CSS_CLASSES.IMAGE_UPLOAD_FIELD_ERROR} ${CSS_CLASSES.BB_HIDDEN}"></span>
       </div>
-      ${
-        context?.showErrors && context.errors && context.errors.length > 0
-          ? `<div class="${CSS_CLASSES.FORM_ERRORS}"><div class="${CSS_CLASSES.ERROR}">${this.escapeHtml(context.errors[0])}</div></div>`
-          : ''
-      }
       <input type="hidden" name="${fieldName}" value="${this.escapeHtml(typeof value === 'object' ? JSON.stringify(value) : value || '')}" ${hiddenInputDataAttrs.join(' ')} />
+      ${this.renderErrors(context)}
     `;
 
     const containerClass = context?.containerClass

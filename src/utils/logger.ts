@@ -23,40 +23,25 @@ class Logger {
     this.level = level;
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  debug(...args: any[]): void {
-    if (this.level <= LogLevel.DEBUG) {
-      // eslint-disable-next-line no-console
-      console.debug('[BB Debug]', ...args);
-    }
+  debug(..._args: any[]): void {
+    // Логирование отключено
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  info(...args: any[]): void {
-    if (this.level <= LogLevel.INFO) {
-      // eslint-disable-next-line no-console
-      console.info('[BB Info]', ...args);
-    }
+  info(..._args: any[]): void {
+    // Логирование отключено
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  warn(...args: any[]): void {
-    if (this.level <= LogLevel.WARN) {
-      // eslint-disable-next-line no-console
-      console.warn('[BB Warn]', ...args);
-    }
+  warn(..._args: any[]): void {
+    // Логирование отключено
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  error(...args: any[]): void {
-    if (this.level <= LogLevel.ERROR) {
-      // eslint-disable-next-line no-console
-      console.error('[BB Error]', ...args);
-    }
+  error(..._args: any[]): void {
+    // Логирование отключено
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  dev(...args: any[]): void {
-    if (this.isDevelopment) {
-      // eslint-disable-next-line no-console
-      console.log('[BB Dev]', ...args);
-    }
+  dev(..._args: any[]): void {
+    // Логирование отключено
   }
 }
 export const logger = new Logger();

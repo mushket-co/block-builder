@@ -37,18 +37,25 @@ export class WysiwygFieldRenderer {
     const wrapper = document.createElement('div')
     wrapper.className = 'wysiwyg-field-wrapper'
 
+    // Объявляем переменную для API редактора
+    let editorAPI = null
+
     // Инициализируем редактор прямо в wrapper
-    const editorAPI = createWysiwygEditor(wrapper, {
+    editorAPI = createWysiwygEditor(wrapper, {
       value: value || '<p></p>',
       mode: options.mode || 'default',
       onChange: (newValue) => {
         // Вызываем onChange из контекста
         onChange(newValue)
-        
-        // Валидация при изменении
-        if (required) {
-          const error = editorAPI.validate()
-          onError(error)
+
+        // Валидация при изменении (проверяем что editorAPI уже инициализирован)
+        if (required && editorAPI) {
+          try {
+            const error = editorAPI.validate()
+            onError(error)
+          } catch (err) {
+            // Игнорируем ошибки валидации если редактор еще не готов
+          }
         }
       },
       onError: (error) => {
@@ -59,16 +66,24 @@ export class WysiwygFieldRenderer {
     // Возвращаем API для Block Builder
     return {
       element: wrapper,  // Возвращаем wrapper, а не container
-      
+
       getValue: () => {
+        if (!editorAPI) {
+          return value || ''
+        }
         return editorAPI.getValue()
       },
 
       setValue: (newValue) => {
-        editorAPI.setValue(newValue)
+        if (editorAPI) {
+          editorAPI.setValue(newValue)
+        }
       },
 
       validate: () => {
+        if (!editorAPI) {
+          return null
+        }
         if (required) {
           return editorAPI.validate()
         }
@@ -76,7 +91,10 @@ export class WysiwygFieldRenderer {
       },
 
       destroy: () => {
-        editorAPI.destroy()
+        if (editorAPI) {
+          editorAPI.destroy()
+          editorAPI = null
+        }
       }
     }
   }

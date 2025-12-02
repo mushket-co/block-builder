@@ -12,16 +12,9 @@
       <span v-if="required" class="bb-required">*</span>
     </span>
   </label>
-  <div v-if="showError && error" class="bb-form-errors">
-    <span :class="CSS_CLASSES.ERROR">{{ error }}</span>
-  </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-
-import { CSS_CLASSES } from '../../../utils/constants';
-
 interface Props {
   fieldId: string;
   modelValue?: boolean;
@@ -30,7 +23,7 @@ interface Props {
   error?: string;
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   modelValue: false,
   label: '',
   required: false,
@@ -40,8 +33,6 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   'update:modelValue': [value: boolean];
 }>();
-
-const showError = computed(() => !!props.error);
 
 const handleChange = (event: Event) => {
   const target = event.target as HTMLInputElement;

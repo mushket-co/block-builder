@@ -56,15 +56,15 @@ module.exports = [
       }),
       terser({
         compress: {
-          drop_console: false, // Временно отключено для отладки
+          drop_console: false,
           drop_debugger: true,
-          // pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.warn'], // Временно отключено
-          unused: true, // Удаляем неиспользуемые переменные
-          dead_code: true, // Удаляем мертвый код
-          passes: 3, // Несколько проходов оптимизации
+          pure_funcs: [],
+          unused: true,
+          dead_code: true,
+          passes: 3,
         },
         format: {
-          comments: false, // Убираем все комментарии
+          comments: false,
         },
       }),
     ],

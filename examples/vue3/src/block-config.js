@@ -100,8 +100,7 @@ export const blockConfigs = {
         type: 'textarea',
         placeholder: 'Введите ваш текст...',
         rules: [
-          { type: 'required', message: 'Текст обязателен' },
-          { type: 'minLength', value: 1, message: 'Текст не может быть пустым' }
+          { type: 'required', message: 'Текст обязателен' }
         ],
         defaultValue: ''
       },
@@ -290,9 +289,12 @@ export const blockConfigs = {
               field: 'link',
               label: 'Ссылка',
               type: 'text',
-              placeholder: 'https://example.com',
-              rules: [],
-              defaultValue: 'https://example.com'
+              placeholder: '/news/123/ или https://example.com',
+              rules: [
+                { type: 'required', message: 'Ссылка обязательна' },
+                { type: 'minLength', value: 1, message: 'Ссылка не может быть пустой' }
+              ],
+              defaultValue: ''
             },
             {
               field: 'featuredNews',
@@ -518,14 +520,18 @@ export const blockConfigs = {
         label: 'Заголовок секции',
         type: 'text',
         placeholder: 'Наши продукты',
-        rules: [],
+        rules: [
+          { type: 'required', message: 'Заголовок секции обязателен' },
+          { type: 'minLength', value: 3, message: 'Минимальная длина: 3 символа' },
+          { type: 'maxLength', value: 100, message: 'Максимальная длина: 100 символов' }
+        ],
         defaultValue: 'Наши продукты'
       },
       {
         field: 'titleColor',
         label: 'Цвет заголовка секции',
         type: 'color',
-        rules: [],
+        rules: [{ type: 'required', message: 'Цвет заголовка обязателен' }],
         defaultValue: '#333333'
       },
       {
@@ -533,6 +539,7 @@ export const blockConfigs = {
         label: 'Размер заголовка секции (px)',
         type: 'number',
         rules: [
+          { type: 'required', message: 'Размер заголовка обязателен' },
           { type: 'min', value: 16, message: 'Минимум: 16px' },
           { type: 'max', value: 72, message: 'Максимум: 72px' }
         ],
@@ -547,7 +554,7 @@ export const blockConfigs = {
           { value: 'center', label: 'По центру' },
           { value: 'right', label: 'По правому краю' }
         ],
-        rules: [],
+        rules: [{ type: 'required', message: 'Выравнивание заголовка обязательно' }],
         defaultValue: 'center'
       },
 
@@ -623,7 +630,11 @@ export const blockConfigs = {
               label: 'Заголовок',
               type: 'text',
               placeholder: 'Название продукта',
-              rules: [{ type: 'required', message: 'Заголовок обязателен' }],
+              rules: [
+                { type: 'required', message: 'Заголовок обязателен' },
+                { type: 'minLength', value: 3, message: 'Минимальная длина: 3 символа' },
+                { type: 'maxLength', value: 100, message: 'Максимальная длина: 100 символов' }
+              ],
               defaultValue: ''
             },
             {
@@ -631,7 +642,11 @@ export const blockConfigs = {
               label: 'Подзаголовок',
               type: 'text',
               placeholder: 'Краткое описание',
-              rules: [],
+              rules: [
+                { type: 'required', message: 'Подзаголовок обязателен' },
+                { type: 'minLength', value: 5, message: 'Минимальная длина: 5 символов' },
+                { type: 'maxLength', value: 150, message: 'Максимальная длина: 150 символов' }
+              ],
               defaultValue: ''
             },
             {
@@ -639,14 +654,21 @@ export const blockConfigs = {
               label: 'Основной текст',
               type: 'textarea',
               placeholder: 'Основное описание продукта...',
-              rules: [{ type: 'required', message: 'Основной текст обязателен' }],
+              rules: [
+                { type: 'required', message: 'Основной текст обязателен' },
+                { type: 'minLength', value: 10, message: 'Минимальная длина: 10 символов' },
+                { type: 'maxLength', value: 500, message: 'Максимальная длина: 500 символов' }
+              ],
               defaultValue: ''
             },
             {
               field: 'detailedText',
               label: 'Детальное описание',
               type: 'custom',
-              rules: [],
+              rules: [
+                { type: 'required', message: 'Детальное описание обязательно' },
+                { type: 'minLength', value: 20, message: 'Минимальная длина: 20 символов' }
+              ],
               defaultValue: '',
               customFieldConfig: {
                 rendererId: 'wysiwyg-editor',
@@ -659,12 +681,12 @@ export const blockConfigs = {
               field: 'link',
               label: 'Ссылка',
               type: 'text',
-              placeholder: 'https://example.com',
+              placeholder: '/news/123/ или https://example.com',
               rules: [
                 { type: 'required', message: 'Ссылка обязательна' },
-                { type: 'pattern', value: '^https?://', message: 'Ссылка должна начинаться с http:// или https://' }
+                { type: 'minLength', value: 1, message: 'Ссылка не может быть пустой' }
               ],
-              defaultValue: 'https://example.com'
+              defaultValue: ''
             },
             {
               field: 'linkTarget',
@@ -674,7 +696,7 @@ export const blockConfigs = {
                 { value: '_self', label: 'В текущей вкладке' },
                 { value: '_blank', label: 'В новой вкладке' }
               ],
-              rules: [],
+              rules: [{ type: 'required', message: 'Выбор открытия ссылки обязателен' }],
               defaultValue: '_blank'
             },
             {
@@ -682,21 +704,25 @@ export const blockConfigs = {
               label: 'Текст кнопки',
               type: 'text',
               placeholder: 'Подробнее',
-              rules: [{ type: 'required', message: 'Текст кнопки обязателен' }],
+              rules: [
+                { type: 'required', message: 'Текст кнопки обязателен' },
+                { type: 'minLength', value: 2, message: 'Минимальная длина: 2 символа' },
+                { type: 'maxLength', value: 50, message: 'Максимальная длина: 50 символов' }
+              ],
               defaultValue: 'Подробнее'
             },
             {
               field: 'image',
               label: 'Изображение (десктоп)',
               type: 'image',
-              rules: [],
+              rules: [{ type: 'required', message: 'Изображение для десктопа обязательно' }],
               defaultValue: ''
             },
             {
               field: 'imageMobile',
               label: 'Изображение (мобильное)',
               type: 'image',
-              rules: [],
+              rules: [{ type: 'required', message: 'Изображение для мобильного обязательно' }],
               defaultValue: ''
             },
             {
@@ -704,21 +730,25 @@ export const blockConfigs = {
               label: 'Альтернативный текст изображения',
               type: 'text',
               placeholder: 'Описание изображения для доступности',
-              rules: [],
+              rules: [
+                { type: 'required', message: 'Альтернативный текст обязателен' },
+                { type: 'minLength', value: 3, message: 'Минимальная длина: 3 символа' },
+                { type: 'maxLength', value: 200, message: 'Максимальная длина: 200 символов' }
+              ],
               defaultValue: ''
             },
             {
               field: 'backgroundColor',
               label: 'Цвет фона карточки',
               type: 'color',
-              rules: [],
+              rules: [{ type: 'required', message: 'Цвет фона обязателен' }],
               defaultValue: '#ffffff'
             },
             {
               field: 'textColor',
               label: 'Цвет текста карточки',
               type: 'color',
-              rules: [],
+              rules: [{ type: 'required', message: 'Цвет текста обязателен' }],
               defaultValue: '#333333'
             },
             {
@@ -726,7 +756,11 @@ export const blockConfigs = {
               label: 'Место встречи',
               type: 'text',
               placeholder: 'Конференц-зал, офис...',
-              rules: [{ type: 'required', message: 'Место встречи обязательно' }],
+              rules: [
+                { type: 'required', message: 'Место встречи обязательно' },
+                { type: 'minLength', value: 5, message: 'Минимальная длина: 5 символов' },
+                { type: 'maxLength', value: 200, message: 'Максимальная длина: 200 символов' }
+              ],
               defaultValue: ''
             },
             {
@@ -734,7 +768,11 @@ export const blockConfigs = {
               label: 'Время встречи',
               type: 'text',
               placeholder: '15:00, 25 октября 2024',
-              rules: [{ type: 'required', message: 'Время встречи обязательно' }],
+              rules: [
+                { type: 'required', message: 'Время встречи обязательно' },
+                { type: 'minLength', value: 5, message: 'Минимальная длина: 5 символов' },
+                { type: 'maxLength', value: 100, message: 'Максимальная длина: 100 символов' }
+              ],
               defaultValue: ''
             },
             {
@@ -744,7 +782,8 @@ export const blockConfigs = {
               placeholder: '50',
               rules: [
                 { type: 'required', message: 'Количество участников обязательно' },
-                { type: 'min', value: 1, message: 'Минимум 1 участник' }
+                { type: 'min', value: 1, message: 'Минимум 1 участник' },
+                { type: 'max', value: 10000, message: 'Максимум 10000 участников' }
               ],
               defaultValue: ''
             },
@@ -752,7 +791,7 @@ export const blockConfigs = {
               field: 'relatedArticle',
               label: 'Связанная статья',
               type: 'api-select',
-              rules: [],
+              rules: [{ type: 'required', message: 'Связанная статья обязательна' }],
               defaultValue: null,
               apiSelectConfig: {
                 url: '/api/articles',
@@ -994,13 +1033,13 @@ export const blockConfigs = {
       {
         field: 'url',
         label: 'URL',
-        type: 'url',
-        placeholder: 'https://example.com',
+        type: 'text',
+        placeholder: '/news/123/ или https://example.com',
         rules: [
           { type: 'required', message: 'URL обязателен' },
-          { type: 'url', message: 'Введите корректный URL' }
+          { type: 'minLength', value: 1, message: 'Ссылка не может быть пустой' }
         ],
-        defaultValue: 'https://example.com'
+        defaultValue: ''
       },
       {
         field: 'linkTarget',
