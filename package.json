@@ -107,7 +107,7 @@
     "type": "git",
     "url": "git+https://github.com/mushket-co/block-builder.git"
   },
-  "homepage": "https://block-builder.ru",
+    "homepage": "https://block-builder.ru",
   "bugs": {
     "url": "https://github.com/mushket-co/block-builder/issues"
   },
