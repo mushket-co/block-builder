@@ -26,6 +26,11 @@ export interface IBreakpoint {
 export interface ISpacingValue {
   [breakpoint: string]: number;
 }
+export interface IDependsOnConfig {
+  field: string;
+  value: boolean | string | number;
+  operator?: 'equals' | 'notEquals' | 'in' | 'notIn';
+}
 export interface ISpacingFieldConfig {
   spacingTypes?: TSpacingType[];
   min?: number;
@@ -51,6 +56,11 @@ export interface IRepeaterItemFieldConfig {
   customFieldConfig?: ICustomFieldConfig;
   imageUploadConfig?: IImageUploadConfig;
   repeaterConfig?: IRepeaterFieldConfig;
+  /**
+   * Условное отображение поля: поле показывается только если другое поле имеет определенное значение
+   * Используется только в Vue версии
+   */
+  dependsOn?: IDependsOnConfig;
 }
 export interface IRepeaterFieldConfig {
   fields: IRepeaterItemFieldConfig[];
@@ -142,6 +152,11 @@ export interface IFormFieldConfig {
   apiSelectConfig?: IApiSelectConfig;
   customFieldConfig?: ICustomFieldConfig;
   imageUploadConfig?: IImageUploadConfig;
+  /**
+   * Условное отображение поля: поле показывается только если другое поле имеет определенное значение
+   * Используется только в Vue версии
+   */
+  dependsOn?: IDependsOnConfig;
 }
 export interface IBlockConfigWithSpacing {
   title?: string;

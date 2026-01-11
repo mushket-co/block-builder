@@ -142,10 +142,18 @@ export const UniversalValidator = {
     return errors;
   },
 
-  validateForm(formData: IFormData, formFields: IFormFieldConfig[]): IValidationResult {
+  validateForm(
+    formData: IFormData,
+    formFields: IFormFieldConfig[],
+    isFieldVisible?: (field: IFormFieldConfig) => boolean
+  ): IValidationResult {
     const formErrors: Record<string, string[]> = {};
     let isValid = true;
     for (const fieldConfig of formFields) {
+      if (isFieldVisible && !isFieldVisible(fieldConfig)) {
+        continue;
+      }
+
       if (fieldConfig.rules && fieldConfig.rules.length > 0) {
         const errors = this.validateField(formData[fieldConfig.field], fieldConfig.rules);
         if (errors.length > 0) {
@@ -161,7 +169,9 @@ export const UniversalValidator = {
             arrayValue,
             fieldConfig.repeaterConfig.fields || [],
             formErrors,
-            ''
+            '',
+            formData,
+            isFieldVisible
           );
           if (Object.keys(formErrors).some(key => key.startsWith(fieldConfig.field))) {
             isValid = false;
@@ -186,12 +196,18 @@ export const UniversalValidator = {
     arrayValue: any[],
     repeaterFields: IRepeaterItemFieldConfig[],
     formErrors: Record<string, string[]>,
-    parentPath: string = ''
+    parentPath: string = '',
+    formData?: IFormData,
+    isFieldVisible?: (field: IRepeaterItemFieldConfig | IFormFieldConfig, itemData?: any) => boolean
   ): void {
     const fullPath = parentPath ? `${parentPath}.${baseFieldPath}` : baseFieldPath;
 
     arrayValue.forEach((item, index) => {
       for (const repeaterField of repeaterFields) {
+        if (isFieldVisible && !isFieldVisible(repeaterField, item)) {
+          continue;
+        }
+
         const fieldPath = `${fullPath}[${index}].${repeaterField.field}`;
 
         if (repeaterField.rules && repeaterField.rules.length > 0) {
@@ -209,7 +225,9 @@ export const UniversalValidator = {
               nestedArrayValue,
               repeaterField.repeaterConfig.fields || [],
               formErrors,
-              `${fullPath}[${index}]`
+              `${fullPath}[${index}]`,
+              formData,
+              isFieldVisible
             );
           }
         }

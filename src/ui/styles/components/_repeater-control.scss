@@ -33,7 +33,7 @@
   &__items {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: var(--bb-spacing-lg);
     margin-bottom: 12px;
   }
 

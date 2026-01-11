@@ -464,6 +464,55 @@ export const blockConfigs = {
               placeholder: 'Описание слайда',
               rules: [],
               defaultValue: ''
+            },
+            {
+              field: 'hasLink',
+              label: 'Добавить ссылку',
+              type: 'checkbox',
+              rules: [],
+              defaultValue: false
+            },
+            {
+              field: 'linkUrl',
+              label: 'URL ссылки',
+              type: 'text',
+              placeholder: 'https://example.com',
+              rules: [
+                { type: 'required', message: 'URL ссылки обязателен' }
+              ],
+              defaultValue: '',
+              dependsOn: {
+                field: 'hasLink',
+                value: true,
+                operator: 'equals'
+              }
+            },
+            {
+              field: 'linkOpenInNewTab',
+              label: 'Открывать в новой вкладке',
+              type: 'checkbox',
+              rules: [],
+              defaultValue: true,
+              dependsOn: {
+                field: 'hasLink',
+                value: true,
+                operator: 'equals'
+              }
+            },
+            {
+              field: 'linkText',
+              label: 'Текст ссылки',
+              type: 'text',
+              placeholder: 'Подробнее',
+              rules: [
+                { type: 'required', message: 'Текст ссылки обязателен' }
+              ],
+              defaultValue: 'Подробнее',
+              dependsOn: {
+                field: 'hasLink',
+                value: true,
+                operator: 'equals'
+              }
             }
           ]
         }
@@ -483,7 +532,13 @@ export const blockConfigs = {
           { type: 'min', value: 1000, message: 'Минимум: 1000мс' },
           { type: 'max', value: 10000, message: 'Максимум: 10000мс' }
         ],
-        defaultValue: 3000
+        defaultValue: 3000,
+        // ✅ Пример использования dependsOn: поле показывается только если autoplay === true
+        dependsOn: {
+          field: 'autoplay',
+          value: true,
+          operator: 'equals'
+        }
       },
       {
         field: 'loop',

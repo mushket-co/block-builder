@@ -252,111 +252,161 @@
 
         <div class="bb-modal-body">
           <form class="bb-form" @submit.prevent="handleSubmit">
-            <FormField
-              v-for="field in currentBlockFields"
-              :key="field.field"
-              :field="field"
-              :field-id="'field-' + field.field"
-              :model-value="formData[field.field]"
-              :required="isFieldRequired(field)"
-              :error="getFieldError(field)"
-              :container-class="
-                formErrors[field.field]
-                  ? `${CSS_CLASSES.FORM_GROUP} ${CSS_CLASSES.ERROR}`
-                  : CSS_CLASSES.FORM_GROUP
-              "
-              @update:model-value="formData[field.field] = $event"
-            >
-              <!-- Специальные поля, которые не обрабатываются FormField -->
-              <template
-                #default="{
-                  field: slotField,
-                  fieldId: slotFieldId,
-                  modelValue: slotModelValue,
-                  error: slotError,
-                }"
+            <template v-for="fieldGroup in groupedFields" :key="fieldGroup.key">
+              <!-- Группа полей с ToggleControl (checkbox + зависимые поля) -->
+              <ToggleControl
+                v-if="fieldGroup.type === 'toggle-group'"
+                :model-value="formData[fieldGroup.toggleField.field] || false"
+                :field-name="fieldGroup.toggleField.field"
+                @update:model-value="formData[fieldGroup.toggleField.field] = $event"
               >
-                <SpacingControl
-                  v-if="slotField.type === 'spacing'"
-                  :model-value="slotModelValue"
-                  :label="slotField.label"
-                  :field-name="slotField.field"
-                  :spacing-types="slotField.spacingConfig?.spacingTypes"
-                  :min="slotField.spacingConfig?.min"
-                  :max="slotField.spacingConfig?.max"
-                  :step="slotField.spacingConfig?.step"
-                  :breakpoints="getSpacingBreakpoints(slotField)"
-                  :required="isFieldRequired(slotField)"
-                  :show-preview="true"
-                  :license-feature-checker="getLicenseFeatureChecker"
-                  @update:model-value="formData[slotField.field] = $event"
-                />
-
-                <!-- eslint-disable-next-line vue/valid-v-bind -->
-                <RepeaterControl
-                  v-else-if="slotField.type === 'repeater'"
-                  :ref="createRepeaterRefCallback(slotField.field)"
-                  :model-value="slotModelValue"
-                  :field-name="slotField.field"
-                  :label="slotField.label"
-                  :fields="slotField.repeaterConfig?.fields || []"
-                  :rules="slotField.rules || []"
-                  :errors="formErrors"
-                  :add-button-text="slotField.repeaterConfig?.addButtonText"
-                  :remove-button-text="slotField.repeaterConfig?.removeButtonText"
-                  :item-title="slotField.repeaterConfig?.itemTitle"
-                  :count-label-variants="slotField.repeaterConfig?.countLabelVariants"
-                  :min="slotField.repeaterConfig?.min"
-                  :max="slotField.repeaterConfig?.max"
-                  :default-item-value="slotField.repeaterConfig?.defaultItemValue"
-                  :max-nesting-depth="slotField.repeaterConfig?.maxNestingDepth ?? 2"
-                  :api-select-use-case="props.apiSelectUseCase"
-                  :is-api-select-available="isApiSelectAvailable"
-                  :get-api-select-restriction-message="getApiSelectRestrictionMessage"
-                  :custom-field-renderer-registry="props.customFieldRendererRegistry"
-                  :is-custom-field-available="isCustomFieldAvailable"
-                  :get-custom-field-restriction-message="getCustomFieldsRestrictionMessage"
-                  @update:model-value="formData[slotField.field] = $event"
-                />
-
-                <div v-else-if="slotField.type === 'api-select'" class="bb-form-group">
-                  <ApiSelectField
-                    v-if="isApiSelectAvailable(slotField) && props.apiSelectUseCase"
-                    :model-value="slotModelValue"
-                    :config="slotField"
-                    :validation-error="slotError"
-                    :api-select-use-case="props.apiSelectUseCase"
-                    @update:model-value="formData[slotField.field] = $event"
-                  />
-
-                  <div v-else class="bb-warning-box">⚠️ {{ getApiSelectRestrictionMessage() }}</div>
-                </div>
-
-                <div v-else-if="slotField.type === 'custom'" class="bb-form-group">
-                  <label :for="slotFieldId" class="bb-form-label">
-                    {{ slotField.label }}
-                    <span v-if="isFieldRequired(slotField)" class="bb-required">*</span>
-                  </label>
-                  <CustomField
-                    v-if="
-                      isCustomFieldAvailable(slotField) &&
-                      props.customFieldRendererRegistry?.get(
-                        slotField.customFieldConfig?.rendererId
-                      )
+                <template #label>{{ fieldGroup.toggleField.label }}</template>
+                <template #body>
+                  <FormField
+                    v-for="dependentField in fieldGroup.dependentFields"
+                    :key="dependentField.field"
+                    :field="dependentField"
+                    :field-id="'field-' + dependentField.field"
+                    :model-value="formData[dependentField.field]"
+                    :required="isFieldRequired(dependentField)"
+                    :error="getFieldError(dependentField)"
+                    :container-class="
+                      formErrors[dependentField.field]
+                        ? `${CSS_CLASSES.FORM_GROUP} ${CSS_CLASSES.ERROR}`
+                        : CSS_CLASSES.FORM_GROUP
                     "
+                    @update:model-value="formData[dependentField.field] = $event"
+                  >
+                    <template #default="{ field: slotField, modelValue: slotModelValue }">
+                      <SpacingControl
+                        v-if="slotField.type === 'spacing'"
+                        :model-value="slotModelValue"
+                        :label="slotField.label"
+                        :field-name="slotField.field"
+                        :spacing-types="slotField.spacingConfig?.spacingTypes"
+                        :min="slotField.spacingConfig?.min"
+                        :max="slotField.spacingConfig?.max"
+                        :step="slotField.spacingConfig?.step"
+                        :breakpoints="getSpacingBreakpoints(slotField)"
+                        :required="isFieldRequired(slotField)"
+                        :show-preview="true"
+                        :license-feature-checker="getLicenseFeatureChecker"
+                        @update:model-value="formData[slotField.field] = $event"
+                      />
+                    </template>
+                  </FormField>
+                </template>
+              </ToggleControl>
+
+              <!-- Обычное поле (не входит в toggle-group) -->
+              <FormField
+                v-else-if="fieldGroup.type === 'single'"
+                v-show="isFieldVisible(fieldGroup.field)"
+                :field="fieldGroup.field"
+                :field-id="'field-' + fieldGroup.field.field"
+                :model-value="formData[fieldGroup.field.field]"
+                :required="isFieldRequired(fieldGroup.field)"
+                :error="getFieldError(fieldGroup.field)"
+                :container-class="
+                  formErrors[fieldGroup.field.field]
+                    ? `${CSS_CLASSES.FORM_GROUP} ${CSS_CLASSES.ERROR}`
+                    : CSS_CLASSES.FORM_GROUP
+                "
+                @update:model-value="formData[fieldGroup.field.field] = $event"
+              >
+                <!-- Специальные поля, которые не обрабатываются FormField -->
+                <template
+                  #default="{
+                    field: slotField,
+                    fieldId: slotFieldId,
+                    modelValue: slotModelValue,
+                    error: slotError,
+                  }"
+                >
+                  <SpacingControl
+                    v-if="slotField.type === 'spacing'"
                     :model-value="slotModelValue"
-                    :field="slotField"
-                    :form-errors="formErrors"
-                    :custom-field-renderer-registry="props.customFieldRendererRegistry"
-                    :is-field-required="isFieldRequired"
+                    :label="slotField.label"
+                    :field-name="slotField.field"
+                    :spacing-types="slotField.spacingConfig?.spacingTypes"
+                    :min="slotField.spacingConfig?.min"
+                    :max="slotField.spacingConfig?.max"
+                    :step="slotField.spacingConfig?.step"
+                    :breakpoints="getSpacingBreakpoints(slotField)"
+                    :required="isFieldRequired(slotField)"
+                    :show-preview="true"
+                    :license-feature-checker="getLicenseFeatureChecker"
                     @update:model-value="formData[slotField.field] = $event"
                   />
-                  <div v-else class="bb-warning-box">
-                    ⚠️ {{ getCustomFieldsRestrictionMessage() }}
+
+                  <!-- eslint-disable-next-line vue/valid-v-bind -->
+                  <RepeaterControl
+                    v-else-if="slotField.type === 'repeater'"
+                    :ref="createRepeaterRefCallback(slotField.field)"
+                    :model-value="slotModelValue"
+                    :field-name="slotField.field"
+                    :label="slotField.label"
+                    :fields="slotField.repeaterConfig?.fields || []"
+                    :rules="slotField.rules || []"
+                    :errors="formErrors"
+                    :add-button-text="slotField.repeaterConfig?.addButtonText"
+                    :remove-button-text="slotField.repeaterConfig?.removeButtonText"
+                    :item-title="slotField.repeaterConfig?.itemTitle"
+                    :count-label-variants="slotField.repeaterConfig?.countLabelVariants"
+                    :min="slotField.repeaterConfig?.min"
+                    :max="slotField.repeaterConfig?.max"
+                    :default-item-value="slotField.repeaterConfig?.defaultItemValue"
+                    :max-nesting-depth="slotField.repeaterConfig?.maxNestingDepth ?? 2"
+                    :api-select-use-case="props.apiSelectUseCase"
+                    :is-api-select-available="isApiSelectAvailable"
+                    :get-api-select-restriction-message="getApiSelectRestrictionMessage"
+                    :custom-field-renderer-registry="props.customFieldRendererRegistry"
+                    :is-custom-field-available="isCustomFieldAvailable"
+                    :get-custom-field-restriction-message="getCustomFieldsRestrictionMessage"
+                    @update:model-value="formData[slotField.field] = $event"
+                  />
+
+                  <div v-else-if="slotField.type === 'api-select'" class="bb-form-group">
+                    <ApiSelectField
+                      v-if="isApiSelectAvailable(slotField) && props.apiSelectUseCase"
+                      :model-value="slotModelValue"
+                      :config="slotField"
+                      :validation-error="slotError"
+                      :api-select-use-case="props.apiSelectUseCase"
+                      @update:model-value="formData[slotField.field] = $event"
+                    />
+
+                    <div v-else class="bb-warning-box">
+                      ⚠️ {{ getApiSelectRestrictionMessage() }}
+                    </div>
                   </div>
-                </div>
-              </template>
-            </FormField>
+
+                  <div v-else-if="slotField.type === 'custom'" class="bb-form-group">
+                    <label :for="slotFieldId" class="bb-form-label">
+                      {{ slotField.label }}
+                      <span v-if="isFieldRequired(slotField)" class="bb-required">*</span>
+                    </label>
+                    <CustomField
+                      v-if="
+                        isCustomFieldAvailable(slotField) &&
+                        props.customFieldRendererRegistry?.get(
+                          slotField.customFieldConfig?.rendererId
+                        )
+                      "
+                      :model-value="slotModelValue"
+                      :field="slotField"
+                      :form-errors="formErrors"
+                      :custom-field-renderer-registry="props.customFieldRendererRegistry"
+                      :is-field-required="isFieldRequired"
+                      @update:model-value="formData[slotField.field] = $event"
+                    />
+                    <div v-else class="bb-warning-box">
+                      ⚠️ {{ getCustomFieldsRestrictionMessage() }}
+                    </div>
+                  </div>
+                </template>
+              </FormField>
+            </template>
           </form>
         </div>
 
@@ -387,6 +437,7 @@ import { copyToClipboard } from '../../utils/copyToClipboard';
 import { lockBodyScroll, unlockBodyScroll } from '../../utils/scrollLock';
 import { ISpacingData } from '../../utils/spacingHelpers';
 import { UniversalValidator } from '../../utils/universalValidation';
+import Icon from '../icons/Icon.vue';
 import { deleteIconHTML, saveIconHTML } from '../icons/iconHelpers';
 import { initIcons } from '../icons/index';
 import { notificationService } from '../services/NotificationService';
@@ -395,9 +446,9 @@ import { updateBodyEditModeClass } from '../utils/domClassHelpers';
 import ApiSelectField from './ApiSelectField.vue';
 import CustomField from './CustomField.vue';
 import { FormField } from './form-fields';
-import Icon from '../icons/Icon.vue';
 import RepeaterControl from './RepeaterControl.vue';
 import SpacingControl from './SpacingControl.vue';
+import ToggleControl from './ToggleControl.vue';
 
 interface IBlockType {
   type: string;
@@ -581,6 +632,65 @@ const currentBlockFields = computed(() => {
   return fields;
 });
 
+/**
+ * Группирует поля для автоматического использования ToggleControl.
+ * Если поле типа checkbox имеет зависимые поля (через dependsOn), создает toggle-group.
+ */
+const groupedFields = computed(() => {
+  const fields = currentBlockFields.value;
+  const groups: Array<{
+    type: 'toggle-group' | 'single';
+    key: string;
+    toggleField?: any;
+    dependentFields?: any[];
+    field?: any;
+  }> = [];
+  const processedFields = new Set<string>();
+
+  // Находим checkbox поля, которые имеют зависимые поля
+  for (const field of fields) {
+    if (processedFields.has(field.field)) {
+      continue;
+    }
+
+    // Если это checkbox поле, проверяем, есть ли поля, зависящие от него
+    if (field.type === 'checkbox') {
+      const dependentFields = fields.filter(
+        f =>
+          f.dependsOn?.field === field.field &&
+          f.dependsOn?.value === true &&
+          f.dependsOn?.operator !== 'notEquals' &&
+          !processedFields.has(f.field)
+      );
+
+      if (dependentFields.length > 0) {
+        // Создаем toggle-group
+        groups.push({
+          type: 'toggle-group',
+          key: `toggle-${field.field}`,
+          toggleField: field,
+          dependentFields: dependentFields,
+        });
+        processedFields.add(field.field);
+        dependentFields.forEach(f => processedFields.add(f.field));
+        continue;
+      }
+    }
+
+    // Обычное поле
+    if (!processedFields.has(field.field)) {
+      groups.push({
+        type: 'single',
+        key: `field-${field.field}`,
+        field: field,
+      });
+      processedFields.add(field.field);
+    }
+  }
+
+  return groups;
+});
+
 const visibleBlocks = computed(() => {
   if (props.isEdit) {
     return blocks.value;
@@ -659,6 +769,39 @@ const getFieldError = (field: any): string => {
 
 const isFieldRequired = (field: any): boolean => {
   return field.rules?.some((rule: any) => rule.type === 'required') ?? false;
+};
+
+/**
+ * Проверяет, должно ли поле быть видимым на основе dependsOn условия
+ */
+const isFieldVisible = (
+  field: any,
+  itemData?: any
+): boolean => {
+  if (!field.dependsOn) {
+    return true; // Поле всегда видимо, если нет зависимости
+  }
+
+  const dependsOn = field.dependsOn;
+  // Для полей внутри репитера используем itemData, иначе formData
+  const dataSource = itemData || formData;
+  const dependentValue = dataSource[dependsOn.field];
+
+  // По умолчанию используем оператор 'equals'
+  const operator = dependsOn.operator || 'equals';
+
+  switch (operator) {
+    case 'equals':
+      return dependentValue === dependsOn.value;
+    case 'notEquals':
+      return dependentValue !== dependsOn.value;
+    case 'in':
+      return Array.isArray(dependsOn.value) && dependsOn.value.includes(dependentValue);
+    case 'notIn':
+      return Array.isArray(dependsOn.value) && !dependsOn.value.includes(dependentValue);
+    default:
+      return dependentValue === dependsOn.value;
+  }
 };
 
 const loadBlocks = async () => {
@@ -884,7 +1027,7 @@ const createBlock = async (): Promise<boolean> => {
   }
 
   const fields = currentBlockFields.value;
-  const validation = UniversalValidator.validateForm(formData, fields);
+  const validation = UniversalValidator.validateForm(formData, fields, isFieldVisible);
 
   Object.keys(formErrors).forEach(key => delete formErrors[key]);
 
@@ -938,7 +1081,7 @@ const updateBlock = async (): Promise<boolean> => {
   }
 
   const fields = currentBlockFields.value;
-  const validation = UniversalValidator.validateForm(formData, fields);
+  const validation = UniversalValidator.validateForm(formData, fields, isFieldVisible);
 
   Object.keys(formErrors).forEach(key => delete formErrors[key]);
 

@@ -59,100 +59,157 @@
         </div>
 
         <div v-if="!collapsedItems[item._id]" class="bb-repeater-control__item-fields">
-          <FormField
-            v-for="field in fields"
-            :key="field.field"
-            :field="field"
-            :field-id="getFieldId(item._id, field.field)"
-            :field-path="getFullFieldPath(index, field.field)"
-            :model-value="item[field.field]"
-            :required="isFieldRequired(field)"
-            :error="hasFieldError(index, field.field) ? getFieldErrors(index, field.field)[0] : ''"
-            :container-class="
-              hasFieldError(index, field.field)
-                ? `${CSS_CLASSES.FORM_GROUP} ${CSS_CLASSES.ERROR}`
-                : CSS_CLASSES.FORM_GROUP
-            "
-            @update:model-value="updateItemField(index, field.field, $event)"
-          >
-            <template #default="{ field: slotField, modelValue: slotModelValue, error: slotError }">
-              <template v-if="slotField.type === 'api-select'">
-                <ApiSelectField
-                  v-if="isApiSelectFieldAllowed(slotField) && apiSelectUseCaseValue"
-                  :model-value="slotModelValue"
-                  :config="toFormFieldConfig(slotField)"
-                  :validation-error="slotError"
-                  :api-select-use-case="apiSelectUseCaseValue"
-                  @update:model-value="updateItemField(index, slotField.field, $event)"
-                />
-                <div v-else class="bb-warning-box">⚠️ {{ apiSelectRestrictionMessage }}</div>
-              </template>
-
-              <template v-else-if="slotField.type === 'custom'">
-                <label :for="getFieldId(item._id, slotField.field)" class="bb-form-label">
-                  {{ slotField.label }}
-                  <span v-if="isFieldRequired(slotField)" class="bb-required">*</span>
-                </label>
-                <CustomField
-                  v-if="
-                    isCustomFieldAllowed(slotField) &&
-                    customFieldRendererRegistryValue?.get(slotField.customFieldConfig?.rendererId)
+          <!-- eslint-disable-next-line vue/no-v-for-template-key -->
+          <template v-for="fieldGroup in getGroupedFieldsForItem(index)" :key="fieldGroup.key">
+            <ToggleControl
+              v-if="fieldGroup.type === 'toggle-group'"
+              :model-value="item[fieldGroup.toggleField.field] || false"
+              :field-name="fieldGroup.toggleField.field"
+              @update:model-value="updateItemField(index, fieldGroup.toggleField.field, $event)"
+            >
+              <template #label>{{ fieldGroup.toggleField.label }}</template>
+              <template #body>
+                <FormField
+                  v-for="dependentField in fieldGroup.dependentFields"
+                  :key="dependentField.field"
+                  :field="dependentField"
+                  :field-id="getFieldId(item._id, dependentField.field)"
+                  :field-path="getFullFieldPath(index, dependentField.field)"
+                  :model-value="item[dependentField.field]"
+                  :required="isFieldRequired(dependentField)"
+                  :error="
+                    hasFieldError(index, dependentField.field)
+                      ? getFieldErrors(index, dependentField.field)[0]
+                      : ''
                   "
-                  :field="toFormFieldConfig(slotField)"
+                  :container-class="
+                    hasFieldError(index, dependentField.field)
+                      ? `${CSS_CLASSES.FORM_GROUP} ${CSS_CLASSES.ERROR}`
+                      : CSS_CLASSES.FORM_GROUP
+                  "
+                  @update:model-value="updateItemField(index, dependentField.field, $event)"
+                >
+                  <template
+                    #default="{ field: slotField, modelValue: slotModelValue, error: slotError }"
+                  >
+                    <ImageUploadField
+                      v-if="slotField.type === 'image'"
+                      :model-value="slotModelValue"
+                      :label="''"
+                      :required="isFieldRequired(slotField)"
+                      :error="slotError"
+                      :image-upload-config="slotField.imageUploadConfig"
+                      :data-repeater-field="fieldName"
+                      :data-repeater-index="index"
+                      :data-repeater-item-field="slotField.field"
+                      @update:model-value="updateItemField(index, slotField.field, $event)"
+                    />
+                  </template>
+                </FormField>
+              </template>
+            </ToggleControl>
+
+            <FormField
+              v-else-if="fieldGroup.type === 'single'"
+              v-show="isRepeaterFieldVisible(fieldGroup.field, item, index)"
+              :field="fieldGroup.field"
+              :field-id="getFieldId(item._id, fieldGroup.field.field)"
+              :field-path="getFullFieldPath(index, fieldGroup.field.field)"
+              :model-value="item[fieldGroup.field.field]"
+              :required="isFieldRequired(fieldGroup.field)"
+              :error="
+                hasFieldError(index, fieldGroup.field.field)
+                  ? getFieldErrors(index, fieldGroup.field.field)[0]
+                  : ''
+              "
+              :container-class="
+                hasFieldError(index, fieldGroup.field.field)
+                  ? `${CSS_CLASSES.FORM_GROUP} ${CSS_CLASSES.ERROR}`
+                  : CSS_CLASSES.FORM_GROUP
+              "
+              @update:model-value="updateItemField(index, fieldGroup.field.field, $event)"
+            >
+              <template
+                #default="{ field: slotField, modelValue: slotModelValue, error: slotError }"
+              >
+                <template v-if="slotField.type === 'api-select'">
+                  <ApiSelectField
+                    v-if="isApiSelectFieldAllowed(slotField) && apiSelectUseCaseValue"
+                    :model-value="slotModelValue"
+                    :config="toFormFieldConfig(slotField)"
+                    :validation-error="slotError"
+                    :api-select-use-case="apiSelectUseCaseValue"
+                    @update:model-value="updateItemField(index, slotField.field, $event)"
+                  />
+                  <div v-else class="bb-warning-box">⚠️ {{ apiSelectRestrictionMessage }}</div>
+                </template>
+
+                <template v-else-if="slotField.type === 'custom'">
+                  <label :for="getFieldId(item._id, slotField.field)" class="bb-form-label">
+                    {{ slotField.label }}
+                    <span v-if="isFieldRequired(slotField)" class="bb-required">*</span>
+                  </label>
+                  <CustomField
+                    v-if="
+                      isCustomFieldAllowed(slotField) &&
+                      customFieldRendererRegistryValue?.get(slotField.customFieldConfig?.rendererId)
+                    "
+                    :field="toFormFieldConfig(slotField)"
+                    :model-value="slotModelValue"
+                    :form-errors="formErrors"
+                    :custom-field-renderer-registry="customFieldRendererRegistryValue"
+                    :is-field-required="isFieldRequired"
+                    @update:model-value="updateItemField(index, slotField.field, $event)"
+                  />
+                  <div v-else class="bb-warning-box">⚠️ {{ customFieldRestrictionMessage }}</div>
+                </template>
+
+                <ImageUploadField
+                  v-else-if="slotField.type === 'image'"
                   :model-value="slotModelValue"
-                  :form-errors="formErrors"
-                  :custom-field-renderer-registry="customFieldRendererRegistryValue"
-                  :is-field-required="isFieldRequired"
+                  :label="''"
+                  :required="isFieldRequired(slotField)"
+                  :error="slotError"
+                  :image-upload-config="slotField.imageUploadConfig"
+                  :data-repeater-field="fieldName"
+                  :data-repeater-index="index"
+                  :data-repeater-item-field="slotField.field"
                   @update:model-value="updateItemField(index, slotField.field, $event)"
                 />
-                <div v-else class="bb-warning-box">⚠️ {{ customFieldRestrictionMessage }}</div>
+
+                <RepeaterControl
+                  v-else-if="slotField.type === 'repeater' && canNestRepeater(slotField)"
+                  :model-value="slotModelValue || []"
+                  :field-name="slotField.field"
+                  :label="slotField.label"
+                  :fields="slotField.repeaterConfig?.fields || []"
+                  :rules="slotField.rules || []"
+                  :errors="getNestedErrors(index, slotField.field)"
+                  :add-button-text="slotField.repeaterConfig?.addButtonText"
+                  :remove-button-text="slotField.repeaterConfig?.removeButtonText"
+                  :item-title="slotField.repeaterConfig?.itemTitle"
+                  :count-label-variants="slotField.repeaterConfig?.countLabelVariants"
+                  :min="slotField.repeaterConfig?.min"
+                  :max="slotField.repeaterConfig?.max"
+                  :default-item-value="slotField.repeaterConfig?.defaultItemValue"
+                  :api-select-use-case="apiSelectUseCaseValue"
+                  :is-api-select-available="isApiSelectAvailable"
+                  :get-api-select-restriction-message="getApiSelectRestrictionMessage"
+                  :custom-field-renderer-registry="customFieldRendererRegistryValue"
+                  :is-custom-field-available="isCustomFieldAvailable"
+                  :get-custom-field-restriction-message="getCustomFieldRestrictionMessage"
+                  :nesting-depth="nestingDepth + 1"
+                  :max-nesting-depth="slotField.repeaterConfig?.maxNestingDepth ?? maxNestingDepth"
+                  :parent-field-path="
+                    getRepeaterBasePath()
+                      ? `${getRepeaterBasePath()}[${index}].${slotField.field}`
+                      : `${props.fieldName}[${index}].${slotField.field}`
+                  "
+                  @update:model-value="updateItemField(index, slotField.field, $event)"
+                />
               </template>
-
-              <ImageUploadField
-                v-else-if="slotField.type === 'image'"
-                :model-value="slotModelValue"
-                :label="''"
-                :required="isFieldRequired(slotField)"
-                :error="slotError"
-                :image-upload-config="slotField.imageUploadConfig"
-                :data-repeater-field="fieldName"
-                :data-repeater-index="index"
-                :data-repeater-item-field="slotField.field"
-                @update:model-value="updateItemField(index, slotField.field, $event)"
-              />
-
-              <RepeaterControl
-                v-else-if="slotField.type === 'repeater' && canNestRepeater(slotField)"
-                :model-value="slotModelValue || []"
-                :field-name="slotField.field"
-                :label="slotField.label"
-                :fields="slotField.repeaterConfig?.fields || []"
-                :rules="slotField.rules || []"
-                :errors="getNestedErrors(index, slotField.field)"
-                :add-button-text="slotField.repeaterConfig?.addButtonText"
-                :remove-button-text="slotField.repeaterConfig?.removeButtonText"
-                :item-title="slotField.repeaterConfig?.itemTitle"
-                :count-label-variants="slotField.repeaterConfig?.countLabelVariants"
-                :min="slotField.repeaterConfig?.min"
-                :max="slotField.repeaterConfig?.max"
-                :default-item-value="slotField.repeaterConfig?.defaultItemValue"
-                :api-select-use-case="apiSelectUseCaseValue"
-                :is-api-select-available="isApiSelectAvailable"
-                :get-api-select-restriction-message="getApiSelectRestrictionMessage"
-                :custom-field-renderer-registry="customFieldRendererRegistryValue"
-                :is-custom-field-available="isCustomFieldAvailable"
-                :get-custom-field-restriction-message="getCustomFieldRestrictionMessage"
-                :nesting-depth="nestingDepth + 1"
-                :max-nesting-depth="slotField.repeaterConfig?.maxNestingDepth ?? maxNestingDepth"
-                :parent-field-path="
-                  getRepeaterBasePath()
-                    ? `${getRepeaterBasePath()}[${index}].${slotField.field}`
-                    : `${props.fieldName}[${index}].${slotField.field}`
-                "
-                @update:model-value="updateItemField(index, slotField.field, $event)"
-              />
-            </template>
-          </FormField>
+            </FormField>
+          </template>
         </div>
       </div>
     </div>
@@ -184,6 +241,7 @@ import ApiSelectField from './ApiSelectField.vue';
 import CustomField from './CustomField.vue';
 import { FormField } from './form-fields';
 import ImageUploadField from './ImageUploadField.vue';
+import ToggleControl from './ToggleControl.vue';
 
 export default {
   name: 'RepeaterControl',
@@ -192,6 +250,7 @@ export default {
     ApiSelectField,
     CustomField,
     ImageUploadField,
+    ToggleControl,
   },
 
   props: {
@@ -539,6 +598,78 @@ export default {
       return getFieldErrors(index, fieldName).length > 0;
     };
 
+    const isRepeaterFieldVisible = (field, item) => {
+      if (!field.dependsOn) {
+        return true;
+      }
+
+      const dependsOn = field.dependsOn;
+      const dependentValue = item[dependsOn.field];
+      const operator = dependsOn.operator || 'equals';
+
+      switch (operator) {
+        case 'equals':
+          return dependentValue === dependsOn.value;
+        case 'notEquals':
+          return dependentValue !== dependsOn.value;
+        case 'in':
+          return Array.isArray(dependsOn.value) && dependsOn.value.includes(dependentValue);
+        case 'notIn':
+          return Array.isArray(dependsOn.value) && !dependsOn.value.includes(dependentValue);
+        default:
+          return dependentValue === dependsOn.value;
+      }
+    };
+
+    const getGroupedFieldsForItem = index => {
+      const item = items.value[index];
+      if (!item) {
+        return [];
+      }
+
+      const groups = [];
+      const processedFields = new Set();
+
+      for (const field of props.fields) {
+        if (processedFields.has(field.field)) {
+          continue;
+        }
+
+        if (field.type === 'checkbox') {
+          const dependentFields = props.fields.filter(
+            f =>
+              f.dependsOn?.field === field.field &&
+              f.dependsOn?.value === true &&
+              f.dependsOn?.operator !== 'notEquals' &&
+              !processedFields.has(f.field)
+          );
+
+          if (dependentFields.length > 0) {
+            groups.push({
+              type: 'toggle-group',
+              key: `toggle-${index}-${field.field}`,
+              toggleField: field,
+              dependentFields: dependentFields,
+            });
+            processedFields.add(field.field);
+            dependentFields.forEach(f => processedFields.add(f.field));
+            continue;
+          }
+        }
+
+        if (!processedFields.has(field.field)) {
+          groups.push({
+            type: 'single',
+            key: `field-${index}-${field.field}`,
+            field: field,
+          });
+          processedFields.add(field.field);
+        }
+      }
+
+      return groups;
+    };
+
     const getCountText = count => {
       return getRepeaterCountText(count, props.countLabelVariants || undefined);
     };
@@ -614,6 +745,8 @@ export default {
       getNestedErrors,
       canNestRepeater,
       getRepeaterBasePath,
+      isRepeaterFieldVisible,
+      getGroupedFieldsForItem,
       CSS_CLASSES,
     };
   },
