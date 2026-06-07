@@ -399,6 +399,61 @@ describe('UIRenderer', () => {
   });
   });
 
+  describe('updateBlock', () => {
+    test('обновляет содержимое блока без пересоздания соседних элементов', () => {
+      uiRenderer.renderContainer();
+
+      const blocks: IBlockDto[] = [
+        {
+          id: 'block-1',
+          type: 'text',
+          settings: {},
+          props: { content: 'Hello' },
+          visible: true,
+          locked: false,
+          metadata: {
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            version: 1,
+          },
+        },
+        {
+          id: 'block-2',
+          type: 'text',
+          settings: {},
+          props: { content: 'Neighbor' },
+          visible: true,
+          locked: false,
+          metadata: {
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            version: 1,
+          },
+        },
+      ];
+
+      config.blockConfigs.text = {
+        title: 'Текстовый блок',
+        template: (props: { content?: string }) => `<p>${props.content ?? ''}</p>`,
+      };
+
+      uiRenderer.renderBlocks(blocks);
+
+      const neighborBefore = container.querySelector('[data-block-id="block-2"]');
+
+      uiRenderer.updateBlock({
+        ...blocks[0],
+        props: { content: 'Updated' },
+      });
+
+      const neighborAfter = container.querySelector('[data-block-id="block-2"]');
+      const updatedContent = container.querySelector('[data-block-id="block-1"] p');
+
+      expect(neighborBefore).toBe(neighborAfter);
+      expect(updatedContent?.textContent).toBe('Updated');
+    });
+  });
+
   describe('Интеграция', () => {
   test('полный цикл рендеринга', () => {
     // Создаем контейнер

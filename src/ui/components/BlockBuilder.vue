@@ -1,22 +1,5 @@
 <template>
   <div :class="appClass">
-    <div v-if="!licenseInfoComputed.isPro" class="bb-license-banner">
-      <div class="bb-license-banner__content">
-        <span class="bb-license-banner__icon">⚠️</span>
-        <span class="bb-license-banner__text">
-          Вы используете бесплатную версию
-          <a
-            href="https://block-builder.ru/"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="bb-link-inherit"
-            >Block Builder</a
-          >. Доступно {{ limitedBlockTypes.length }} из
-          {{ licenseInfoComputed.maxBlockTypes }} типов блоков.
-        </span>
-      </div>
-    </div>
-
     <div
       v-if="props.isEdit"
       :class="['bb-controls', controlsFixedClass]"
@@ -35,26 +18,6 @@
             <p>
               Всего блоков: <span>{{ props.isEdit ? blocks.length : visibleBlocks.length }}</span>
             </p>
-          </div>
-
-          <div
-            v-if="licenseInfoComputed"
-            :class="[
-              'bb-license-badge',
-              licenseInfoComputed.isPro ? 'bb-license-badge--pro' : 'bb-license-badge--free',
-            ]"
-            :title="
-              licenseInfoComputed.isPro
-                ? 'PRO лицензия - Без ограничений'
-                : `FREE лицензия - Ограничено ${licenseInfoComputed.maxBlockTypes} типами блоков`
-            "
-          >
-            <span class="bb-license-badge__icon">
-              {{ licenseInfoComputed.isPro ? '✓' : 'ℹ' }}
-            </span>
-            <span class="bb-license-badge__text">
-              {{ licenseInfoComputed.isPro ? 'PRO' : 'FREE' }}
-            </span>
           </div>
         </div>
       </div>
@@ -192,33 +155,9 @@
         </div>
 
         <div class="bb-modal-body">
-          <div v-if="!licenseInfoComputed.isPro" class="bb-license-warning">
-            <div class="bb-license-warning__header">
-              <span class="bb-license-warning__icon">⚠️</span>
-              <strong class="bb-license-warning__title"
-                >Бесплатная версия
-                <a
-                  href="https://block-builder.ru/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="bb-link-inherit"
-                  >Block Builder</a
-                ></strong
-              >
-            </div>
-            <p class="bb-license-warning__text">
-              Вы используете ограниченную бесплатную версию.<br />
-              Доступно
-              <strong
-                >{{ limitedBlockTypes.length }} из {{ licenseInfoComputed.maxBlockTypes }}</strong
-              >
-              типов блоков.
-            </p>
-          </div>
-
           <div class="bb-block-type-selection">
             <button
-              v-for="blockType in limitedBlockTypes"
+              v-for="blockType in availableBlockTypes"
               :key="blockType.type"
               class="bb-block-type-card"
               @click="selectBlockType(blockType.type)"
@@ -290,7 +229,6 @@
                         :breakpoints="getSpacingBreakpoints(slotField)"
                         :required="isFieldRequired(slotField)"
                         :show-preview="true"
-                        :license-feature-checker="getLicenseFeatureChecker"
                         @update:model-value="formData[slotField.field] = $event"
                       />
                     </template>
@@ -335,7 +273,6 @@
                     :breakpoints="getSpacingBreakpoints(slotField)"
                     :required="isFieldRequired(slotField)"
                     :show-preview="true"
-                    :license-feature-checker="getLicenseFeatureChecker"
                     @update:model-value="formData[slotField.field] = $event"
                   />
 
@@ -424,9 +361,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 
-import type { LicenseFeatureChecker } from '../../core/services/LicenseFeatureChecker';
-import { LicenseFeature } from '../../core/services/LicenseFeatureChecker';
-import { LicenseService } from '../../core/services/LicenseService';
 import { IBlock, TBlockId } from '../../core/types';
 import type { ApiSelectUseCase } from '../../core/use-cases/ApiSelectUseCase';
 import { BlockManagementUseCase } from '../../core/use-cases/BlockManagementUseCase';
@@ -435,12 +369,14 @@ import { getBlockInlineStyles, watchBreakpointChanges } from '../../utils/breakp
 import { CSS_CLASSES, ERROR_MESSAGES } from '../../utils/constants';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { lockBodyScroll, unlockBodyScroll } from '../../utils/scrollLock';
+import { getBlockScrollMargins } from '../../utils/scrollHelpers';
 import { ISpacingData } from '../../utils/spacingHelpers';
 import { UniversalValidator } from '../../utils/universalValidation';
 import Icon from '../icons/Icon.vue';
 import { deleteIconHTML, saveIconHTML } from '../icons/iconHelpers';
 import { initIcons } from '../icons/index';
 import { notificationService } from '../services/NotificationService';
+import { blockScrollService } from '../services/BlockScrollService';
 import { ValidationErrorHandler } from '../services/ValidationErrorHandler';
 import { updateBodyEditModeClass } from '../utils/domClassHelpers';
 import ApiSelectField from './ApiSelectField.vue';
@@ -474,13 +410,6 @@ interface IProps {
   controlsFixedPosition?: 'top' | 'bottom'; // Фиксированная позиция для контролов (сверху или снизу)
   controlsOffset?: number; // Отступ от края в пикселях
   controlsOffsetVar?: string; // CSS переменная для учета высоты шапки/футера
-  licenseKey?: string; // Лицензионный ключ для проверки (для обратной совместимости)
-  licenseService?: import('../../core/services/LicenseService').LicenseService; // Сервис лицензии
-  licenseInfo?: {
-    isPro: boolean;
-    maxBlockTypes: number;
-    currentTypesCount: number;
-  };
   isEdit?: boolean; // Режим редактирования (по умолчанию true)
 }
 
@@ -512,23 +441,6 @@ const repeaterRefs = new Map<string, any>();
 const validationErrorHandler = new ValidationErrorHandler(repeaterRefs);
 const originalInitialBlocks = ref(props.initialBlocks ? [...props.initialBlocks] : []);
 
-const internalLicenseService = ref<LicenseService | null>(null);
-const licenseState = ref<{
-  isPro: boolean;
-  maxBlockTypes: number;
-  currentTypesCount: number;
-} | null>(null);
-
-if (props.licenseKey && !props.licenseService) {
-  const service = new LicenseService({ key: props.licenseKey });
-  internalLicenseService.value = service;
-  licenseState.value = service.getLicenseInfo(0);
-  service.onLicenseChange(async info => {
-    licenseState.value = info;
-    await reloadBlocksAfterLicenseChange();
-  });
-}
-
 const setRepeaterRef = (fieldName: string, el: any): void => {
   if (el) {
     repeaterRefs.set(fieldName, el);
@@ -543,43 +455,11 @@ const createRepeaterRefCallback = (fieldName: string) => {
 
 const availableBlockTypes = computed(() => props.config?.availableBlockTypes || []);
 
-const limitedBlockTypes = computed(() => {
-  const licenseInfo = licenseInfoComputed.value;
-  if (licenseInfo.isPro) {
-    return availableBlockTypes.value;
-  }
-  return availableBlockTypes.value.slice(0, licenseInfo.maxBlockTypes);
-});
-
 const currentBlockType = computed(() => {
   if (!currentType.value) {
     return null;
   }
-  return limitedBlockTypes.value.find((bt: IBlockType) => bt.type === currentType.value) || null;
-});
-
-const licenseInfoComputed = computed(() => {
-  if (props.licenseInfo) {
-    return props.licenseInfo;
-  }
-  if (props.licenseService) {
-    return props.licenseService.getLicenseInfo(availableBlockTypes.value.length);
-  }
-  if (licenseState.value) {
-    return {
-      ...licenseState.value,
-      currentTypesCount: availableBlockTypes.value.length,
-    };
-  }
-  const internalService = internalLicenseService.value;
-  if (internalService) {
-    return internalService.getLicenseInfo(availableBlockTypes.value.length);
-  }
-  return {
-    isPro: false,
-    maxBlockTypes: 5,
-    currentTypesCount: availableBlockTypes.value.length,
-  };
+  return availableBlockTypes.value.find((bt: IBlockType) => bt.type === currentType.value) || null;
 });
 
 const controlsFixedClass = computed(() => {
@@ -623,13 +503,10 @@ const currentBlockFields = computed(() => {
     return [];
   }
   const blockType = currentBlockType.value;
-  const licenseService = props.licenseService || internalLicenseService.value;
-  let fields = addSpacingFieldToFields(
+  return addSpacingFieldToFields(
     blockType.fields || [],
-    (blockType as any).spacingOptions,
-    licenseService?.getFeatureChecker()
+    (blockType as any).spacingOptions
   );
-  return fields;
 });
 
 /**
@@ -706,40 +583,19 @@ const getBlockVisibilityTooltip = (block: IBlock): string => {
   return block.visible ? 'Скрыть' : 'Показать';
 };
 
-const getLicenseFeatureChecker = computed((): LicenseFeatureChecker | null => {
-  const licenseService = props.licenseService || internalLicenseService.value;
-  return licenseService ? licenseService.getFeatureChecker() : null;
-});
-
 const getApiSelectRestrictionMessage = (): string => {
-  const checker = getLicenseFeatureChecker.value;
-  if (checker) {
-    return checker.getFeatureRestrictionMessage(LicenseFeature.API_SELECT);
-  }
-  return 'API Select поля доступны только в PRO версии. Для снятия ограничений приобретите PRO версию.';
+  return 'Передайте apiSelectUseCase для использования API Select полей.';
 };
 
 const getCustomFieldsRestrictionMessage = (): string => {
-  const checker = getLicenseFeatureChecker.value;
-  if (checker) {
-    return checker.getFeatureRestrictionMessage(LicenseFeature.CUSTOM_FIELDS);
-  }
-  return 'Кастомные поля доступны только в PRO версии. Для снятия ограничений приобретите PRO версию.';
+  return 'Зарегистрируйте customFieldRendererRegistry для использования кастомных полей.';
 };
 
 const isApiSelectAvailable = (_field: any): boolean => {
-  const checker = getLicenseFeatureChecker.value;
-  if (!checker || !checker.canUseApiSelect()) {
-    return false;
-  }
   return !!props.apiSelectUseCase;
 };
 
 const isCustomFieldAvailable = (_field: any): boolean => {
-  const checker = getLicenseFeatureChecker.value;
-  if (!checker || !checker.canUseCustomFields()) {
-    return false;
-  }
   return !!props.customFieldRendererRegistry;
 };
 
@@ -750,10 +606,6 @@ const getSpacingBreakpoints = (field: any): any[] | undefined => {
     breakpoints = blockConfig?.spacingOptions?.config?.breakpoints;
   }
   if (!breakpoints || !Array.isArray(breakpoints) || breakpoints.length === 0) {
-    return undefined;
-  }
-  const checker = getLicenseFeatureChecker.value;
-  if (!checker || !checker.hasAdvancedSpacing()) {
     return undefined;
   }
   return breakpoints;
@@ -812,6 +664,19 @@ const loadBlocks = async () => {
   }
 };
 
+const scrollToBlock = async (blockId: TBlockId, behavior: ScrollBehavior = 'smooth') => {
+  await nextTick();
+  const session = blockScrollService.beginSession();
+  await blockScrollService.scrollToBlockWhenReady(
+    blockId,
+    {
+      ...getBlockScrollMargins({ controlsFixedPosition: props.controlsFixedPosition }),
+      behavior,
+    },
+    session
+  );
+};
+
 const loadInitialBlocks = async () => {
   if (!props.initialBlocks || props.initialBlocks.length === 0) {
     return;
@@ -822,103 +687,13 @@ const loadInitialBlocks = async () => {
       originalInitialBlocks.value = [...props.initialBlocks];
     }
 
-    let filteredBlocks = props.initialBlocks;
-    const licenseService = props.licenseService || internalLicenseService.value || null;
-
-    if (licenseService) {
-      const allBlockTypes = availableBlockTypes.value.map(bt => bt.type);
-      const allowedTypes = licenseService.getAllowedBlockTypes(allBlockTypes);
-      filteredBlocks = licenseService.filterBlocksByLicense(props.initialBlocks, allowedTypes);
-    } else {
-      const licenseInfo = licenseInfoComputed.value;
-      const allowedTypes = licenseInfo.isPro
-        ? availableBlockTypes.value.map(bt => bt.type)
-        : availableBlockTypes.value.slice(0, licenseInfo.maxBlockTypes).map(bt => bt.type);
-
-      filteredBlocks = props.initialBlocks.filter(block => allowedTypes.includes(block.type));
-    }
-
-    for (const block of filteredBlocks) {
+    for (const block of props.initialBlocks) {
       await blockService.createBlock(block as any);
     }
   } catch (error) {
     alert(
       `Ошибка загрузки начальных блоков: ${error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR}`
     );
-  }
-};
-
-const reloadBlocksAfterLicenseChange = async () => {
-  try {
-    const licenseService = props.licenseService || internalLicenseService.value;
-
-    const currentBlocks = (await blockService.getAllBlocks()) as any[];
-
-    const initialBlocksFromProps = originalInitialBlocks.value || [];
-
-    const allBlocksMap = new Map<string, any>();
-    currentBlocks.forEach(block => allBlocksMap.set(block.id, block));
-    initialBlocksFromProps.forEach(block => allBlocksMap.set(block.id, block));
-    const allBlocksToReload = Array.from(allBlocksMap.values());
-
-    await blockService.clearAllBlocks();
-
-    if (licenseService && allBlocksToReload.length > 0) {
-      let allBlockTypes: string[] = [];
-
-      if (props.config?.availableBlockTypes && props.config.availableBlockTypes.length > 0) {
-        allBlockTypes = props.config.availableBlockTypes.map(bt => bt.type);
-      } else if (componentRegistry) {
-        const registeredComponents = componentRegistry.getAll();
-        allBlockTypes = Object.keys(registeredComponents);
-      } else {
-        allBlockTypes = [...new Set(allBlocksToReload.map(block => block.type))];
-      }
-
-      const allowedTypes = licenseService.getAllowedBlockTypes(allBlockTypes);
-      const filteredBlocks = licenseService.filterBlocksByLicense(allBlocksToReload, allowedTypes);
-
-      for (const block of filteredBlocks) {
-        try {
-          await blockService.createBlock(block as any);
-        } catch {
-          // Игнорируем ошибки создания блоков
-        }
-      }
-    } else if (allBlocksToReload.length > 0) {
-      const licenseInfo = licenseInfoComputed.value;
-
-      let allBlockTypes: string[] = [];
-
-      if (props.config?.availableBlockTypes && props.config.availableBlockTypes.length > 0) {
-        allBlockTypes = props.config.availableBlockTypes.map(bt => bt.type);
-      } else if (componentRegistry) {
-        const registeredComponents = componentRegistry.getAll();
-        allBlockTypes = Object.keys(registeredComponents);
-      } else {
-        allBlockTypes = [...new Set(allBlocksToReload.map(block => block.type))];
-      }
-
-      const allowedTypes = licenseInfo.isPro
-        ? allBlockTypes
-        : allBlockTypes.slice(0, licenseInfo.maxBlockTypes);
-
-      const filteredBlocks = allBlocksToReload.filter(block => allowedTypes.includes(block.type));
-
-      for (const block of filteredBlocks) {
-        try {
-          await blockService.createBlock(block as any);
-        } catch {
-          // Игнорируем ошибки создания блоков
-        }
-      }
-    }
-
-    await loadBlocks();
-
-    await setupBreakpointWatchers();
-  } catch {
-    // Игнорируем ошибки перезагрузки блоков
   }
 };
 
@@ -1067,6 +842,8 @@ const createBlock = async (): Promise<boolean> => {
 
     await setupBreakpointWatchers();
 
+    await scrollToBlock(newBlock.id, 'smooth');
+
     (emit as any)('block-added', newBlock as any);
     return true;
   } catch (error) {
@@ -1124,6 +901,8 @@ const handleDuplicateBlock = async (id: TBlockId) => {
 
     await setupBreakpointWatchers();
 
+    await scrollToBlock(duplicated.id, 'smooth');
+
     (emit as any)('block-added', duplicated as any);
   } catch (error) {
     alert(
@@ -1174,6 +953,7 @@ const handleMoveUp = async (id: TBlockId) => {
 
     await loadBlocks();
     await setupBreakpointWatchers();
+    await scrollToBlock(id, 'auto');
   }
 };
 
@@ -1194,6 +974,7 @@ const handleMoveDown = async (id: TBlockId) => {
 
     await loadBlocks();
     await setupBreakpointWatchers();
+    await scrollToBlock(id, 'auto');
   }
 };
 
@@ -1342,12 +1123,6 @@ onMounted(async () => {
   initIcons();
 
   updateBodyEditModeClass(props.isEdit);
-
-  if (props.licenseService && !internalLicenseService.value) {
-    props.licenseService.onLicenseChange(async () => {
-      await reloadBlocksAfterLicenseChange();
-    });
-  }
 
   await loadInitialBlocks();
   await loadBlocks();

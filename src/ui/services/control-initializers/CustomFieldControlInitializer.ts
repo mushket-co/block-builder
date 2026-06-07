@@ -1,8 +1,4 @@
 import { ICustomFieldRendererRegistry } from '../../../core/ports/CustomFieldRenderer';
-import {
-  LicenseFeature,
-  LicenseFeatureChecker,
-} from '../../../core/services/LicenseFeatureChecker';
 import { CSS_CLASSES } from '../../../utils/constants';
 import { parseJSONFromAttribute } from '../../../utils/domSafe';
 import { CustomFieldControlRenderer } from '../CustomFieldControlRenderer';
@@ -10,7 +6,6 @@ import { IControlInitializer, IControlRenderer } from '../IControlRenderer';
 
 export interface ICustomFieldControlInitializerConfig {
   customFieldRendererRegistry: ICustomFieldRendererRegistry;
-  licenseFeatureChecker: LicenseFeatureChecker;
   getRepeaterRenderers?: () => Map<string, any>;
 }
 
@@ -26,22 +21,6 @@ export class CustomFieldControlInitializer implements IControlInitializer {
   }
 
   async initialize(container: HTMLElement): Promise<IControlRenderer | null> {
-    if (!this.config.licenseFeatureChecker.canUseCustomFields()) {
-      const placeholder = container.querySelector(
-        `.${CSS_CLASSES.CUSTOM_FIELD_PLACEHOLDER}`
-      ) as HTMLElement;
-      if (placeholder) {
-        placeholder.removeAttribute('style');
-        placeholder.classList.remove(CSS_CLASSES.BB_PLACEHOLDER_BOX);
-        placeholder.innerHTML = `
-          <div class="${CSS_CLASSES.BB_WARNING_BOX}">
-            ⚠️ ${this.config.licenseFeatureChecker.getFeatureRestrictionMessage(LicenseFeature.CUSTOM_FIELDS)}
-          </div>
-        `;
-      }
-      return null;
-    }
-
     const config = container.dataset.customFieldConfig;
     if (!config) {
       return null;

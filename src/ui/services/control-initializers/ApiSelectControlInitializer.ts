@@ -1,7 +1,3 @@
-import {
-  LicenseFeature,
-  LicenseFeatureChecker,
-} from '../../../core/services/LicenseFeatureChecker';
 import { IApiSelectConfig, THttpMethod } from '../../../core/types/form';
 import { ApiSelectUseCase } from '../../../core/use-cases/ApiSelectUseCase';
 import { CSS_CLASSES } from '../../../utils/constants';
@@ -11,7 +7,6 @@ import { IControlInitializer, IControlRenderer } from '../IControlRenderer';
 
 export interface IApiSelectControlInitializerConfig {
   apiSelectUseCase: ApiSelectUseCase;
-  licenseFeatureChecker: LicenseFeatureChecker;
   getRepeaterFieldConfigs?: () => Map<string, Map<string, any>>;
   getRepeaterRenderers?: () => Map<string, any>;
 }
@@ -28,21 +23,6 @@ export class ApiSelectControlInitializer implements IControlInitializer {
   }
 
   async initialize(container: HTMLElement): Promise<IControlRenderer | null> {
-    if (!this.config.licenseFeatureChecker.canUseApiSelect()) {
-      const placeholder = container.querySelector(
-        `.${CSS_CLASSES.API_SELECT_PLACEHOLDER}`
-      ) as HTMLElement;
-      if (placeholder) {
-        placeholder.classList.remove(CSS_CLASSES.BB_PLACEHOLDER_BOX);
-        placeholder.innerHTML = `
-          <div class="${CSS_CLASSES.BB_WARNING_BOX}">
-            ⚠️ ${this.config.licenseFeatureChecker.getFeatureRestrictionMessage(LicenseFeature.API_SELECT)}
-          </div>
-        `;
-      }
-      return null;
-    }
-
     const config = container.dataset.apiSelectConfig;
     if (!config) {
       return null;

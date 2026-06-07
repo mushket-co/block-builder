@@ -2,11 +2,6 @@ import './ui/styles/index.scss';
 
 export type { IBlockBuilderOptions } from './BlockBuilderFacade';
 export { BlockBuilderFacade as BlockBuilder } from './BlockBuilderFacade';
-export type { ILicenseConfig } from './core/entities/License';
-export { License, TLicenseType } from './core/entities/License';
-export { LicenseFeature, LicenseFeatureChecker } from './core/services/LicenseFeatureChecker';
-export type { ILicenseInfo } from './core/services/LicenseService';
-export { LicenseService } from './core/services/LicenseService';
 export type {
   IBlock,
   IBlockDto,

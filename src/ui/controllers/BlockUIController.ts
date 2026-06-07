@@ -1,5 +1,4 @@
 import { ICustomFieldRendererRegistry } from '../../core/ports/CustomFieldRenderer';
-import { LicenseService } from '../../core/services/LicenseService';
 import { IBlockDto, ICreateBlockDto } from '../../core/types';
 import { TRenderRef } from '../../core/types/common';
 import { IBlockSpacingOptions, IFormFieldConfig } from '../../core/types/form';
@@ -13,7 +12,8 @@ import {
   UI_STRINGS,
 } from '../../utils/constants';
 import { copyToClipboard } from '../../utils/copyToClipboard';
-import { afterRender } from '../../utils/domReady';
+import { afterRender } from '../../utils/scheduling';
+import { getBlockScrollMargins } from '../../utils/scrollHelpers';
 import { getFirstErrorKey, parseErrorKey, scrollToFirstError } from '../../utils/formErrorHelpers';
 import { EventDelegation } from '../EventDelegation';
 import { ControlInitializerFactory } from '../services/ControlInitializerFactory';
@@ -40,7 +40,6 @@ export interface IBlockUIControllerConfig {
   controlsFixedPosition?: 'top' | 'bottom';
   controlsOffset?: number;
   controlsOffsetVar?: string;
-  licenseService: LicenseService;
   originalBlockConfigs?: Record<
     string,
     { fields?: unknown[]; spacingOptions?: unknown; [key: string]: unknown }
@@ -59,7 +58,6 @@ export class BlockUIController {
   private onSave?: (blocks: IBlockDto[]) => Promise<boolean> | boolean;
   private repeaterRenderers: Map<string, RepeaterControlRenderer> = new Map();
   private eventDelegation: EventDelegation;
-  private licenseService: LicenseService;
   private originalBlockConfigs?: Record<
     string,
     { fields?: unknown[]; spacingOptions?: unknown; [key: string]: unknown }
@@ -76,7 +74,6 @@ export class BlockUIController {
     this.onSave = config.onSave;
     this.apiSelectUseCase = config.apiSelectUseCase;
     this.customFieldRendererRegistry = config.customFieldRendererRegistry;
-    this.licenseService = config.licenseService;
     this.isEdit = config.isEdit !== undefined ? config.isEdit : true;
 
     this.eventDelegation = new EventDelegation();
@@ -90,7 +87,6 @@ export class BlockUIController {
       controlsFixedPosition: config.controlsFixedPosition,
       controlsOffset: config.controlsOffset,
       controlsOffsetVar: config.controlsOffsetVar,
-      license: this.licenseService.getLicenseInfo(Object.keys(config.blockConfigs).length),
       isEdit: this.isEdit,
     });
     this.formBuilder = new FormBuilder();
@@ -106,7 +102,6 @@ export class BlockUIController {
     });
 
     ControlInitializerFactory.setupControlManager(this.controlManager, {
-      licenseService: this.licenseService,
       apiSelectUseCase: this.apiSelectUseCase,
       customFieldRendererRegistry: this.customFieldRendererRegistry,
       getCurrentFormFields: () => this.currentFormFields,
@@ -156,33 +151,31 @@ export class BlockUIController {
     await this.refreshBlocks();
   }
 
-  async refreshBlocks(): Promise<void> {
+  async refreshBlocks(
+    scrollToBlockId?: string,
+    options?: { scrollBehavior?: ScrollBehavior }
+  ): Promise<void> {
     this.blocks = await this.config.useCase.getAllBlocks();
-    this.uiRenderer.renderBlocks(this.blocks);
+    this.uiRenderer.renderBlocks(
+      this.blocks,
+      scrollToBlockId
+        ? {
+            scrollToBlock: {
+              blockId: scrollToBlockId,
+              behavior: options?.scrollBehavior,
+              ...getBlockScrollMargins({
+                controlsFixedPosition: this.config.controlsFixedPosition,
+              }),
+            },
+          }
+        : undefined
+    );
   }
 
   showBlockTypeSelectionModal(position?: number): void {
     if (!this.isEdit) {
       return;
     }
-    const currentBlockTypesCount = Object.keys(this.config.blockConfigs).length;
-    const licenseInfo = this.licenseService.getLicenseInfo(currentBlockTypesCount);
-
-    const licenseWarningHTML = !licenseInfo.isPro
-      ? `
-      <div class="${CSS_CLASSES.LICENSE_WARNING}">
-        <div class="${CSS_CLASSES.LICENSE_WARNING_HEADER}">
-          <span class="${CSS_CLASSES.LICENSE_WARNING_ICON}">⚠️</span>
-          <strong class="${CSS_CLASSES.LICENSE_WARNING_TITLE}">Бесплатная версия <a href="https://block-builder.ru/" target="_blank" rel="noopener noreferrer" class="${CSS_CLASSES.BB_LINK_INHERIT}">Block Builder</a></strong>
-        </div>
-        <p class="${CSS_CLASSES.LICENSE_WARNING_TEXT}">
-          Вы используете ограниченную бесплатную версию.<br>
-          Доступно <strong>${currentBlockTypesCount} из ${licenseInfo.maxBlockTypes}</strong> типов блоков.
-        </p>
-      </div>
-    `
-      : '';
-
     const blockTypesHTML = Object.entries(this.config.blockConfigs)
       .map(([type, config]) => {
         const title = (config.title as string) || type;
@@ -212,7 +205,6 @@ export class BlockUIController {
 
     const bodyHTML = `
     <div class="${CSS_CLASSES.BLOCK_TYPE_SELECTION}">
-      ${licenseWarningHTML}
       ${blockTypesHTML}
     </div>
     `;
@@ -242,8 +234,7 @@ export class BlockUIController {
 
     const fields: TFieldConfig[] = addSpacingFieldToFields(
       (config.fields || []) as IFormFieldConfig[],
-      config.spacingOptions as IBlockSpacingOptions | undefined,
-      this.licenseService.getFeatureChecker()
+      config.spacingOptions as IBlockSpacingOptions | undefined
     );
 
     this.prepareFormFields(fields);
@@ -405,7 +396,7 @@ export class BlockUIController {
         await this.insertBlockAtPosition(newBlock.id, position);
       }
 
-      await this.refreshBlocks();
+      await this.refreshBlocks(newBlock.id);
       return true;
     } catch {
       this.showError(UI_STRINGS.blockCreationError);
@@ -444,8 +435,7 @@ export class BlockUIController {
 
     const fields: TFieldConfig[] = addSpacingFieldToFields(
       (config.fields || []) as IFormFieldConfig[],
-      config.spacingOptions as IBlockSpacingOptions | undefined,
-      this.licenseService.getFeatureChecker()
+      config.spacingOptions as IBlockSpacingOptions | undefined
     );
 
     this.prepareFormFields(fields);
@@ -476,14 +466,28 @@ export class BlockUIController {
 
   private async handleUpdateBlock(
     blockId: string,
-    type: string,
-    fields: TFieldConfig[],
+    _type: string,
+    _fields: TFieldConfig[],
     formData: Record<string, any>
   ): Promise<boolean> {
     try {
       await this.config.useCase.updateBlock(blockId, { props: formData });
 
-      await this.refreshBlocks();
+      const updatedBlock = await this.config.useCase.getBlock(blockId);
+      if (!updatedBlock) {
+        this.showError(UI_STRINGS.blockUpdateError);
+        return false;
+      }
+
+      const index = this.blocks.findIndex(block => block.id === blockId);
+      if (index !== -1) {
+        this.blocks[index] = updatedBlock;
+      } else {
+        this.blocks = await this.config.useCase.getAllBlocks();
+      }
+
+      this.uiRenderer.updateBlock(updatedBlock);
+
       return true;
     } catch {
       this.showError(UI_STRINGS.blockUpdateError);
@@ -526,8 +530,8 @@ export class BlockUIController {
     if (!this.isEdit) {
       return;
     }
-    await this.config.useCase.duplicateBlock(blockId);
-    await this.refreshBlocks();
+    const duplicated = await this.config.useCase.duplicateBlock(blockId);
+    await this.refreshBlocks(duplicated?.id ?? undefined);
   }
 
   async clearAllBlocksUI(): Promise<void> {
@@ -587,7 +591,7 @@ export class BlockUIController {
     const blockIds = newBlocks.map(block => block.id);
     await this.config.useCase.reorderBlocks(blockIds);
 
-    await this.refreshBlocks();
+    await this.refreshBlocks(blockId, { scrollBehavior: 'auto' });
   }
 
   async moveBlockDown(blockId: string): Promise<void> {
@@ -608,7 +612,7 @@ export class BlockUIController {
     const blockIds = newBlocks.map(block => block.id);
     await this.config.useCase.reorderBlocks(blockIds);
 
-    await this.refreshBlocks();
+    await this.refreshBlocks(blockId, { scrollBehavior: 'auto' });
   }
 
   async copyBlockId(blockId: string): Promise<void> {

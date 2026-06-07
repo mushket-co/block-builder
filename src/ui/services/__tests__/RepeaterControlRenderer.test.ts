@@ -423,6 +423,41 @@ describe('RepeaterControlRenderer', () => {
   });
   });
 
+  describe('Вложенный repeater', () => {
+    test('должен отрендерить контейнер для nested repeater поля', () => {
+      const config: IRepeaterControlConfig = {
+        fieldName: 'categories',
+        label: 'Категории',
+        rules: [],
+        config: {
+          maxNestingDepth: 2,
+          fields: [
+            { field: 'name', label: 'Название', type: 'text' },
+            {
+              field: 'products',
+              label: 'Товары',
+              type: 'repeater',
+              repeaterConfig: {
+                itemTitle: 'Товар',
+                fields: [{ field: 'title', label: 'Название', type: 'text' }],
+              },
+            },
+          ],
+        },
+        value: [{ name: 'Electronics', products: [{ title: 'Phone' }] }],
+        onChange: mockOnChange,
+      };
+
+      renderer = new RepeaterControlRenderer(config);
+      renderer.render(container);
+
+      expect(container.querySelector('[data-field-name="categories[0].products"]')).toBeTruthy();
+      expect(container.querySelectorAll(`.${CSS_CLASSES.REPEATER_CONTROL_ITEM}`).length).toBeGreaterThan(
+        1
+      );
+    });
+  });
+
   describe('Интеграция', () => {
   test('полный цикл: создание, рендеринг, уничтожение', () => {
     const config: IRepeaterControlConfig = {

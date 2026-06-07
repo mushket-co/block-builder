@@ -20,7 +20,6 @@
         controls-container-class="container"
         controls-fixed-position="bottom"
         :controls-offset="20"
-        license-key="BB-PRO-1234-5678-ABCD"
         :is-edit="isEdit"
       />
     </div>
@@ -38,6 +37,7 @@ import {
 } from '@mushket-co/block-builder/vue'
 import { blockConfigs } from './block-config'
 import { WysiwygFieldRenderer } from './customFieldRenderers/WysiwygFieldRenderer'
+import { loadBlocksFromLocalStorage, saveBlocksToLocalStorage } from '../../shared/blockStorage'
 
 const blockManagementUseCase = createBlockManagementUseCase()
 // Repository хранит блоки только в памяти (для работы во время сессии)
@@ -79,35 +79,24 @@ const toggleIsEdit = () => {
 
 window.toggleIsEdit = toggleIsEdit
 
-const loadSavedBlocks = () => {
-  try {
-    const savedData = localStorage.getItem('saved-blocks')
-    if (savedData) {
-      return JSON.parse(savedData)
-    }
-  } catch (error) {
-    console.error('Ошибка загрузки блоков:', error)
-  }
-  return []
-}
-
-const initialBlocks = ref(loadSavedBlocks())
+const initialBlocks = ref(loadBlocksFromLocalStorage())
 
 const handleSave = async (blocks) => {
-  try {
-    // В реальном приложении здесь будет POST на ваш API:
-    // await fetch('/api/blocks', {
-    //   method: 'POST',
-    //   body: JSON.stringify(blocks)
-    // })
+  // В проде: POST на API. В demo — localStorage (без base64-картинок).
+  const result = saveBlocksToLocalStorage(blocks)
 
-    // Для демо сохраняем в localStorage
-    localStorage.setItem('saved-blocks', JSON.stringify(blocks))
-    return true
-  } catch (error) {
-    console.error('Ошибка сохранения:', error)
+  if (!result.ok) {
+    console.error('Ошибка сохранения:', result.error)
     return false
   }
+
+  if (result.strippedImages) {
+    console.warn(
+      'localStorage: base64-изображения не сохранены (лимит браузера). Загружайте файлы на сервер или используйте URL.'
+    )
+  }
+
+  return true
 }
 </script>
 

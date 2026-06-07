@@ -1,4 +1,3 @@
-import { LicenseFeature, LicenseFeatureChecker } from '../../core/services/LicenseFeatureChecker';
 import { IBreakpoint, ISpacingFieldConfig, TSpacingType } from '../../core/types/form';
 import { CSS_CLASSES } from '../../utils/constants';
 import { DEFAULT_BREAKPOINTS, ISpacingData } from '../../utils/spacingHelpers';
@@ -10,7 +9,6 @@ export interface ISpacingControlOptions {
   config?: ISpacingFieldConfig;
   value?: ISpacingData;
   onChange?: (value: ISpacingData) => void;
-  licenseFeatureChecker?: LicenseFeatureChecker;
 }
 
 export class SpacingControlRenderer {
@@ -22,7 +20,6 @@ export class SpacingControlRenderer {
   private onChange?: (value: ISpacingData) => void;
   private currentBreakpoint: string = 'desktop';
   private container?: HTMLElement;
-  private licenseFeatureChecker?: LicenseFeatureChecker;
 
   constructor(options: ISpacingControlOptions) {
     this.fieldName = options.fieldName;
@@ -31,7 +28,6 @@ export class SpacingControlRenderer {
     this.config = options.config || {};
     this.value = options.value || this.initializeValue();
     this.onChange = options.onChange;
-    this.licenseFeatureChecker = options.licenseFeatureChecker;
 
     const breakpoints = this.getBreakpoints();
     this.currentBreakpoint = breakpoints[0]?.name || 'desktop';
@@ -54,14 +50,6 @@ export class SpacingControlRenderer {
 
   private getBreakpoints(): IBreakpoint[] {
     const custom = this.config.breakpoints || [];
-
-    if (this.licenseFeatureChecker) {
-      if (!this.licenseFeatureChecker.hasAdvancedSpacing()) {
-        return DEFAULT_BREAKPOINTS;
-      }
-    } else {
-      return DEFAULT_BREAKPOINTS;
-    }
 
     if (custom.length > 0) {
       return custom;
@@ -214,28 +202,6 @@ export class SpacingControlRenderer {
   `;
   }
 
-  private shouldShowAdvancedSpacingRestriction(): boolean {
-    const hasCustomBreakpoints = !!(this.config.breakpoints && this.config.breakpoints.length > 0);
-    const hasAdvancedSpacing = this.licenseFeatureChecker?.hasAdvancedSpacing() ?? false;
-    return hasCustomBreakpoints && (!this.licenseFeatureChecker || !hasAdvancedSpacing);
-  }
-
-  private generateAdvancedSpacingRestrictionHTML(): string {
-    if (!this.shouldShowAdvancedSpacingRestriction()) {
-      return '';
-    }
-
-    const message = this.licenseFeatureChecker
-      ? this.licenseFeatureChecker.getFeatureRestrictionMessage(LicenseFeature.ADVANCED_SPACING)
-      : 'Продвинутые настройки spacing доступны только в PRO версии. Для снятия ограничений приобретите PRO версию.';
-
-    return `
-      <div style="padding: 10px; border: 1px solid #ff9800; border-radius: 4px; background-color: #fff3cd; color: #856404; margin-bottom: 10px;">
-        ⚠️ ${message}
-      </div>
-    `;
-  }
-
   public generateHTML(): string {
     const breakpoints = this.getBreakpoints();
     const spacingTypes = this.getSpacingTypes();
@@ -256,7 +222,6 @@ export class SpacingControlRenderer {
       .join('');
 
     const groupsHTML = spacingTypes.map(type => this.generateSpacingGroupHTML(type)).join('');
-    const restrictionHTML = this.generateAdvancedSpacingRestrictionHTML();
 
     return `
     <div class="${CSS_CLASSES.SPACING_CONTROL_CONTAINER}" data-field-name="${this.fieldName}">
@@ -267,8 +232,6 @@ export class SpacingControlRenderer {
             ${this.required ? `<span class="${CSS_CLASSES.REQUIRED}">*</span>` : ''}
           </label>
         </div>
-
-        ${restrictionHTML}
 
         <div class="${CSS_CLASSES.SPACING_CONTROL_BREAKPOINTS}">
           ${breakpointsHTML}

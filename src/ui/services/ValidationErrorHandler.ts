@@ -1,7 +1,8 @@
 import { nextTick } from 'vue';
 
 import { CSS_CLASSES, REPEATER_ACCORDION_ANIMATION_DELAY_MS } from '../../utils/constants';
-import { focusElement, scrollToElement } from '../../utils/formErrorHelpers';
+import { focusElement } from '../../utils/formErrorHelpers';
+import { scrollToElement } from '../../utils/scrollHelpers';
 
 export interface IRepeaterRef {
   isItemCollapsed?: (index: number) => boolean;

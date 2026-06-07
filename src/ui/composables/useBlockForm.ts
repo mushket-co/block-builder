@@ -1,6 +1,5 @@
 import { computed, reactive, ref } from 'vue';
 
-import { LicenseService } from '../../core/services/LicenseService';
 import { IBlock, TBlockId } from '../../core/types';
 import { BlockManagementUseCase } from '../../core/use-cases/BlockManagementUseCase';
 import { addSpacingFieldToFields } from '../../utils/blockSpacingHelpers';
@@ -8,7 +7,6 @@ import { UniversalValidator } from '../../utils/universalValidation';
 
 export function useBlockForm(
   blockService: BlockManagementUseCase,
-  licenseService: LicenseService,
   getBlockConfig: (type: string) => any
 ) {
   const showModal = ref(false);
@@ -31,12 +29,7 @@ export function useBlockForm(
       return [];
     }
     const blockType = currentBlockType.value;
-    const fields = addSpacingFieldToFields(
-      blockType.fields || [],
-      blockType.spacingOptions,
-      licenseService.getFeatureChecker()
-    );
-    return fields;
+    return addSpacingFieldToFields(blockType.fields || [], blockType.spacingOptions);
   });
 
   const openCreateModal = (type: string, position?: number) => {

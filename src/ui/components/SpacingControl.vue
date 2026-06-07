@@ -7,10 +7,6 @@
       </label>
     </div>
 
-    <div v-if="showAdvancedSpacingRestriction" class="bb-warning-box bb-mb-sm">
-      ⚠️ {{ getAdvancedSpacingRestrictionMessage() }}
-    </div>
-
     <div class="bb-spacing-control__breakpoints">
       <button
         v-for="bp in allBreakpoints"
@@ -69,8 +65,6 @@
 <script>
 import { computed, onMounted, ref, watch } from 'vue';
 
-import { LicenseFeature } from '../../core/services/LicenseFeatureChecker';
-
 const DEFAULT_BREAKPOINTS = [
   { name: 'desktop', label: 'Десктоп', maxWidth: undefined },
   { name: 'tablet', label: 'Таблет', maxWidth: 1199 },
@@ -122,11 +116,6 @@ export default {
       default: null,
     },
 
-    licenseFeatureChecker: {
-      type: Object,
-      default: null,
-    },
-
     required: {
       type: Boolean,
       default: false,
@@ -142,37 +131,7 @@ export default {
   setup(props, { emit }) {
     const spacingData = ref({});
 
-    const hasCustomBreakpoints = computed(() => {
-      return props.breakpoints && props.breakpoints.length > 0;
-    });
-
-    const showAdvancedSpacingRestriction = computed(() => {
-      return (
-        hasCustomBreakpoints.value &&
-        props.licenseFeatureChecker &&
-        !props.licenseFeatureChecker.hasAdvancedSpacing()
-      );
-    });
-
-    const getAdvancedSpacingRestrictionMessage = () => {
-      if (props.licenseFeatureChecker) {
-        return props.licenseFeatureChecker.getFeatureRestrictionMessage(
-          LicenseFeature.ADVANCED_SPACING
-        );
-      }
-      return 'Продвинутые настройки spacing доступны только в PRO версии. Для снятия ограничений приобретите PRO версию.';
-    };
-
     const allBreakpoints = computed(() => {
-      if (props.licenseFeatureChecker) {
-        const hasAdvanced = props.licenseFeatureChecker.hasAdvancedSpacing();
-        if (!hasAdvanced) {
-          return DEFAULT_BREAKPOINTS;
-        }
-      } else {
-        return DEFAULT_BREAKPOINTS;
-      }
-
       if (props.breakpoints && props.breakpoints.length > 0) {
         return Array.isArray(props.breakpoints) ? [...props.breakpoints] : props.breakpoints;
       }
@@ -324,8 +283,6 @@ export default {
       handleSpacingChange,
       handleValueInputChange,
       getCSSVariablesPreview,
-      showAdvancedSpacingRestriction,
-      getAdvancedSpacingRestrictionMessage,
     };
   },
 };

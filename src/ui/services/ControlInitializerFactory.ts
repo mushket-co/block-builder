@@ -1,5 +1,4 @@
 import { ICustomFieldRendererRegistry } from '../../core/ports/CustomFieldRenderer';
-import { LicenseService } from '../../core/services/LicenseService';
 import { ApiSelectUseCase } from '../../core/use-cases/ApiSelectUseCase';
 import {
   ApiSelectControlInitializer,
@@ -25,7 +24,6 @@ import { IControlInitializer } from './IControlRenderer';
 import { IImageUploadControlConfig } from './ImageUploadControlInitializer';
 
 export interface IControlInitializerFactoryConfig {
-  licenseService: LicenseService;
   apiSelectUseCase: ApiSelectUseCase;
   customFieldRendererRegistry?: ICustomFieldRendererRegistry;
   getCurrentFormFields: () => Map<string, TFieldConfig>;
@@ -37,10 +35,9 @@ export interface IControlInitializerFactoryConfig {
 
 export const ControlInitializerFactory = {
   createInitializers(config: IControlInitializerFactoryConfig): IControlInitializer[] {
-    const licenseFeatureChecker = config.licenseService.getFeatureChecker();
     const initializers: IControlInitializer[] = [];
 
-    initializers.push(new SpacingControlInitializer(licenseFeatureChecker));
+    initializers.push(new SpacingControlInitializer());
 
     const repeaterConfig: IRepeaterControlInitializerConfig = {
       onAfterRender: config.onAfterRepeaterRender,
@@ -51,7 +48,6 @@ export const ControlInitializerFactory = {
 
     const apiSelectConfig: IApiSelectControlInitializerConfig = {
       apiSelectUseCase: config.apiSelectUseCase,
-      licenseFeatureChecker,
       getRepeaterFieldConfigs: config.getRepeaterFieldConfigs,
       getRepeaterRenderers: config.getRepeaterRenderers,
     };
@@ -65,7 +61,6 @@ export const ControlInitializerFactory = {
     if (config.customFieldRendererRegistry) {
       const customFieldConfig: ICustomFieldControlInitializerConfig = {
         customFieldRendererRegistry: config.customFieldRendererRegistry,
-        licenseFeatureChecker,
         getRepeaterRenderers: config.getRepeaterRenderers,
       };
       initializers.push(new CustomFieldControlInitializer(customFieldConfig));

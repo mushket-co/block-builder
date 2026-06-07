@@ -1,5 +1,4 @@
 import { BlockBuilderFactory } from './BlockBuilderFactory';
-import { ILicenseConfig } from './core/entities/License';
 import { IBlockRepository } from './core/ports/BlockRepository';
 import { IComponentRegistry } from './core/ports/ComponentRegistry';
 import {
@@ -7,7 +6,6 @@ import {
   ICustomFieldRendererRegistry,
 } from './core/ports/CustomFieldRenderer';
 import { IHttpClient } from './core/ports/HttpClient';
-import { LicenseService } from './core/services/LicenseService';
 import { IBlockDto, ICreateBlockDto, IUpdateBlockDto } from './core/types';
 import { ApiSelectUseCase } from './core/use-cases/ApiSelectUseCase';
 import { BlockManagementUseCase } from './core/use-cases/BlockManagementUseCase';
@@ -32,7 +30,6 @@ export interface IBlockBuilderOptions {
   controlsFixedPosition?: 'top' | 'bottom';
   controlsOffset?: number;
   controlsOffsetVar?: string;
-  license?: ILicenseConfig;
   isEdit?: boolean;
 }
 
@@ -47,11 +44,6 @@ export class BlockBuilderFacade {
     string,
     { fields?: unknown[]; spacingOptions?: unknown; [key: string]: unknown }
   >;
-  private originalBlockConfigs?: Record<
-    string,
-    { fields?: unknown[]; spacingOptions?: unknown; [key: string]: unknown }
-  >;
-  private licenseService: LicenseService;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private uiController?: any;
   private onSave?: (blocks: IBlockDto[]) => Promise<boolean> | boolean;
@@ -59,7 +51,6 @@ export class BlockBuilderFacade {
   private controlsFixedPosition?: 'top' | 'bottom';
   private controlsOffset?: number;
   private controlsOffsetVar?: string;
-  private originalInitialBlocks?: IBlockDto[];
   private isEdit: boolean;
 
   public readonly theme: string;
@@ -76,13 +67,6 @@ export class BlockBuilderFacade {
     this.controlsOffsetVar = options.controlsOffsetVar;
     this.isEdit = options.isEdit !== undefined ? options.isEdit : true;
 
-    this.licenseService = new LicenseService(options.license);
-
-    this.licenseService.onLicenseChange(async () => {
-      this.reloadLicenseConfiguration();
-      await this.reloadBlocksAfterLicenseChange();
-    });
-
     const dependencies = BlockBuilderFactory.createDependencies({
       repository: options.repository,
       componentRegistry: options.componentRegistry,
@@ -98,8 +82,6 @@ export class BlockBuilderFacade {
     this.apiSelectUseCase = dependencies.apiSelectUseCase;
 
     this.registerComponentsFromConfig();
-
-    this.originalInitialBlocks = options.initialBlocks;
 
     if (options.autoInit !== false) {
       this.initialize(options.containerId, options.initialBlocks);
@@ -130,8 +112,6 @@ export class BlockBuilderFacade {
       controlsFixedPosition: this.controlsFixedPosition,
       controlsOffset: this.controlsOffset,
       controlsOffsetVar: this.controlsOffsetVar,
-      licenseService: this.licenseService,
-      originalBlockConfigs: this.originalBlockConfigs,
       isEdit: this.isEdit,
     });
 
@@ -139,26 +119,6 @@ export class BlockBuilderFacade {
   }
 
   private registerComponentsFromConfig(): void {
-    if (!this.originalBlockConfigs) {
-      this.originalBlockConfigs = { ...this.blockConfigs };
-    }
-
-    const originalConfigs = this.originalBlockConfigs;
-
-    const allBlockTypes = Object.keys(originalConfigs);
-    const allowedTypes = this.licenseService.getAllowedBlockTypes(allBlockTypes);
-
-    const limitedConfigs: Record<
-      string,
-      { fields?: unknown[]; spacingOptions?: unknown; [key: string]: unknown }
-    > = {};
-    allowedTypes.forEach(type => {
-      if (originalConfigs[type]) {
-        limitedConfigs[type] = originalConfigs[type];
-      }
-    });
-    this.blockConfigs = limitedConfigs;
-
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const components: Record<string, any> = {};
 
@@ -189,53 +149,9 @@ export class BlockBuilderFacade {
     }
   }
 
-  private reloadLicenseConfiguration(): void {
-    this.registerComponentsFromConfig();
-
-    if (this.uiController) {
-      if (this.uiController.config && this.originalBlockConfigs) {
-        this.uiController.config.blockConfigs = { ...this.blockConfigs };
-
-        if (this.uiController.originalBlockConfigs !== undefined) {
-          this.uiController.originalBlockConfigs = { ...this.originalBlockConfigs };
-        }
-
-        if (this.uiController.uiRenderer && this.uiController.uiRenderer.config) {
-          this.uiController.uiRenderer.config.blockConfigs = { ...this.blockConfigs };
-        }
-      }
-
-      this.updateUIForLicenseChange();
-    }
-  }
-
-  private updateUIForLicenseChange(): void {
-    if (!this.uiController) {
-      return;
-    }
-
-    const uiRenderer = this.uiController.uiRenderer;
-    if (uiRenderer && typeof uiRenderer.updateLicenseStatus === 'function') {
-      const currentTypesCount = Object.keys(this.blockConfigs).length;
-      const licenseInfo = this.licenseService.getLicenseInfo(currentTypesCount);
-      uiRenderer.updateLicenseStatus(licenseInfo);
-    }
-  }
-
   private async loadInitialBlocks(blocks: IBlockDto[]): Promise<void> {
     try {
-      let allBlockTypes: string[] = [];
-      const configBlockTypes = Object.keys(this.originalBlockConfigs || this.blockConfigs);
-
-      allBlockTypes =
-        configBlockTypes.length > 0
-          ? configBlockTypes
-          : [...new Set(blocks.map(block => block.type))];
-
-      const allowedTypes = this.licenseService.getAllowedBlockTypes(allBlockTypes);
-      const filteredBlocks = this.licenseService.filterBlocksByLicense(blocks, allowedTypes);
-
-      for (const block of filteredBlocks) {
+      for (const block of blocks) {
         const normalizedBlock = {
           ...block,
           visible: block.visible !== undefined ? block.visible : true,
@@ -261,35 +177,6 @@ export class BlockBuilderFacade {
       throw new Error(
         `Не удалось загрузить начальные блоки: ${error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR}`
       );
-    }
-  }
-
-  private async reloadBlocksAfterLicenseChange(): Promise<void> {
-    if (!this.uiController) {
-      return;
-    }
-
-    try {
-      const currentBlocks = await this.repository.getAll();
-
-      const allBlocksMap = new Map<string, IBlockDto>();
-      currentBlocks.forEach(block => allBlocksMap.set(block.id, block));
-      if (this.originalInitialBlocks) {
-        this.originalInitialBlocks.forEach(block => allBlocksMap.set(block.id, block));
-      }
-      const allBlocksToReload = Array.from(allBlocksMap.values());
-
-      await this.repository.clear();
-
-      if (allBlocksToReload.length > 0) {
-        await this.loadInitialBlocks(allBlocksToReload);
-      }
-
-      await this.uiController.refreshBlocks();
-
-      this.updateUIForLicenseChange();
-    } catch {
-      // Игнорируем ошибки перезагрузки блоков
     }
   }
 
@@ -397,23 +284,6 @@ export class BlockBuilderFacade {
 
   getAvailableBlockTypes(): string[] {
     return Object.keys(this.blockConfigs);
-  }
-
-  getLicenseInfo(): string {
-    return this.licenseService.getLicense().getLicenseInfo();
-  }
-
-  isProLicense(): boolean {
-    return this.licenseService.getLicense().isPro();
-  }
-
-  getRemainingBlockTypeSlots(): number {
-    const currentCount = Object.keys(this.blockConfigs).length;
-    return this.licenseService.getLicense().getRemainingBlockTypeSlots(currentCount);
-  }
-
-  getLicenseService(): LicenseService {
-    return this.licenseService;
   }
 
   async clearAllBlocks(): Promise<void> {

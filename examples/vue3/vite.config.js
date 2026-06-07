@@ -34,6 +34,11 @@ export default defineConfig({
     strictPort: true,
     open: true
   },
+  preview: {
+    host: 'localhost',
+    port: 3001,
+    strictPort: true,
+  },
   optimizeDeps: {
     exclude: ['@mushket-co/block-builder']
   }

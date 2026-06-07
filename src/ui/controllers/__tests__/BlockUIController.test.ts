@@ -2,7 +2,6 @@ import { BlockUIController, IBlockUIControllerConfig } from '../BlockUIControlle
 import { BlockManagementUseCase } from '../../../core/use-cases/BlockManagementUseCase';
 import { ApiSelectUseCase } from '../../../core/use-cases/ApiSelectUseCase';
 import { IBlockDto } from '../../../core/types';
-import { LicenseService } from '../../../core/services/LicenseService';
 
 jest.mock('../../services/UIRenderer');
 jest.mock('../../services/FormBuilder');
@@ -87,7 +86,6 @@ describe('BlockUIController', () => {
     },
     useCase: mockUseCase,
     apiSelectUseCase: mockApiSelectUseCase,
-    licenseService: new LicenseService()
   };
 
   (window as any).blockBuilder = {};

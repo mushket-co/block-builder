@@ -1,4 +1,5 @@
 import { CSS_CLASSES } from './constants';
+import { scrollToElement } from './scrollHelpers';
 
 export interface IFirstErrorInfo {
   fieldKey: string;
@@ -8,6 +9,7 @@ export interface IFirstErrorInfo {
   nestedFieldName?: string;
   nestedPath?: string;
 }
+
 export function parseErrorKey(errorKey: string): IFirstErrorInfo {
   const repeaterMatch = errorKey.match(/^([A-Z_a-z]+)\[(\d+)]\.(.+)$/);
   if (repeaterMatch) {
@@ -28,6 +30,7 @@ export function parseErrorKey(errorKey: string): IFirstErrorInfo {
     isRepeaterField: false,
   };
 }
+
 function parseNestedPath(path: string): Array<{ fieldName: string; index: number }> {
   const parts: Array<{ fieldName: string; index: number }> = [];
   let remainingPath = path;
@@ -119,6 +122,7 @@ export function getFirstErrorKey(errors: Record<string, string[]>): string | nul
   });
   return sortedKeys[0];
 }
+
 export function findFieldElement(
   containerElement: HTMLElement,
   errorInfo: IFirstErrorInfo
@@ -207,23 +211,23 @@ function findNestedRepeaterField(
 
       let nestedRepeaterContainer: HTMLElement | null = null;
 
-      for (const container of Array.from(allRepeaterContainers)) {
-        const containerFieldName = (container as HTMLElement).dataset.fieldName || '';
+      for (const repeaterContainer of Array.from(allRepeaterContainers)) {
+        const containerFieldName = (repeaterContainer as HTMLElement).dataset.fieldName || '';
         if (containerFieldName.includes(fieldName) && containerFieldName.includes(`[${index}]`)) {
-          nestedRepeaterContainer = container as HTMLElement;
+          nestedRepeaterContainer = repeaterContainer as HTMLElement;
           break;
         }
       }
 
       if (!nestedRepeaterContainer) {
-        for (const container of Array.from(allRepeaterContainers)) {
-          const containerFieldName = (container as HTMLElement).dataset.fieldName || '';
+        for (const repeaterContainer of Array.from(allRepeaterContainers)) {
+          const containerFieldName = (repeaterContainer as HTMLElement).dataset.fieldName || '';
           if (
             containerFieldName.endsWith(`.${fieldName}`) ||
             containerFieldName === fieldName ||
             containerFieldName.endsWith(`[${index}].${fieldName}`)
           ) {
-            nestedRepeaterContainer = container as HTMLElement;
+            nestedRepeaterContainer = repeaterContainer as HTMLElement;
             break;
           }
         }
@@ -262,176 +266,6 @@ function findNestedRepeaterField(
   return currentContainer;
 }
 
-export function scrollToElement(
-  element: HTMLElement,
-  options: {
-    offset?: number;
-    behavior?: ScrollBehavior;
-    container?: HTMLElement;
-  } = {}
-): void {
-  const { offset = 20, behavior = 'smooth', container } = options;
-
-  const nearestScrollContainer = getScrollContainer(element);
-  const scrollContainer = nearestScrollContainer || container;
-
-  if (!scrollContainer) {
-    const elementRect = element.getBoundingClientRect();
-    const absoluteElementTop = elementRect.top + window.pageYOffset;
-    const targetPosition = absoluteElementTop - offset;
-
-    if (behavior === 'smooth') {
-      try {
-        window.scrollTo({
-          top: targetPosition,
-          behavior: 'smooth',
-        });
-        return;
-      } catch {
-        smoothScrollWindow(targetPosition);
-      }
-    } else {
-      window.scrollTo(0, targetPosition);
-    }
-    return;
-  }
-
-  const performScroll = () => {
-    const elementRect = element.getBoundingClientRect();
-    const containerRect = scrollContainer.getBoundingClientRect();
-
-    const elementTopRelativeToContainer =
-      elementRect.top - containerRect.top + scrollContainer.scrollTop;
-    const targetScrollTop = elementTopRelativeToContainer - offset;
-
-    const maxScrollTop = Math.max(0, scrollContainer.scrollHeight - scrollContainer.clientHeight);
-    const finalScrollTop = Math.max(0, Math.min(targetScrollTop, maxScrollTop));
-
-    if (behavior === 'smooth') {
-      smoothScrollElement(scrollContainer, finalScrollTop);
-    } else {
-      scrollContainer.scrollTop = finalScrollTop;
-    }
-  };
-
-  if (behavior === 'smooth') {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        performScroll();
-      });
-    });
-  } else {
-    performScroll();
-  }
-}
-
-function smoothScrollWindow(targetPosition: number): void {
-  const startPosition = window.pageYOffset || window.scrollY;
-  const distance = targetPosition - startPosition;
-
-  if (Math.abs(distance) < 1) {
-    return;
-  }
-
-  const duration = Math.min(Math.abs(distance) * 0.5, 800);
-  let start: number | null = null;
-
-  function step(timestamp: number): void {
-    if (!start) {
-      start = timestamp;
-    }
-    const progress = timestamp - start;
-    const percentage = Math.min(progress / duration, 1);
-    const ease = 0.5 - Math.cos(percentage * Math.PI) / 2;
-    const currentPosition = startPosition + distance * ease;
-    window.scrollTo(0, currentPosition);
-    if (percentage < 1) {
-      window.requestAnimationFrame(step);
-    }
-  }
-
-  window.requestAnimationFrame(step);
-}
-
-function smoothScrollElement(element: HTMLElement, targetScrollTop: number): void {
-  const startPosition = element.scrollTop;
-  const distance = targetScrollTop - startPosition;
-
-  if (Math.abs(distance) < 1) {
-    return;
-  }
-
-  const duration = Math.min(Math.max(Math.abs(distance) * 0.5, 300), 1000);
-  let start: number | null = null;
-  let rafId: number | null = null;
-  let isCancelled = false;
-
-  const cancel = () => {
-    isCancelled = true;
-    if (rafId !== null) {
-      window.cancelAnimationFrame(rafId);
-      rafId = null;
-    }
-  };
-
-  const step = (timestamp: number): void => {
-    if (isCancelled) {
-      return;
-    }
-
-    if (!start) {
-      start = timestamp;
-    }
-
-    const progress = timestamp - start;
-    const percentage = Math.min(progress / duration, 1);
-    const ease = 0.5 - Math.cos(percentage * Math.PI) / 2;
-    const currentPosition = startPosition + distance * ease;
-
-    element.scrollTop = currentPosition;
-
-    if (percentage < 1 && !isCancelled) {
-      rafId = window.requestAnimationFrame(step);
-    } else {
-      element.scrollTop = targetScrollTop;
-      rafId = null;
-    }
-  };
-
-  rafId = window.requestAnimationFrame(step);
-
-  setTimeout(() => {
-    if (rafId !== null && !isCancelled) {
-      cancel();
-      element.scrollTop = targetScrollTop;
-    }
-  }, duration + 100);
-}
-function getScrollContainer(element: HTMLElement): HTMLElement | null {
-  let parent = element.parentElement;
-
-  while (parent) {
-    const style = window.getComputedStyle(parent);
-    const overflowY = style.overflowY;
-    const overflowX = style.overflowX;
-    const scrollHeight = parent.scrollHeight;
-    const clientHeight = parent.clientHeight;
-
-    if (
-      (overflowY === 'auto' ||
-        overflowY === 'scroll' ||
-        overflowX === 'auto' ||
-        overflowX === 'scroll') &&
-      scrollHeight > clientHeight
-    ) {
-      return parent;
-    }
-    parent = parent.parentElement;
-  }
-
-  return null;
-}
-
 export function focusElement(element: HTMLElement): void {
   if (element.classList.contains(CSS_CLASSES.IMAGE_UPLOAD_FIELD)) {
     setTimeout(() => {
@@ -460,6 +294,7 @@ export function focusElement(element: HTMLElement): void {
     }, 300);
   }
 }
+
 function isFormField(
   element: HTMLElement
 ): element is HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement {
@@ -511,12 +346,10 @@ export function scrollToFirstError(
       return;
     }
 
-    const scrollContainer = options.scrollContainer;
-
     scrollToElement(fieldElement, {
       offset: options.offset,
       behavior: options.behavior,
-      container: scrollContainer,
+      container: options.scrollContainer,
     });
 
     setTimeout(() => {

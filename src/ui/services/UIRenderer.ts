@@ -3,7 +3,9 @@ import { TRenderRef } from '../../core/types/common';
 import { IBreakpoint } from '../../core/types/form';
 import { getBlockInlineStyles, watchBreakpointChanges } from '../../utils/breakpointHelpers';
 import { CSS_CLASSES } from '../../utils/constants';
-import { afterRender } from '../../utils/domReady';
+import { afterRender } from '../../utils/scheduling';
+import { getScrollContainer, getBlocksLayoutRoot, restoreScrollPosition, stopOngoingScroll } from '../../utils/scrollHelpers';
+import { blockScrollService } from './BlockScrollService';
 import { ISpacingData } from '../../utils/spacingHelpers';
 import { EventDelegation } from '../EventDelegation';
 import {
@@ -31,11 +33,6 @@ export interface IUIRendererConfig {
   controlsFixedPosition?: 'top' | 'bottom';
   controlsOffset?: number;
   controlsOffsetVar?: string;
-  license?: {
-    isPro: boolean;
-    maxBlockTypes: number;
-    currentTypesCount: number;
-  };
   isEdit?: boolean;
 }
 
@@ -45,6 +42,15 @@ interface IComponentRegistry {
   has(name: string): boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getAll(): Record<string, any>;
+}
+
+export interface IRenderBlocksOptions {
+  scrollToBlock?: {
+    blockId: string;
+    offsetTop?: number;
+    offsetBottom?: number;
+    behavior?: ScrollBehavior;
+  };
 }
 
 export class UIRenderer {
@@ -118,7 +124,6 @@ export class UIRenderer {
       document.body.classList.remove(CSS_CLASSES.BB_IS_EDIT_MODE);
     }
 
-    const licenseBanner = this.renderLicenseBanner();
     const controlsHTML = this.isEdit
       ? `
       <div class="${panelClass}" ${inlineStyles}>
@@ -128,7 +133,6 @@ export class UIRenderer {
             <div class="${CSS_CLASSES.STATS}">
               <p>Всего блоков: <span id="blocks-count">0</span></p>
             </div>
-            ${this.renderLicenseBadge()}
           </div>
         </div>
       </div>
@@ -137,32 +141,10 @@ export class UIRenderer {
 
     container.innerHTML = `
     <div class="${appClass}">
-      ${licenseBanner}
       ${controlsHTML}
       <div class="${CSS_CLASSES.BLOCKS}" id="block-builder-blocks"></div>
     </div>
   `;
-  }
-
-  private renderLicenseBanner(): string {
-    const license = this.config.license;
-    if (!license) {
-      return '';
-    }
-    if (license.isPro) {
-      return '';
-    }
-    return `
-      <div class="${CSS_CLASSES.LICENSE_BANNER}">
-        <div class="${CSS_CLASSES.LICENSE_BANNER_CONTENT}">
-          <span class="${CSS_CLASSES.LICENSE_BANNER_ICON}">⚠️</span>
-          <span class="${CSS_CLASSES.LICENSE_BANNER_TEXT}">
-            Вы используете бесплатную версию <a href="https://block-builder.ru/" target="_blank" rel="noopener noreferrer" class="${CSS_CLASSES.BB_LINK_INHERIT}">Block Builder</a>.
-            Доступно ${license.currentTypesCount} из ${license.maxBlockTypes} типов блоков.
-          </span>
-        </div>
-      </div>
-    `;
   }
 
   private renderControlButtons(): string {
@@ -177,27 +159,6 @@ export class UIRenderer {
       ${deleteIconHTML} Очистить все
     </button>
   `;
-  }
-
-  private renderLicenseBadge(): string {
-    const license = this.config.license;
-    if (!license) {
-      return '';
-    }
-
-    return license.isPro
-      ? `
-        <div class="${CSS_CLASSES.LICENSE_BADGE} ${CSS_CLASSES.LICENSE_BADGE_PRO}" title="PRO лицензия - Без ограничений">
-          <span class="${CSS_CLASSES.LICENSE_BADGE_ICON}">✓</span>
-          <span class="${CSS_CLASSES.LICENSE_BADGE_TEXT}">PRO</span>
-        </div>
-      `
-      : `
-        <div class="${CSS_CLASSES.LICENSE_BADGE} ${CSS_CLASSES.LICENSE_BADGE_FREE}" title="FREE лицензия - Ограничено ${license.maxBlockTypes} типами блоков">
-          <span class="${CSS_CLASSES.LICENSE_BADGE_ICON}">ℹ</span>
-          <span class="${CSS_CLASSES.LICENSE_BADGE_TEXT}">FREE</span>
-        </div>
-      `;
   }
 
   updateEditMode(isEdit: boolean): void {
@@ -257,7 +218,6 @@ export class UIRenderer {
             <div class="${CSS_CLASSES.STATS}">
               <p>Всего блоков: <span id="blocks-count">${document.querySelector('#blocks-count')?.textContent || '0'}</span></p>
             </div>
-            ${this.renderLicenseBadge()}
           </div>
         </div>
       </div>
@@ -290,66 +250,6 @@ export class UIRenderer {
     }
   }
 
-  updateLicenseStatus(licenseInfo: {
-    isPro: boolean;
-    maxBlockTypes: number;
-    currentTypesCount: number;
-  }): void {
-    this.config.license = licenseInfo;
-    if (this.config.isEdit !== undefined) {
-      this.updateEditMode(this.config.isEdit);
-    }
-
-    const licenseBadge = this.renderLicenseBadge();
-    const statsContainer = document.querySelector(`.${CSS_CLASSES.CONTROLS_INNER}`);
-    if (statsContainer) {
-      const existingBadge = statsContainer.querySelector(`.${CSS_CLASSES.LICENSE_BADGE}`);
-      if (existingBadge) {
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = licenseBadge.trim();
-        const newBadge = tempDiv.firstChild;
-        if (newBadge) {
-          existingBadge.replaceWith(newBadge);
-        }
-      }
-    }
-
-    const container = document.querySelector(`#${this.config.containerId}`);
-    if (container) {
-      const appContainer = container.querySelector(`.${CSS_CLASSES.APP}`) || container;
-      const existingBanner = appContainer.querySelector(`.${CSS_CLASSES.LICENSE_BANNER}`);
-
-      if (licenseInfo.isPro) {
-        if (existingBanner) {
-          existingBanner.remove();
-        }
-      } else {
-        const licenseBanner = this.renderLicenseBanner();
-        if (licenseBanner) {
-          if (existingBanner) {
-            existingBanner.outerHTML = licenseBanner;
-          } else {
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = licenseBanner.trim();
-            const bannerNode = tempDiv.firstChild;
-
-            if (bannerNode) {
-              if (appContainer.firstChild) {
-                appContainer.insertBefore(bannerNode, appContainer.firstChild);
-              } else {
-                appContainer.append(bannerNode);
-              }
-            }
-          }
-        } else if (existingBanner) {
-          existingBanner.remove();
-        }
-      }
-    }
-
-    // PRO лицензия активна
-  }
-
   private renderAddBlockButton(position: number): string {
     if (!this.isEdit) {
       return '';
@@ -369,8 +269,8 @@ export class UIRenderer {
   `;
   }
 
-  renderBlocks(blocks: IBlockDto[]): void {
-    const blocksContainer = document.querySelector('#block-builder-blocks');
+  renderBlocks(blocks: IBlockDto[], options?: IRenderBlocksOptions): void {
+    const blocksContainer = getBlocksLayoutRoot();
     const countElement = document.querySelector('#blocks-count');
 
     if (!blocksContainer) {
@@ -402,11 +302,92 @@ export class UIRenderer {
       ]),
     ];
 
+    const scrollTarget = options?.scrollToBlock;
+    const scrollContainer = getScrollContainer(blocksContainer);
+    const savedScrollTop = scrollContainer?.scrollTop ?? null;
+    const scrollSession = scrollTarget ? blockScrollService.beginSession() : undefined;
+
+    if (!scrollTarget) {
+      blockScrollService.cancelPending();
+      if (scrollContainer) {
+        stopOngoingScroll(scrollContainer);
+      }
+    }
+
     blocksContainer.innerHTML = blocksHTML.join('');
 
-    afterRender(() => {
+    afterRender(async () => {
       this.initializeCustomBlocks(blocksToRender);
+      this.initializeVueComponents(blocksToRender);
       this.setupBreakpointWatchers(blocksToRender);
+
+      if (scrollTarget && scrollSession !== undefined) {
+        await blockScrollService.scrollToBlockWhenReady(
+          scrollTarget.blockId,
+          {
+            offsetTop: scrollTarget.offsetTop,
+            offsetBottom: scrollTarget.offsetBottom,
+            behavior: scrollTarget.behavior ?? 'smooth',
+          },
+          scrollSession
+        );
+      } else if (scrollContainer && savedScrollTop !== null) {
+        await restoreScrollPosition(scrollContainer, savedScrollTop, blocksContainer);
+      }
+    });
+  }
+
+  /** Точечное обновление одного блока без полного re-render списка (сохраняет scroll). */
+  updateBlock(block: IBlockDto): void {
+    blockScrollService.cancelPending();
+
+    const escapedBlockId =
+      typeof CSS !== 'undefined' && typeof CSS.escape === 'function'
+        ? CSS.escape(block.id)
+        : block.id.replaceAll(/["\\]/g, '\\$&');
+
+    const blockElement = document.querySelector(
+      `.${CSS_CLASSES.BLOCK}[data-block-id="${escapedBlockId}"]`
+    ) as HTMLElement | null;
+
+    if (!blockElement) {
+      return;
+    }
+
+    const config = this.config.blockConfigs[block.type];
+    if (!config) {
+      return;
+    }
+
+    blockElement.classList.toggle(CSS_CLASSES.HIDDEN, !block.visible);
+
+    const spacingStylesObj = getBlockInlineStyles(
+      (block.props.spacing || {}) as ISpacingData,
+      'spacing'
+    );
+
+    if (Object.keys(spacingStylesObj).length > 0) {
+      blockElement.setAttribute('style', this.objectToStyleString(spacingStylesObj));
+    } else {
+      blockElement.removeAttribute('style');
+    }
+
+    this.cleanupBlockWatcher(block.id);
+
+    const contentElement = blockElement.querySelector(
+      `.${CSS_CLASSES.BLOCK_CONTENT}`
+    ) as HTMLElement | null;
+
+    if (!contentElement) {
+      return;
+    }
+
+    contentElement.innerHTML = this.renderBlockContent(block, config);
+
+    afterRender(() => {
+      this.initializeCustomBlocks([block]);
+      this.initializeVueComponents([block]);
+      this.setupBreakpointWatchers([block]);
     });
   }
 
@@ -527,22 +508,27 @@ export class UIRenderer {
     return div.innerHTML;
   }
 
-  private renderVueComponent(block: IBlockDto, config: any): string {
+  private renderVueComponent(block: IBlockDto, _config: any): string {
     const componentId = `vue-component-${block.id}`;
-    const componentName = config.render.component.name;
-    const userProps = this.getUserComponentProps(block.props);
 
-    const containerHTML = `
+    return `
     <div id="${componentId}" class="${CSS_CLASSES.VUE_COMPONENT_CONTAINER}">
       <!-- Vue компонент будет монтирован здесь -->
     </div>
   `;
+  }
 
-    setTimeout(() => {
-      this.mountVueComponent(componentId, componentName, userProps);
-    }, 0);
-
-    return containerHTML;
+  private initializeVueComponents(blocks: IBlockDto[]): void {
+    blocks.forEach(block => {
+      const config = this.config.blockConfigs[block.type];
+      const render = config?.render as TRenderRef | undefined;
+      if (render?.kind === 'component' && 'component' in render && render.component) {
+        const componentId = `vue-component-${block.id}`;
+        const componentName = render.component.name;
+        const userProps = this.getUserComponentProps(block.props);
+        this.mountVueComponent(componentId, componentName, userProps);
+      }
+    });
   }
 
   /**

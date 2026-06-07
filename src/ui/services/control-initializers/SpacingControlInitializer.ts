@@ -1,4 +1,3 @@
-import { LicenseFeatureChecker } from '../../../core/services/LicenseFeatureChecker';
 import { ISpacingFieldConfig } from '../../../core/types/form';
 import { CSS_CLASSES } from '../../../utils/constants';
 import { parseJSONFromAttribute } from '../../../utils/domSafe';
@@ -6,8 +5,6 @@ import { IControlInitializer, IControlRenderer } from '../IControlRenderer';
 import { SpacingControlRenderer } from '../SpacingControlRenderer';
 
 export class SpacingControlInitializer implements IControlInitializer {
-  constructor(private licenseFeatureChecker: LicenseFeatureChecker) {}
-
   getControlType(): string {
     return 'spacing';
   }
@@ -37,7 +34,6 @@ export class SpacingControlInitializer implements IControlInitializer {
         required: spacingConfig.required,
         config: spacingConfig.config,
         value: (spacingConfig.value as Record<string, Record<string, number>>) || {},
-        licenseFeatureChecker: this.licenseFeatureChecker,
         onChange: value => {
           container.dataset.spacingValue = JSON.stringify(value);
         },

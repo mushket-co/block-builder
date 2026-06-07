@@ -269,18 +269,16 @@ export class ImageUploadControlInitializer {
       }
 
       if (!file.type.startsWith('image/')) {
-        if (errorDiv) {
-          errorDiv.textContent = 'Пожалуйста, выберите файл изображения';
-          errorDiv.style.display = 'block';
-        }
+        this.showValidationError(errorDiv, fileInput, 'Пожалуйста, выберите файл изображения');
         return;
       }
 
       if (finalConfig.maxFileSize && file.size > finalConfig.maxFileSize) {
-        if (errorDiv) {
-          errorDiv.textContent = `Размер файла не должен превышать ${Math.round(finalConfig.maxFileSize / 1024 / 1024)}MB`;
-          errorDiv.style.display = 'block';
-        }
+        this.showValidationError(
+          errorDiv,
+          fileInput,
+          `Размер файла не должен превышать ${this.formatMaxFileSize(finalConfig.maxFileSize)}`
+        );
         return;
       }
 
@@ -453,6 +451,31 @@ export class ImageUploadControlInitializer {
         labelText.classList.remove(CSS_CLASSES.BB_HIDDEN);
       }
     }
+  }
+
+  private formatMaxFileSize(maxBytes: number): string {
+    if (maxBytes >= 1024 * 1024) {
+      const mb = maxBytes / (1024 * 1024);
+      return Number.isInteger(mb) ? `${mb} MB` : `${mb.toFixed(1)} MB`;
+    }
+
+    return `${Math.round(maxBytes / 1024)} KB`;
+  }
+
+  private showValidationError(
+    errorDiv: HTMLElement | null,
+    fileInput: HTMLInputElement,
+    message: string
+  ): void {
+    fileInput.value = '';
+
+    if (!errorDiv) {
+      return;
+    }
+
+    errorDiv.textContent = message;
+    errorDiv.classList.remove(CSS_CLASSES.BB_HIDDEN);
+    errorDiv.style.display = 'block';
   }
 
   private showError(error: any, errorDiv: HTMLElement | null, labelText: HTMLElement | null): void {

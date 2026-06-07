@@ -531,5 +531,68 @@ describe('FormBuilder', () => {
     expect(html).toContain('value=""');
   });
   });
+
+  describe('validateForm', () => {
+    test('returns valid for filled required field', () => {
+      const fields: TFieldConfig[] = [
+        {
+          field: 'title',
+          label: 'Заголовок',
+          type: 'text',
+          rules: [{ type: 'required', message: 'Обязательно' }],
+        },
+      ];
+
+      expect(formBuilder.validateForm({ title: 'Hello' }, fields)).toEqual({ valid: true });
+    });
+
+    test('returns message for empty required field', () => {
+      const fields: TFieldConfig[] = [
+        {
+          field: 'title',
+          label: 'Заголовок',
+          type: 'text',
+          rules: [{ type: 'required', message: 'Обязательно' }],
+        },
+      ];
+
+      expect(formBuilder.validateForm({ title: '' }, fields)).toEqual({
+        valid: false,
+        message: 'Заголовок: Обязательно',
+      });
+    });
+
+    test('validates email rule', () => {
+      const fields: TFieldConfig[] = [
+        {
+          field: 'email',
+          label: 'Email',
+          type: 'text',
+          rules: [{ type: 'email', message: 'Некорректный email' }],
+        },
+      ];
+
+      expect(formBuilder.validateForm({ email: 'bad-email' }, fields)).toEqual({
+        valid: false,
+        message: 'Email: Некорректный email',
+      });
+    });
+
+    test('validates empty repeater as required', () => {
+      const fields: TFieldConfig[] = [
+        {
+          field: 'items',
+          label: 'Элементы',
+          type: 'repeater',
+          rules: [{ type: 'required', message: 'Нужен элемент' }],
+        },
+      ];
+
+      expect(formBuilder.validateForm({ items: [] }, fields)).toEqual({
+        valid: false,
+        message: 'Элементы: Нужен элемент',
+      });
+    });
+  });
 });
 

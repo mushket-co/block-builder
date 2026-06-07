@@ -36,8 +36,11 @@ jobs:
           # Для workspaces с file: нужно использовать npm install
           npm install --prefer-offline --no-audit
 
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
       - name: Run tests
-        run: npm run test:ci
+        run: npm run test:ci:full
 
       - name: Build
         run: npm run build

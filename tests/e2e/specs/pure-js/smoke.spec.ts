@@ -1,0 +1,26 @@
+import { getTextBlockLabel } from '../../../fixtures/block-types';
+import { expect, test } from '../../fixtures';
+
+test.describe('E01 smoke', () => {
+  test('loads editor and shows add block control', async ({ blockForm }) => {
+    await blockForm.prepareCleanEditor();
+    await expect(blockForm.addBlockButton()).toBeVisible();
+  });
+
+  test('creates text block and saves to localStorage', async ({ blockForm }, testInfo) => {
+    const blockTitle = getTextBlockLabel(testInfo.project.name as 'vue3' | 'pure-js');
+    const content = `E2E smoke ${Date.now()}`;
+
+    await blockForm.prepareCleanEditor();
+    await blockForm.createTextBlock(blockTitle, content);
+
+    await expect.poll(() => blockForm.getBlockCount()).toBe(1);
+
+    await blockForm.saveAllBlocks();
+
+    const saved = await blockForm.readSavedBlocksFromStorage();
+    expect(Array.isArray(saved)).toBe(true);
+    expect((saved as Array<{ props: { content: string } }>).length).toBeGreaterThanOrEqual(1);
+    expect((saved as Array<{ props: { content: string } }>)[0].props.content).toBe(content);
+  });
+});

@@ -1119,7 +1119,12 @@ export const blockConfigs = {
         field: 'backgroundColor',
         label: 'Цвет фона',
         type: 'color',
-        defaultValue: '#f0f0f0'
+        defaultValue: '#f0f0f0',
+        dependsOn: {
+          field: 'hasBackground',
+          value: true,
+          operator: 'equals',
+        },
       }
     ]
   },

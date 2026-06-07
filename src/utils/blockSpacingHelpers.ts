@@ -1,10 +1,6 @@
-import { LicenseFeatureChecker } from '../core/services/LicenseFeatureChecker';
 import { IBlockSpacingOptions, IFormFieldConfig, TSpacingType } from '../core/types/form';
 
-export function generateSpacingField(
-  options?: IBlockSpacingOptions,
-  _licenseFeatureChecker?: LicenseFeatureChecker
-): IFormFieldConfig | null {
+export function generateSpacingField(options?: IBlockSpacingOptions): IFormFieldConfig | null {
   if (options?.enabled === false) {
     return null;
   }
@@ -47,14 +43,13 @@ export function generateSpacingField(
 }
 export function addSpacingFieldToFields(
   fields: IFormFieldConfig[],
-  spacingOptions?: IBlockSpacingOptions,
-  licenseFeatureChecker?: LicenseFeatureChecker
+  spacingOptions?: IBlockSpacingOptions
 ): IFormFieldConfig[] {
   const fieldsWithoutSpacing = fields.filter(field => field.type !== 'spacing');
   if (spacingOptions?.enabled === false) {
     return fieldsWithoutSpacing;
   }
-  const spacingField = generateSpacingField(spacingOptions, licenseFeatureChecker);
+  const spacingField = generateSpacingField(spacingOptions);
   if (!spacingField) {
     return fieldsWithoutSpacing;
   }

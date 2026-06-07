@@ -6,29 +6,77 @@
 и проект следует [Semantic Versioning](https://semver.org/lang/ru/).
 
 
-## [1.1.0] - 2025-01-XX
+## [1.1.0] - 2026-06-06
 
 ### Добавлено
-- **ToggleControl компонент**: Новый Vue компонент для создания переключаемых групп полей с визуальным индикатором (checkbox + группа зависимых полей)
-- **Поддержка `dependsOn`**: Добавлена поддержка условного отображения полей на основе значений других полей через свойство `dependsOn` в конфигурации полей (только для Vue версии)
-- **Типы `IDependsOnConfig`**: Добавлены типы для конфигурации условного отображения полей с поддержкой операторов (`equals`, `notEquals`, `in`, `notIn`)
-- **Валидация скрытых полей**: Валидация теперь автоматически пропускает поля, скрытые через `dependsOn`, что позволяет сохранять формы даже когда toggle отключен
-- **Документация ToggleControl**: Добавлен файл `ToggleControl-usage.md` с подробным описанием использования компонента и примеров
+
+#### Функциональность (Vue3)
+
+- **ToggleControl компонент**: Новый Vue компонент для переключаемых групп полей (checkbox + зависимые поля)
+- **Поддержка `dependsOn`**: Условное отображение полей на основе значений других полей (только Vue3)
+- **Типы `IDependsOnConfig`**: Конфигурация условного отображения с операторами (`equals`, `notEquals`, `in`, `notIn`)
+- **Валидация скрытых полей**: Поля, скрытые через `dependsOn`, не участвуют в валидации
+- **Пример nested repeater**: Блок «Каталог с вложенными репитерами» в `examples/vue3` и `examples/pure-js-vite`
+
+#### Автотестирование (три слоя)
+
+- **Unit / integration (Jest)**: ~573 теста в `src/**/__tests__/` — use cases, validators, pure-JS renderers, `FormController`, `ValidationErrorHandler`, `formErrorHelpers`
+- **Component (Vitest)**: 21 тест в `tests/component/` — Vue-компоненты, BlockBuilder, repeater, `dependsOn`, validation UX
+- **E2E (Playwright)**: 19 тестов в `tests/e2e/` — сценарии E01–E05 для **vue3** (port 3001) и **pure-js** (port 3002): smoke, CRUD, form controls, nested repeater, validation UX (раскрытие accordion при ошибках)
+- **Fixtures и page objects**: `tests/fixtures/`, `BlockBuilderPage`, `BlockFormPage` (BEM-селекторы, без `data-testid`)
+- **Конфиги**: `vitest.config.ts`, `playwright.config.ts`, `tests/e2e/global-setup.ts`
+- **npm-скрипты**: `test:component`, `test:e2e`, `test:ci:full`, `test:all`, `check:bundle-size`
+
+#### CI и качество сборки
+
+- **GitHub Actions**: отдельные jobs `test` (Jest + component), `e2e` (Playwright), `quality` (bundle size gate)
+- **`scripts/check-bundle-size.mjs`**: лимиты на размер `dist/*.js` и CSS; падение CI при превышении
+- **Publish workflow**: полный прогон `test:ci:full` перед npm publish
+
+#### Документация для разработчиков
+
+- **`README_DEV.md`**: локальная разработка, архитектура, тестирование, CI, чеклисты для новых фич
+- Ссылка на `README_DEV.md` в корневом `README.md`
 
 ### Изменено
-- **UniversalValidator.validateForm**: Добавлена поддержка опциональной функции `isFieldVisible` для пропуска валидации скрытых полей
-- **UniversalValidator.validateRepeaterRecursive**: Обновлена для поддержки валидации полей внутри репитеров с учетом `dependsOn` условий
-- **BlockBuilder.vue**: Добавлена функция `isFieldVisible` для проверки видимости полей на основе `dependsOn` условий; интеграция с ToggleControl для группировки полей
-- **RepeaterControl.vue**: Добавлена поддержка ToggleControl для полей внутри репитеров; группировка полей с `dependsOn` в toggle-группы
-- **core/types/form.ts**: Добавлено опциональное свойство `dependsOn?: IDependsOnConfig` в интерфейсы `IFormFieldConfig` и `IRepeaterItemFieldConfig`
+
+- **Лицензирование удалено**: Пакет полностью бесплатный под MIT. Убраны LicenseService, проверка ключей, ограничения FREE/PRO, UI-баннеры и badges
+- **Публичный API**: Удалены экспорты `License`, `LicenseService`, `LicenseFeatureChecker`; опции `license`, `licenseKey`, `licenseService` больше не поддерживаются
+- **`BlockBuilderFacade` / `BlockBuilder.vue`**: Убрана интеграция с лицензированием; composable `useLicense` удалён
+- **`UniversalValidator.validateRepeaterRecursive`**: Валидация полей внутри репитеров с учётом `dependsOn`
+- **`BlockBuilder.vue`**: `isFieldVisible`, интеграция ToggleControl и группировка зависимых полей
+- **`RepeaterControl.vue`**: ToggleControl и `dependsOn` внутри элементов репитера
+- **`core/types/form.ts`**: Опциональное свойство `dependsOn?: IDependsOnConfig` в `IFormFieldConfig` и `IRepeaterItemFieldConfig`
+- **Examples**: preview-порты для E2E — vue3 `:3001`, pure-js-vite `:3002`
+
+### Удалено
+
+- **`LICENSE-PRO.md`**, **`ToggleControl-usage.md`** (описание ToggleControl — на [block-builder.ru](https://block-builder.ru) и в `README_DEV.md`)
+- **`src/core/entities/License.ts`**, **`LicenseService`**, **`LicenseFeatureChecker`**
+- **`src/ui/composables/useLicense.ts`**
+- Экспорт и UI, связанные с PRO/FREE tier
 
 ### Исправлено
-- **Валидация скрытых полей с dependsOn**: Исправлена проблема, когда поля, скрытые через `dependsOn` (toggle = false), всё ещё валидировались и блокировали сохранение формы. Теперь такие поля корректно пропускаются при валидации
-- **Валидация в репитерах**: Исправлена валидация полей внутри репитеров с `dependsOn` - теперь учитывается видимость полей на основе значений внутри каждого элемента репитера
+
+- **Валидация скрытых полей с `dependsOn`**: Скрытые поля больше не блокируют сохранение формы
+- **Валидация в репитерах**: Учитывается видимость полей внутри каждого элемента репитера
+- **Validation UX**: Раскрытие accordion репитера и scroll к первой ошибке (Vue `ValidationErrorHandler`, pure-JS `BlockUIController`)
+- **E2E page object**: Убрано ложное ожидание repeater при выборе типов блоков без репитера (лишний 10s timeout в отчёте Playwright)
 
 ### Примечания
-- **Только для Vue**: Функциональность ToggleControl и `dependsOn` реализована только для Vue версии библиотеки. Pure-JS версия не поддерживает эти возможности и остается без изменений
-- **Обратная совместимость**: Изменения полностью обратно совместимы - поля без `dependsOn` работают как и раньше
+
+- **ToggleControl и `dependsOn` — только Vue3**. Pure-JS не получает эти возможности (политика версии 1.1.0)
+- **Обратная совместимость**: Поля без `dependsOn` работают как раньше; breaking change — только удаление API лицензирования
+- **Coverage Jest ~40%** — нормально: Vue (`.vue`) и E2E покрываются Vitest и Playwright, не Jest
+- **Полный локальный прогон перед PR**: `npm run test:ci:full` и `npm run check:bundle-size`
+
+### Политика поддержки версий
+
+**Начиная с версии 1.1.0:**
+
+- ✅ **Фреймворки (Vue, React)**: Все новые функции и улучшения — только для версий с поддержкой фреймворков
+- 🔒 **Pure-JS версия**: Фиксирована на **1.0.30** — только критические security fixes, без новых фич
+- 📈 **Развитие**: Основной фокус — Vue3 (React в планах)
 
 
 ## [1.0.30] - 2025-01-XX
