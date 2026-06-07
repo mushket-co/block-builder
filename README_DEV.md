@@ -271,7 +271,7 @@ npm run e2e:preview:pure-js      # http://localhost:3002
 | `tests/fixtures/block-types.ts` | Labels блоков для E2E (`getBlockLabel('cardList', 'vue3')`) |
 | `tests/fixtures/minimal-block-configs.ts` | Synthetic block types для **component**-тестов |
 | `tests/e2e/fixtures/index.ts` | Playwright fixture `blockForm` (page object) |
-| `tests/e2e/global-setup.ts` | `npm run build` перед E2E |
+| `scripts/start-e2e-previews.mjs` | Сборка `dist/` + preview vue3/pure-js для Playwright |
 
 ### Page objects (E2E)
 

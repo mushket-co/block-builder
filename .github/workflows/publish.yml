@@ -39,11 +39,14 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install chromium --with-deps
 
+      - name: Build package
+        run: npm run build
+
       - name: Run tests
         run: npm run test:ci:full
 
-      - name: Build
-        run: npm run build
+      - name: Verify build artifacts
+        run: npm run check:bundle-size
 
       - name: Determine version
         id: version

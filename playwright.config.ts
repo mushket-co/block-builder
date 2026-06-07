@@ -15,7 +15,6 @@ export default defineConfig({
   reporter: isCI
     ? [['github'], ['html', { open: 'never' }]]
     : [['list'], ['html', { open: 'never' }]],
-  globalSetup: './tests/e2e/global-setup.ts',
   use: {
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
@@ -39,18 +38,10 @@ export default defineConfig({
       },
     },
   ],
-  webServer: [
-    {
-      command: 'npm run e2e:preview:vue3',
-      url: 'http://localhost:3001',
-      reuseExistingServer: !isCI,
-      timeout: 120_000,
-    },
-    {
-      command: 'npm run e2e:preview:pure-js',
-      url: 'http://localhost:3002',
-      reuseExistingServer: !isCI,
-      timeout: 120_000,
-    },
-  ],
+  webServer: {
+    command: 'node scripts/start-e2e-previews.mjs',
+    url: 'http://localhost:3001',
+    reuseExistingServer: !isCI,
+    timeout: 180_000,
+  },
 });
