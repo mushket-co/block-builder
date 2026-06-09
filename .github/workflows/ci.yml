@@ -18,7 +18,8 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x, 20.x]
+        # Nuxt 3/4 workspaces: postinstall → nuxt prepare требует util.styleText (Node >= 20.12)
+        node-version: [20.x]
 
     steps:
       - name: Checkout code
@@ -46,7 +47,6 @@ jobs:
         run: npm run test:ci
 
       - name: Run component tests
-        if: matrix.node-version == '20.x'
         run: npm run test:component
 
       - name: Build
