@@ -1,4 +1,4 @@
-import './ui/styles/index.scss';
+import './shared/styles/index.scss';
 
 export type { IBlockBuilderOptions } from './BlockBuilderFacade';
 export { BlockBuilderFacade as BlockBuilder } from './BlockBuilderFacade';

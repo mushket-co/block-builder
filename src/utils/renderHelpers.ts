@@ -58,6 +58,38 @@ export function isRenderableVueComponent(component: unknown): boolean {
 export function isReactComponent(render?: TRenderRef): boolean {
   return render?.kind === 'component' && render.framework === 'react';
 }
+
+/** Проверяет, что значение похоже на React-компонент (не пустой объект после JSON/deepClone). */
+export function isRenderableReactComponent(component: unknown): boolean {
+  if (!component) {
+    return false;
+  }
+
+  if (typeof component === 'function') {
+    return true;
+  }
+
+  if (typeof component !== 'object') {
+    return false;
+  }
+
+  const candidate = component as Record<string, unknown>;
+
+  return (
+    typeof candidate.$$typeof === 'symbol' ||
+    typeof candidate.type === 'function' ||
+    typeof candidate.render === 'function'
+  );
+}
+
+export function isRenderableComponent(
+  component: unknown,
+  framework: 'vue' | 'react'
+): boolean {
+  return framework === 'react'
+    ? isRenderableReactComponent(component)
+    : isRenderableVueComponent(component);
+}
 export function isHtmlTemplate(render?: TRenderRef): boolean {
   return render?.kind === 'html';
 }

@@ -14,6 +14,9 @@ export interface ICustomFieldContext {
 
   options?: Record<string, unknown>;
 
+  /** Сообщение об ошибке валидации (используется кастомными renderers, напр. WYSIWYG) */
+  error?: string;
+
   onChange: (newValue: unknown) => void;
 
   onError?: (error: string | null) => void;
@@ -26,6 +29,9 @@ export interface ICustomFieldRenderResult {
   getValue?: () => unknown;
 
   setValue?: (value: unknown) => void;
+
+  /** Обновление состояния ошибки валидации без пересоздания поля */
+  setError?: (error: string | null) => void;
 
   validate?: () => string | null;
 }

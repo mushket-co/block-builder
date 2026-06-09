@@ -9,12 +9,12 @@ export * from './infrastructure/http/FetchHttpClient';
 export * from './infrastructure/registries/CustomFieldRendererRegistry';
 export * from './infrastructure/registries/MemoryComponentRegistry';
 export * from './infrastructure/repositories/MemoryBlockRepositoryImpl';
-export { default as ApiSelectField } from './ui/components/ApiSelectField.vue';
-export { default as BlockBuilderComponent } from './ui/components/BlockBuilder.vue';
-export { default as BlockComponent } from './ui/components/BlockComponent.vue';
-export { default as BlockProperties } from './ui/components/BlockProperties.vue';
-export { default as RepeaterControl } from './ui/components/RepeaterControl.vue';
-export { default as SpacingControl } from './ui/components/SpacingControl.vue';
+export { default as ApiSelectField } from './vue/components/ApiSelectField.vue';
+export { default as BlockBuilderComponent } from './vue/components/BlockBuilder.vue';
+export { default as BlockComponent } from './vue/components/BlockComponent.vue';
+export { default as BlockProperties } from './vue/components/BlockProperties.vue';
+export { default as RepeaterControl } from './vue/components/RepeaterControl.vue';
+export { default as SpacingControl } from './vue/components/SpacingControl.vue';
 export type { ICreateBlockManagementUseCaseOptions } from './utils/createBlockManagementUseCase';
 export { createBlockManagementUseCase } from './utils/createBlockManagementUseCase';
 export {

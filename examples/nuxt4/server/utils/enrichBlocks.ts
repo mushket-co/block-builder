@@ -1,3 +1,7 @@
+import {
+  extractApiSelectValueId,
+  extractApiSelectValueIds,
+} from '../../../../src/utils/apiSelectValueHelpers'
 import { searchMockNews } from './mockNews'
 
 type TJsonRecord = Record<string, unknown>
@@ -21,11 +25,24 @@ function enrichNewsListBlock(block: TJsonRecord): TJsonRecord {
   const props = { ...(block.props as TJsonRecord) }
   const allNews = getAllNews()
 
-  delete props.featuredNews
+  const featuredNewsId = extractApiSelectValueId(props.featuredNewsId)
+  const newsIds = extractApiSelectValueIds(props.newsIds)
 
-  const newsIds = props.newsIds
-  if (Array.isArray(newsIds) && newsIds.length > 0) {
-    props.newsItems = allNews.filter(item => newsIds.includes(item.id))
+  if (featuredNewsId != null) {
+    const featuredNews = allNews.find(item => String(item.id) === String(featuredNewsId))
+    if (featuredNews) {
+      props.featuredNews = featuredNews
+    } else {
+      delete props.featuredNews
+    }
+  } else {
+    delete props.featuredNews
+  }
+
+  if (newsIds.length > 0) {
+    props.newsItems = allNews.filter(item =>
+      newsIds.some(id => String(item.id) === String(id))
+    )
   } else {
     delete props.newsItems
   }

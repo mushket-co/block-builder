@@ -32,6 +32,26 @@ npm run example:vue3
 
 ---
 
+### ⚛️ React + Vite (`react/`)
+Полноценное React приложение с Vite сборкой.
+
+**Особенности:**
+- ✅ Настоящие React-компоненты блоков
+- ✅ Entry `@mushket-co/block-builder/react`
+- ✅ Полный набор блоков как в `vue3`
+- ✅ Mock API для api-select
+
+**Запуск:**
+```bash
+npm run example:react
+```
+
+Порт: `http://localhost:3004`
+
+[Подробная документация →](./react/README.md)
+
+---
+
 ### 🎯 Vue3 Core API (`vue3-core-api/`)
 Vue3 приложение с использованием только Core API без готовых UI компонентов.
 

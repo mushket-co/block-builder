@@ -6,6 +6,41 @@
 и проект следует [Semantic Versioning](https://semver.org/lang/ru/).
 
 
+## [Unreleased]
+
+### Изменено
+
+#### Реструктуризация `src/ui` по слоям UI
+
+- **`src/vue/`** — только Vue (`components/`, `composables/`)
+- **`src/react/`** — только React (без изменений пути)
+- **`src/pure-js/`** — Pure JS (`controllers/`, `EventDelegation`, DOM-рендереры)
+- **`src/shared/`** — общий presentation-слой: `icons/`, `styles/`, `ValidationErrorHandler`, `BlockScrollService`, `NotificationService`, `dom/domClassHelpers`
+- Entry points и `package.json` `files` обновлены под новые пути
+- **`tests/component/vue/`** — Vue component-тесты вынесены из корня `tests/component/` (симметрия с `tests/component/react/`)
+- **`tests/component/helpers/`** — общие test-хелперы (`mockUseCases`)
+
+#### React integration fixes
+
+- **`CustomField` (React + Vue)**: ошибки инициализации в UI (`bb-error-box`), `context.error` + `setError` для WYSIWYG после валидации
+- **`ICustomFieldRenderResult.setError`**: опциональный API для обновления ошибки без remount
+- **WYSIWYG examples** (`vue3`, `react`): `setError` + актуальный `isError` при submit
+- **Playwright E2E (черновик)**: спеки `tests/e2e/specs/react/` подготовлены, проект в Playwright **отключён** до стабилизации React UI
+
+### Добавлено
+
+#### Поддержка React в пакете
+
+- **Entry `@mushket-co/block-builder/react`**: `BlockBuilderComponent`, core API, SSR-хелперы
+- **`renderHelpers.isRenderableReactComponent`**: проверка валидного React-компонента после JSON
+- **`blockDisplayHelpers`**: `canRenderReactBlock`, `resolveReactComponentForBlock`; `enrichBlockForDisplay` поддерживает `framework: 'react'`
+- **React UI** (`src/react/`): декомпозиция как у Vue — `hooks/useBlockBuilder`, `useBlocks`, `useBlockForm`, `useModals`, `components/form-fields/*`, `CustomDropdown`, `SpacingControl`, `RepeaterControl`, `ApiSelectField`, `CustomField`, `ImageUploadField`, модалки и панель блоков
+
+#### Пример React + Vite (`examples/react`)
+
+- Полный набор блоков как в `vue3`, `framework: 'react'`
+- `npm run example:react`, порт **3004**
+
 ## [1.2.0] - 2026-06-09
 
 ### Добавлено

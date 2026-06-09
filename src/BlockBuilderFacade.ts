@@ -99,7 +99,7 @@ export class BlockBuilderFacade {
   }
 
   private async initUI(containerId: string): Promise<void> {
-    const { BlockUIController } = await import('./ui/controllers/BlockUIController');
+    const { BlockUIController } = await import('./pure-js/controllers/BlockUIController');
 
     this.uiController = new BlockUIController({
       containerId,

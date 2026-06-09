@@ -56,10 +56,32 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, computed } from 'vue';
 
+function normalizeNewsId(value: unknown): number | null {
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+
+  if (typeof value === 'object' && value !== null && 'id' in value) {
+    const id = Number((value as { id: unknown }).id);
+    return Number.isNaN(id) ? null : id;
+  }
+
+  const id = Number(value);
+  return Number.isNaN(id) ? null : id;
+}
+
+function normalizeNewsIds(values: unknown): number[] {
+  if (!Array.isArray(values)) {
+    return [];
+  }
+
+  return values.map(normalizeNewsId).filter((id): id is number => id !== null);
+}
+
 interface IProps {
   title?: string;
-  featuredNewsId?: number | null;
-  newsIds?: number[];
+  featuredNewsId?: unknown;
+  newsIds?: unknown;
   showDate?: boolean;
   columns?: string;
   backgroundColor?: string;
@@ -89,8 +111,8 @@ const featuredNews = ref<INews | null>(null);
 const newsList = ref<INews[]>([]);
 
 // Используем computed для отслеживания изменений
-const newsIdsValue = computed(() => props.newsIds || []);
-const featuredNewsIdValue = computed(() => props.featuredNewsId);
+const newsIdsValue = computed(() => normalizeNewsIds(props.newsIds));
+const featuredNewsIdValue = computed(() => normalizeNewsId(props.featuredNewsId));
 
 /**
  * Загрузка данных новостей с API

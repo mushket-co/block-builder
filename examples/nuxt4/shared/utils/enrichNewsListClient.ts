@@ -1,3 +1,8 @@
+import {
+  extractApiSelectValueId,
+  extractApiSelectValueIds,
+} from '../../../../src/utils/apiSelectValueHelpers'
+
 type TJsonRecord = Record<string, unknown>
 
 interface INewsItem {
@@ -9,9 +14,9 @@ interface INewsItem {
 
 /** Восстанавливает newsItems на клиенте после редактирования (SSR-поле с сервера). */
 export async function enrichNewsListProps(props: TJsonRecord): Promise<TJsonRecord> {
-  const newsIds = props.newsIds
-  const featuredNewsId = props.featuredNewsId
-  const hasNewsIds = Array.isArray(newsIds) && newsIds.length > 0
+  const newsIds = extractApiSelectValueIds(props.newsIds)
+  const featuredNewsId = extractApiSelectValueId(props.featuredNewsId)
+  const hasNewsIds = newsIds.length > 0
   const hasFeatured = featuredNewsId != null
 
   if (!hasNewsIds && !hasFeatured) {
@@ -25,10 +30,21 @@ export async function enrichNewsListProps(props: TJsonRecord): Promise<TJsonReco
   const allNews = response.data ?? []
   const next: TJsonRecord = { ...props }
 
-  delete next.featuredNews
+  if (hasFeatured) {
+    const featuredNews = allNews.find(item => String(item.id) === String(featuredNewsId))
+    if (featuredNews) {
+      next.featuredNews = featuredNews
+    } else {
+      delete next.featuredNews
+    }
+  } else {
+    delete next.featuredNews
+  }
 
   if (hasNewsIds) {
-    next.newsItems = allNews.filter(item => (newsIds as number[]).includes(item.id))
+    next.newsItems = allNews.filter(item =>
+      newsIds.some(id => String(item.id) === String(id))
+    )
   } else {
     delete next.newsItems
   }

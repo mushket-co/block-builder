@@ -54,11 +54,34 @@ interface INews {
   date: string
 }
 
+function normalizeNewsId(value: unknown): number | null {
+  if (value === null || value === undefined || value === '') {
+    return null
+  }
+
+  if (typeof value === 'object' && value !== null && 'id' in value) {
+    const id = Number((value as { id: unknown }).id)
+    return Number.isNaN(id) ? null : id
+  }
+
+  const id = Number(value)
+  return Number.isNaN(id) ? null : id
+}
+
+function normalizeNewsIds(values: unknown): number[] {
+  if (!Array.isArray(values)) {
+    return []
+  }
+
+  return values.map(normalizeNewsId).filter((id): id is number => id !== null)
+}
+
 interface IProps {
   title?: string
-  featuredNewsId?: number | null
-  newsIds?: number[]
+  featuredNewsId?: unknown
+  newsIds?: unknown
   /** Денормализованные данные с сервера (SSR), только для чтения */
+  featuredNews?: INews | null
   newsItems?: INews[]
   showDate?: boolean
   columns?: string
@@ -85,10 +108,14 @@ const hasServerNewsItems = computed(
   () => Array.isArray(props.newsItems) && props.newsItems.length > 0
 )
 
-const newsIdsValue = computed(() => props.newsIds || [])
-const featuredNewsIdValue = computed(() => props.featuredNewsId)
+const newsIdsValue = computed(() => normalizeNewsIds(props.newsIds))
+const featuredNewsIdValue = computed(() => normalizeNewsId(props.featuredNewsId))
 
 const displayFeaturedNews = computed(() => {
+  if (props.featuredNews) {
+    return props.featuredNews
+  }
+
   if (featuredNewsIdValue.value && hasServerNewsItems.value) {
     return (
       props.newsItems!.find(item => item.id === featuredNewsIdValue.value) ?? null
@@ -103,10 +130,15 @@ const displayNewsList = computed(() =>
 )
 
 async function loadNewsData(): Promise<void> {
-  if (hasServerNewsItems.value) {
+  if (props.featuredNews) {
     fetchedFeaturedNews.value = null
+  }
+
+  if (hasServerNewsItems.value) {
     fetchedNewsList.value = []
-    return
+    if (props.featuredNews || !featuredNewsIdValue.value) {
+      return
+    }
   }
 
   if (
@@ -152,7 +184,7 @@ async function loadNewsData(): Promise<void> {
 }
 
 watch(
-  [newsIdsValue, featuredNewsIdValue, () => props.newsItems],
+  [newsIdsValue, featuredNewsIdValue, () => props.newsItems, () => props.featuredNews],
   () => {
     void loadNewsData()
   },

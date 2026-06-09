@@ -206,6 +206,19 @@ describe('UpdateBlockUseCase', () => {
     mockRepository.update.mockResolvedValue({ ...mockExistingBlock, props: updates.props! });
     await expect(useCase.execute('test-block', updates)).resolves.toBeDefined();
   });
+  test('должен принять api-select объект в props (одиночный выбор)', async () => {
+    const updates: IUpdateBlockDto = {
+      props: {
+        featuredNewsId: { id: 5, name: 'Главная новость' },
+        newsIds: [
+          { id: 1, name: 'Первая' },
+          { id: 15, name: 'Пятнадцатая' },
+        ],
+      },
+    };
+    mockRepository.update.mockResolvedValue({ ...mockExistingBlock, props: updates.props! });
+    await expect(useCase.execute('test-block', updates)).resolves.toBeDefined();
+  });
   test('должен бросить ошибку для непримитивных типов в props (кроме spacing и массивов)', async () => {
     const updates: IUpdateBlockDto = {
       props: {

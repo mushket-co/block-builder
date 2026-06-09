@@ -5,7 +5,9 @@ import type { IBlock } from '../../src/core/types';
 import {
   enrichBlockForDisplay,
   prepareBlocksForDisplay,
+  canRenderReactBlock,
   canRenderVueBlock,
+  resolveReactComponentForBlock,
   resolveVueComponentForBlock,
 } from '../../src/utils/blockDisplayHelpers';
 
@@ -83,6 +85,34 @@ describe('blockDisplayHelpers', () => {
 
     expect(canRenderVueBlock(block, registry)).toBe(true);
     expect(resolveVueComponentForBlock(block, registry)).toBe(TextComponent);
+  });
+
+  it('restores react render from block type config after deserialization', () => {
+    const TextReactComponent = () => null;
+    const reactBlockTypes = [
+      {
+        type: 'text',
+        title: 'Text',
+        render: { kind: 'component', framework: 'react', component: TextReactComponent },
+      },
+    ];
+
+    const storedBlock: IBlock = {
+      id: 'block-react-1',
+      type: 'text',
+      props: { content: 'Hello React' },
+      settings: {},
+    };
+
+    const enriched = enrichBlockForDisplay(storedBlock, type =>
+      reactBlockTypes.find(blockType => blockType.type === type)
+    );
+
+    expect(enriched.render).toEqual(reactBlockTypes[0].render);
+    expect(canRenderReactBlock(enriched, new MemoryComponentRegistry())).toBe(true);
+    expect(resolveReactComponentForBlock(enriched, new MemoryComponentRegistry())).toBe(
+      TextReactComponent
+    );
   });
 
   it('prepares all blocks for display', () => {

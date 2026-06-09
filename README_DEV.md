@@ -47,22 +47,27 @@ block-builder/
 ├── src/                          # Исходники пакета
 │   ├── core/                     # Домен: entities, use-cases, ports, types
 │   ├── infrastructure/           # HTTP, repositories, registries
-│   ├── ui/                       # Vue-компоненты, controllers, services, styles
+│   ├── shared/                   # Общий presentation-слой (icons, styles, services)
+│   ├── vue/                      # Vue UI (components, composables)
+│   ├── react/                    # React UI (hooks, components, types)
+│   ├── pure-js/                  # Pure JS UI (controllers, DOM renderers)
 │   ├── utils/                    # Валидация, helpers, constants
 │   ├── BlockBuilderFacade.ts     # Публичный фасад
 │   ├── BlockBuilderFactory.ts
 │   ├── index.ts                  # Pure-JS entry
+│   ├── react.ts                  # React entry
 │   └── vue.ts                    # Vue3 entry
 ├── dist/                         # Сборка (не в git, генерируется npm run build)
 ├── examples/                     # Demo-приложения (workspaces)
 │   ├── shared/                   # Общий код examples (blockStorage.js)
 │   ├── vue3/                     # Vue3 + Vite (E2E порт 3001)
+│   ├── react/                    # React + Vite (порт 3004)
 │   ├── pure-js-vite/             # Pure JS + Vite (E2E порт 3002)
 │   ├── vue3-core-api/
 │   ├── api-usage/
 │   └── pure-js-cdn/
 ├── tests/
-│   ├── component/                # Vitest + @vue/test-utils
+│   ├── component/                # Vitest: vue/ + react/, helpers/, setup.ts
 │   ├── e2e/                      # Playwright
 │   └── fixtures/                 # Общие fixtures (E2E labels, component configs)
 ├── scripts/
@@ -79,12 +84,13 @@ block-builder/
 |------|------|------------|
 | Core | `src/core/` | Бизнес-логика без UI |
 | Infrastructure | `src/infrastructure/` | Реализации портов (memory repo, fetch) |
-| UI (Vue) | `src/ui/components/` | Vue-компоненты форм и BlockBuilder |
-| UI (Pure JS) | `src/ui/services/*Renderer.ts` | DOM-рендереры для pure-js |
-| Controllers | `src/ui/controllers/` | `BlockUIController`, `FormController` |
-| Scroll / layout | `src/ui/services/BlockScrollService.ts`, `src/utils/scheduling.ts`, `src/utils/scrollHelpers.ts` | Скролл к блоку, rAF, restore scroll |
+| Shared UI | `src/shared/` | Icons, SCSS, `ValidationErrorHandler`, `BlockScrollService`, `NotificationService` |
+| Vue UI | `src/vue/components/`, `src/vue/composables/` | Vue-компоненты форм и BlockBuilder |
+| React UI | `src/react/components/`, `src/react/hooks/` | React-компоненты (зеркало Vue) |
+| Pure JS UI | `src/pure-js/services/*Renderer.ts`, `src/pure-js/controllers/` | DOM-рендереры и `BlockUIController` |
+| Scroll / layout | `src/shared/services/BlockScrollService.ts`, `src/utils/scheduling.ts`, `src/utils/scrollHelpers.ts` | Скролл к блоку, rAF, restore scroll |
 | Form errors | `src/utils/formErrorHelpers.ts` | Parse/find/scroll к ошибкам (не scroll блоков) |
-| Public API | `BlockBuilderFacade`, `vue.ts`, `index.ts` | Точки входа npm-пакета |
+| Public API | `BlockBuilderFacade`, `vue.ts`, `react.ts`, `index.ts` | Точки входа npm-пакета |
 
 ---
 
@@ -93,7 +99,7 @@ block-builder/
 Проект следует **Clean Architecture**:
 
 ```
-UI (Vue / Pure JS controllers)
+UI (vue / react / pure-js → shared)
         ↓
 Use Cases (BlockManagement, ApiSelect, …)
         ↓
@@ -119,8 +125,9 @@ npm run dev
 ### Примеры (рекомендуется при работе над UI)
 
 ```bash
-npm run example:vue3       # Vue3 example, dev server
-npm run example:pure-js    # Pure JS + Vite
+npm run example:vue3       # Vue3 example, dev server (:3001)
+npm run example:react      # React + Vite (:3004)
+npm run example:pure-js    # Pure JS + Vite (:3002)
 npm run example:api-usage
 npm run example:vue3-core-api
 npm run example:cdn
@@ -129,6 +136,7 @@ npm run example:cdn
 Конфиги блоков для примеров:
 
 - `examples/vue3/src/block-config.js`
+- `examples/react/src/block-config.js`
 - `examples/pure-js-vite/src/block-config.js`
 
 E2E-тесты используют **собранные preview** этих примеров, а не synthetic fixtures.
@@ -194,7 +202,7 @@ npm run check:bundle-size
 ┌─────────────────────────────────────────┐
 │  E2E (Playwright)     tests/e2e/        │  Сквозные сценарии в browser
 ├─────────────────────────────────────────┤
-│  Component (Vitest)   tests/component/  │  Vue UI + BlockBuilder flows
+│  Component (Vitest)   tests/component/  │  vue/ + react/ UI flows
 ├─────────────────────────────────────────┤
 │  Unit (Jest)          src/**/__tests__/ │  Логика, renderers, use cases
 └─────────────────────────────────────────┘
@@ -203,8 +211,8 @@ npm run check:bundle-size
 | Слой | Tool | Каталог | Что покрывает |
 |------|------|---------|---------------|
 | Unit | Jest + jsdom | `src/**/__tests__/` | Use cases, validators, pure-JS renderers, controllers |
-| Component | Vitest + happy-dom | `tests/component/` | Vue-компоненты, BlockBuilder через `mountBlockBuilder` |
-| E2E | Playwright | `tests/e2e/specs/` | Реальные examples (vue3 :3001, pure-js :3002) |
+| Component | Vitest + happy-dom | `tests/component/vue/`, `tests/component/react/` | Vue (`mountBlockBuilder`) и React (`renderBlockBuilder`) |
+| E2E | Playwright | `tests/e2e/specs/` | vue3 :3001, pure-js :3002 (react :3004 — спеки готовы, проект отключён) |
 
 **Важно:** Jest **не** запускает `tests/component` и `tests/e2e`. Vue-файлы (`.vue`) в Jest coverage часто **0%** — это нормально, их покрывают Vitest и Playwright.
 
@@ -218,12 +226,13 @@ npm run test:coverage          # таблица coverage в консоли
 npm run test:ci                # CI: coverage + пороги
 
 # Один файл Jest
-npx jest src/ui/services/__tests__/FormBuilder.test.ts
+npx jest src/pure-js/services/__tests__/FormBuilder.test.ts
 
 # Component (Vitest)
 npm run test:component
 npm run test:component:watch
-npm run test:component -- tests/component/BlockBuilder/create-text-block.spec.ts
+npm run test:component -- tests/component/vue/BlockBuilder/create-text-block.spec.ts
+npm run test:component -- tests/component/react
 
 # E2E (Playwright)
 npm run test:e2e
@@ -242,6 +251,7 @@ Preview-серверы для E2E (если нужно вручную):
 ```bash
 npm run e2e:preview:vue3         # http://localhost:3001
 npm run e2e:preview:pure-js      # http://localhost:3002
+npm run e2e:preview:react        # http://localhost:3004
 ```
 
 ### Coverage (Jest) — как читать вывод
@@ -313,10 +323,10 @@ wrapper.unmount();
 
 | Шаг | Где | Что |
 |-----|-----|-----|
-| 1 | `src/ui/services/__tests__/` | Тест renderer (render, onChange, destroy) |
+| 1 | `src/pure-js/services/__tests__/` | Тест renderer (render, onChange, destroy) |
 | 2 | `src/__tests__/CustomFields.integration.test.ts` | Регистрация через Facade + блок с `type: 'custom'` |
 | 3 | `tests/fixtures/minimal-block-configs.ts` | Synthetic block type |
-| 4 | `tests/component/` | Изолированный Vue wrapper + сценарий через `mountBlockBuilder` |
+| 4 | `tests/component/vue/` | Изолированный Vue wrapper + сценарий через `mountBlockBuilder` |
 | 5 | `examples/vue3/src/block-config.js` | Блок для E2E |
 | 6 | `tests/e2e/specs/vue3/` + `pure-js/` | Один сквозной сценарий |
 
@@ -325,8 +335,8 @@ wrapper.unmount();
 | Шаг | Где | Что |
 |-----|-----|-----|
 | 1 | `src/core/use-cases/__tests__/ApiSelectUseCase.test.ts` | Логика fetch/validate |
-| 2 | `src/ui/services/__tests__/ApiSelectControlRenderer.test.ts` | DOM + mock `fetchItems` |
-| 3 | `tests/component/` | `ApiSelectField.vue` / BlockBuilder flow |
+| 2 | `src/pure-js/services/__tests__/ApiSelectControlRenderer.test.ts` | DOM + mock `fetchItems` |
+| 3 | `tests/component/vue/` | `ApiSelectField.vue` / BlockBuilder flow |
 | 4 | E2E | Example + mock API (без реальной сети) |
 
 ### Валидация / dependsOn / repeater
@@ -334,8 +344,9 @@ wrapper.unmount();
 | Шаг | Где |
 |-----|-----|
 | Unit | `src/utils/__tests__/universalValidation.test.ts` |
-| Vue UX | `tests/component/BlockBuilder/depends-on-validation.spec.ts` |
-| Pure JS | `src/ui/controllers/__tests__/FormController.test.ts`, `BlockUIController.validation.test.ts` |
+| Vue UX | `tests/component/vue/BlockBuilder/depends-on-validation.spec.ts` |
+| React UX | `tests/component/react/BlockBuilder/` |
+| Pure JS | `src/pure-js/controllers/__tests__/FormController.test.ts`, `BlockUIController.validation.test.ts` |
 | Scroll / accordion | `ValidationErrorHandler.test.ts`, `formErrorHelpers.test.ts`, `BlockScrollService.test.ts`, `scrollHelpers.test.ts` |
 | E2E | `validation-ux.spec.ts` |
 
@@ -402,7 +413,7 @@ Publish: `.github/workflows/publish.yml` — `test:ci:full` + Playwright install
 
 ### Стили
 
-- SCSS: `src/ui/styles/`, BEM-префикс `bb-`
+- SCSS: `src/shared/styles/`, BEM-префикс `bb-`
 - Константы классов: `src/utils/constants.ts` → `CSS_CLASSES`
 
 ### Тесты

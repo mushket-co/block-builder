@@ -2,7 +2,7 @@ import type { Locator, Page } from '@playwright/test';
 
 import { BlockBuilderPage } from './BlockBuilderPage';
 
-export type TUiMode = 'vue' | 'pure-js';
+export type TUiMode = 'vue' | 'react' | 'pure-js';
 
 export class BlockFormPage extends BlockBuilderPage {
   constructor(
@@ -12,22 +12,26 @@ export class BlockFormPage extends BlockBuilderPage {
     super(page);
   }
 
+  private get isComponentUi(): boolean {
+    return this.uiMode === 'vue' || this.uiMode === 'react';
+  }
+
   textareaField(fieldName: string) {
-    if (this.uiMode === 'vue') {
+    if (this.isComponentUi) {
       return this.page.locator(`#field-${fieldName}`);
     }
     return this.page.locator(`textarea[name="${fieldName}"]`);
   }
 
   textField(fieldName: string) {
-    if (this.uiMode === 'vue') {
+    if (this.isComponentUi) {
       return this.page.locator(`#field-${fieldName}`);
     }
     return this.page.locator(`input[name="${fieldName}"]`);
   }
 
   numberField(fieldName: string) {
-    if (this.uiMode === 'vue') {
+    if (this.isComponentUi) {
       return this.page.locator(`#field-${fieldName}`);
     }
     return this.page.locator(`input[type="number"][name="${fieldName}"]`);
@@ -42,7 +46,7 @@ export class BlockFormPage extends BlockBuilderPage {
   }
 
   async submitCreateForm(): Promise<void> {
-    if (this.uiMode === 'vue') {
+    if (this.isComponentUi) {
       await this.page.locator('.bb-modal-footer .bb-btn--primary').click();
       return;
     }
@@ -50,7 +54,7 @@ export class BlockFormPage extends BlockBuilderPage {
   }
 
   async submitEditForm(): Promise<void> {
-    if (this.uiMode === 'vue') {
+    if (this.isComponentUi) {
       await this.page.locator('.bb-modal-footer .bb-btn--primary').click();
       return;
     }
@@ -106,7 +110,7 @@ export class BlockFormPage extends BlockBuilderPage {
   }
 
   nestedRepeater(parentItem: Locator, fieldName: string, parentFieldPath?: string) {
-    if (this.uiMode === 'vue') {
+    if (this.isComponentUi) {
       return parentItem.locator(`[data-field-name="${fieldName}"]`).first();
     }
 
@@ -120,7 +124,7 @@ export class BlockFormPage extends BlockBuilderPage {
   fieldInRepeaterItem(item: Locator, subField: string) {
     const fieldsContainer = item.locator(':scope > .bb-repeater-control__item-fields').first();
 
-    if (this.uiMode === 'vue') {
+    if (this.isComponentUi) {
       return fieldsContainer.locator(`input[id$="-${subField}"], textarea[id$="-${subField}"]`).first();
     }
 
@@ -132,7 +136,7 @@ export class BlockFormPage extends BlockBuilderPage {
   numberInRepeaterItem(item: Locator, subField: string) {
     const fieldsContainer = item.locator(':scope > .bb-repeater-control__item-fields').first();
 
-    if (this.uiMode === 'vue') {
+    if (this.isComponentUi) {
       return fieldsContainer
         .locator(`input[id$="-${subField}"][type="number"], input[id$="-${subField}"]`)
         .first();
@@ -151,7 +155,7 @@ export class BlockFormPage extends BlockBuilderPage {
   }
 
   colorField(fieldName: string) {
-    if (this.uiMode === 'vue') {
+    if (this.isComponentUi) {
       return this.page.locator(`#field-${fieldName}`);
     }
     return this.page.locator(`input[type="color"][name="${fieldName}"]`);
@@ -161,7 +165,7 @@ export class BlockFormPage extends BlockBuilderPage {
     const repeater = this.repeater(fieldName);
     const item = repeater.locator('.bb-repeater-control__item').nth(itemIndex);
 
-    if (this.uiMode === 'vue') {
+    if (this.isComponentUi) {
       return item.locator(
         `input[id^="repeater-"][id$="-${subField}"], textarea[id^="repeater-"][id$="-${subField}"]`
       );

@@ -1,14 +1,26 @@
 import { test as base } from '@playwright/test';
 
-import { BlockFormPage } from '../page-objects/BlockFormPage';
+import type { TE2EProject } from '../../fixtures/block-types';
+import { BlockFormPage, type TUiMode } from '../page-objects/BlockFormPage';
 
 type TFixtures = {
   blockForm: BlockFormPage;
 };
 
+function resolveUiMode(projectName: string): TUiMode {
+  if (projectName === 'pure-js') {
+    return 'pure-js';
+  }
+  if (projectName === 'react') {
+    return 'react';
+  }
+  return 'vue';
+}
+
 export const test = base.extend<TFixtures>({
   blockForm: async ({ page }, use, testInfo) => {
-    const uiMode = testInfo.project.name === 'pure-js' ? 'pure-js' : 'vue';
+    const uiMode = resolveUiMode(testInfo.project.name);
+    void (testInfo.project.name as TE2EProject);
     await use(new BlockFormPage(page, uiMode));
   },
 });

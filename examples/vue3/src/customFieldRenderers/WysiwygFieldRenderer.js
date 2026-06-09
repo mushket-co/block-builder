@@ -12,88 +12,87 @@ export class WysiwygFieldRenderer {
     this.name = 'WYSIWYG Редактор (Jodit)'
   }
 
-  /**
-   * Рендерит визуальный редактор в контейнер
-   * @param {HTMLElement} container - Контейнер для рендеринга
-   * @param {Object} context - Контекст с данными поля
-   * @returns {Object} Результат рендеринга
-   */
   render(container, context) {
-    // Создаем обертку для Vue компонента
     const wrapper = document.createElement('div')
     wrapper.className = 'wysiwyg-field-wrapper'
-    
-    // Очищаем контейнер и добавляем обертку
+
     container.innerHTML = ''
     container.appendChild(wrapper)
 
-    // Создаем Vue приложение с компонентом редактора
-    const app = createApp(WysiwygEditor, {
-      modelValue: context.value || '',
-      isError: !!context.error,
-      mode: context.options?.mode || 'default',
-      'onUpdate:modelValue': (newValue) => {
-        // Вызываем onChange callback при изменении значения
-        context.onChange(newValue)
-      }
-    })
-
-    // Монтируем приложение
-    const instance = app.mount(wrapper)
-    
-    // Сохраняем ссылку на instance для обновления ошибки
+    let currentValue = context.value || ''
     let currentError = context.error || ''
+    let app = null
+    let instance = null
 
-    // Возвращаем результат с методами управления
+    const mountEditor = () => {
+      if (app) {
+        app.unmount()
+      }
+
+      app = createApp(WysiwygEditor, {
+        modelValue: currentValue,
+        isError: !!currentError,
+        mode: context.options?.mode || 'default',
+        'onUpdate:modelValue': newValue => {
+          currentValue = newValue
+          context.onChange(newValue)
+        },
+      })
+
+      instance = app.mount(wrapper)
+    }
+
+    mountEditor()
+
     return {
       element: wrapper,
-      
-      // Получение текущего значения
+
       getValue: () => {
-        return instance.editor?.value || ''
+        return instance?.editor?.value || currentValue || ''
       },
 
-      // Установка значения программно
-      setValue: (value) => {
-        if (instance.editor) {
+      setValue: value => {
+        currentValue = value
+        if (instance?.editor) {
           instance.editor.value = value
+        } else {
+          mountEditor()
         }
       },
 
-      // Валидация поля
+      setError: error => {
+        currentError = error || ''
+        mountEditor()
+      },
+
       validate: () => {
-        const value = instance.editor?.value || ''
+        const value = instance?.editor?.value || currentValue || ''
         const isEmpty = this.isEditorEmpty(value)
-        
+
         if (context.required && isEmpty) {
           return `${context.label}: Поле обязательно для заполнения`
         }
-        
+
         return null
       },
 
-      // Очистка ресурсов
       destroy: () => {
         try {
-          // Размонтируем Vue приложение
-          app.unmount()
-          
-          // Удаляем обертку из DOM
+          if (app) {
+            app.unmount()
+            app = null
+          }
+
           if (wrapper.parentNode) {
             wrapper.parentNode.removeChild(wrapper)
           }
         } catch (error) {
           console.error('Ошибка при очистке WysiwygFieldRenderer:', error)
         }
-      }
+      },
     }
   }
 
-  /**
-   * Проверяет, пустой ли редактор
-   * @param {string} html - HTML контент
-   * @returns {boolean}
-   */
   isEditorEmpty(html) {
     const text = html
       .replaceAll(/<[^>]*>/g, '')
@@ -102,4 +101,3 @@ export class WysiwygFieldRenderer {
     return text === ''
   }
 }
-

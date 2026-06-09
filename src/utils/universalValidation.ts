@@ -145,7 +145,10 @@ export const UniversalValidator = {
   validateForm(
     formData: IFormData,
     formFields: IFormFieldConfig[],
-    isFieldVisible?: (field: IFormFieldConfig) => boolean
+    isFieldVisible?: (
+      field: IFormFieldConfig | IRepeaterItemFieldConfig,
+      itemData?: Record<string, unknown>
+    ) => boolean
   ): IValidationResult {
     const formErrors: Record<string, string[]> = {};
     let isValid = true;

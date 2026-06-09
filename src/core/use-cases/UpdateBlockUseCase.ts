@@ -1,5 +1,6 @@
 import { IBlockRepository } from '../ports/BlockRepository';
 import { IBlockDto, IUpdateBlockDto } from '../types';
+import { isApiSelectStoredItem } from '../../utils/apiSelectValueHelpers';
 
 export class UpdateBlockUseCase {
   constructor(private blockRepository: IBlockRepository) {}
@@ -42,6 +43,10 @@ export class UpdateBlockUseCase {
       }
 
       if (Array.isArray(value)) {
+        return;
+      }
+
+      if (isApiSelectStoredItem(value)) {
         return;
       }
 

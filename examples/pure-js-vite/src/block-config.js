@@ -1419,7 +1419,34 @@ export const blockConfigs = {
     render: {
       kind: 'html',
       template: (props) => {
-        const featuredNewsId = props.featuredNewsId || null;
+        const normalizeNewsId = (value) => {
+          if (value === null || value === undefined || value === '') {
+            return null;
+          }
+
+          if (typeof value === 'object' && value !== null && 'id' in value) {
+            const id = Number(value.id);
+            return Number.isNaN(id) ? value.id : id;
+          }
+
+          return value;
+        };
+
+        const getNewsLabel = (entry) => {
+          if (typeof entry === 'object' && entry !== null && entry.name) {
+            return entry.name;
+          }
+
+          return `Новость ID: ${normalizeNewsId(entry)}`;
+        };
+
+        const featuredNewsId = normalizeNewsId(props.featuredNewsId);
+        const featuredNewsLabel =
+          typeof props.featuredNewsId === 'object' &&
+          props.featuredNewsId !== null &&
+          props.featuredNewsId.name
+            ? props.featuredNewsId.name
+            : featuredNewsId;
         const newsIds = Array.isArray(props.newsIds) ? props.newsIds : [];
 
         return `
@@ -1445,7 +1472,7 @@ export const blockConfigs = {
                 margin-bottom: 20px;
               ">
                 <h3 style="margin: 0 0 10px 0; color: #667eea;">
-                  🌟 Главная новость (ID: ${featuredNewsId})
+                  🌟 Главная новость: ${featuredNewsLabel}
                 </h3>
                 <p style="margin: 0; opacity: 0.7; font-size: 14px;">
                   В реальном приложении здесь будут данные, загруженные по API
@@ -1461,7 +1488,7 @@ export const blockConfigs = {
                 gap: 16px;
                 margin-top: 20px;
               ">
-                ${newsIds.map(id => `
+                ${newsIds.map(entry => `
                   <div style="
                     background: white;
                     border: 1px solid #e0e0e0;
@@ -1470,7 +1497,7 @@ export const blockConfigs = {
                     transition: all 0.2s;
                   " class="news-card">
                     <h4 style="margin: 0 0 8px 0; font-size: 16px;">
-                      Новость ID: ${id}
+                      ${getNewsLabel(entry)}
                     </h4>
                     ${props.showDate ? `
                       <p style="margin: 0; font-size: 12px; opacity: 0.6;">

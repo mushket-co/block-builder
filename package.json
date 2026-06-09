@@ -20,6 +20,10 @@
       "types": "./src/vue.ts",
       "import": "./src/vue.ts"
     },
+    "./react": {
+      "types": "./src/react.ts",
+      "import": "./src/react.ts"
+    },
     "./index.esm.css": {
       "import": "./dist/index.esm.css",
       "require": "./dist/index.esm.css"
@@ -38,6 +42,7 @@
     "examples/vue3-core-api",
     "examples/nuxt3",
     "examples/nuxt4",
+    "examples/react",
     "examples/pure-js-vite",
     "examples/api-usage",
     "examples/pure-js-cdn"
@@ -45,17 +50,22 @@
   "files": [
     "dist",
     "src/vue.ts",
+    "src/react.ts",
+    "src/react/**/*.ts",
+    "src/react/**/*.tsx",
     "src/BlockBuilderFactory.ts",
     "src/BlockBuilderFacade.ts",
-    "src/ui/**/*.vue",
-    "src/ui/**/*.ts",
+    "src/vue/**/*.vue",
+    "src/vue/**/*.ts",
+    "src/shared/**/*.ts",
+    "src/pure-js/**/*.ts",
     "src/core/**/*.ts",
     "src/infrastructure/**/*.ts",
     "src/utils/**/*.ts",
     "!src/**/__tests__/**",
     "!src/**/*.test.ts",
     "!src/**/*.spec.ts",
-    "!src/ui/styles/**",
+    "!src/shared/styles/**",
     "!**/__tests__/**",
     "!**/*.test.ts",
     "!**/*.spec.ts"
@@ -78,9 +88,9 @@
     "test:e2e:ui": "playwright test --ui",
     "e2e:preview:vue3": "npm run build && npm run build --workspace=examples/vue3 && npm run preview --workspace=examples/vue3",
     "e2e:preview:pure-js": "npm run build && npm run build --workspace=examples/pure-js-vite && npm run preview --workspace=examples/pure-js-vite",
+    "e2e:preview:react": "npm run build && npm run build --workspace=examples/react && npm run preview --workspace=examples/react",
     "e2e:previews": "node scripts/start-e2e-previews.mjs",
     "test:ci:full": "npm run test:ci && npm run test:component && npm run test:e2e",
-    "test:all": "npm run test:ci:full",
     "check:bundle-size": "node scripts/check-bundle-size.mjs",
     "lint": "eslint src --ext .ts,.vue",
     "lint:fix": "eslint src --ext .ts,.vue --fix",
@@ -98,6 +108,7 @@
     "example:vue3-core-api": "npm run dev --workspace=examples/vue3-core-api",
     "example:nuxt3": "npm run dev --workspace=examples/nuxt3",
     "example:nuxt4": "npm run dev --workspace=examples/nuxt4",
+    "example:react": "npm run dev --workspace=examples/react",
     "examples:install": "npm install"
   },
   "keywords": [
@@ -120,7 +131,7 @@
     "type": "git",
     "url": "git+https://github.com/mushket-co/block-builder.git"
   },
-    "homepage": "https://block-builder.ru",
+  "homepage": "https://block-builder.ru",
   "bugs": {
     "url": "https://github.com/mushket-co/block-builder/issues"
   },
@@ -133,9 +144,14 @@
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^11.1.5",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/jest": "^29.5.8",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.12.0",
+    "@vitejs/plugin-react": "^4.7.0",
     "@vitejs/plugin-vue": "^5.2.1",
     "@vue/test-utils": "^2.4.6",
     "concurrently": "^9.0.1",
@@ -154,6 +170,8 @@
     "postcss": "^8.5.6",
     "postcss-import": "^16.1.1",
     "prettier": "^3.2.5",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
     "rimraf": "^5.0.5",
     "rollup": "^4.6.1",
     "rollup-plugin-dts": "^6.1.0",
@@ -167,9 +185,17 @@
     "vue-eslint-parser": "^9.4.2"
   },
   "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0",
     "vue": "^3.0.0"
   },
   "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    },
     "vue": {
       "optional": true
     }
