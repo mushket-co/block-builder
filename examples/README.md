@@ -52,6 +52,26 @@ npm run example:vue3-core-api
 
 ---
 
+### 🟢 Nuxt 3 (`nuxt3/`)
+Nuxt 3 приложение с BlockBuilder (client-only страница, Nitro API).
+
+**Особенности:**
+- ✅ `build.transpile` для исходников пакета
+- ✅ CSS через client-плагин
+- ✅ `definePageMeta({ ssr: false })` для редактора
+- ✅ Mock API через `server/api/`
+
+**Запуск:**
+```bash
+npm run example:nuxt3
+```
+
+Порт: `http://localhost:3006`
+
+[Подробная документация →](./nuxt3/README.md)
+
+---
+
 ### 🔧 Pure JS + Vite (`pure-js-vite/`)
 Чистый JavaScript без фреймворков с Vite сборкой.
 

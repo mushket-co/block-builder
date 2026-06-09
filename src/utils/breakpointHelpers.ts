@@ -1,9 +1,20 @@
 import { IBreakpoint } from '../core/types/form';
 import { DEFAULT_BREAKPOINTS, ISpacingData } from './spacingHelpers';
+import { isClient, isViewportBreakpointDetectionEnabled } from './ssr';
+
+export function getDefaultBreakpoint(
+  breakpoints: IBreakpoint[] = DEFAULT_BREAKPOINTS
+): IBreakpoint {
+  return breakpoints.find(bp => bp.maxWidth === undefined) || breakpoints[0];
+}
 
 export function getCurrentBreakpoint(
   breakpoints: IBreakpoint[] = DEFAULT_BREAKPOINTS
 ): IBreakpoint {
+  if (!isClient() || !isViewportBreakpointDetectionEnabled()) {
+    return getDefaultBreakpoint(breakpoints);
+  }
+
   const width = window.innerWidth;
 
   const sortedBreakpoints = [...breakpoints].sort((a, b) => {
@@ -97,6 +108,10 @@ export function watchBreakpointChanges(
   fieldName: string = 'spacing',
   breakpoints: IBreakpoint[] = DEFAULT_BREAKPOINTS
 ): () => void {
+  if (!isClient()) {
+    return () => {};
+  }
+
   applySpacingToBlockElement(element, spacing, fieldName, breakpoints);
   const handler = createBreakpointChangeHandler(element, spacing, fieldName, breakpoints);
   let resizeObserver: ResizeObserver | null = null;

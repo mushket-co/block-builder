@@ -220,7 +220,11 @@ const handleFileChange = async (event: Event) => {
       reader.readAsDataURL(file);
     }
   } catch (error) {
-    fileError.value = error instanceof Error ? error.message : 'Ошибка при загрузке файла';
+    if (error instanceof TypeError && error.message === 'Failed to fetch') {
+      fileError.value = 'Не удалось подключиться к серверу загрузки. Проверьте, что API доступен.';
+    } else {
+      fileError.value = error instanceof Error ? error.message : 'Ошибка при загрузке файла';
+    }
     if (config.onUploadError && error instanceof Error) {
       config.onUploadError(error);
     }

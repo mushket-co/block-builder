@@ -364,8 +364,15 @@ import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } 
 import { IBlock, TBlockId } from '../../core/types';
 import type { ApiSelectUseCase } from '../../core/use-cases/ApiSelectUseCase';
 import { BlockManagementUseCase } from '../../core/use-cases/BlockManagementUseCase';
+import {
+  canRenderVueBlock,
+  prepareBlocksForDisplay,
+  resolveVueComponentForBlock,
+} from '../../utils/blockDisplayHelpers';
+import { seedRepositoryFromBlocks } from '../../utils/blockRepositorySync';
 import { addSpacingFieldToFields } from '../../utils/blockSpacingHelpers';
 import { getBlockInlineStyles, watchBreakpointChanges } from '../../utils/breakpointHelpers';
+import { enableViewportBreakpointDetection, isClient } from '../../utils/ssr';
 import { CSS_CLASSES, ERROR_MESSAGES } from '../../utils/constants';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { lockBodyScroll, unlockBodyScroll } from '../../utils/scrollLock';
@@ -427,7 +434,13 @@ const emit = defineEmits<{
 const blockService = props.blockManagementUseCase;
 const componentRegistry = blockService.getComponentRegistry();
 
-const blocks = ref<IBlock[]>([]);
+const getBlockTypeConfig = (type: string) => {
+  return (props.config?.availableBlockTypes || []).find((bt: IBlockType) => bt.type === type);
+};
+
+const blocks = ref<IBlock[]>(prepareBlocksForDisplay(props.initialBlocks, getBlockTypeConfig));
+/** Пересчёт spacing после гидрации (см. enableViewportBreakpointDetection). */
+const spacingLayoutEpoch = ref(0);
 const showModal = ref(false);
 const showTypeSelectionModal = ref(false);
 const isAnyModalOpen = computed(() => showModal.value || showTypeSelectionModal.value);
@@ -439,7 +452,22 @@ const formData = reactive<Record<string, any>>({});
 const formErrors = reactive<Record<string, string[]>>({});
 const repeaterRefs = new Map<string, any>();
 const validationErrorHandler = new ValidationErrorHandler(repeaterRefs);
-const originalInitialBlocks = ref(props.initialBlocks ? [...props.initialBlocks] : []);
+const originalInitialBlocks = ref(
+  props.initialBlocks ? prepareBlocksForDisplay(props.initialBlocks, getBlockTypeConfig) : []
+);
+
+watch(
+  () => props.initialBlocks,
+  nextInitialBlocks => {
+    if (!nextInitialBlocks?.length) {
+      return;
+    }
+
+    const prepared = prepareBlocksForDisplay(nextInitialBlocks, getBlockTypeConfig);
+    blocks.value = prepared;
+    originalInitialBlocks.value = [...prepared];
+  }
+);
 
 const setRepeaterRef = (fieldName: string, el: any): void => {
   if (el) {
@@ -658,7 +686,10 @@ const isFieldVisible = (
 
 const loadBlocks = async () => {
   try {
-    blocks.value = (await blockService.getAllBlocks()) as any;
+    blocks.value = prepareBlocksForDisplay(
+      (await blockService.getAllBlocks()) as IBlock[],
+      getBlockTypeConfig
+    );
   } catch (error) {
     alert(`Ошибка загрузки блоков: ${error}`);
   }
@@ -677,35 +708,33 @@ const scrollToBlock = async (blockId: TBlockId, behavior: ScrollBehavior = 'smoo
   );
 };
 
-const loadInitialBlocks = async () => {
-  if (!props.initialBlocks || props.initialBlocks.length === 0) {
-    return;
-  }
-
+const syncBlocksWithRepository = async () => {
   try {
-    if (!originalInitialBlocks.value || originalInitialBlocks.value.length === 0) {
-      originalInitialBlocks.value = [...props.initialBlocks];
-    }
+    await seedRepositoryFromBlocks(blockService, blocks.value, getBlockTypeConfig);
 
-    for (const block of props.initialBlocks) {
-      await blockService.createBlock(block as any);
+    if (blocks.value.length === 0) {
+      const repositoryBlocks = await blockService.getAllBlocks();
+      if (repositoryBlocks.length > 0) {
+        blocks.value = prepareBlocksForDisplay(repositoryBlocks as IBlock[], getBlockTypeConfig);
+      }
     }
   } catch (error) {
-    alert(
-      `Ошибка загрузки начальных блоков: ${error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR}`
-    );
+    if (isClient()) {
+      alert(
+        `Ошибка загрузки начальных блоков: ${error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR}`
+      );
+    } else {
+      console.error('Ошибка синхронизации блоков с репозиторием:', error);
+    }
   }
 };
 
 const isVueComponent = (block: IBlock) => {
-  return block.render?.kind === 'component' && block.render?.framework === 'vue';
+  return canRenderVueBlock(block, componentRegistry);
 };
 
 const getVueComponent = (block: IBlock) => {
-  if (!componentRegistry) {
-    return null;
-  }
-  return componentRegistry.get(block.type);
+  return resolveVueComponentForBlock(block, componentRegistry);
 };
 
 const openBlockTypeSelectionModal = (position?: number) => {
@@ -992,9 +1021,7 @@ const handleToggleVisibility = async (blockId: TBlockId) => {
   await setupBreakpointWatchers();
 };
 
-const getBlockConfig = (type: string) => {
-  return availableBlockTypes.value.find((bt: IBlockType) => bt.type === type);
-};
+const getBlockConfig = getBlockTypeConfig;
 
 const handleCopyId = async (blockId: TBlockId) => {
   try {
@@ -1045,6 +1072,8 @@ const handleClearAll = async () => {
 };
 
 const getBlockSpacingStyles = (block: IBlock): Record<string, string> => {
+  void spacingLayoutEpoch.value;
+
   const spacing = block.props?.spacing as ISpacingData | undefined;
 
   if (!spacing || Object.keys(spacing).length === 0) {
@@ -1102,36 +1131,42 @@ const handleValidationErrors = async () => {
 watch(
   () => props.isEdit,
   (newValue: boolean | undefined) => {
-    updateBodyEditModeClass(newValue);
-  },
-  { immediate: true }
+    if (isClient()) {
+      updateBodyEditModeClass(newValue);
+    }
+  }
 );
 
-watch(
-  isAnyModalOpen,
-  (isOpen: boolean) => {
-    if (isOpen) {
-      lockBodyScroll();
-    } else {
-      unlockBodyScroll();
-    }
-  },
-  { immediate: true }
-);
+watch(isAnyModalOpen, (isOpen: boolean) => {
+  if (!isClient()) {
+    return;
+  }
+
+  if (isOpen) {
+    lockBodyScroll();
+  } else {
+    unlockBodyScroll();
+  }
+});
 
 onMounted(async () => {
-  initIcons();
+  if (isClient()) {
+    initIcons();
+    updateBodyEditModeClass(props.isEdit);
+  }
 
-  updateBodyEditModeClass(props.isEdit);
+  await syncBlocksWithRepository();
 
-  await loadInitialBlocks();
-  await loadBlocks();
-  await setupBreakpointWatchers();
+  if (isClient()) {
+    enableViewportBreakpointDetection();
+    spacingLayoutEpoch.value += 1;
+    await setupBreakpointWatchers();
+  }
 });
 
 onBeforeUnmount(() => {
   cleanupBreakpointWatchers();
-  document.body.classList.remove(CSS_CLASSES.BB_IS_EDIT_MODE);
+  updateBodyEditModeClass(false);
   unlockBodyScroll();
 });
 </script>

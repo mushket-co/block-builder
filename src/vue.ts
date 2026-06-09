@@ -17,3 +17,18 @@ export { default as RepeaterControl } from './ui/components/RepeaterControl.vue'
 export { default as SpacingControl } from './ui/components/SpacingControl.vue';
 export type { ICreateBlockManagementUseCaseOptions } from './utils/createBlockManagementUseCase';
 export { createBlockManagementUseCase } from './utils/createBlockManagementUseCase';
+export {
+  canRenderVueBlock,
+  enrichBlockForDisplay,
+  prepareBlocksForDisplay,
+  resolveVueComponentForBlock,
+} from './utils/blockDisplayHelpers';
+export { seedRepositoryFromBlocks } from './utils/blockRepositorySync';
+export { getDefaultBreakpoint } from './utils/breakpointHelpers';
+export {
+  enableViewportBreakpointDetection,
+  isClient,
+  isServer,
+  isViewportBreakpointDetectionEnabled,
+  resetViewportBreakpointDetection,
+} from './utils/ssr';

@@ -31,6 +31,30 @@ export function getComponentInfo(render?: TRenderRef): {
 export function isVueComponent(render?: TRenderRef): boolean {
   return render?.kind === 'component' && render.framework === 'vue';
 }
+
+/** Проверяет, что значение похоже на Vue-компонент (не пустой объект после JSON/deepClone). */
+export function isRenderableVueComponent(component: unknown): boolean {
+  if (!component) {
+    return false;
+  }
+
+  if (typeof component === 'function') {
+    return true;
+  }
+
+  if (typeof component !== 'object') {
+    return false;
+  }
+
+  const candidate = component as Record<string, unknown>;
+
+  return (
+    typeof candidate.setup === 'function' ||
+    typeof candidate.render === 'function' ||
+    candidate.__vccOpts !== undefined ||
+    typeof candidate.__hmrId === 'string'
+  );
+}
 export function isReactComponent(render?: TRenderRef): boolean {
   return render?.kind === 'component' && render.framework === 'react';
 }

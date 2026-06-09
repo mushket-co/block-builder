@@ -1,0 +1,27 @@
+{
+  "name": "block-builder-example-nuxt4",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node ./scripts/ensure-port-free.mjs 3007 && nuxt dev --port 3007",
+    "dev:clean": "node --input-type=module -e \"import { rmSync } from 'node:fs'; rmSync('.nuxt', { recursive: true, force: true })\" && nuxt prepare && node ./scripts/ensure-port-free.mjs 3007 && nuxt dev --port 3007",
+    "build": "nuxt build",
+    "preview": "nuxt preview --port 3007",
+    "postinstall": "nuxt prepare",
+    "predev": "node ./scripts/ensure-port-free.mjs 3007 && nuxt prepare"
+  },
+  "dependencies": {
+    "@mushket-co/block-builder": "file:../..",
+    "autobind-decorator": "^2.4.0",
+    "jodit": "^4.7.4",
+    "nuxt": "^4.4.2",
+    "swiper": "^11.1.15",
+    "typograf": "^7.6.0",
+    "vue": "^3.5.22"
+  },
+  "devDependencies": {
+    "sass": "^1.93.2",
+    "typescript": "^5.3.2"
+  }
+}

@@ -6,6 +6,54 @@
 и проект следует [Semantic Versioning](https://semver.org/lang/ru/).
 
 
+## [1.2.0] - 2026-06-09
+
+### Добавлено
+
+#### SSR-поддержка в пакете (Vue)
+
+- **`src/utils/ssr.ts`**: утилиты `isClient` / `isServer`, флаг `enableViewportBreakpointDetection()` для корректной гидрации spacing
+- **`blockDisplayHelpers.ts`**: `prepareBlocksForDisplay`, `enrichBlockForDisplay`, `canRenderVueBlock`, `resolveVueComponentForBlock` — восстановление `render` после JSON и резолв компонентов через registry
+- **`blockRepositorySync.ts`**: `seedRepositoryFromBlocks` — синхронизация in-memory репозитория с `initialBlocks` при SSR/гидрации
+- **`renderHelpers.isRenderableVueComponent`**: отличие валидного Vue-компонента от «битой» копии после `deepClone` / `JSON.stringify`
+- **`breakpointHelpers.getDefaultBreakpoint`**: desktop breakpoint на сервере и до завершения гидрации на клиенте
+- **Экспорт из `@mushket-co/block-builder/vue`**: SSR-хелперы, `blockDisplayHelpers`, `seedRepositoryFromBlocks`, `getDefaultBreakpoint`
+
+#### Примеры Nuxt (`examples/nuxt3`, `examples/nuxt4`)
+
+- **Nuxt 3** (`npm run example:nuxt3`, порт **3006**): SSR-страница, `useAsyncData` + Nitro API (`GET/POST /api/blocks` → `data/blocks.json`), composable `useBlockBuilder`, полный набор блоков как в `vue3`
+- **Nuxt 4** (`npm run example:nuxt4`, порт **3007**): та же интеграция в структуре Nuxt 4 (`app/`, `shared/`, `server/`), `compatibilityVersion: 4`
+- **Серверное обогащение блоков** (`enrichBlocks`): денормализация `newsItems` для блока «Список новостей из API» (SEO в HTML)
+- **Клиентское обогащение** (`enrichNewsListClient`): восстановление `newsItems` после редактирования блока
+- **`serializeBlocksForStorage`**: безопасная сериализация для API (без `render.component`, strip base64, без рекурсии в Vue-компоненты)
+- **`stripEnrichedProps`**: удаление SSR-кэша (`newsItems`) перед `UpdateBlockUseCase` и сохранением
+- Mock API: `/api/news`, `/api/articles`, `/api/upload` (multipart через `readMultipartFormData`)
+- Workspaces и скрипты: `example:nuxt3`, `example:nuxt4`
+
+#### Тесты
+
+- **Unit (Jest)**: `tests/unit/blockDisplayHelpers.test.ts`, `tests/unit/breakpointHelpers.ssr.test.ts`
+- **Component (Vitest)**: `tests/component/BlockBuilder/ssr-render.spec.ts` — рендер `initialBlocks` в SSR HTML (режимы edit/view)
+
+#### Документация
+
+- **`examples/README.md`**: разделы Nuxt 3 / Nuxt 4
+- **`examples/nuxt3/README.md`**, **`examples/nuxt4/README.md`**: установка, SSR, структура проекта
+
+### Изменено
+
+- **`BlockBuilder.vue`**: синхронная инициализация `blocks` из `initialBlocks` в `setup`; `syncBlocksWithRepository` вместо слепого `createBlock` для каждого initial-блока; резолв Vue-компонентов через registry; DOM-логика (`initIcons`, scroll lock, breakpoint watchers) только на клиенте; пересчёт spacing после `onMounted`
+- **`breakpointHelpers`**: `getCurrentBreakpoint` и `watchBreakpointChanges` учитывают SSR и фазу гидрации
+- **`domClassHelpers.updateBodyEditModeClass`**: guard для `document.body` на сервере
+- **`ImageUploadField.vue`**: понятное сообщение при `Failed to fetch`
+- **`examples/README.md`**: ссылка на Nuxt-примеры
+
+### Примечания
+
+- **SSR**: контент пользовательских Vue-блоков рендерится на сервере при передаче `initialBlocks` и регистрации компонентов в `componentRegistry`
+- **Обратная совместимость**: публичный API расширен; поведение `BlockBuilder` при `initialBlocks` изменено осознанно (SSR-first)
+
+
 ## [1.1.0] - 2026-06-06
 
 ### Добавлено

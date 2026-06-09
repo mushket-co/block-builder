@@ -1,0 +1,18 @@
+<template>
+  <NuxtPage />
+</template>
+
+<style>
+html,
+body,
+#__nuxt {
+  margin: 0;
+  min-height: 100%;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+</style>
