@@ -414,10 +414,24 @@ Publish: `.github/workflows/publish.yml` — `test:ci:full` + Playwright install
 
 Следуйте стилю репозитория. CHANGELOG обновляется при релизах.
 
-### Стили
+### Стили и CSS-классы
 
 - SCSS: `src/shared/styles/`, BEM-префикс `bb-`
-- Константы классов: `src/utils/constants.ts` → `CSS_CLASSES`
+- В коде пакета и тестах **не хардкодить** строки `bb-*` — только `CSS_CLASSES` из `src/utils/constants.ts`
+- Новый класс → сначала ключ в `CSS_CLASSES`, затем использование в компоненте/рендерере
+- Фиксированная панель управления: `getControlsFixedClass()` (не собирать `bb-controls--fixed` вручную)
+
+### Видимость блоков и core API (с 1.3.0+)
+
+- **Edit** (`isEdit: true`): скрытые блоки (`visible: false`) остаются в DOM с `CSS_CLASSES.OPACITY_HIDDEN`
+- **View**: скрытые блоки не рендерятся — `filterBlocksForDisplay(blocks, isEdit)` из `@mushket-co/block-builder/core`
+- Пример кастомного UI: `examples/vue3-core-api`
+
+### Предупреждение при уходе со страницы (с 1.3.1)
+
+- Опция `warnOnPageLeave` у `BlockBuilder` (Vue/React/Pure JS facade)
+- Core: `haveBlocksChanged`, `attachPageLeaveWarning`, `createUnsavedChangesTracker`
+- Кастомный UI: `usePageLeaveWarning` в `src/vue/composables/` и `src/react/hooks/`
 
 ### Тесты
 

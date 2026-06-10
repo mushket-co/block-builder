@@ -31,6 +31,7 @@ export interface IBlockBuilderOptions {
   controlsOffset?: number;
   controlsOffsetVar?: string;
   isEdit?: boolean;
+  warnOnPageLeave?: boolean;
 }
 
 export class BlockBuilderFacade {
@@ -52,6 +53,7 @@ export class BlockBuilderFacade {
   private controlsOffset?: number;
   private controlsOffsetVar?: string;
   private isEdit: boolean;
+  private warnOnPageLeave: boolean;
 
   public readonly theme: string;
   public readonly locale: string;
@@ -66,6 +68,7 @@ export class BlockBuilderFacade {
     this.controlsOffset = options.controlsOffset;
     this.controlsOffsetVar = options.controlsOffsetVar;
     this.isEdit = options.isEdit !== undefined ? options.isEdit : true;
+    this.warnOnPageLeave = options.warnOnPageLeave === true;
 
     const dependencies = BlockBuilderFactory.createDependencies({
       repository: options.repository,
@@ -113,6 +116,7 @@ export class BlockBuilderFacade {
       controlsOffset: this.controlsOffset,
       controlsOffsetVar: this.controlsOffsetVar,
       isEdit: this.isEdit,
+      warnOnPageLeave: this.warnOnPageLeave,
     });
 
     await this.uiController.init();

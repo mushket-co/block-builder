@@ -41,6 +41,13 @@ export {
   getAllChildren,
   isChildOf,
 } from './utils/blockHelpers';
+export {
+  attachPageLeaveWarning,
+  createUnsavedChangesTracker,
+  haveBlocksChanged,
+  shouldActivatePageLeaveWarning,
+} from './utils/unsavedChangesGuard';
+export type { IUnsavedChangesTracker } from './utils/unsavedChangesGuard';
 export { lockBodyScroll, setScrollLockHandlers, unlockBodyScroll } from './utils/scrollLock';
 export {
   DEFAULT_BREAKPOINTS,

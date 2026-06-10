@@ -158,6 +158,7 @@ export function BlockBuilderEditor({ initialBlocks }: IBlockBuilderEditorProps) 
           controlsFixedPosition="bottom"
           controlsOffset={20}
           isEdit={isEdit}
+          warnOnPageLeave
         />
       </main>
     </>

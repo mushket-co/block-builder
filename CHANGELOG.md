@@ -6,6 +6,38 @@
 и проект следует [Semantic Versioning](https://semver.org/lang/ru/).
 
 
+## [1.3.1] - 2026-06-10
+
+### Добавлено
+
+#### Предупреждение при уходе со страницы с несохранёнными блоками
+
+- Опция `warnOnPageLeave` для Vue (`BlockBuilder`), React (`BlockBuilder`), Pure JS (`BlockBuilder` facade)
+- При включённом флаге и отличии текущих блоков от `initialBlocks` браузер показывает нативное предупреждение перед перезагрузкой/закрытием вкладки
+- В режиме просмотра (`isEdit: false`) предупреждение не показывается, в том числе при переключении через `setIsEdit(false)`
+- После успешного `onSave` базовая линия сбрасывается — предупреждение не показывается
+- Core-утилиты: `haveBlocksChanged`, `attachPageLeaveWarning`, `createUnsavedChangesTracker`, `shouldActivatePageLeaveWarning` (экспорт из `@mushket-co/block-builder/core`)
+- Хуки `usePageLeaveWarning` для Vue и React (кастомный UI без готового `BlockBuilder`)
+
+### Изменено
+
+#### Единый источник CSS-классов
+
+- Полный аудит Vue/React/Pure JS/core и тестов (component, e2e): классы `bb-*` только через `CSS_CLASSES` из `src/utils/constants.ts`
+- Расширены константы: `TOGGLE_CONTROL_*`, `API_SELECT`, `IMAGE_UPLOAD_*`, `BLOCK_BUILDER_ROOT`, `BLOCK_PROPERTIES_*`, `CUSTOM_FIELD_CONTAINER`, `getControlsFixedClass()` и др.
+- Счётчик блоков в панели управления: внутри `.bb-stats` используется `<span>`, не `<p>`
+- SSR/component-тесты на отсутствие скрытого контента в view HTML
+
+### Удалено
+
+- Мёртвый и deprecated-код: `logger.ts`, `safeDOM.ts`, `BlockFormConfigs` / `FormUtils` в `universalValidation.ts`, неиспользуемые хелперы в `renderHelpers.ts`, `blockSpacingHelpers.ts`, `domSafe.ts` (кроме `parseJSONFromAttribute`), висячий `initializeAllControls` в `BlockUIController`
+- Неиспользуемые строки `UI_STRINGS` и `ERROR_MESSAGES`; артефакт `lint-output.txt`
+
+### Исправлено
+
+- **Pure JS: radio в формах** — `FormController.getFormData()` сохраняет выбранное значение группы, а не первый input
+- **React component-тесты** — `cleanupReactTestHost()` размонтирует React перед очисткой DOM (устранён `window is not defined` после teardown)
+
 ## [1.3.0] - 2026-06-10
 
 ### Изменено

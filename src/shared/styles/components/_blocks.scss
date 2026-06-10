@@ -205,6 +205,10 @@
     border-radius: var(--bb-radius-lg);
     border: 1px solid var(--bb-border-color-light);
     box-shadow: var(--bb-shadow-md);
+
+    @media (max-width: 767px) {
+      justify-content: center;
+    }
   }
 }
 
@@ -219,9 +223,10 @@
   font-size: var(--bb-font-size-sm);
   color: var(--bb-text-secondary);
 
-  &::after {
-    content: '';
-    flex: 1;
+  @media (max-width: 767px) {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
   }
 }
 

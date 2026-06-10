@@ -92,7 +92,7 @@ export class BlockFormPage extends BlockBuilderPage {
     const root = this.repeater(repeaterFieldName);
 
     if (this.uiMode === 'pure-js') {
-      return root.locator(`.${CSS_CLASSES.REPEATER_CONTROL_ITEMS}`).first().locator('> .${CSS_CLASSES.REPEATER_CONTROL_ITEM}');
+      return root.locator(`.${CSS_CLASSES.REPEATER_CONTROL_ITEMS}`).first().locator(`> .${CSS_CLASSES.REPEATER_CONTROL_ITEM}`);
     }
 
     return root.locator(
@@ -102,7 +102,7 @@ export class BlockFormPage extends BlockBuilderPage {
 
   nestedRepeaterItems(repeater: Locator) {
     if (this.uiMode === 'pure-js') {
-      return repeater.locator(`.${CSS_CLASSES.REPEATER_CONTROL_ITEMS}`).first().locator('> .${CSS_CLASSES.REPEATER_CONTROL_ITEM}');
+      return repeater.locator(`.${CSS_CLASSES.REPEATER_CONTROL_ITEMS}`).first().locator(`> .${CSS_CLASSES.REPEATER_CONTROL_ITEM}`);
     }
 
     return repeater.locator(

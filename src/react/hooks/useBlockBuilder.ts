@@ -4,6 +4,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useState,
 } from 'react';
 
 import type { IBlock, TBlockId } from '../../core/types';
@@ -23,6 +24,7 @@ import type { IBlockBuilderProps } from '../types/blockBuilder';
 import { useBlockForm } from './useBlockForm';
 import { useBlocks } from './useBlocks';
 import { useModals } from './useModals';
+import { usePageLeaveWarning } from './usePageLeaveWarning';
 
 export function useBlockBuilder({
   config,
@@ -33,6 +35,7 @@ export function useBlockBuilder({
   controlsOffset = 0,
   controlsOffsetVar,
   isEdit = true,
+  warnOnPageLeave = false,
   onBlockAdded,
   onBlockUpdated,
   onBlockDeleted,
@@ -47,6 +50,9 @@ export function useBlockBuilder({
   );
 
   const availableBlockTypes = config?.availableBlockTypes || [];
+  const [savedBaselineBlocks, setSavedBaselineBlocks] = useState<IBlock[]>(() =>
+    prepareBlocksForDisplay(initialBlocks, getBlockTypeConfig)
+  );
 
   const {
     blocks,
@@ -112,6 +118,13 @@ export function useBlockBuilder({
     closeTypeSelectionModal,
   } = useModals(showModal);
 
+  const { markAsSaved: markBlocksAsSaved } = usePageLeaveWarning({
+    enabled: warnOnPageLeave,
+    isEdit,
+    baselineBlocks: savedBaselineBlocks,
+    currentBlocks: blocks,
+  });
+
   const controlsInlineStyles = useMemo(() => {
     if (!controlsFixedPosition) {
       return {};
@@ -146,6 +159,8 @@ export function useBlockBuilder({
     try {
       const result = await Promise.resolve(onSave(blocks));
       if (result === true) {
+        markBlocksAsSaved(blocks);
+        setSavedBaselineBlocks([...blocks]);
         notificationService.success('Данные успешно сохранены');
       } else {
         notificationService.error('Произошла ошибка при сохранении');
@@ -153,7 +168,7 @@ export function useBlockBuilder({
     } catch {
       notificationService.error('Произошла ошибка при сохранении');
     }
-  }, [blocks, onSave]);
+  }, [blocks, markBlocksAsSaved, onSave]);
 
   const handleCopyId = useCallback(async (blockId: TBlockId) => {
     try {
@@ -210,7 +225,9 @@ export function useBlockBuilder({
     if (!initialBlocks?.length) {
       return;
     }
-    setBlocks(prepareBlocksForDisplay(initialBlocks, getBlockTypeConfig));
+    const prepared = prepareBlocksForDisplay(initialBlocks, getBlockTypeConfig);
+    setBlocks(prepared);
+    setSavedBaselineBlocks(prepared);
   }, [initialBlocks, getBlockTypeConfig, setBlocks]);
 
   useEffect(() => {

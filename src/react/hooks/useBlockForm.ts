@@ -1,4 +1,12 @@
-import { useCallback, useMemo, useRef, useState, type Dispatch, type SetStateAction } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from 'react';
 
 import type { IBlock, TBlockId } from '../../core/types';
 import type { BlockManagementUseCase } from '../../core/use-cases/BlockManagementUseCase';
@@ -73,6 +81,12 @@ export function useBlockForm({
     },
     [validationErrorHandler]
   );
+
+  useEffect(() => {
+    return () => {
+      validationErrorHandler.cancelPending();
+    };
+  }, [validationErrorHandler]);
 
   const closeModal = useCallback(() => {
     setShowModal(false);

@@ -97,6 +97,7 @@ export default function App() {
           controlsFixedPosition="bottom"
           controlsOffset={20}
           isEdit={isEdit}
+          warnOnPageLeave
         />
       </div>
     </div>

@@ -413,6 +413,7 @@ import { FormField } from './form-fields';
 import RepeaterControl from './RepeaterControl.vue';
 import SpacingControl from './SpacingControl.vue';
 import ToggleControl from './ToggleControl.vue';
+import { usePageLeaveWarning } from '../composables/usePageLeaveWarning';
 
 interface IBlockType {
   type: string;
@@ -439,6 +440,7 @@ interface IProps {
   controlsOffset?: number; // Отступ от края в пикселях
   controlsOffsetVar?: string; // CSS переменная для учета высоты шапки/футера
   isEdit?: boolean; // Режим редактирования (по умолчанию true)
+  warnOnPageLeave?: boolean;
 }
 
 const props = withDefaults(defineProps<IProps>(), {
@@ -476,6 +478,13 @@ const validationErrorHandler = new ValidationErrorHandler(repeaterRefs);
 const originalInitialBlocks = ref(
   props.initialBlocks ? prepareBlocksForDisplay(props.initialBlocks, getBlockTypeConfig) : []
 );
+
+const { markAsSaved: markBlocksAsSaved } = usePageLeaveWarning({
+  enabled: computed(() => props.warnOnPageLeave),
+  isEdit: computed(() => props.isEdit),
+  baselineBlocks: originalInitialBlocks,
+  currentBlocks: blocks,
+});
 
 watch(
   () => props.initialBlocks,
@@ -1061,6 +1070,7 @@ const handleSave = async () => {
     const result = await Promise.resolve(props.onSave(blocks.value));
 
     if (result === true) {
+      markBlocksAsSaved();
       notificationService.success('Данные успешно сохранены');
     } else {
       notificationService.error('Произошла ошибка при сохранении');
@@ -1180,6 +1190,7 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
+  validationErrorHandler.cancelPending();
   cleanupBreakpointWatchers();
   updateBodyEditModeClass(false);
   unlockBodyScroll();

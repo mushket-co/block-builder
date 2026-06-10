@@ -19,6 +19,7 @@ const blockBuilder = new BlockBuilder({
   controlsFixedPosition: 'bottom', // Фиксировать контролы (с кнопками и статистикой) снизу
   controlsOffset: 20, // Отступ от края в 20px
   initialBlocks: loadBlocksFromLocalStorage(),
+  warnOnPageLeave: true,
   isEdit: true, // Режим редактирования (можно установить false для режима только просмотра)
   onSave: async (blocks) => {
     const result = saveBlocksToLocalStorage(blocks)

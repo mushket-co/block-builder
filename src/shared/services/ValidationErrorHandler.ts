@@ -9,25 +9,60 @@ export interface IRepeaterRef {
 }
 
 export class ValidationErrorHandler {
+  private pendingTimeoutId: ReturnType<typeof setTimeout> | null = null;
+
   constructor(private repeaterRefs: Map<string, IRepeaterRef>) {}
+
+  cancelPending(): void {
+    if (this.pendingTimeoutId !== null) {
+      clearTimeout(this.pendingTimeoutId);
+      this.pendingTimeoutId = null;
+    }
+  }
+
+  private isModalPresent(): boolean {
+    return Boolean(
+      document.querySelector(`.${CSS_CLASSES.MODAL_BODY}`) &&
+        document.querySelector(`.${CSS_CLASSES.MODAL_CONTENT}`)
+    );
+  }
 
   async handleValidationErrors(
     formErrors: Record<string, string[]>,
     delay: number = 350
   ): Promise<void> {
+    this.cancelPending();
     await afterPaint();
 
-    const modalBody = document.querySelector(`.${CSS_CLASSES.MODAL_BODY}`) as HTMLElement;
-    const modalContent = document.querySelector(`.${CSS_CLASSES.MODAL_CONTENT}`) as HTMLElement;
-
-    if (!modalBody || !modalContent) {
+    if (!this.isModalPresent()) {
       return;
     }
 
-    setTimeout(async () => {
+    this.pendingTimeoutId = setTimeout(async () => {
+      this.pendingTimeoutId = null;
+
+      if (!this.isModalPresent()) {
+        return;
+      }
+
+      const modalBody = document.querySelector(`.${CSS_CLASSES.MODAL_BODY}`) as HTMLElement;
+      const modalContent = document.querySelector(`.${CSS_CLASSES.MODAL_CONTENT}`) as HTMLElement;
+
+      if (!modalBody || !modalContent) {
+        return;
+      }
+
       await this.openRepeaterAccordionsForErrors(formErrors);
+      if (!this.isModalPresent()) {
+        return;
+      }
+
       await afterPaint();
       await new Promise(resolve => setTimeout(resolve, 100));
+
+      if (!this.isModalPresent()) {
+        return;
+      }
 
       const firstErrorField = modalBody.querySelector(`.${CSS_CLASSES.ERROR}`) as HTMLElement;
 

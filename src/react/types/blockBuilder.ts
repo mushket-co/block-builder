@@ -30,6 +30,7 @@ export interface IBlockBuilderProps {
   controlsOffset?: number;
   controlsOffsetVar?: string;
   isEdit?: boolean;
+  warnOnPageLeave?: boolean;
   onBlockAdded?: (block: IBlock) => void;
   onBlockUpdated?: (block: IBlock) => void;
   onBlockDeleted?: (blockId: TBlockId) => void;

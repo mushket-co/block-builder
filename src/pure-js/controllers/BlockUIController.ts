@@ -15,6 +15,11 @@ import { copyToClipboard } from '../../utils/copyToClipboard';
 import { afterRender } from '../../utils/scheduling';
 import { getBlockScrollMargins } from '../../utils/scrollHelpers';
 import { getFirstErrorKey, parseErrorKey, scrollToFirstError } from '../../utils/formErrorHelpers';
+import {
+  attachPageLeaveWarning,
+  createUnsavedChangesTracker,
+  shouldActivatePageLeaveWarning,
+} from '../../utils/unsavedChangesGuard';
 import { EventDelegation } from '../EventDelegation';
 import { ControlInitializerFactory } from '../services/ControlInitializerFactory';
 import { ControlManager } from '../services/ControlManager';
@@ -45,6 +50,7 @@ export interface IBlockUIControllerConfig {
     { fields?: unknown[]; spacingOptions?: unknown; [key: string]: unknown }
   >;
   isEdit?: boolean;
+  warnOnPageLeave?: boolean;
 }
 
 export class BlockUIController {
@@ -67,6 +73,8 @@ export class BlockUIController {
   private isEdit: boolean;
   private controlManager: ControlManager;
   private formController: FormController;
+  private unsavedChangesTracker = createUnsavedChangesTracker();
+  private detachPageLeaveWarning: (() => void) | null = null;
 
   constructor(config: IBlockUIControllerConfig) {
     this.config = config;
@@ -146,6 +154,24 @@ export class BlockUIController {
     this.uiRenderer.renderContainer();
 
     await this.refreshBlocks();
+    this.unsavedChangesTracker.setBaseline(this.blocks);
+    this.setupPageLeaveWarning();
+  }
+
+  private setupPageLeaveWarning(): void {
+    this.detachPageLeaveWarning?.();
+    this.detachPageLeaveWarning = null;
+
+    if (!shouldActivatePageLeaveWarning({ warnOnPageLeave: this.config.warnOnPageLeave, isEdit: this.isEdit })) {
+      return;
+    }
+
+    this.detachPageLeaveWarning = attachPageLeaveWarning(() => {
+      if (!shouldActivatePageLeaveWarning({ warnOnPageLeave: this.config.warnOnPageLeave, isEdit: this.isEdit })) {
+        return false;
+      }
+      return this.unsavedChangesTracker.isDirty(this.blocks);
+    });
   }
 
   async refreshBlocks(
@@ -551,6 +577,7 @@ export class BlockUIController {
       const result = await Promise.resolve(this.onSave(blocks));
 
       if (result === true) {
+        this.unsavedChangesTracker.resetBaseline(blocks);
         this.showNotification(UI_STRINGS.successSaved, 'success');
       } else {
         this.showNotification(UI_STRINGS.errorSaveFailed, 'error');
@@ -1013,6 +1040,7 @@ export class BlockUIController {
       this.uiRenderer.updateEditMode(isEdit);
     }
     this.refreshBlocks();
+    this.setupPageLeaveWarning();
   }
 
   getIsEdit(): boolean {
@@ -1029,6 +1057,8 @@ export class BlockUIController {
   }
 
   destroy(): void {
+    this.detachPageLeaveWarning?.();
+    this.detachPageLeaveWarning = null;
     this.controlManager.destroyAll();
     this.modalManager.closeModal();
     this.eventDelegation.destroy();

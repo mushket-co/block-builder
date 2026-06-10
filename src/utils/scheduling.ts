@@ -8,15 +8,27 @@
  *   innerHTML → afterRender (rAF) → init → afterPaint (2× rAF) → scroll
  */
 
+function scheduleNextFrame(callback: FrameRequestCallback): number {
+  const scheduler = globalThis.requestAnimationFrame;
+  if (typeof scheduler === 'function') {
+    return scheduler(callback);
+  }
+
+  return globalThis.setTimeout(
+    () => callback(globalThis.performance?.now?.() ?? Date.now()),
+    0
+  ) as unknown as number;
+}
+
 function waitNextFrame(): Promise<void> {
   return new Promise(resolve => {
-    requestAnimationFrame(() => resolve());
+    scheduleNextFrame(() => resolve());
   });
 }
 
 /** Один rAF после синхронного изменения DOM, затем callback. */
 export function afterRender(callback: () => void | Promise<void>): void {
-  requestAnimationFrame(() => {
+  scheduleNextFrame(() => {
     void Promise.resolve(callback());
   });
 }

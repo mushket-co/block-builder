@@ -25,6 +25,7 @@
         controls-fixed-position="bottom"
         :controls-offset="20"
         :is-edit="isEdit"
+        :warn-on-page-leave="true"
       />
     </main>
   </div>

@@ -1,5 +1,4 @@
 import { CSS_CLASSES } from '../../../../src/utils/constants';
-import { CSS_CLASSES } from '../../../../src/utils/constants';
 import { getBlockLabel } from '../../../fixtures/block-types';
 import { expect, test } from '../../fixtures';
 
