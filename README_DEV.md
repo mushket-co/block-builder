@@ -1,7 +1,7 @@
 # BlockBuilder — руководство для разработчиков
 
 Документ для тех, кто разрабатывает и поддерживает пакет `@mushket-co/block-builder`.
-Пользовательская документация — на [block-builder.ru](https://block-builder.ru). Краткое описание пакета — в [README.md](./README.md).
+Пользовательская документация — в [DOCS.md](./DOCS.md), краткий обзор — в [README.md](./README.md). Этот файл — для разработки самого пакета.
 
 ---
 
@@ -545,4 +545,4 @@ npx playwright test vue3/block-crud.spec.ts --debug
 ---
 
 **Вопросы по разработке** — GitHub Issues или внутренняя команда.
-**Документация для пользователей API** — [block-builder.ru](https://block-builder.ru).
+**Документация для пользователей API** — [DOCS.md](./DOCS.md), [examples/README.md](./examples/README.md).

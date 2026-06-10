@@ -59,6 +59,7 @@
     "src/vue/**/*.vue",
     "src/vue/**/*.ts",
     "src/shared/**/*.ts",
+    "src/shared/**/*.vue",
     "src/pure-js/**/*.ts",
     "src/core/**/*.ts",
     "src/infrastructure/**/*.ts",
@@ -133,7 +134,7 @@
     "type": "git",
     "url": "git+https://github.com/mushket-co/block-builder.git"
   },
-  "homepage": "https://block-builder.ru",
+  "homepage": "https://github.com/mushket-co/block-builder#readme",
   "bugs": {
     "url": "https://github.com/mushket-co/block-builder/issues"
   },
