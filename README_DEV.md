@@ -338,9 +338,47 @@ wrapper.unmount();
 | Шаг | Где | Что |
 |-----|-----|-----|
 | 1 | `src/core/use-cases/__tests__/ApiSelectUseCase.test.ts` | Логика fetch/validate |
-| 2 | `src/pure-js/services/__tests__/ApiSelectControlRenderer.test.ts` | DOM + mock `fetchItems` |
-| 3 | `tests/component/vue/` | `ApiSelectField.vue` / BlockBuilder flow |
-| 4 | E2E | Example + mock API (без реальной сети) |
+| 2 | `src/utils/__tests__/apiSelectSearchDebounce.test.ts` | Debounce поиска (`debounceMs`) |
+| 3 | `src/pure-js/services/__tests__/ApiSelectControlRenderer.test.ts` | DOM + mock `fetchItems` |
+| 4 | `tests/component/vue/` | `ApiSelectField.vue` / BlockBuilder flow |
+| 5 | E2E | Example + mock API (без реальной сети) |
+
+**Реализации UI (держать в синхроне):**
+
+| Слой | Файл |
+|------|------|
+| Vue | `src/vue/components/ApiSelectField.vue` |
+| React | `src/react/components/ApiSelectField.tsx` |
+| Pure JS | `src/pure-js/services/ApiSelectControlRenderer.ts` |
+| Core | `src/core/use-cases/ApiSelectUseCase.ts` |
+| Debounce | `src/utils/apiSelectSearchDebounce.ts` |
+
+**Поведение (с 1.3.1):**
+
+- Закрытый дропдаун: `bb-api-select__value` (single + есть значение) или `bb-api-select__trigger-placeholder`
+- Открытый дропдаун: только `bb-api-select__input` (поиск); при открытии/закрытии/выборе поиск очищается
+- Инпут всегда в DOM, видимость через `bb-api-select__input--hidden` (нужен для фокуса при открытии)
+- «Загрузить ещё» — только если API вернул `hasMore: true`
+- Клавиши в поле поиска не всплывают до `CustomDropdown` (`@keydown.stop` / `onKeyDown` + `stopPropagation`)
+
+**Конфиг поля (`apiSelectConfig`):**
+
+```js
+{
+  url: '/api/news',
+  debounceMs: 1500, // мс; 0 или не указано — без задержки
+  limit: 20,
+  minSearchLength: 0,
+  multiple: false,
+  placeholder: 'Начните вводить...',
+}
+```
+
+**Подводные камни при правках:**
+
+- React: в debounced-поиск передавать актуальную строку в `fetchData(..., query)`, не читать `searchQuery` из замыкания
+- React/Vue: после `clear` / `onValueUpdate` обновлять ref актуального значения до завершения `fetchData`, иначе `hydrateSelectedItemsFromValue` восстановит старый label из пропа
+- Не вешать отдельный `@click` open на поле поверх `CustomDropdown` — сработает и `handleTriggerClick` (toggle), дропдаун мгновенно закроется
 
 ### Валидация / dependsOn / repeater
 
@@ -432,6 +470,13 @@ Publish: `.github/workflows/publish.yml` — `test:ci:full` + Playwright install
 - Опция `warnOnPageLeave` у `BlockBuilder` (Vue/React/Pure JS facade)
 - Core: `haveBlocksChanged`, `attachPageLeaveWarning`, `createUnsavedChangesTracker`
 - Кастомный UI: `usePageLeaveWarning` в `src/vue/composables/` и `src/react/hooks/`
+
+### Api-select (с 1.3.1)
+
+- Тип поля: `api-select`, конфиг: `apiSelectConfig` (`IApiSelectConfig` в `src/core/types/form.ts`)
+- Стили: `src/shared/styles/components/_api-select-control.scss`, классы — `BB_API_SELECT_*` в `constants.ts`
+- Поиск: **debounce** (не throttle) — `debounceMs`, default `0`
+- Подробности UX и чеклист правок — в разделе [Api-select](#api-select) (тестирование)
 
 ### Тесты
 

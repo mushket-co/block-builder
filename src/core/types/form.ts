@@ -111,6 +111,7 @@ export interface IApiSelectConfig {
   pageParam?: string;
   limitParam?: string;
   limit?: number;
+  /** Debounce поискового запроса, мс. 0 — без задержки. */
   debounceMs?: number;
   multiple?: boolean;
   responseMapper?: (response: unknown) => IApiSelectResponse;

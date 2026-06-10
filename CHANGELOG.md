@@ -28,6 +28,14 @@
 - Счётчик блоков в панели управления: внутри `.bb-stats` используется `<span>`, не `<p>`
 - SSR/component-тесты на отсутствие скрытого контента в view HTML
 
+#### Api-select (Vue, React, Pure JS)
+
+- **Поиск и выбранное значение разделены**: при закрытом дропдауне показывается только label выбранного элемента или placeholder; поле поиска видно только при открытом дропдауне (переключение через CSS-модификаторы `--hidden`, инпут всегда в DOM для фокуса)
+- **`debounceMs` в `apiSelectConfig`**: по умолчанию `0` (запрос сразу); при `> 0` — debounce поискового запроса. Общая утилита `scheduleApiSelectSearch` в `src/utils/apiSelectSearchDebounce.ts`
+- **Кнопка «Загрузить ещё»** отображается только при `hasMore: true` в ответе API (убрано условие `items.length === 0`)
+- **Примеры** (`examples/*/block-config.js`): `debounceMs: 1500` для демонстрации отложенного поиска
+- **CustomDropdown**: убрана обработка клавиши пробел (остался Enter для выбора с клавиатуры)
+
 ### Удалено
 
 - Мёртвый и deprecated-код: `logger.ts`, `safeDOM.ts`, `BlockFormConfigs` / `FormUtils` в `universalValidation.ts`, неиспользуемые хелперы в `renderHelpers.ts`, `blockSpacingHelpers.ts`, `domSafe.ts` (кроме `parseJSONFromAttribute`), висячий `initializeAllControls` в `BlockUIController`
@@ -37,6 +45,10 @@
 
 - **Pure JS: radio в формах** — `FormController.getFormData()` сохраняет выбранное значение группы, а не первый input
 - **React component-тесты** — `cleanupReactTestHost()` размонтирует React перед очисткой DOM (устранён `window is not defined` после teardown)
+- **Api-select: поиск при открытии** — запрос уходит без `search`, выбранное значение не подставляется в поле поиска
+- **Api-select: React** — debounce поиска отставал на символ (stale closure); очистка через ✕ не убирала текст до переоткрытия дропдауна (`modelValueRef` / синхронная гидратация после `clear`)
+- **Api-select: Vue** — клик по всему полю снова открывает дропдаун (убран дублирующий handler, конфликтовавший с `CustomDropdown`)
+- **Api-select: клавиатура** — пробел в поле поиска больше не выбирает опцию и не закрывает дропдаун (`@keydown.stop` на инпуте)
 
 ## [1.3.0] - 2026-06-10
 

@@ -462,6 +462,48 @@ describe('ApiSelectControlRenderer', () => {
   });
 
   describe('Интеграция', () => {
+  test('при открытии одиночного select не должен искать по выбранному значению', async () => {
+    mockApiSelectUseCase.fetchItems.mockResolvedValue({
+      data: [{ id: '1', name: 'John Doe' }],
+      hasMore: false,
+    });
+
+    const config: IApiSelectControlConfig = {
+      fieldName: 'author',
+      label: 'Автор',
+      rules: [],
+      config: {
+        url: 'https://api.example.com/authors',
+      },
+      value: { id: '1', name: 'John Doe' },
+      apiSelectUseCase: mockApiSelectUseCase,
+      onChange: mockOnChange,
+    };
+
+    renderer = new ApiSelectControlRenderer(config);
+    await renderer.init(container);
+
+    const searchInput = container.querySelector(
+      `[data-api-select-search]`
+    ) as HTMLInputElement;
+    expect(searchInput.value).toBe('');
+    expect(container.querySelector(`.${CSS_CLASSES.BB_API_SELECT_VALUE}`)?.textContent).toBe(
+      'John Doe'
+    );
+
+    const field = container.querySelector('[data-api-select-field]') as HTMLElement;
+    field.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(mockApiSelectUseCase.fetchItems).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ search: undefined })
+    );
+    expect(searchInput.value).toBe('');
+  });
+
   test('должен показать выбранные теги из сохранённого значения без запроса к API', async () => {
     const config: IApiSelectControlConfig = {
       fieldName: 'newsIds',

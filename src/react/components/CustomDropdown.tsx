@@ -563,8 +563,7 @@ export const CustomDropdown = forwardRef<ICustomDropdownRef, ICustomDropdownProp
             }
             break;
           }
-          case 'Enter':
-          case ' ': {
+          case 'Enter': {
             event.preventDefault();
             if (!isOpen) {
               void open();

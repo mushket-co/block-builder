@@ -1553,7 +1553,7 @@ export const blockConfigs = {
           multiple: false, // Одиночный выбор
           placeholder: 'Начните вводить для поиска новости...',
           limit: 10,
-          debounceMs: 300,
+          debounceMs: 1500,
           minSearchLength: 0,
           loadingText: 'Загрузка новостей...',
           noResultsText: 'Новости не найдены',
@@ -1576,7 +1576,7 @@ export const blockConfigs = {
           multiple: true, // Множественный выбор
           placeholder: 'Выберите новости...',
           limit: 10,
-          debounceMs: 300,
+          debounceMs: 1500,
           loadingText: 'Загрузка...',
           noResultsText: 'Ничего не найдено',
           errorText: 'Ошибка загрузки'

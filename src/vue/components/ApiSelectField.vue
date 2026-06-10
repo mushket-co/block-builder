@@ -32,16 +32,37 @@
             { [CSS_CLASSES.BB_API_SELECT_SEARCH_OPEN]: state.isOpen },
           ]"
         >
-          <input
-            ref="searchInput"
-            v-model="searchQuery"
-            type="text"
-            :class="CSS_CLASSES.BB_API_SELECT_INPUT"
-            :placeholder="effectivePlaceholder(state.selectedOptions)"
-            @focus="onSearchFocus(actions.open)"
-            @click.stop="onSearchClick(actions.open)"
-            @input="onSearchInput"
-          />
+          <div :class="CSS_CLASSES.BB_API_SELECT_FIELD">
+            <span
+              :class="[
+                CSS_CLASSES.BB_API_SELECT_VALUE,
+                { [CSS_CLASSES.BB_API_SELECT_VALUE_HIDDEN]: !showSelectedValue },
+              ]"
+            >
+              {{ selectedDisplayValue ?? '' }}
+            </span>
+            <span
+              :class="[
+                CSS_CLASSES.BB_API_SELECT_TRIGGER_PLACEHOLDER,
+                { [CSS_CLASSES.BB_API_SELECT_TRIGGER_PLACEHOLDER_HIDDEN]: !showClosedPlaceholder },
+              ]"
+            >
+              {{ placeholder }}
+            </span>
+            <input
+              ref="searchInput"
+              v-model="searchQuery"
+              type="text"
+              :class="[
+                CSS_CLASSES.BB_API_SELECT_INPUT,
+                { [CSS_CLASSES.BB_API_SELECT_INPUT_HIDDEN]: !state.isOpen },
+              ]"
+              :placeholder="placeholder"
+              @click.stop
+              @keydown.stop
+              @input="onSearchInput(($event.target as HTMLInputElement).value)"
+            />
+          </div>
 
           <span v-if="loading" :class="CSS_CLASSES.BB_API_SELECT_LOADER">⏳</span>
           <span
@@ -67,7 +88,7 @@
 
       <template #after-options>
         <div
-          v-if="!loading && !error && (hasMore || items.length === 0)"
+          v-if="!loading && !error && hasMore"
           :class="CSS_CLASSES.BB_API_SELECT_LOAD_MORE"
           @click.stop="loadMore"
         >
@@ -86,6 +107,11 @@
 </template>
 
 <script setup lang="ts">
+import {
+  clearApiSelectDebounceTimer,
+  resolveApiSelectDebounceMs,
+  scheduleApiSelectSearch,
+} from '../../utils/apiSelectSearchDebounce';
 import { CSS_CLASSES } from '../../utils/constants';
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import { defineAsyncComponent } from 'vue';
@@ -143,9 +169,10 @@ const isDropdownOpen = ref(false);
 const currentPage = ref(1);
 const hasMore = ref(false);
 
-let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+const debounceTimer = { current: null as ReturnType<typeof setTimeout> | null };
 const knownItems = new Map<string | number, IApiSelectItem>();
 const previousModelValue = ref<unknown>(props.modelValue ?? null);
+const currentModelValue = ref<unknown>(props.modelValue ?? null);
 
 const apiSelectUseCase = props.apiSelectUseCase;
 
@@ -165,7 +192,7 @@ const noResultsText = computed(() => apiConfig.value?.noResultsText ?? 'Ниче
 
 const errorText = computed(() => apiConfig.value?.errorText ?? 'Ошибка загрузки данных');
 
-const debounceMs = computed(() => apiConfig.value?.debounceMs ?? 300);
+const debounceMs = computed(() => resolveApiSelectDebounceMs(apiConfig.value?.debounceMs));
 
 const minSearchLength = computed(() => apiConfig.value?.minSearchLength ?? 0);
 
@@ -174,6 +201,18 @@ const normalizedDropdownValue = computed<TDropdownValue>(() =>
 );
 
 const hasValue = computed(() => hasApiSelectValue(props.modelValue, isMultiple.value));
+
+const selectedDisplayValue = computed(() => {
+  if (isMultiple.value || isDropdownOpen.value) {
+    return null;
+  }
+
+  return selectedItems.value[0]?.name ?? null;
+});
+
+const showSelectedValue = computed(() => Boolean(selectedDisplayValue.value));
+
+const showClosedPlaceholder = computed(() => !isDropdownOpen.value && !showSelectedValue.value);
 
 const dropdownOptions = computed(() => {
   const map = new Map<string | number, IApiSelectItem>();
@@ -217,13 +256,15 @@ const hydrateSelectedItemsFromValue = (value: unknown) => {
   selectedItems.value = nextSelection;
 };
 
-const fetchData = async (reset = false) => {
+const fetchData = async (reset = false, searchOverride?: string) => {
   if (!apiConfig.value) {
     error.value = 'Конфигурация API не указана';
     return;
   }
 
-  if (searchQuery.value.length < minSearchLength.value && searchQuery.value.length > 0) {
+  const effectiveSearch = searchOverride !== undefined ? searchOverride : searchQuery.value;
+
+  if (effectiveSearch.length < minSearchLength.value && effectiveSearch.length > 0) {
     return;
   }
 
@@ -239,7 +280,7 @@ const fetchData = async (reset = false) => {
 
   try {
     const params: IApiRequestParams = {
-      search: searchQuery.value || undefined,
+      search: effectiveSearch || undefined,
       page: currentPage.value,
       limit: apiConfig.value.limit || 20,
     };
@@ -250,7 +291,7 @@ const fetchData = async (reset = false) => {
     response.data.forEach(item => {
       knownItems.set(item.id, item);
     });
-    hydrateSelectedItemsFromValue(props.modelValue);
+    hydrateSelectedItemsFromValue(currentModelValue.value);
 
     hasMore.value = response.hasMore ?? false;
     if (isDropdownOpen.value) {
@@ -273,48 +314,40 @@ const fetchData = async (reset = false) => {
   }
 };
 
-const onSearchInput = () => {
-  if (debounceTimer) {
-    clearTimeout(debounceTimer);
-  }
-  debounceTimer = setTimeout(() => {
+const onSearchInput = (query: string) => {
+  scheduleApiSelectSearch(debounceTimer, debounceMs.value, () => {
     currentPage.value = 1;
-    fetchData(true).then(() => {
+    fetchData(true, query).then(() => {
       if (!isDropdownOpen.value) {
         dropdownRef.value?.open();
       } else {
         dropdownRef.value?.updatePosition();
       }
     });
-  }, debounceMs.value);
+  });
 };
 
-const syncSearchQueryWithSelection = (value: unknown) => {
-  if (isMultiple.value) {
-    searchQuery.value = '';
-    return;
-  }
-
-  const selectedItem = extractApiSelectItemsFromValue(value)[0];
-  searchQuery.value = selectedItem?.name ?? '';
+const clearSearchQuery = () => {
+  searchQuery.value = '';
 };
 
 const handleDropdownOpen = async () => {
   isDropdownOpen.value = true;
+  clearSearchQuery();
 
   await nextTick();
   dropdownRef.value?.updatePosition();
 
-  // Всегда обновляем первую страницу при открытии
   currentPage.value = 1;
-  await fetchData(true);
+  await fetchData(true, '');
   await nextTick();
+  searchInput.value?.focus();
   dropdownRef.value?.updatePosition();
 };
 
 const handleDropdownClose = () => {
   isDropdownOpen.value = false;
-  syncSearchQueryWithSelection(props.modelValue);
+  clearSearchQuery();
 };
 
 const removeItem = (id: string | number) => {
@@ -326,25 +359,14 @@ const removeItem = (id: string | number) => {
   emit('update:modelValue', newValue);
   hydrateSelectedItemsFromValue(newValue);
   previousModelValue.value = cloneApiSelectStoredValue(newValue);
-  syncSearchQueryWithSelection(newValue);
+  clearSearchQuery();
 };
 
 const loadMore = () => {
-  if (loading.value) {
+  if (loading.value || !hasMore.value) {
     return;
   }
-  // Если списка еще нет — стартуем с reset
-  const isFirstLoad = items.value.length === 0;
-  if (isFirstLoad) {
-    currentPage.value = 1;
-    fetchData(true).then(() => {
-      dropdownRef.value?.updatePosition();
-    });
-    return;
-  }
-  if (!hasMore.value) {
-    return;
-  }
+
   currentPage.value += 1;
   fetchData(false).then(() => {
     dropdownRef.value?.updatePosition();
@@ -357,10 +379,12 @@ const handleScrollBottom = () => {
 
 const onValueUpdate = (value: TDropdownValue) => {
   const storedValue = toApiSelectStoredValue(value, isMultiple.value, resolveItemById);
+
+  currentModelValue.value = storedValue;
+  previousModelValue.value = cloneApiSelectStoredValue(storedValue);
   emit('update:modelValue', storedValue);
   hydrateSelectedItemsFromValue(storedValue);
-  syncSearchQueryWithSelection(storedValue);
-  previousModelValue.value = cloneApiSelectStoredValue(storedValue);
+  clearSearchQuery();
 };
 
 const handleClear = (clear: () => void) => {
@@ -368,40 +392,21 @@ const handleClear = (clear: () => void) => {
   fetchData(true);
 };
 
-const effectivePlaceholder = (selectedOptions: { label: string }[]) => {
-  if (!isMultiple.value && selectedOptions.length > 0 && !isDropdownOpen.value) {
-    return '';
-  }
-  return placeholder.value;
-};
-
-const onSearchFocus = (openDropdownSlot: () => Promise<void> | void) => {
-  openDropdownSlot();
-};
-
-const onSearchClick = (openDropdownSlot: () => Promise<void> | void) => {
-  openDropdownSlot();
-};
-
 watch(
   () => props.modelValue,
   value => {
+    currentModelValue.value = value;
+
     if (!isSameApiSelectModelValue(previousModelValue.value, value, isMultiple.value)) {
       previousModelValue.value = cloneApiSelectStoredValue(value);
     }
 
     hydrateSelectedItemsFromValue(value);
-
-    if (!isDropdownOpen.value) {
-      syncSearchQueryWithSelection(value);
-    }
   },
   { immediate: true }
 );
 
 onBeforeUnmount(() => {
-  if (debounceTimer) {
-    clearTimeout(debounceTimer);
-  }
+  clearApiSelectDebounceTimer(debounceTimer);
 });
 </script>

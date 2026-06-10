@@ -551,8 +551,7 @@ const handleTriggerKeydown = (event: KeyboardEvent) => {
       }
       break;
     }
-    case 'Enter':
-    case ' ': {
+    case 'Enter': {
       event.preventDefault();
       if (!isOpen.value) {
         void open();

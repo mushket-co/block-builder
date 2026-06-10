@@ -18,6 +18,11 @@ import {
   toApiSelectDropdownValue,
   toApiSelectStoredValue,
 } from '../../utils/apiSelectValueHelpers';
+import {
+  clearApiSelectDebounceTimer,
+  resolveApiSelectDebounceMs,
+  scheduleApiSelectSearch,
+} from '../../utils/apiSelectSearchDebounce';
 import { CSS_CLASSES } from '../../utils/constants';
 import {
   CustomDropdown,
@@ -52,6 +57,8 @@ export function ApiSelectField({
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const knownItemsRef = useRef(new Map<string | number, IApiSelectItem>());
   const previousModelValueRef = useRef<unknown>(modelValue ?? null);
+  const modelValueRef = useRef(modelValue);
+  modelValueRef.current = modelValue;
 
   const [searchQuery, setSearchQuery] = useState('');
   const [items, setItems] = useState<IApiSelectItem[]>([]);
@@ -80,7 +87,7 @@ export function ApiSelectField({
   const loadingText = apiConfig?.loadingText ?? 'Загрузка...';
   const noResultsText = apiConfig?.noResultsText ?? 'Ничего не найдено';
   const errorText = apiConfig?.errorText ?? 'Ошибка загрузки данных';
-  const debounceMs = apiConfig?.debounceMs ?? 300;
+  const debounceMs = resolveApiSelectDebounceMs(apiConfig?.debounceMs);
   const minSearchLength = apiConfig?.minSearchLength ?? 0;
 
   const hasValue = useMemo(() => hasApiSelectValue(modelValue, isMultiple), [modelValue, isMultiple]);
@@ -115,27 +122,20 @@ export function ApiSelectField({
     });
   }, []);
 
-  const syncSearchQueryWithSelection = useCallback(
-    (value: unknown) => {
-      if (isMultiple) {
-        setSearchQuery('');
-        return;
-      }
-
-      const selectedItem = extractApiSelectItemsFromValue(value)[0];
-      setSearchQuery(selectedItem?.name ?? '');
-    },
-    [isMultiple]
-  );
+  const clearSearchQuery = useCallback(() => {
+    setSearchQuery('');
+  }, []);
 
   const fetchData = useCallback(
-    async (reset = false, explicitPage?: number) => {
+    async (reset = false, explicitPage?: number, searchOverride?: string) => {
       if (!apiConfig) {
         setError('Конфигурация API не указана');
         return;
       }
 
-      if (searchQuery.length < minSearchLength && searchQuery.length > 0) {
+      const effectiveSearch = searchOverride !== undefined ? searchOverride : searchQuery;
+
+      if (effectiveSearch.length < minSearchLength && effectiveSearch.length > 0) {
         return;
       }
 
@@ -156,7 +156,7 @@ export function ApiSelectField({
 
       try {
         const params: IApiRequestParams = {
-          search: searchQuery || undefined,
+          search: effectiveSearch || undefined,
           page,
           limit: apiConfig.limit || 20,
         };
@@ -171,7 +171,7 @@ export function ApiSelectField({
           return nextItems;
         });
 
-        hydrateSelectedItemsFromValue(modelValue);
+        hydrateSelectedItemsFromValue(modelValueRef.current);
         setHasMore(response.hasMore ?? false);
       } catch (error_: unknown) {
         const message =
@@ -200,7 +200,6 @@ export function ApiSelectField({
       errorText,
       hydrateSelectedItemsFromValue,
       minSearchLength,
-      modelValue,
       searchQuery,
     ]
   );
@@ -224,42 +223,41 @@ export function ApiSelectField({
 
   const handleDropdownOpen = useCallback(async () => {
     setIsDropdownOpen(true);
+    clearSearchQuery();
 
     await new Promise<void>(resolve => nextTick(resolve));
     dropdownRef.current?.updatePosition();
 
     setCurrentPage(1);
-    await fetchData(true);
+    await fetchData(true, undefined, '');
     await new Promise<void>(resolve => nextTick(resolve));
+    searchInputRef.current?.focus();
     dropdownRef.current?.updatePosition();
-  }, [fetchData]);
+  }, [clearSearchQuery, fetchData]);
 
   const handleDropdownClose = useCallback(() => {
     setIsDropdownOpen(false);
-    syncSearchQueryWithSelection(modelValue);
-  }, [modelValue, syncSearchQueryWithSelection]);
+    clearSearchQuery();
+  }, [clearSearchQuery]);
 
   const onValueUpdate = useCallback(
     (value: TDropdownValue) => {
       const storedValue = toApiSelectStoredValue(value, isMultiple, resolveItemById);
+      const clonedValue = cloneApiSelectStoredValue(storedValue);
+
+      modelValueRef.current = storedValue;
+      previousModelValueRef.current = clonedValue;
       onChange(storedValue);
       hydrateSelectedItemsFromValue(storedValue);
-      syncSearchQueryWithSelection(storedValue);
-      previousModelValueRef.current = cloneApiSelectStoredValue(storedValue);
+      clearSearchQuery();
     },
-    [
-      hydrateSelectedItemsFromValue,
-      isMultiple,
-      onChange,
-      resolveItemById,
-      syncSearchQueryWithSelection,
-    ]
+    [clearSearchQuery, hydrateSelectedItemsFromValue, isMultiple, onChange, resolveItemById]
   );
 
   const handleClear = useCallback(
     (clear: () => void) => {
       clear();
-      void fetchData(true);
+      void fetchData(true, undefined, '');
     },
     [fetchData]
   );
@@ -274,28 +272,16 @@ export function ApiSelectField({
       onChange(newValue);
       hydrateSelectedItemsFromValue(newValue);
       previousModelValueRef.current = cloneApiSelectStoredValue(newValue);
-      syncSearchQueryWithSelection(newValue);
+      clearSearchQuery();
     },
-    [hydrateSelectedItemsFromValue, isMultiple, modelValue, onChange, syncSearchQueryWithSelection]
+    [clearSearchQuery, hydrateSelectedItemsFromValue, isMultiple, modelValue, onChange]
   );
 
   const loadMore = useCallback(
     (event: MouseEvent<HTMLDivElement>) => {
       event.stopPropagation();
 
-      if (loading) {
-        return;
-      }
-
-      const isFirstLoad = items.length === 0;
-      if (isFirstLoad) {
-        void fetchData(true).then(() => {
-          dropdownRef.current?.updatePosition();
-        });
-        return;
-      }
-
-      if (!hasMore) {
+      if (loading || !hasMore) {
         return;
       }
 
@@ -303,35 +289,35 @@ export function ApiSelectField({
         dropdownRef.current?.updatePosition();
       });
     },
-    [currentPage, fetchData, hasMore, items.length, loading]
+    [currentPage, fetchData, hasMore, loading]
   );
 
-  const onSearchInput = useCallback(() => {
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
+  const onSearchInput = useCallback(
+    (query: string) => {
+      scheduleApiSelectSearch(debounceTimerRef, debounceMs, () => {
+        setCurrentPage(1);
+        void fetchData(true, undefined, query).then(() => {
+          if (!dropdownRef.current?.isOpen) {
+            void dropdownRef.current?.open();
+          } else {
+            dropdownRef.current?.updatePosition();
+          }
+        });
+      });
+    },
+    [debounceMs, fetchData]
+  );
+
+  const selectedDisplayValue = useMemo(() => {
+    if (isMultiple || isDropdownOpen) {
+      return null;
     }
 
-    debounceTimerRef.current = setTimeout(() => {
-      setCurrentPage(1);
-      void fetchData(true).then(() => {
-        if (!dropdownRef.current?.isOpen) {
-          void dropdownRef.current?.open();
-        } else {
-          dropdownRef.current?.updatePosition();
-        }
-      });
-    }, debounceMs);
-  }, [debounceMs, fetchData]);
+    return selectedItems[0]?.name ?? null;
+  }, [isDropdownOpen, isMultiple, selectedItems]);
 
-  const effectivePlaceholder = useCallback(
-    (selectedOptions: { label: string }[]) => {
-      if (!isMultiple && selectedOptions.length > 0 && !isDropdownOpen) {
-        return '';
-      }
-      return placeholder;
-    },
-    [isDropdownOpen, isMultiple, placeholder]
-  );
+  const showSelectedValue = Boolean(selectedDisplayValue);
+  const showClosedPlaceholder = !isDropdownOpen && !showSelectedValue;
 
   const isDropdownOpenRef = useRef(isDropdownOpen);
   isDropdownOpenRef.current = isDropdownOpen;
@@ -342,17 +328,11 @@ export function ApiSelectField({
     }
 
     hydrateSelectedItemsFromValue(modelValue);
-
-    if (!isDropdownOpenRef.current) {
-      syncSearchQueryWithSelection(modelValue);
-    }
-  }, [hydrateSelectedItemsFromValue, isMultiple, modelValue, syncSearchQueryWithSelection]);
+  }, [hydrateSelectedItemsFromValue, isMultiple, modelValue]);
 
   useEffect(() => {
     return () => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
+      clearApiSelectDebounceTimer(debounceTimerRef);
     };
   }, []);
 
@@ -398,24 +378,51 @@ export function ApiSelectField({
               .filter(Boolean)
               .join(' ')}
           >
-            <input
-              ref={searchInputRef}
-              type="text"
-              className={CSS_CLASSES.BB_API_SELECT_INPUT}
-              placeholder={effectivePlaceholder(state.selectedOptions)}
-              value={searchQuery}
-              onFocus={() => {
-                void actions.open();
-              }}
-              onClick={event => {
-                event.stopPropagation();
-                void actions.open();
-              }}
-              onChange={event => {
-                setSearchQuery(event.target.value);
-                onSearchInput();
-              }}
-            />
+            <div className={CSS_CLASSES.BB_API_SELECT_FIELD}>
+              <span
+                className={[
+                  CSS_CLASSES.BB_API_SELECT_VALUE,
+                  !showSelectedValue ? CSS_CLASSES.BB_API_SELECT_VALUE_HIDDEN : '',
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
+              >
+                {selectedDisplayValue ?? ''}
+              </span>
+              <span
+                className={[
+                  CSS_CLASSES.BB_API_SELECT_TRIGGER_PLACEHOLDER,
+                  !showClosedPlaceholder ? CSS_CLASSES.BB_API_SELECT_TRIGGER_PLACEHOLDER_HIDDEN : '',
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
+              >
+                {placeholder}
+              </span>
+              <input
+                ref={searchInputRef}
+                type="text"
+                className={[
+                  CSS_CLASSES.BB_API_SELECT_INPUT,
+                  !state.isOpen ? CSS_CLASSES.BB_API_SELECT_INPUT_HIDDEN : '',
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
+                placeholder={placeholder}
+                value={searchQuery}
+                onClick={event => {
+                  event.stopPropagation();
+                }}
+                onKeyDown={event => {
+                  event.stopPropagation();
+                }}
+                onChange={event => {
+                  const nextQuery = event.target.value;
+                  setSearchQuery(nextQuery);
+                  onSearchInput(nextQuery);
+                }}
+              />
+            </div>
 
             {loading ? (
               <span className={CSS_CLASSES.BB_API_SELECT_LOADER}>⏳</span>
@@ -449,7 +456,7 @@ export function ApiSelectField({
           </div>
         )}
         afterOptions={
-          !error && (hasMore || items.length === 0) ? (
+          !error && hasMore ? (
             <div
               className={CSS_CLASSES.BB_API_SELECT_LOAD_MORE}
               onClick={loadMore}

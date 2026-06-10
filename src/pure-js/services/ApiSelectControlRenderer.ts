@@ -9,6 +9,12 @@ import {
   toApiSelectStoredValue,
   type TApiSelectStoredValue,
 } from '../../utils/apiSelectValueHelpers';
+import {
+  clearApiSelectDebounceTimer,
+  resolveApiSelectDebounceMs,
+  scheduleApiSelectSearch,
+  type IApiSelectDebounceTimerRef,
+} from '../../utils/apiSelectSearchDebounce';
 import { CSS_CLASSES } from '../../utils/constants';
 
 export interface IApiSelectControlOptions {
@@ -46,7 +52,7 @@ export class ApiSelectControlRenderer {
   private isDropdownOpen = false;
   private currentPage = 1;
   private hasMore = false;
-  private debounceTimer: ReturnType<typeof setTimeout> | null = null;
+  private readonly debounceTimer: IApiSelectDebounceTimerRef = { current: null };
 
   private apiSelectUseCase: ApiSelectUseCase;
 
@@ -109,20 +115,83 @@ export class ApiSelectControlRenderer {
     }
   }
 
-  private syncSearchQueryWithSelection(value: unknown): void {
-    if (this.isMultiple()) {
-      this.searchQuery = '';
-      if (this.searchInputElement) {
-        this.searchInputElement.value = '';
-      }
+  private clearSearchQuery(): void {
+    this.searchQuery = '';
+
+    if (this.searchInputElement) {
+      this.searchInputElement.value = '';
+    }
+  }
+
+  private shouldShowSelectedValue(): boolean {
+    return !this.isMultiple() && !this.isDropdownOpen && Boolean(this.selectedItems[0]);
+  }
+
+  private shouldShowClosedPlaceholder(): boolean {
+    return !this.isDropdownOpen && !this.shouldShowSelectedValue();
+  }
+
+  private updateSearchFieldUI(focusInput = false): void {
+    if (!this.container) {
       return;
     }
 
-    const selectedItem = extractApiSelectItemsFromValue(value)[0];
-    this.searchQuery = selectedItem?.name ?? '';
+    const fieldElement = this.container.querySelector(
+      `[data-api-select-field]`
+    ) as HTMLElement | null;
+
+    if (!fieldElement) {
+      return;
+    }
+
+    const showSelectedValue = this.shouldShowSelectedValue();
+    const showClosedPlaceholder = this.shouldShowClosedPlaceholder();
+    const showInput = this.isDropdownOpen;
+    const placeholder = this.config.placeholder ?? 'Начните вводить для поиска...';
+    const selectedName = this.selectedItems[0]?.name ?? '';
+
+    let valueElement = fieldElement.querySelector(
+      `[data-api-select-value]`
+    ) as HTMLElement | null;
+
+    if (!valueElement) {
+      valueElement = document.createElement('span');
+      valueElement.className = CSS_CLASSES.BB_API_SELECT_VALUE;
+      valueElement.dataset.apiSelectValue = '';
+      fieldElement.prepend(valueElement);
+    }
+
+    valueElement.textContent = selectedName;
+    valueElement.classList.toggle(CSS_CLASSES.BB_API_SELECT_VALUE_HIDDEN, !showSelectedValue);
+
+    let placeholderElement = fieldElement.querySelector(
+      `[data-api-select-trigger-placeholder]`
+    ) as HTMLElement | null;
+
+    if (!placeholderElement) {
+      placeholderElement = document.createElement('span');
+      placeholderElement.className = CSS_CLASSES.BB_API_SELECT_TRIGGER_PLACEHOLDER;
+      placeholderElement.dataset.apiSelectTriggerPlaceholder = '';
+      fieldElement.append(placeholderElement);
+    }
+
+    placeholderElement.textContent = placeholder;
+    placeholderElement.classList.toggle(
+      CSS_CLASSES.BB_API_SELECT_TRIGGER_PLACEHOLDER_HIDDEN,
+      !showClosedPlaceholder
+    );
 
     if (this.searchInputElement) {
+      this.searchInputElement.classList.toggle(
+        CSS_CLASSES.BB_API_SELECT_INPUT_HIDDEN,
+        !showInput
+      );
       this.searchInputElement.value = this.searchQuery;
+      this.searchInputElement.placeholder = placeholder;
+
+      if (showInput && focusInput) {
+        this.searchInputElement.focus();
+      }
     }
   }
 
@@ -190,31 +259,29 @@ export class ApiSelectControlRenderer {
   private onSearchInput(searchValue: string): void {
     this.searchQuery = searchValue;
 
-    if (this.debounceTimer) {
-      clearTimeout(this.debounceTimer);
-    }
-
-    const debounceMs = this.config.debounceMs ?? 300;
-    this.debounceTimer = setTimeout(() => {
-      this.fetchData(true).then(() => {
+    const debounceMs = resolveApiSelectDebounceMs(this.config.debounceMs);
+    scheduleApiSelectSearch(this.debounceTimer, debounceMs, () => {
+      void this.fetchData(true).then(() => {
         if (!this.isDropdownOpen) {
           this.openDropdown();
         } else {
           this.updateDropdownPosition();
         }
       });
-    }, debounceMs);
+    });
   }
 
   private openDropdown(): void {
     if (!this.isDropdownOpen) {
       this.isDropdownOpen = true;
       this.shouldRestoreScroll = false;
+      this.clearSearchQuery();
       this.updateDropdownContent();
 
-      // Всегда обновляем первую страницу при открытии
       this.currentPage = 1;
-      this.fetchData(true);
+      void this.fetchData(true).then(() => {
+        this.updateSearchFieldUI(true);
+      });
     }
   }
 
@@ -230,8 +297,7 @@ export class ApiSelectControlRenderer {
     this.isDropdownOpen = false;
     this.shouldRestoreScroll = false;
 
-    this.syncSearchQueryWithSelection(this.value);
-
+    this.clearSearchQuery();
     this.updateDropdownContent();
   }
 
@@ -269,7 +335,7 @@ export class ApiSelectControlRenderer {
 
     this.value = toApiSelectStoredValue(item.id, false, id => this.resolveItemById(id));
     this.hydrateSelectedItemsFromValue(this.value);
-    this.syncSearchQueryWithSelection(this.value);
+    this.clearSearchQuery();
     this.updateHiddenInput();
     this.emitChange();
     this.closeDropdown();
@@ -407,6 +473,8 @@ export class ApiSelectControlRenderer {
       }
     }
 
+    this.updateSearchFieldUI();
+
     const clearButton = this.container.querySelector('[data-api-select-clear]');
     if (clearButton) {
       const newClearButton = clearButton.cloneNode(true) as HTMLElement;
@@ -542,10 +610,7 @@ export class ApiSelectControlRenderer {
 
       dropdown.append(list);
     } else {
-      dropdown.innerHTML = `
-        <div class="${CSS_CLASSES.BB_API_SELECT_MESSAGE}">${noResultsText}</div>
-        <div class="${CSS_CLASSES.BB_API_SELECT_LOAD_MORE}" data-api-select-load-more>Загрузить ещё...</div>
-      `;
+      dropdown.innerHTML = `<div class="${CSS_CLASSES.BB_API_SELECT_MESSAGE}">${noResultsText}</div>`;
     }
 
     return dropdown;
@@ -673,13 +738,23 @@ export class ApiSelectControlRenderer {
     return `
       <div class="${CSS_CLASSES.BB_API_SELECT_WRAPPER}">
         <div class="${CSS_CLASSES.BB_API_SELECT_SEARCH} ${this.isDropdownOpen ? CSS_CLASSES.BB_API_SELECT_SEARCH_OPEN : ''}">
-          <input
-            type="text"
-            class="${CSS_CLASSES.BB_API_SELECT_INPUT}"
-            placeholder="${placeholder}"
-            value="${this.searchQuery}"
-            data-api-select-search
-          />
+          <div class="${CSS_CLASSES.BB_API_SELECT_FIELD}" data-api-select-field>
+            <span
+              class="${CSS_CLASSES.BB_API_SELECT_VALUE} ${this.shouldShowSelectedValue() ? '' : CSS_CLASSES.BB_API_SELECT_VALUE_HIDDEN}"
+              data-api-select-value
+            >${this.selectedItems[0]?.name ?? ''}</span>
+            <span
+              class="${CSS_CLASSES.BB_API_SELECT_TRIGGER_PLACEHOLDER} ${this.shouldShowClosedPlaceholder() ? '' : CSS_CLASSES.BB_API_SELECT_TRIGGER_PLACEHOLDER_HIDDEN}"
+              data-api-select-trigger-placeholder
+            >${placeholder}</span>
+            <input
+              type="text"
+              class="${CSS_CLASSES.BB_API_SELECT_INPUT} ${this.isDropdownOpen ? '' : CSS_CLASSES.BB_API_SELECT_INPUT_HIDDEN}"
+              placeholder="${placeholder}"
+              value="${this.searchQuery}"
+              data-api-select-search
+            />
+          </div>
           ${this.loading ? `<span class="${CSS_CLASSES.BB_API_SELECT_LOADER}">⏳</span>` : ''}
           ${!this.loading && this.hasValue() ? `<span class="${CSS_CLASSES.BB_API_SELECT_CLEAR}" data-api-select-clear>✕</span>` : ''}
           <button
@@ -720,10 +795,7 @@ export class ApiSelectControlRenderer {
                   }
                 </div>
               `
-                    : `
-                <div class="${CSS_CLASSES.BB_API_SELECT_MESSAGE}">${noResultsText}</div>
-                <div class="${CSS_CLASSES.BB_API_SELECT_LOAD_MORE}" data-api-select-load-more>Загрузить...</div>
-              `
+                    : `<div class="${CSS_CLASSES.BB_API_SELECT_MESSAGE}">${noResultsText}</div>`
             }
           </div>
         `
@@ -762,6 +834,18 @@ export class ApiSelectControlRenderer {
   }
 
   private attachEvents(container: HTMLElement): void {
+    const fieldElement = container.querySelector('[data-api-select-field]') as HTMLElement;
+    if (fieldElement) {
+      const newFieldElement = fieldElement.cloneNode(true) as HTMLElement;
+      fieldElement.parentNode?.replaceChild(newFieldElement, fieldElement);
+
+      newFieldElement.addEventListener('click', () => {
+        if (!this.isDropdownOpen) {
+          this.openDropdown();
+        }
+      });
+    }
+
     const searchInput = container.querySelector('[data-api-select-search]') as HTMLInputElement;
     if (searchInput) {
       const currentValue = searchInput.value || this.searchQuery || '';
@@ -776,14 +860,8 @@ export class ApiSelectControlRenderer {
         this.onSearchInput(target.value);
       });
 
-      newSearchInput.addEventListener('click', () => {
-        this.openDropdown();
-      });
-
-      newSearchInput.addEventListener('focus', () => {
-        if (!this.isDropdownOpen) {
-          this.openDropdown();
-        }
+      newSearchInput.addEventListener('click', e => {
+        e.stopPropagation();
       });
     }
 
@@ -837,14 +915,10 @@ export class ApiSelectControlRenderer {
 
   async init(container: HTMLElement): Promise<void> {
     this.hydrateSelectedItemsFromValue(this.value);
-    this.syncSearchQueryWithSelection(this.value);
     this.render(container);
 
     this.attachEvents(container);
-
-    if (this.searchInputElement && this.searchQuery) {
-      this.searchInputElement.value = this.searchQuery;
-    }
+    this.updateSearchFieldUI();
 
     this.updateDropdownContent();
     this.updateSelectedTags();
@@ -866,9 +940,7 @@ export class ApiSelectControlRenderer {
       this.dropdownElement = undefined;
     }
 
-    if (this.debounceTimer) {
-      clearTimeout(this.debounceTimer);
-    }
+    clearApiSelectDebounceTimer(this.debounceTimer);
   }
 
   getValue(): unknown {

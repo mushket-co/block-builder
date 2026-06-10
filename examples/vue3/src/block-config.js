@@ -992,7 +992,7 @@ export const blockConfigs = {
           pageParam: 'page',
           limitParam: 'limit',
           limit: 10,
-          debounceMs: 300,
+          debounceMs: 1500,
           idField: 'id',
           nameField: 'name',
           minSearchLength: 0,
@@ -1014,7 +1014,7 @@ export const blockConfigs = {
           multiple: true, // Множественный выбор
           placeholder: 'Выберите новости...',
           limit: 10,
-          debounceMs: 300,
+          debounceMs: 1500,
           loadingText: 'Загрузка...',
           noResultsText: 'Ничего не найдено',
           errorText: 'Ошибка загрузки'
