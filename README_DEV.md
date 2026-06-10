@@ -89,7 +89,7 @@ block-builder/
 | Infrastructure | `src/infrastructure/` | Реализации портов (memory repo, fetch) |
 | Shared UI | `src/shared/` | Icons, SCSS, `ValidationErrorHandler`, `BlockScrollService`, `NotificationService` |
 | Vue UI | `src/vue/components/`, `src/vue/composables/` | Vue-компоненты форм и BlockBuilder |
-| React UI | `src/react/components/`, `src/react/hooks/` | React-компоненты (зеркало Vue) |
+| React UI | `src/react/components/`, `src/react/hooks/` | React-компоненты (зеркало Vue); peer: React 19+ |
 | Pure JS UI | `src/pure-js/services/*Renderer.ts`, `src/pure-js/controllers/` | DOM-рендереры и `BlockUIController` |
 | Scroll / layout | `src/shared/services/BlockScrollService.ts`, `src/utils/scheduling.ts`, `src/utils/scrollHelpers.ts` | Скролл к блоку, rAF, restore scroll |
 | Form errors | `src/utils/formErrorHelpers.ts` | Parse/find/scroll к ошибкам (не scroll блоков) |

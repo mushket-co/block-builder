@@ -76,7 +76,7 @@ export default function App() {
       <div className="app-header">
         <h1>BlockBuilder React + Vite Example</h1>
         <div className="app-description">
-          <p>Полноценное React приложение с Vite</p>
+          <p>Полноценное React 19+ приложение с Vite</p>
           <p>Настоящие React-компоненты блоков</p>
           <p>Все возможности BlockBuilder для React</p>
         </div>
