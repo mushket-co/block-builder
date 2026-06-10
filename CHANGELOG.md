@@ -5,6 +5,8 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/),
 и проект следует [Semantic Versioning](https://semver.org/lang/ru/).
 
+## [1.3.2] - 2026-06-10
+minors
 
 ## [1.3.1] - 2026-06-10
 
@@ -191,7 +193,7 @@
 
 ### Удалено
 
-- **`LICENSE-PRO.md`**, **`ToggleControl-usage.md`** (описание ToggleControl — на [block-builder.ru](https://block-builder.ru) и в `README_DEV.md`)
+- **`LICENSE-PRO.md`**, **`ToggleControl-usage.md`** (описание ToggleControl — на [block-builder-doc.vercel.app](https://block-builder-doc.vercel.app/) и в `README_DEV.md`)
 - **`src/core/entities/License.ts`**, **`LicenseService`**, **`LicenseFeatureChecker`**
 - **`src/ui/composables/useLicense.ts`**
 - Экспорт и UI, связанные с PRO/FREE tier

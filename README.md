@@ -33,7 +33,7 @@ BlockBuilder поддерживает несколько вариантов ис
 
 Вся подробная документация находится на официальном сайте:
 
-** [block-builder.ru](https://block-builder.ru)**
+** [block-builder-doc](https://block-builder-doc.vercel.app/)**
 
 На сайте вы найдете:
 - Полное описание API
@@ -43,7 +43,8 @@ BlockBuilder поддерживает несколько вариантов ис
 
 ## Ссылки
 
-- ** Документация:** [block-builder.ru](https://block-builder.ru)
+- ** Документация:** [block-builder-doc](https://block-builder-doc.vercel.app/)
+- ** Живые примеры (demo):** [block-builder-demo](https://block-builder-demo.vercel.app/)
 - ** npm:** [@mushket-co/block-builder](https://www.npmjs.com/package/@mushket-co/block-builder)
 - ** GitHub:** [github.com/mushket-co/block-builder](https://github.com/mushket-co/block-builder)
 - ** Issues:** [GitHub Issues](https://github.com/mushket-co/block-builder/issues)
