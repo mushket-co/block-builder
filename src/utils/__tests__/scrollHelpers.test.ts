@@ -22,7 +22,7 @@ describe('scrollHelpers', () => {
   });
 
   describe('scrollToElement', () => {
-    test('prefers explicit scroll container over auto-detected parent', () => {
+    test('prefers explicit scroll container over auto-detected parent', async () => {
       const outer = document.createElement('div');
       outer.style.height = '200px';
       outer.style.overflowY = 'auto';
@@ -46,7 +46,7 @@ describe('scrollHelpers', () => {
       const outerSpy = jest.spyOn(outer, 'scrollTop', 'set');
       const innerSpy = jest.spyOn(inner, 'scrollTop', 'set');
 
-      scrollToElement(block, { behavior: 'auto', container: inner, offset: 10 });
+      await scrollToElement(block, { behavior: 'auto', container: inner, offset: 10 });
 
       expect(innerSpy).toHaveBeenCalled();
       expect(outerSpy).not.toHaveBeenCalled();

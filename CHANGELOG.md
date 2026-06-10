@@ -6,7 +6,7 @@
 и проект следует [Semantic Versioning](https://semver.org/lang/ru/).
 
 
-## [Unreleased]
+## [1.3.0] - 2026-06-10
 
 ### Изменено
 
@@ -19,13 +19,6 @@
 - Entry points и `package.json` `files` обновлены под новые пути
 - **`tests/component/vue/`** — Vue component-тесты вынесены из корня `tests/component/` (симметрия с `tests/component/react/`)
 - **`tests/component/helpers/`** — общие test-хелперы (`mockUseCases`)
-
-#### React integration fixes
-
-- **`CustomField` (React + Vue)**: ошибки инициализации в UI (`bb-error-box`), `context.error` + `setError` для WYSIWYG после валидации
-- **`ICustomFieldRenderResult.setError`**: опциональный API для обновления ошибки без remount
-- **WYSIWYG examples** (`vue3`, `react`): `setError` + актуальный `isError` при submit
-- **Playwright E2E (черновик)**: спеки `tests/e2e/specs/react/` подготовлены, проект в Playwright **отключён** до стабилизации React UI
 
 ### Добавлено
 
@@ -40,6 +33,19 @@
 
 - Полный набор блоков как в `vue3`, `framework: 'react'`
 - `npm run example:react`, порт **3004**
+
+#### Пример Next.js SSR (`examples/next`)
+
+- App Router: Server Component загружает блоки, Client Component — `BlockBuilderComponent`
+- `enrichBlocksForSsr`, Route Handlers `/api/blocks`, mock API для api-select
+- Блоки переиспользуются из `examples/react` через alias `@react-example`
+- `npm run example:next`, порт **3008**
+
+### Исправлено
+
+- **Скролл к новому блоку (Vue, React)**: верх блока иногда обрезался из-за неточного `scrollIntoView` в nested scroll-контейнере; исправлено в общем `BlockScrollService`
+- **`NewsListBlock` (React example)**: SSR-данные (`featuredNews`, `newsItems`) не использовались — в view-source отображалась заглушка вместо новостей
+- **`WysiwygEditor` (React example)**: правки типов для сборки Next.js
 
 ## [1.2.0] - 2026-06-09
 

@@ -52,6 +52,26 @@ npm run example:react
 
 ---
 
+### ▲ Next.js SSR (`next/`)
+Next.js App Router с серверным рендерингом контента блоков.
+
+**Особенности:**
+- ✅ Server Component загружает блоки из `data/blocks.json`
+- ✅ `enrichBlocksForSsr` для api-select (newsList)
+- ✅ Client boundary для `BlockBuilderComponent`
+- ✅ Блоки из `examples/react` через alias `@react-example`
+
+**Запуск:**
+```bash
+npm run example:next
+```
+
+Порт: `http://localhost:3008`
+
+[Подробная документация →](./next/README.md)
+
+---
+
 ### 🎯 Vue3 Core API (`vue3-core-api/`)
 Vue3 приложение с использованием только Core API без готовых UI компонентов.
 
@@ -73,12 +93,12 @@ npm run example:vue3-core-api
 ---
 
 ### 🟢 Nuxt 3 (`nuxt3/`)
-Nuxt 3 приложение с BlockBuilder (client-only страница, Nitro API).
+Nuxt 3 приложение с BlockBuilder и SSR.
 
 **Особенности:**
 - ✅ `build.transpile` для исходников пакета
 - ✅ CSS через client-плагин
-- ✅ `definePageMeta({ ssr: false })` для редактора
+- ✅ SSR контента блоков на сервере
 - ✅ Mock API через `server/api/`
 
 **Запуск:**
@@ -344,6 +364,9 @@ examples/static/
 | API Usage | `http://localhost:3003` | 3003 |
 | Pure JS (CDN) | `http://localhost:3004` | 3004 |
 | Vue3 Core API | `http://localhost:3005` | 3005 |
+| Nuxt 3 | `http://localhost:3006` | 3006 |
+| Nuxt 4 | `http://localhost:3007` | 3007 |
+| Next.js SSR | `http://localhost:3008` | 3008 |
 
 **Зачем фиксированные порты?**
 - Изоляция localStorage между примерами

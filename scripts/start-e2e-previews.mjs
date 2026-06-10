@@ -1,6 +1,6 @@
 /**
  * E2E preview servers for Playwright.
- * Builds the package once, then starts vue3 (:3001) and pure-js (:3002) previews.
+ * Builds the package once, then starts vue3 (:3001), pure-js (:3002) and react (:3004) previews.
  */
 import { execSync, spawn } from 'child_process';
 import http from 'http';
@@ -60,14 +60,17 @@ run('npm', ['run', 'build']);
 console.log('[e2e] Building examples…');
 run('npm', ['run', 'build', '--workspace=examples/vue3']);
 run('npm', ['run', 'build', '--workspace=examples/pure-js-vite']);
+run('npm', ['run', 'build', '--workspace=examples/react']);
 
 console.log('[e2e] Starting preview servers…');
 const vue3 = startPreview('examples/vue3');
 const pureJs = startPreview('examples/pure-js-vite');
+const react = startPreview('examples/react');
 
 const shutdown = () => {
   vue3.kill('SIGTERM');
   pureJs.kill('SIGTERM');
+  react.kill('SIGTERM');
 };
 
 process.on('SIGINT', shutdown);
@@ -84,12 +87,19 @@ pureJs.on('exit', code => {
     process.exit(code);
   }
 });
+react.on('exit', code => {
+  if (code && code !== 0) {
+    shutdown();
+    process.exit(code);
+  }
+});
 
 await Promise.all([
   waitForUrl('http://localhost:3001'),
   waitForUrl('http://localhost:3002'),
+  waitForUrl('http://localhost:3004'),
 ]);
 
-console.log('[e2e] Preview servers ready on :3001 and :3002');
+console.log('[e2e] Preview servers ready on :3001, :3002 and :3004');
 
 await new Promise(() => {});

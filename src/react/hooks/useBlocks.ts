@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 
 import type { IBlock, TBlockId } from '../../core/types';
 import type { BlockManagementUseCase } from '../../core/use-cases/BlockManagementUseCase';
@@ -97,12 +98,15 @@ export function useBlocks({
   const loadBlocks = useCallback(async (): Promise<IBlock[]> => {
     const repositoryBlocks = (await blockService.getAllBlocks()) as IBlock[];
     const preparedBlocks = prepareBlocksForDisplay(repositoryBlocks, getBlockTypeConfig);
-    setBlocks(preparedBlocks);
+    flushSync(() => {
+      setBlocks(preparedBlocks);
+    });
     return preparedBlocks;
   }, [blockService, getBlockTypeConfig]);
 
   const scrollToBlock = useCallback(
     async (blockId: TBlockId, behavior: ScrollBehavior = 'smooth') => {
+      await afterPaint();
       const session = blockScrollService.beginSession();
       await blockScrollService.scrollToBlockWhenReady(
         blockId,
@@ -143,7 +147,9 @@ export function useBlocks({
         if (!duplicated) {
           return;
         }
-        setBlocks(prev => [...prev, duplicated as IBlock]);
+        flushSync(() => {
+          setBlocks(prev => [...prev, duplicated as IBlock]);
+        });
         await setupBreakpointWatchers();
         await scrollToBlock(duplicated.id, 'smooth');
         onBlockAdded?.(duplicated as IBlock);

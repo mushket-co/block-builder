@@ -3,7 +3,12 @@ import {
   afterPaint,
   waitForLayoutStable,
 } from '../../utils/scheduling';
-import { getScrollContainer, getBlocksLayoutRoot, waitForElementScrollSettled } from '../../utils/scrollHelpers';
+import {
+  resolveBlockScrollContainer,
+  getBlocksLayoutRoot,
+  scrollToElement,
+  waitForElementScrollSettled,
+} from '../../utils/scrollHelpers';
 
 export interface IBlockScrollOptions {
   offsetTop?: number;
@@ -54,49 +59,67 @@ export class BlockScrollService {
       return;
     }
 
-    if (!this.scrollToBlock(blockId, options, session)) {
-      return;
-    }
-
-    const blockElement = this.findBlockElement(blockId);
+    const blockElement = await this.waitForBlockElement(blockId, session);
     if (!blockElement) {
       return;
     }
 
-    const scrollContainer = getScrollContainer(blockElement);
     const behavior = options.behavior ?? 'smooth';
-
-    if (behavior === 'smooth') {
-      const scrollTarget = scrollContainer ?? document.documentElement;
-      await waitForElementScrollSettled(scrollTarget);
-    } else {
-      await afterPaint();
-    }
+    await this.scrollToBlock(blockId, options, session);
 
     if (!this.isSessionActive(session)) {
       return;
     }
 
-    const offsetTop = options.offsetTop ?? 24;
-    const offsetBottom = options.offsetBottom ?? 24;
+    if (behavior === 'smooth') {
+      const scrollContainer = resolveBlockScrollContainer(blockElement);
+      const scrollTarget = scrollContainer ?? document.documentElement;
+      await waitForElementScrollSettled(scrollTarget);
 
-    if (
-      !this.isBlockTopVisible(blockElement, scrollContainer, offsetTop, offsetBottom)
-    ) {
-      this.scrollToBlock(blockId, { ...options, behavior: 'auto' }, session);
-      await afterPaint();
+      if (blocksContainer) {
+        await waitForLayoutStable(blocksContainer);
+      }
+
+      if (!this.isSessionActive(session)) {
+        return;
+      }
+
+      await this.scrollToBlock(blockId, { ...options, behavior: 'auto' }, session);
     }
+
+    await afterPaint();
   }
 
   private isSessionActive(session: number): boolean {
     return session === this.session;
   }
 
-  private scrollToBlock(
+  private async waitForBlockElement(
+    blockId: string,
+    session: number,
+    maxAttempts = 30
+  ): Promise<HTMLElement | null> {
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      if (!this.isSessionActive(session)) {
+        return null;
+      }
+
+      const element = this.findBlockElement(blockId);
+      if (element) {
+        return element;
+      }
+
+      await afterPaint();
+    }
+
+    return this.isSessionActive(session) ? this.findBlockElement(blockId) : null;
+  }
+
+  private async scrollToBlock(
     blockId: string,
     options: IBlockScrollOptions,
     session: number
-  ): boolean {
+  ): Promise<boolean> {
     if (!this.isSessionActive(session)) {
       return false;
     }
@@ -107,52 +130,16 @@ export class BlockScrollService {
     }
 
     const offsetTop = options.offsetTop ?? 24;
-    const offsetBottom = options.offsetBottom ?? 24;
     const behavior = options.behavior ?? 'smooth';
+    const scrollContainer = resolveBlockScrollContainer(blockElement);
 
-    const previousMarginTop = blockElement.style.scrollMarginTop;
-    const previousMarginBottom = blockElement.style.scrollMarginBottom;
-
-    blockElement.style.scrollMarginTop = `${offsetTop}px`;
-    blockElement.style.scrollMarginBottom = `${offsetBottom}px`;
-
-    blockElement.scrollIntoView({
+    await scrollToElement(blockElement, {
+      offset: offsetTop,
       behavior,
-      block: 'start',
-      inline: 'nearest',
+      container: scrollContainer ?? undefined,
     });
 
-    void this.restoreScrollMargins(
-      blockElement,
-      previousMarginTop,
-      previousMarginBottom,
-      behavior,
-      session
-    );
-
     return true;
-  }
-
-  private async restoreScrollMargins(
-    blockElement: HTMLElement,
-    previousMarginTop: string,
-    previousMarginBottom: string,
-    behavior: ScrollBehavior,
-    session: number
-  ): Promise<void> {
-    if (behavior === 'smooth') {
-      const scrollContainer = getScrollContainer(blockElement) ?? document.documentElement;
-      await waitForElementScrollSettled(scrollContainer);
-    } else {
-      await afterPaint();
-    }
-
-    if (!this.isSessionActive(session) || !blockElement.isConnected) {
-      return;
-    }
-
-    blockElement.style.scrollMarginTop = previousMarginTop;
-    blockElement.style.scrollMarginBottom = previousMarginBottom;
   }
 
   private findBlockElement(blockId: string): HTMLElement | null {
@@ -164,28 +151,6 @@ export class BlockScrollService {
     return document.querySelector(
       `.${CSS_CLASSES.BLOCK}[data-block-id="${escapedBlockId}"]`
     ) as HTMLElement | null;
-  }
-
-  private isBlockTopVisible(
-    element: HTMLElement,
-    scrollContainer: HTMLElement | null,
-    offsetTop: number,
-    offsetBottom: number
-  ): boolean {
-    const elementRect = element.getBoundingClientRect();
-
-    if (!scrollContainer) {
-      return (
-        elementRect.top >= offsetTop && elementRect.top <= window.innerHeight - offsetBottom
-      );
-    }
-
-    const containerRect = scrollContainer.getBoundingClientRect();
-
-    return (
-      elementRect.top >= containerRect.top + offsetTop &&
-      elementRect.top <= containerRect.bottom - offsetBottom
-    );
   }
 }
 

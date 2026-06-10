@@ -132,6 +132,7 @@ const handleSave = async (blocks) => {
 
 .app-content {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
 }
 

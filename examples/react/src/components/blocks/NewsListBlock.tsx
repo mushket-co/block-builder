@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import './NewsListBlock.css'
 
@@ -37,6 +37,8 @@ interface INewsListBlockProps {
   title?: string
   featuredNewsId?: unknown
   newsIds?: unknown
+  featuredNews?: INews | null
+  newsItems?: INews[]
   showDate?: boolean
   columns?: string
   backgroundColor?: string
@@ -47,6 +49,8 @@ export default function NewsListBlock({
   title = 'Последние новости',
   featuredNewsId = null,
   newsIds,
+  featuredNews: serverFeaturedNews,
+  newsItems: serverNewsItems,
   showDate = true,
   columns = '2',
   backgroundColor = '#f8f9fa',
@@ -54,17 +58,52 @@ export default function NewsListBlock({
 }: INewsListBlockProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [featuredNews, setFeaturedNews] = useState<INews | null>(null)
-  const [newsList, setNewsList] = useState<INews[]>([])
+  const [fetchedFeaturedNews, setFetchedFeaturedNews] = useState<INews | null>(null)
+  const [fetchedNewsList, setFetchedNewsList] = useState<INews[]>([])
+
+  const resolvedFeaturedNewsId = useMemo(() => normalizeNewsId(featuredNewsId), [featuredNewsId])
+  const resolvedNewsIds = useMemo(() => normalizeNewsIds(newsIds), [newsIds])
+  const hasServerNewsItems = Array.isArray(serverNewsItems) && serverNewsItems.length > 0
+
+  const displayFeaturedNews = useMemo(() => {
+    if (serverFeaturedNews) {
+      return serverFeaturedNews
+    }
+
+    if (resolvedFeaturedNewsId && hasServerNewsItems) {
+      return serverNewsItems!.find(item => item.id === resolvedFeaturedNewsId) ?? null
+    }
+
+    return fetchedFeaturedNews
+  }, [
+    serverFeaturedNews,
+    resolvedFeaturedNewsId,
+    hasServerNewsItems,
+    serverNewsItems,
+    fetchedFeaturedNews,
+  ])
+
+  const displayNewsList = useMemo(
+    () => (hasServerNewsItems ? serverNewsItems! : fetchedNewsList),
+    [hasServerNewsItems, serverNewsItems, fetchedNewsList]
+  )
 
   useEffect(() => {
-    const resolvedFeaturedNewsId = normalizeNewsId(featuredNewsId)
-    const resolvedNewsIds = normalizeNewsIds(newsIds)
-
     const loadNewsData = async () => {
+      if (serverFeaturedNews) {
+        setFetchedFeaturedNews(null)
+      }
+
+      if (hasServerNewsItems) {
+        setFetchedNewsList([])
+        if (serverFeaturedNews || !resolvedFeaturedNewsId) {
+          return
+        }
+      }
+
       if (!resolvedFeaturedNewsId && resolvedNewsIds.length === 0) {
-        setFeaturedNews(null)
-        setNewsList([])
+        setFetchedFeaturedNews(null)
+        setFetchedNewsList([])
         return
       }
 
@@ -80,12 +119,12 @@ export default function NewsListBlock({
         const data = await response.json()
         const allNews: INews[] = data.data || []
 
-        setFeaturedNews(
+        setFetchedFeaturedNews(
           resolvedFeaturedNewsId
-            ? allNews.find(item => item.id === resolvedFeaturedNewsId) || null
+            ? allNews.find(item => item.id === resolvedFeaturedNewsId) ?? null
             : null
         )
-        setNewsList(
+        setFetchedNewsList(
           resolvedNewsIds.length > 0
             ? allNews.filter(item => resolvedNewsIds.includes(item.id))
             : []
@@ -98,7 +137,12 @@ export default function NewsListBlock({
     }
 
     void loadNewsData()
-  }, [featuredNewsId, newsIds])
+  }, [
+    serverFeaturedNews,
+    hasServerNewsItems,
+    resolvedFeaturedNewsId,
+    resolvedNewsIds,
+  ])
 
   return (
     <div
@@ -108,22 +152,22 @@ export default function NewsListBlock({
       <div className="container">
         <h2 className="news-list-block__title">{title}</h2>
 
-        {featuredNews ? (
+        {displayFeaturedNews ? (
           <div className="news-list-block__featured">
             <h3>🌟 Главная новость:</h3>
             <div className="news-card news-card--featured">
-              <h4>{featuredNews.title}</h4>
-              {showDate ? <p className="news-date">{featuredNews.date}</p> : null}
+              <h4>{displayFeaturedNews.title}</h4>
+              {showDate ? <p className="news-date">{displayFeaturedNews.date}</p> : null}
             </div>
           </div>
         ) : null}
 
-        {newsList.length > 0 ? (
+        {displayNewsList.length > 0 ? (
           <div
             className="news-list-block__grid"
             style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}
           >
-            {newsList.map(news => (
+            {displayNewsList.map(news => (
               <div key={news.id} className="news-card">
                 <h4>{news.title}</h4>
                 {showDate ? <p className="news-date">{news.date}</p> : null}
@@ -134,7 +178,7 @@ export default function NewsListBlock({
 
         {loading ? <div className="news-list-block__loading">Загрузка новостей...</div> : null}
         {error ? <div className="news-list-block__error">Ошибка загрузки: {error}</div> : null}
-        {!loading && !error && !featuredNews && newsList.length === 0 ? (
+        {!loading && !error && !displayFeaturedNews && displayNewsList.length === 0 ? (
           <div className="news-list-block__empty">
             Новости не выбраны. Настройте блок в редакторе.
           </div>

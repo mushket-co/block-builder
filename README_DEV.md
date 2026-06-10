@@ -62,6 +62,9 @@ block-builder/
 │   ├── shared/                   # Общий код examples (blockStorage.js)
 │   ├── vue3/                     # Vue3 + Vite (E2E порт 3001)
 │   ├── react/                    # React + Vite (порт 3004)
+│   ├── next/                     # Next.js App Router SSR (порт 3008)
+│   ├── nuxt3/                    # Nuxt 3 SSR (порт 3006)
+│   ├── nuxt4/                    # Nuxt 4 SSR (порт 3007)
 │   ├── pure-js-vite/             # Pure JS + Vite (E2E порт 3002)
 │   ├── vue3-core-api/
 │   ├── api-usage/

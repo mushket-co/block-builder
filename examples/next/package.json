@@ -1,0 +1,26 @@
+{
+  "name": "block-builder-example-next",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "node ./scripts/ensure-port-free.mjs 3008 && next dev --port 3008",
+    "build": "next build",
+    "start": "next start --port 3008"
+  },
+  "dependencies": {
+    "@mushket-co/block-builder": "file:../..",
+    "jodit": "^4.7.4",
+    "next": "^15.3.3",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "swiper": "^11.1.15",
+    "typograf": "^7.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.21",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "sass": "^1.93.2",
+    "typescript": "^5.3.2"
+  }
+}

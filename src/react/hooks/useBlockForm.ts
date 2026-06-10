@@ -127,9 +127,9 @@ export function useBlockForm({
     [isEdit]
   );
 
-  const createBlock = useCallback(async (): Promise<boolean> => {
+  const createBlock = useCallback(async (): Promise<IBlock | null> => {
     if (!currentType || !currentBlockType) {
-      return false;
+      return null;
     }
 
     const validation = UniversalValidator.validateForm(
@@ -141,7 +141,7 @@ export function useBlockForm({
     if (!validation.isValid) {
       setFormErrors(validation.errors);
       await handleValidationErrors(validation.errors);
-      return false;
+      return null;
     }
 
     try {
@@ -164,14 +164,12 @@ export function useBlockForm({
       }
 
       const loadedBlocks = await loadBlocks();
-      onBlockPersisted?.();
       await setupBreakpointWatchers(loadedBlocks);
       await scrollToBlock(newBlock.id, 'smooth');
-      onBlockAdded?.(newBlock as IBlock);
-      return true;
+      return newBlock as IBlock;
     } catch (error) {
       alert(`Ошибка создания блока: ${(error as Error).message}`);
-      return false;
+      return null;
     }
   }, [
     blockService,
@@ -181,10 +179,8 @@ export function useBlockForm({
     formData,
     handleValidationErrors,
     loadBlocks,
-    onBlockAdded,
     scrollToBlock,
     selectedPosition,
-    onBlockPersisted,
     setupBreakpointWatchers,
   ]);
 
@@ -237,11 +233,22 @@ export function useBlockForm({
   ]);
 
   const handleSubmit = useCallback(async () => {
-    const success = await (modalMode === 'create' ? createBlock() : updateBlock());
+    if (modalMode === 'create') {
+      const newBlock = await createBlock();
+      if (!newBlock) {
+        return;
+      }
+
+      onBlockAdded?.(newBlock);
+      closeModal();
+      return;
+    }
+
+    const success = await updateBlock();
     if (success) {
       closeModal();
     }
-  }, [closeModal, createBlock, modalMode, updateBlock]);
+  }, [closeModal, createBlock, modalMode, onBlockAdded, updateBlock]);
 
   const registerRepeaterRef = useCallback((fieldName: string, renderer: IRepeaterRef) => {
     repeaterRefs.current.set(fieldName, renderer);

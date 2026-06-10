@@ -1,6 +1,6 @@
 {
   "name": "@mushket-co/block-builder",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Блочный конструктор для no-code разработки (Beta)",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
@@ -43,6 +43,7 @@
     "examples/nuxt3",
     "examples/nuxt4",
     "examples/react",
+    "examples/next",
     "examples/pure-js-vite",
     "examples/api-usage",
     "examples/pure-js-cdn"
@@ -109,6 +110,7 @@
     "example:nuxt3": "npm run dev --workspace=examples/nuxt3",
     "example:nuxt4": "npm run dev --workspace=examples/nuxt4",
     "example:react": "npm run dev --workspace=examples/react",
+    "example:next": "npm run dev --workspace=examples/next",
     "examples:install": "npm install"
   },
   "keywords": [

@@ -37,8 +37,14 @@ export default defineConfig({
         baseURL: 'http://localhost:3002',
       },
     },
-    // React E2E: specs в tests/e2e/specs/react/ — включить после стабилизации React BlockBuilder
-    // { name: 'react', testMatch: /react\/.*\.spec\.ts/, use: { ...devices['Desktop Chrome'], baseURL: 'http://localhost:3004' } },
+    {
+      name: 'react',
+      testMatch: /react\/.*\.spec\.ts/,
+      use: {
+        ...devices['Desktop Chrome'],
+        baseURL: 'http://localhost:3004',
+      },
+    },
   ],
   webServer: {
     command: 'node scripts/start-e2e-previews.mjs',

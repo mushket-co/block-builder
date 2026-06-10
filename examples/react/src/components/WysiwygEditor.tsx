@@ -56,9 +56,10 @@ export default function WysiwygEditor({
       name: 'typography',
       text: 'Типографика',
       tooltip: 'Применить типографику',
-      exec: (editor: { value: string; events: { fire: (event: string) => void } }) => {
-        editor.value = typografRef.current.execute(editor.value)
-        editor.events.fire('change')
+      exec: editor => {
+        const joditEditor = editor as { value: string; events: { fire: (event: string) => void } }
+        joditEditor.value = typografRef.current.execute(joditEditor.value)
+        joditEditor.events.fire('change')
       },
     }
 
@@ -66,7 +67,7 @@ export default function WysiwygEditor({
       language: 'ru',
       showCharsCounter: false,
       showXPathInStatusbar: false,
-      processPaste: false,
+      processPasteHTML: false,
       askBeforePasteHTML: false,
       askBeforePasteFromWord: false,
       disablePlugins: ['clipboard', 'paste'],
@@ -88,11 +89,12 @@ export default function WysiwygEditor({
         'redo',
         'fullsize',
       ],
-    })
+    } as Parameters<typeof Jodit.make>[1])
 
-    const handlePaste = (event: ClipboardEvent) => {
-      event.preventDefault()
-      const text = event.clipboardData?.getData('text/plain') || ''
+    const handlePaste = (event: Event) => {
+      const clipboardEvent = event as ClipboardEvent
+      clipboardEvent.preventDefault()
+      const text = clipboardEvent.clipboardData?.getData('text/plain') || ''
       document.execCommand('insertText', false, text)
     }
 

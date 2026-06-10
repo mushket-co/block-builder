@@ -10,17 +10,23 @@ describe('BlockScrollService', () => {
   });
 
   test('cancelPending aborts in-flight scrollToBlockWhenReady', async () => {
-    document.body.innerHTML = `
-      <div id="block-builder-blocks">
-        <div class="${CSS_CLASSES.BLOCK}" data-block-id="block-1">Block</div>
-      </div>
-    `;
+    const scrollRoot = document.createElement('div');
+    scrollRoot.id = 'block-builder-blocks';
+    scrollRoot.style.height = '200px';
+    scrollRoot.style.overflowY = 'auto';
 
-    const block = document.querySelector(
-      `.${CSS_CLASSES.BLOCK}[data-block-id="block-1"]`
-    ) as HTMLElement;
-    const scrollIntoView = jest.fn();
-    block.scrollIntoView = scrollIntoView;
+    const block = document.createElement('div');
+    block.className = CSS_CLASSES.BLOCK;
+    block.dataset.blockId = 'block-1';
+    block.textContent = 'Block';
+
+    scrollRoot.append(block);
+    document.body.append(scrollRoot);
+
+    Object.defineProperty(scrollRoot, 'scrollHeight', { value: 500, configurable: true });
+    Object.defineProperty(scrollRoot, 'clientHeight', { value: 200, configurable: true });
+
+    const scrollTopSpy = jest.spyOn(scrollRoot, 'scrollTop', 'set');
 
     const session = service.beginSession();
     const scrollPromise = service.scrollToBlockWhenReady('block-1', { behavior: 'auto' }, session);
@@ -28,6 +34,6 @@ describe('BlockScrollService', () => {
 
     await scrollPromise;
 
-    expect(scrollIntoView).not.toHaveBeenCalled();
+    expect(scrollTopSpy).not.toHaveBeenCalled();
   });
 });

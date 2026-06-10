@@ -59,6 +59,38 @@ export function getScrollContainer(element: HTMLElement): HTMLElement | null {
   return null;
 }
 
+export function isScrollableContainer(element: HTMLElement): boolean {
+  return element.scrollHeight > element.clientHeight + 1;
+}
+
+export function getScrollableContainer(element: HTMLElement): HTMLElement | null {
+  let parent = element.parentElement;
+
+  while (parent) {
+    const style = window.getComputedStyle(parent);
+    const overflowY = style.overflowY;
+    const overflowX = style.overflowX;
+    const hasOverflow =
+      overflowY === 'auto' ||
+      overflowY === 'scroll' ||
+      overflowY === 'overlay' ||
+      overflowX === 'auto' ||
+      overflowX === 'scroll' ||
+      overflowX === 'overlay';
+
+    if (hasOverflow && isScrollableContainer(parent)) {
+      return parent;
+    }
+    parent = parent.parentElement;
+  }
+
+  return null;
+}
+
+export function resolveBlockScrollContainer(element: HTMLElement): HTMLElement | null {
+  return getScrollableContainer(element) ?? getScrollContainer(element);
+}
+
 export function stopOngoingScroll(container: HTMLElement): void {
   container.style.scrollBehavior = 'auto';
   container.scrollTop = container.scrollTop;
@@ -82,56 +114,46 @@ export async function restoreScrollPosition(
   container.scrollTop = scrollTop;
 }
 
-export function scrollToElement(
+export async function scrollToElement(
   element: HTMLElement,
   options: {
     offset?: number;
     behavior?: ScrollBehavior;
     container?: HTMLElement;
   } = {}
-): void {
+): Promise<void> {
   const { offset = 20, behavior = 'smooth', container } = options;
-  const scrollContainer = container ?? getScrollContainer(element);
+  const scrollContainer = container ?? resolveBlockScrollContainer(element);
 
-  if (!scrollContainer) {
-    scrollElementInWindow(element, offset, behavior);
+  if (!scrollContainer || !isScrollableContainer(scrollContainer)) {
+    await scrollElementInWindow(element, offset, behavior);
     return;
   }
 
-  const performScroll = () => {
-    const elementRect = element.getBoundingClientRect();
-    const containerRect = scrollContainer.getBoundingClientRect();
+  await afterPaint();
 
-    const elementTopRelativeToContainer =
-      elementRect.top - containerRect.top + scrollContainer.scrollTop;
-    const targetScrollTop = elementTopRelativeToContainer - offset;
+  const elementRect = element.getBoundingClientRect();
+  const containerRect = scrollContainer.getBoundingClientRect();
 
-    const maxScrollTop = Math.max(0, scrollContainer.scrollHeight - scrollContainer.clientHeight);
-    const finalScrollTop = Math.max(0, Math.min(targetScrollTop, maxScrollTop));
+  const elementTopRelativeToContainer =
+    elementRect.top - containerRect.top + scrollContainer.scrollTop;
+  const targetScrollTop = elementTopRelativeToContainer - offset;
 
-    if (behavior === 'smooth') {
-      smoothScrollElement(scrollContainer, finalScrollTop);
-    } else {
-      scrollContainer.scrollTop = finalScrollTop;
-    }
-  };
+  const maxScrollTop = Math.max(0, scrollContainer.scrollHeight - scrollContainer.clientHeight);
+  const finalScrollTop = Math.max(0, Math.min(targetScrollTop, maxScrollTop));
 
   if (behavior === 'smooth') {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        performScroll();
-      });
-    });
+    await smoothScrollElement(scrollContainer, finalScrollTop);
   } else {
-    performScroll();
+    scrollContainer.scrollTop = finalScrollTop;
   }
 }
 
-function scrollElementInWindow(
+async function scrollElementInWindow(
   element: HTMLElement,
   offset: number,
   behavior: ScrollBehavior
-): void {
+): Promise<void> {
   const elementRect = element.getBoundingClientRect();
   const targetPosition = elementRect.top + window.pageYOffset - offset;
 
@@ -141,8 +163,10 @@ function scrollElementInWindow(
         top: targetPosition,
         behavior: 'smooth',
       });
+      await waitForScrollSettled(document.documentElement);
+      return;
     } catch {
-      smoothScrollWindow(targetPosition);
+      await smoothScrollWindow(targetPosition);
     }
     return;
   }
@@ -150,87 +174,98 @@ function scrollElementInWindow(
   window.scrollTo(0, targetPosition);
 }
 
-function smoothScrollWindow(targetPosition: number): void {
+function smoothScrollWindow(targetPosition: number): Promise<void> {
   const startPosition = window.pageYOffset || window.scrollY;
   const distance = targetPosition - startPosition;
 
   if (Math.abs(distance) < 1) {
-    return;
+    return Promise.resolve();
   }
 
   const duration = Math.min(Math.abs(distance) * 0.5, 800);
-  let start: number | null = null;
 
-  function step(timestamp: number): void {
-    if (!start) {
-      start = timestamp;
-    }
-    const progress = timestamp - start;
-    const percentage = Math.min(progress / duration, 1);
-    const ease = 0.5 - Math.cos(percentage * Math.PI) / 2;
-    const currentPosition = startPosition + distance * ease;
-    window.scrollTo(0, currentPosition);
-    if (percentage < 1) {
-      window.requestAnimationFrame(step);
-    }
-  }
+  return new Promise(resolve => {
+    let start: number | null = null;
 
-  window.requestAnimationFrame(step);
+    const step = (timestamp: number): void => {
+      if (!start) {
+        start = timestamp;
+      }
+      const progress = timestamp - start;
+      const percentage = Math.min(progress / duration, 1);
+      const ease = 0.5 - Math.cos(percentage * Math.PI) / 2;
+      const currentPosition = startPosition + distance * ease;
+      window.scrollTo(0, currentPosition);
+      if (percentage < 1) {
+        window.requestAnimationFrame(step);
+      } else {
+        window.scrollTo(0, targetPosition);
+        resolve();
+      }
+    };
+
+    window.requestAnimationFrame(step);
+  });
 }
 
-function smoothScrollElement(element: HTMLElement, targetScrollTop: number): void {
+function smoothScrollElement(element: HTMLElement, targetScrollTop: number): Promise<void> {
   const startPosition = element.scrollTop;
   const distance = targetScrollTop - startPosition;
 
   if (Math.abs(distance) < 1) {
-    return;
+    element.scrollTop = targetScrollTop;
+    return Promise.resolve();
   }
 
   const duration = Math.min(Math.max(Math.abs(distance) * 0.5, 300), 1000);
-  let start: number | null = null;
-  let rafId: number | null = null;
-  let isCancelled = false;
 
-  const cancel = () => {
-    isCancelled = true;
-    if (rafId !== null) {
-      window.cancelAnimationFrame(rafId);
-      rafId = null;
-    }
-  };
+  return new Promise(resolve => {
+    let start: number | null = null;
+    let rafId: number | null = null;
+    let isCancelled = false;
 
-  const step = (timestamp: number): void => {
-    if (isCancelled) {
-      return;
-    }
+    const finish = (scrollTop: number) => {
+      if (isCancelled) {
+        return;
+      }
+      isCancelled = true;
+      if (rafId !== null) {
+        window.cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+      element.scrollTop = scrollTop;
+      resolve();
+    };
 
-    if (!start) {
-      start = timestamp;
-    }
+    const step = (timestamp: number): void => {
+      if (isCancelled) {
+        return;
+      }
 
-    const progress = timestamp - start;
-    const percentage = Math.min(progress / duration, 1);
-    const ease = 0.5 - Math.cos(percentage * Math.PI) / 2;
-    const currentPosition = startPosition + distance * ease;
+      if (!start) {
+        start = timestamp;
+      }
 
-    element.scrollTop = currentPosition;
+      const progress = timestamp - start;
+      const percentage = Math.min(progress / duration, 1);
+      const ease = 0.5 - Math.cos(percentage * Math.PI) / 2;
+      const currentPosition = startPosition + distance * ease;
 
-    if (percentage < 1 && !isCancelled) {
-      rafId = window.requestAnimationFrame(step);
-    } else {
-      element.scrollTop = targetScrollTop;
-      rafId = null;
-    }
-  };
+      element.scrollTop = currentPosition;
 
-  rafId = window.requestAnimationFrame(step);
+      if (percentage < 1) {
+        rafId = window.requestAnimationFrame(step);
+      } else {
+        finish(targetScrollTop);
+      }
+    };
 
-  setTimeout(() => {
-    if (rafId !== null && !isCancelled) {
-      cancel();
-      element.scrollTop = targetScrollTop;
-    }
-  }, duration + 100);
+    rafId = window.requestAnimationFrame(step);
+
+    window.setTimeout(() => {
+      finish(targetScrollTop);
+    }, duration + 100);
+  });
 }
 
 export async function waitForElementScrollSettled(element: HTMLElement): Promise<void> {
