@@ -1,28 +1,30 @@
 <template>
-  <div class="bb-repeater-control" :data-field-name="fieldName">
-    <div class="bb-repeater-control__header">
-      <label class="bb-repeater-control__label">
+  <div :class="CSS_CLASSES.REPEATER_CONTROL" :data-field-name="fieldName">
+    <div :class="CSS_CLASSES.REPEATER_CONTROL_HEADER">
+      <label :class="CSS_CLASSES.REPEATER_CONTROL_LABEL">
         {{ label }}
-        <span v-if="isRequired" class="bb-required">*</span>
+        <span v-if="isRequired" :class="CSS_CLASSES.REQUIRED">*</span>
       </label>
-      <span v-if="itemCount > 0" class="bb-repeater-control__count">
+      <span v-if="itemCount > 0" :class="CSS_CLASSES.REPEATER_CONTROL_COUNT">
         {{ getCountText(itemCount) }}
       </span>
     </div>
 
-    <div class="bb-repeater-control__items">
+    <div :class="CSS_CLASSES.REPEATER_CONTROL_ITEMS">
       <div
         v-for="(item, index) in items"
         :key="item._id"
-        class="bb-repeater-control__item"
-        :class="{ 'bb-repeater-control__item--collapsed': collapsedItems[item._id] }"
+        :class="[
+          CSS_CLASSES.REPEATER_CONTROL_ITEM,
+          { [CSS_CLASSES.REPEATER_CONTROL_ITEM_COLLAPSED]: collapsedItems[item._id] },
+        ]"
       >
-        <div class="bb-repeater-control__item-header">
-          <span class="bb-repeater-control__item-title"> {{ itemTitle }} #{{ index + 1 }} </span>
-          <div class="bb-repeater-control__item-actions">
+        <div :class="CSS_CLASSES.REPEATER_CONTROL_ITEM_HEADER">
+          <span :class="CSS_CLASSES.REPEATER_CONTROL_ITEM_TITLE"> {{ itemTitle }} #{{ index + 1 }} </span>
+          <div :class="CSS_CLASSES.REPEATER_CONTROL_ITEM_ACTIONS">
             <button
               type="button"
-              class="bb-repeater-control__item-btn bb-repeater-control__item-btn--collapse"
+              :class="[CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN, CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_COLLAPSE]"
               :title="collapsedItems[item._id] ? 'Развернуть' : 'Свернуть'"
               @click="toggleCollapse(item._id)"
             >
@@ -31,7 +33,7 @@
             <button
               v-if="index > 0"
               type="button"
-              class="bb-repeater-control__item-btn bb-repeater-control__item-btn--move"
+              :class="[CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN, CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_MOVE]"
               title="Переместить вверх"
               @click="moveItem(index, index - 1)"
             >
@@ -40,7 +42,7 @@
             <button
               v-if="index < items.length - 1"
               type="button"
-              class="bb-repeater-control__item-btn bb-repeater-control__item-btn--move"
+              :class="[CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN, CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_MOVE]"
               title="Переместить вниз"
               @click="moveItem(index, index + 1)"
             >
@@ -48,7 +50,7 @@
             </button>
             <button
               type="button"
-              class="bb-repeater-control__item-btn bb-repeater-control__item-btn--remove"
+              :class="[CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN, CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_REMOVE]"
               :disabled="!canRemove"
               :title="removeButtonText"
               @click="removeItem(index)"
@@ -58,7 +60,7 @@
           </div>
         </div>
 
-        <div v-if="!collapsedItems[item._id]" class="bb-repeater-control__item-fields">
+        <div v-if="!collapsedItems[item._id]" :class="CSS_CLASSES.REPEATER_CONTROL_ITEM_FIELDS">
           <!-- eslint-disable-next-line vue/no-v-for-template-key -->
           <template v-for="fieldGroup in getGroupedFieldsForItem(index)" :key="fieldGroup.key">
             <ToggleControl
@@ -141,13 +143,13 @@
                     :api-select-use-case="apiSelectUseCaseValue"
                     @update:model-value="updateItemField(index, slotField.field, $event)"
                   />
-                  <div v-else class="bb-warning-box">⚠️ {{ apiSelectRestrictionMessage }}</div>
+                  <div v-else :class="CSS_CLASSES.BB_WARNING_BOX">⚠️ {{ apiSelectRestrictionMessage }}</div>
                 </template>
 
                 <template v-else-if="slotField.type === 'custom'">
-                  <label :for="getFieldId(item._id, slotField.field)" class="bb-form-label">
+                  <label :for="getFieldId(item._id, slotField.field)" :class="CSS_CLASSES.FORM_LABEL">
                     {{ slotField.label }}
-                    <span v-if="isFieldRequired(slotField)" class="bb-required">*</span>
+                    <span v-if="isFieldRequired(slotField)" :class="CSS_CLASSES.REQUIRED">*</span>
                   </label>
                   <CustomField
                     v-if="
@@ -161,7 +163,7 @@
                     :is-field-required="isFieldRequired"
                     @update:model-value="updateItemField(index, slotField.field, $event)"
                   />
-                  <div v-else class="bb-warning-box">⚠️ {{ customFieldRestrictionMessage }}</div>
+                  <div v-else :class="CSS_CLASSES.BB_WARNING_BOX">⚠️ {{ customFieldRestrictionMessage }}</div>
                 </template>
 
                 <ImageUploadField
@@ -214,18 +216,18 @@
       </div>
     </div>
 
-    <button type="button" class="bb-repeater-control__add-btn" :disabled="!canAdd" @click="addItem">
+    <button type="button" :class="CSS_CLASSES.REPEATER_CONTROL_ADD_BTN" :disabled="!canAdd" @click="addItem">
       + {{ addButtonText }}
     </button>
 
-    <div v-if="effectiveMin || max" class="bb-repeater-control__hint">
+    <div v-if="effectiveMin || max" :class="CSS_CLASSES.REPEATER_CONTROL_HINT">
       <span
         v-if="effectiveMin && itemCount < effectiveMin"
-        class="bb-repeater-control__hint--error"
+        :class="CSS_CLASSES.REPEATER_CONTROL_HINT_ERROR"
       >
         {{ repeaterMinText }} {{ effectiveMin }}
       </span>
-      <span v-else-if="max && itemCount >= max" class="bb-repeater-control__hint--warning">
+      <span v-else-if="max && itemCount >= max" :class="CSS_CLASSES.REPEATER_CONTROL_HINT_WARNING">
         {{ repeaterMaxText }} {{ max }}
       </span>
     </div>
@@ -752,5 +754,3 @@ export default {
   },
 };
 </script>
-
-<style></style>

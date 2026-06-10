@@ -42,8 +42,3 @@ export function getBlockLabel(block: TBlockTypeKey, project: TE2EProject): strin
   }
   return BLOCK_TYPE_LABELS[block].vue3;
 }
-
-/** @deprecated Use getBlockLabel('text', project) */
-export function getTextBlockLabel(project: TE2EProject): string {
-  return getBlockLabel('text', project);
-}

@@ -1,3 +1,4 @@
+import { CSS_CLASSES } from '../../../../src/utils/constants';
 import { flushPromises, mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 
@@ -35,12 +36,12 @@ describe('RepeaterControl', () => {
     });
     await flushPromises();
 
-    expect(wrapper.findAll('.bb-repeater-control__item')).toHaveLength(1);
+    expect(wrapper.findAll(`.${CSS_CLASSES.REPEATER_CONTROL_ITEM}`)).toHaveLength(1);
 
-    await wrapper.find('.bb-repeater-control__add-btn').trigger('click');
+    await wrapper.find(`.${CSS_CLASSES.REPEATER_CONTROL_ADD_BTN}`).trigger('click');
     await flushPromises();
 
-    expect(wrapper.findAll('.bb-repeater-control__item')).toHaveLength(2);
+    expect(wrapper.findAll(`.${CSS_CLASSES.REPEATER_CONTROL_ITEM}`)).toHaveLength(2);
     expect(wrapper.emitted('update:modelValue')?.[0]?.[0]).toHaveLength(2);
 
     wrapper.unmount();
@@ -59,13 +60,13 @@ describe('RepeaterControl', () => {
     });
     await flushPromises();
 
-    expect(wrapper.find('.bb-repeater-control__item-fields').exists()).toBe(true);
+    expect(wrapper.find(`.${CSS_CLASSES.REPEATER_CONTROL_ITEM_FIELDS}`).exists()).toBe(true);
 
-    await wrapper.find('.bb-repeater-control__item-btn--collapse').trigger('click');
+    await wrapper.find(`.${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_COLLAPSE}`).trigger('click');
     await flushPromises();
 
-    expect(wrapper.find('.bb-repeater-control__item--collapsed').exists()).toBe(true);
-    expect(wrapper.find('.bb-repeater-control__item-fields').exists()).toBe(false);
+    expect(wrapper.find(`.${CSS_CLASSES.REPEATER_CONTROL_ITEM_COLLAPSED}`).exists()).toBe(true);
+    expect(wrapper.find(`.${CSS_CLASSES.REPEATER_CONTROL_ITEM_FIELDS}`).exists()).toBe(false);
 
     wrapper.unmount();
   });
@@ -103,13 +104,13 @@ describe('RepeaterControl', () => {
     });
     await flushPromises();
 
-    expect(wrapper.find('.bb-toggle-control').exists()).toBe(true);
-    expect(wrapper.find('.bb-toggle-control__body').exists()).toBe(false);
+    expect(wrapper.find(`.${CSS_CLASSES.TOGGLE_CONTROL}`).exists()).toBe(true);
+    expect(wrapper.find(`.${CSS_CLASSES.TOGGLE_CONTROL_BODY}`).exists()).toBe(false);
 
-    await wrapper.find('.bb-toggle-control__button').trigger('click');
+    await wrapper.find(`.${CSS_CLASSES.TOGGLE_CONTROL_BUTTON}`).trigger('click');
     await flushPromises();
 
-    expect(wrapper.find('.bb-toggle-control__body').exists()).toBe(true);
+    expect(wrapper.find(`.${CSS_CLASSES.TOGGLE_CONTROL_BODY}`).exists()).toBe(true);
 
     wrapper.unmount();
   });

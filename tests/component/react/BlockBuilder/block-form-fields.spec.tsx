@@ -1,3 +1,4 @@
+import { CSS_CLASSES } from '../../../../src/utils/constants';
 import { fireEvent, waitFor } from '@testing-library/react';
 import { useRef, useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -73,14 +74,14 @@ describe('BlockFormFields (React)', () => {
   it('validates newly added repeater item', async () => {
     const { host } = renderWithHost(<RepeaterFormHarness blockType={repeaterBlockType} />);
 
-    fireEvent.click(host.querySelector('.bb-repeater-control__add-btn')!);
+    fireEvent.click(host.querySelector(`.${CSS_CLASSES.REPEATER_CONTROL_ADD_BTN}`)!);
     fireEvent.click(host.querySelector('.submit-test')!);
 
     await waitFor(() => {
       expect(Number(host.querySelector('[data-testid="error-count"]')?.textContent)).toBeGreaterThan(
         0
       );
-      expect(host.querySelector('.bb-form-errors, .bb-error')).toBeTruthy();
+      expect(host.querySelector(`.${CSS_CLASSES.FORM_ERRORS}, .${CSS_CLASSES.ERROR}`)).toBeTruthy();
     });
   });
 
@@ -99,7 +100,7 @@ describe('BlockFormFields (React)', () => {
     );
 
     const repeater = host.querySelector('[data-field-name="slides"]')!;
-    fireEvent.click(repeater.querySelector('.bb-toggle-control__button')!);
+    fireEvent.click(repeater.querySelector(`.${CSS_CLASSES.TOGGLE_CONTROL_BUTTON}`)!);
 
     await waitFor(() => {
       expect(onFieldChange).toHaveBeenCalledWith('slides', [
@@ -112,10 +113,10 @@ describe('BlockFormFields (React)', () => {
     const { host } = renderWithHost(<RepeaterFormHarness blockType={repeaterToggleBlockType} />);
 
     const repeater = host.querySelector('[data-field-name="slides"]')!;
-    fireEvent.click(repeater.querySelector('.bb-toggle-control__button')!);
+    fireEvent.click(repeater.querySelector(`.${CSS_CLASSES.TOGGLE_CONTROL_BUTTON}`)!);
 
     await waitFor(() => {
-      expect(repeater.querySelector('.bb-toggle-control__body')).toBeTruthy();
+      expect(repeater.querySelector(`.${CSS_CLASSES.TOGGLE_CONTROL_BODY}`)).toBeTruthy();
       expect(host.querySelector('[data-testid="form-has-link"]')?.textContent).toBe('true');
     });
 
@@ -125,7 +126,7 @@ describe('BlockFormFields (React)', () => {
       expect(Number(host.querySelector('[data-testid="error-count"]')?.textContent)).toBeGreaterThan(
         0
       );
-      expect(host.querySelector('.bb-form-errors, .bb-error')).toBeTruthy();
+      expect(host.querySelector(`.${CSS_CLASSES.FORM_ERRORS}, .${CSS_CLASSES.ERROR}`)).toBeTruthy();
     });
   });
 });

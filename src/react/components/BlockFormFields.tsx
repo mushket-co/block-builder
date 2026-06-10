@@ -102,7 +102,7 @@ export function BlockFormFields({
     if (field.type === 'api-select') {
       if (!apiSelectUseCase) {
         return (
-          <div className="bb-warning-box">
+          <div className={CSS_CLASSES.BB_WARNING_BOX}>
             ⚠️ Передайте apiSelectUseCase для использования API Select полей.
           </div>
         );
@@ -122,7 +122,7 @@ export function BlockFormFields({
       const renderer = customFieldRendererRegistry?.get(field.customFieldConfig?.rendererId || '');
       if (!renderer) {
         return (
-          <div className="bb-warning-box">
+          <div className={CSS_CLASSES.BB_WARNING_BOX}>
             ⚠️ Зарегистрируйте customFieldRendererRegistry для использования кастомных полей.
           </div>
         );

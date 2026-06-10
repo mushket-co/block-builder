@@ -90,38 +90,3 @@ export function isRenderableComponent(
     ? isRenderableReactComponent(component)
     : isRenderableVueComponent(component);
 }
-export function isHtmlTemplate(render?: TRenderRef): boolean {
-  return render?.kind === 'html';
-}
-export function isExternalAdapter(render?: TRenderRef): boolean {
-  return render?.kind === 'external';
-}
-export function isCustomRender(render?: TRenderRef): boolean {
-  return render?.kind === 'custom';
-}
-export function getFramework(render?: TRenderRef): string | null {
-  if (render?.kind === 'component') {
-    return render.framework;
-  }
-  return null;
-}
-export function getAdapter(render?: TRenderRef): string | null {
-  if (render?.kind === 'external') {
-    return render.adapter;
-  }
-  return null;
-}
-export function getCustomMount(
-  render?: TRenderRef
-): ((container: HTMLElement, props: Record<string, unknown>) => void) | null {
-  if (render?.kind === 'custom') {
-    return render.mount;
-  }
-  return null;
-}
-export function getCustomUnmount(render?: TRenderRef): ((container: HTMLElement) => void) | null {
-  if (render?.kind === 'custom') {
-    return render.unmount || null;
-  }
-  return null;
-}

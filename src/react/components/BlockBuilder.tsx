@@ -70,7 +70,7 @@ export function BlockBuilder(props: IBlockBuilderProps) {
           onSubmit={() => void builder.handleSubmit()}
         >
           <form
-            className="bb-form"
+            className={CSS_CLASSES.FORM}
             onSubmit={event => {
               event.preventDefault();
               void builder.handleSubmit();

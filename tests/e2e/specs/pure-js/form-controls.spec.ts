@@ -1,3 +1,4 @@
+import { CSS_CLASSES } from '../../../../src/utils/constants';
 import { getBlockLabel } from '../../../fixtures/block-types';
 import { expect, test } from '../../fixtures';
 
@@ -28,7 +29,7 @@ test.describe('E03 form controls — card list repeater', () => {
 
     await blockForm.collapseRepeaterItem('cards', 0);
     await expect(blockForm.repeaterItems('cards').first()).toHaveClass(
-      /bb-repeater-control__item--collapsed/
+      new RegExp(CSS_CLASSES.REPEATER_CONTROL_ITEM_COLLAPSED)
     );
 
     await blockForm.submitCreateForm();

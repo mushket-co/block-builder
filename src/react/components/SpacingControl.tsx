@@ -1,3 +1,4 @@
+import { CSS_CLASSES } from '../../utils/constants';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import type { ISpacingData } from '../../utils/spacingHelpers';
@@ -185,22 +186,25 @@ export function SpacingControl({
   };
 
   return (
-    <div className="bb-spacing-control">
-      <div className="bb-spacing-control__header">
-        <label className="bb-spacing-control__label">
+    <div className={CSS_CLASSES.SPACING_CONTROL}>
+      <div className={CSS_CLASSES.SPACING_CONTROL_HEADER}>
+        <label className={CSS_CLASSES.SPACING_CONTROL_LABEL}>
           {label}
-          {required ? <span className="bb-required">*</span> : null}
+          {required ? <span className={CSS_CLASSES.REQUIRED}>*</span> : null}
         </label>
       </div>
 
-      <div className="bb-spacing-control__breakpoints">
+      <div className={CSS_CLASSES.SPACING_CONTROL_BREAKPOINTS}>
         {allBreakpoints.map(bp => (
           <button
             key={bp.name}
             type="button"
-            className={`bb-spacing-control__breakpoint-btn${
-              currentBreakpoint === bp.name ? ' bb-spacing-control__breakpoint-btn--active' : ''
-            }`}
+            className={[
+              CSS_CLASSES.SPACING_CONTROL_BREAKPOINT_BTN,
+              currentBreakpoint === bp.name ? CSS_CLASSES.SPACING_CONTROL_BREAKPOINT_BTN_ACTIVE : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
             onClick={() => setCurrentBreakpoint(bp.name)}
           >
             {bp.label}
@@ -208,18 +212,18 @@ export function SpacingControl({
         ))}
       </div>
 
-      <div className="bb-spacing-control__groups">
+      <div className={CSS_CLASSES.SPACING_CONTROL_GROUPS}>
         {availableSpacingTypes.map(spacingType => (
-          <div key={spacingType} className="bb-spacing-control__group">
-            <label htmlFor={getFieldId(spacingType)} className="bb-spacing-control__group-label">
+          <div key={spacingType} className={CSS_CLASSES.SPACING_CONTROL_GROUP}>
+            <label htmlFor={getFieldId(spacingType)} className={CSS_CLASSES.SPACING_CONTROL_GROUP_LABEL}>
               {getSpacingLabel(spacingType)}
             </label>
 
-            <div className="bb-spacing-control__slider-wrapper">
+            <div className={CSS_CLASSES.SPACING_CONTROL_SLIDER_WRAPPER}>
               <input
                 id={getFieldId(spacingType)}
                 type="range"
-                className="bb-spacing-control__slider"
+                className={CSS_CLASSES.SPACING_CONTROL_SLIDER}
                 min={min}
                 max={max}
                 step={step}
@@ -228,23 +232,23 @@ export function SpacingControl({
               />
               <input
                 type="number"
-                className="bb-spacing-control__value-input"
+                className={CSS_CLASSES.SPACING_CONTROL_VALUE_INPUT}
                 min={min}
                 max={max}
                 step={step}
                 value={getSpacingValue(spacingType)}
                 onChange={event => handleValueInputChange(spacingType, event)}
               />
-              <span className="bb-spacing-control__unit">px</span>
+              <span className={CSS_CLASSES.SPACING_CONTROL_UNIT}>px</span>
             </div>
           </div>
         ))}
       </div>
 
       {showPreview ? (
-        <div className="bb-spacing-control__preview">
-          <div className="bb-spacing-control__preview-title">CSS переменные:</div>
-          <pre className="bb-spacing-control__preview-code">{getCSSVariablesPreview()}</pre>
+        <div className={CSS_CLASSES.SPACING_CONTROL_PREVIEW}>
+          <div className={CSS_CLASSES.SPACING_CONTROL_PREVIEW_TITLE}>CSS переменные:</div>
+          <pre className={CSS_CLASSES.SPACING_CONTROL_PREVIEW_CODE}>{getCSSVariablesPreview()}</pre>
         </div>
       ) : null}
     </div>

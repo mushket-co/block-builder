@@ -9,7 +9,6 @@ module.exports = {
   collectCoverageFrom: [
     'src/**/*.ts',
     '!src/**/*.d.ts',
-    '!src/examples/**',
     '!src/**/__tests__/**',
     '!src/shims-vue.d.ts',
   ],

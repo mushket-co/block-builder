@@ -1,3 +1,4 @@
+import { CSS_CLASSES } from '../../utils/constants';
 import { IControlInitializer } from './IControlRenderer';
 import { IControlRenderer } from './IControlRenderer';
 
@@ -25,32 +26,32 @@ export class ControlManager {
     }
 
     const spacingContainers = container.querySelectorAll(
-      '.bb-spacing-control-container:not([data-control-initialized])'
+      `.${CSS_CLASSES.SPACING_CONTROL_CONTAINER}:not([data-control-initialized])`
     );
     await this.initializeControls(spacingContainers);
 
     const repeaterContainers = container.querySelectorAll(
-      '.bb-repeater-control-container:not([data-control-initialized])'
+      `.${CSS_CLASSES.REPEATER_CONTROL_CONTAINER}:not([data-control-initialized])`
     );
     await this.initializeControls(repeaterContainers);
 
     const apiSelectContainers = container.querySelectorAll(
-      '.bb-api-select-control-container:not([data-control-initialized]), [data-api-select-config]:not([data-control-initialized])'
+      `.${CSS_CLASSES.API_SELECT_CONTROL_CONTAINER}:not([data-control-initialized]), [data-api-select-config]:not([data-control-initialized])`
     );
     await this.initializeControls(apiSelectContainers);
 
     const customFieldContainers = container.querySelectorAll(
-      '.bb-custom-field-control-container:not([data-control-initialized]), [data-custom-field-config]:not([data-control-initialized])'
+      `.${CSS_CLASSES.CUSTOM_FIELD_CONTROL_CONTAINER}:not([data-control-initialized]), [data-custom-field-config]:not([data-control-initialized])`
     );
     await this.initializeControls(customFieldContainers);
 
     const imageUploadFields = container.querySelectorAll(
-      '.bb-image-upload-field:not([data-control-initialized])'
+      `.${CSS_CLASSES.IMAGE_UPLOAD_FIELD}:not([data-control-initialized])`
     );
     await this.initializeControls(imageUploadFields);
 
     const selectContainers = container.querySelectorAll(
-      '.bb-select-placeholder:not([data-control-initialized])'
+      `.${CSS_CLASSES.SELECT_PLACEHOLDER}:not([data-control-initialized])`
     );
     await this.initializeControls(selectContainers);
   }

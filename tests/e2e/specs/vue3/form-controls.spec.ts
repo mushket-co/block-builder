@@ -1,3 +1,5 @@
+import { CSS_CLASSES } from '../../../../src/utils/constants';
+import { CSS_CLASSES } from '../../../../src/utils/constants';
 import { getBlockLabel } from '../../../fixtures/block-types';
 import { expect, test } from '../../fixtures';
 
@@ -17,7 +19,7 @@ test.describe('E03 form controls — link toggle', () => {
     await blockForm.waitForModalClosed();
 
     await expect.poll(() => blockForm.getBlockCount()).toBe(1);
-    await expect(page.locator('.bb-block').first()).toContainText('Перейти');
+    await expect(page.locator(`.${CSS_CLASSES.BLOCK}`).first()).toContainText('Перейти');
   });
 });
 
@@ -46,7 +48,7 @@ test.describe('E03 form controls — card list repeater', () => {
 
     await blockForm.collapseRepeaterItem('cards', 0);
     await expect(blockForm.repeaterItems('cards').first()).toHaveClass(
-      /bb-repeater-control__item--collapsed/
+      new RegExp(CSS_CLASSES.REPEATER_CONTROL_ITEM_COLLAPSED)
     );
 
     await blockForm.submitCreateForm();

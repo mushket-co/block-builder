@@ -1,3 +1,4 @@
+import { CSS_CLASSES } from '../../../../src/utils/constants';
 import { fireEvent, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -42,13 +43,13 @@ describe('RepeaterControl (React)', () => {
     );
 
     await waitFor(() => {
-      expect(host.querySelectorAll('.bb-repeater-control__item')).toHaveLength(1);
+      expect(host.querySelectorAll(`.${CSS_CLASSES.REPEATER_CONTROL_ITEM}`)).toHaveLength(1);
     });
 
-    fireEvent.click(host.querySelector('.bb-repeater-control__add-btn')!);
+    fireEvent.click(host.querySelector(`.${CSS_CLASSES.REPEATER_CONTROL_ADD_BTN}`)!);
 
     await waitFor(() => {
-      expect(host.querySelectorAll('.bb-repeater-control__item')).toHaveLength(2);
+      expect(host.querySelectorAll(`.${CSS_CLASSES.REPEATER_CONTROL_ITEM}`)).toHaveLength(2);
     });
     expect(onChange.mock.calls.at(-1)?.[0]).toHaveLength(2);
   });
@@ -66,14 +67,14 @@ describe('RepeaterControl (React)', () => {
     );
 
     await waitFor(() => {
-      expect(host.querySelector('.bb-repeater-control__item-fields')).toBeTruthy();
+      expect(host.querySelector(`.${CSS_CLASSES.REPEATER_CONTROL_ITEM_FIELDS}`)).toBeTruthy();
     });
 
-    fireEvent.click(host.querySelector('.bb-repeater-control__item-btn--collapse')!);
+    fireEvent.click(host.querySelector(`.${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_COLLAPSE}`)!);
 
     await waitFor(() => {
-      expect(host.querySelector('.bb-repeater-control__item--collapsed')).toBeTruthy();
-      expect(host.querySelector('.bb-repeater-control__item-fields')).toBeNull();
+      expect(host.querySelector(`.${CSS_CLASSES.REPEATER_CONTROL_ITEM_COLLAPSED}`)).toBeTruthy();
+      expect(host.querySelector(`.${CSS_CLASSES.REPEATER_CONTROL_ITEM_FIELDS}`)).toBeNull();
     });
   });
 
@@ -110,14 +111,14 @@ describe('RepeaterControl (React)', () => {
     );
 
     await waitFor(() => {
-      expect(host.querySelector('.bb-toggle-control')).toBeTruthy();
-      expect(host.querySelector('.bb-toggle-control__body')).toBeNull();
+      expect(host.querySelector(`.${CSS_CLASSES.TOGGLE_CONTROL}`)).toBeTruthy();
+      expect(host.querySelector(`.${CSS_CLASSES.TOGGLE_CONTROL_BODY}`)).toBeNull();
     });
 
-    fireEvent.click(host.querySelector('.bb-toggle-control__button')!);
+    fireEvent.click(host.querySelector(`.${CSS_CLASSES.TOGGLE_CONTROL_BUTTON}`)!);
 
     await waitFor(() => {
-      expect(host.querySelector('.bb-toggle-control__body')).toBeTruthy();
+      expect(host.querySelector(`.${CSS_CLASSES.TOGGLE_CONTROL_BODY}`)).toBeTruthy();
     });
   });
 });

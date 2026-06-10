@@ -1,13 +1,12 @@
 <template>
   <div
-    class="block-component"
-    :class="{
-      [CSS_CLASSES.HIDDEN]: !block.visible,
-      'bb-opacity-hidden': !block.visible,
-    }"
+    :class="[
+      CSS_CLASSES.BLOCK_COMPONENT,
+      { [CSS_CLASSES.OPACITY_HIDDEN]: block.visible === false },
+    ]"
     :style="userBlockStyle"
   >
-    <div class="block-component__content">
+    <div :class="CSS_CLASSES.BLOCK_COMPONENT_CONTENT">
       <component
         :is="getVueComponent(block.render)"
         v-if="isVueComponent(block.render)"
@@ -19,9 +18,9 @@
       <div v-else>Блок {{ block.type }}</div>
     </div>
 
-    <div class="block-component__controls">
+    <div :class="CSS_CLASSES.BLOCK_COMPONENT_CONTROLS">
       <button
-        class="control-button move-button"
+        :class="[CSS_CLASSES.CONTROL_BUTTON, CSS_CLASSES.CONTROL_BUTTON_MOVE]"
         title="Переместить вверх"
         :disabled="isFirst"
         @click.stop="handleMoveUp"
@@ -29,28 +28,36 @@
         <Icon name="arrowUp" />
       </button>
       <button
-        class="control-button move-button"
+        :class="[CSS_CLASSES.CONTROL_BUTTON, CSS_CLASSES.CONTROL_BUTTON_MOVE]"
         title="Переместить вниз"
         :disabled="isLast"
         @click.stop="handleMoveDown"
       >
         <Icon name="arrowDown" />
       </button>
-      <button class="control-button edit-button" title="Редактировать" @click.stop="handleEdit">
+      <button
+        :class="[CSS_CLASSES.CONTROL_BUTTON, CSS_CLASSES.CONTROL_BUTTON_EDIT]"
+        title="Редактировать"
+        @click.stop="handleEdit"
+      >
         <Icon name="edit" />
       </button>
       <button
-        class="control-button duplicate-button"
+        :class="[CSS_CLASSES.CONTROL_BUTTON, CSS_CLASSES.CONTROL_BUTTON_DUPLICATE]"
         title="Дублировать"
         @click.stop="handleDuplicate"
       >
         <Icon name="duplicate" />
       </button>
-      <button class="control-button delete-button" title="Удалить" @click.stop="handleDelete">
+      <button
+        :class="[CSS_CLASSES.CONTROL_BUTTON, CSS_CLASSES.CONTROL_BUTTON_DELETE]"
+        title="Удалить"
+        @click.stop="handleDelete"
+      >
         <Icon name="delete" />
       </button>
       <button
-        class="control-button visibility-button"
+        :class="[CSS_CLASSES.CONTROL_BUTTON, CSS_CLASSES.CONTROL_BUTTON_VISIBILITY]"
         :title="block.visible ? 'Hide' : 'Show'"
         @click.stop="handleVisibility"
       >

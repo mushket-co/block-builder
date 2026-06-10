@@ -5,6 +5,7 @@ import type { IBlock, TBlockId } from '../../core/types';
 import type { BlockManagementUseCase } from '../../core/use-cases/BlockManagementUseCase';
 import { blockScrollService } from '../../shared/services/BlockScrollService';
 import { prepareBlocksForDisplay, type IBlockTypeRenderConfig } from '../../utils/blockDisplayHelpers';
+import { filterBlocksForDisplay } from '../../utils/blockHelpers';
 import type { IBlockType } from '../types/blockBuilder';
 import { seedRepositoryFromBlocks } from '../../utils/blockRepositorySync';
 import { getBlockInlineStyles, watchBreakpointChanges } from '../../utils/breakpointHelpers';
@@ -41,12 +42,10 @@ export function useBlocks({
   const [spacingLayoutEpoch, setSpacingLayoutEpoch] = useState(0);
   const breakpointUnsubscribers = useRef<Map<TBlockId, () => void>>(new Map());
 
-  const visibleBlocks = useMemo(() => {
-    if (isEdit) {
-      return blocks;
-    }
-    return blocks.filter(block => block.visible !== false);
-  }, [blocks, isEdit]);
+  const visibleBlocks = useMemo(
+    () => filterBlocksForDisplay(blocks, isEdit),
+    [blocks, isEdit]
+  );
 
   const getBlockSpacingStyles = useCallback(
     (block: IBlock) => {

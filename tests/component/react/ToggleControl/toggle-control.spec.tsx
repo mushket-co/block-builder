@@ -1,3 +1,4 @@
+import { CSS_CLASSES } from '../../../../src/utils/constants';
 import { fireEvent, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -16,7 +17,7 @@ describe('ToggleControl (React)', () => {
       </ToggleControl>
     );
 
-    expect(host.querySelector('.bb-toggle-control__body')).toBeTruthy();
+    expect(host.querySelector(`.${CSS_CLASSES.TOGGLE_CONTROL_BODY}`)).toBeTruthy();
     expect(screen.getByText('Dependent')).toBeTruthy();
   });
 
@@ -27,7 +28,7 @@ describe('ToggleControl (React)', () => {
       </ToggleControl>
     );
 
-    expect(host.querySelector('.bb-toggle-control__body')).toBeNull();
+    expect(host.querySelector(`.${CSS_CLASSES.TOGGLE_CONTROL_BODY}`)).toBeNull();
   });
 
   it('calls onChange when toggled', () => {
@@ -36,7 +37,7 @@ describe('ToggleControl (React)', () => {
       <ToggleControl modelValue={false} onChange={onChange} label="Enable section" />
     );
 
-    fireEvent.click(host.querySelector('.bb-toggle-control__button')!);
+    fireEvent.click(host.querySelector(`.${CSS_CLASSES.TOGGLE_CONTROL_BUTTON}`)!);
 
     expect(onChange).toHaveBeenCalledWith(true);
   });

@@ -147,11 +147,11 @@ export function CustomField({
 
   if (initError) {
     return (
-      <div className="custom-field-container">
+      <div className={CSS_CLASSES.CUSTOM_FIELD_CONTAINER}>
         <div className={CSS_CLASSES.BB_ERROR_BOX}>❌ {initError}</div>
       </div>
     );
   }
 
-  return <div ref={containerRef} className="custom-field-container" />;
+  return <div ref={containerRef} className={CSS_CLASSES.CUSTOM_FIELD_CONTAINER} />;
 }

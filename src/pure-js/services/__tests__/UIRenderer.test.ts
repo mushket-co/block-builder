@@ -236,14 +236,14 @@ describe('UIRenderer', () => {
     expect(addButtons.length).toBe(3);
   });
 
-  test('должен добавить класс hidden для невидимых блоков', () => {
+  test('в режиме редактирования показывает скрытый блок без класса hidden', () => {
     const blocks: IBlockDto[] = [
       {
         id: 'block-1',
         type: 'text',
         settings: {},
         props: {},
-        visible: false, // Невидимый блок
+        visible: false,
         locked: false,
         metadata: {
           createdAt: new Date(),
@@ -257,10 +257,47 @@ describe('UIRenderer', () => {
 
     const blockElement = container.querySelector('[data-block-id="block-1"]');
 
-    // Проверяем что блок отрендерен
     expect(blockElement).toBeTruthy();
-    // UIRenderer рендерит все блоки, видимость управляется через класс hidden
-    expect(blockElement?.classList.contains(CSS_CLASSES.HIDDEN)).toBe(true);
+    expect(blockElement?.classList.contains(CSS_CLASSES.HIDDEN)).toBe(false);
+    expect(blockElement?.classList.contains(CSS_CLASSES.OPACITY_HIDDEN)).toBe(true);
+  });
+
+  test('в режиме просмотра не рендерит скрытые блоки', () => {
+    uiRenderer.updateEditMode(false);
+
+    const blocks: IBlockDto[] = [
+      {
+        id: 'block-visible',
+        type: 'text',
+        settings: {},
+        props: {},
+        visible: true,
+        locked: false,
+        metadata: {
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          version: 1
+        }
+      },
+      {
+        id: 'block-hidden',
+        type: 'text',
+        settings: {},
+        props: {},
+        visible: false,
+        locked: false,
+        metadata: {
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          version: 1
+        }
+      }
+    ];
+
+    uiRenderer.renderBlocks(blocks);
+
+    expect(container.querySelector('[data-block-id="block-visible"]')).toBeTruthy();
+    expect(container.querySelector('[data-block-id="block-hidden"]')).toBeNull();
   });
 
   test('не должен рендерить блоки с неизвестным типом', () => {

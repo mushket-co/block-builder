@@ -1,6 +1,7 @@
 import { IBlockDto } from '../../core/types';
 import { TRenderRef } from '../../core/types/common';
 import { IBreakpoint } from '../../core/types/form';
+import { filterBlocksForDisplay } from '../../utils/blockHelpers';
 import { getBlockInlineStyles, watchBreakpointChanges } from '../../utils/breakpointHelpers';
 import { CSS_CLASSES } from '../../utils/constants';
 import { afterRender } from '../../utils/scheduling';
@@ -131,7 +132,7 @@ export class UIRenderer {
           <div class="${CSS_CLASSES.CONTROLS_INNER}">
             ${this.renderControlButtons()}
             <div class="${CSS_CLASSES.STATS}">
-              <p>Всего блоков: <span id="blocks-count">0</span></p>
+              <span>Всего блоков: <span id="blocks-count">0</span></span>
             </div>
           </div>
         </div>
@@ -216,7 +217,7 @@ export class UIRenderer {
           <div class="${CSS_CLASSES.CONTROLS_INNER}">
             ${this.renderControlButtons()}
             <div class="${CSS_CLASSES.STATS}">
-              <p>Всего блоков: <span id="blocks-count">${document.querySelector('#blocks-count')?.textContent || '0'}</span></p>
+              <span>Всего блоков: <span id="blocks-count">${document.querySelector('#blocks-count')?.textContent || '0'}</span></span>
             </div>
           </div>
         </div>
@@ -279,7 +280,7 @@ export class UIRenderer {
 
     this.cleanupBreakpointWatchers();
 
-    const blocksToRender = this.isEdit ? blocks : blocks.filter(block => block.visible !== false);
+    const blocksToRender = filterBlocksForDisplay(blocks, this.isEdit);
 
     if (countElement) {
       countElement.textContent = blocksToRender.length.toString();
@@ -359,7 +360,10 @@ export class UIRenderer {
       return;
     }
 
-    blockElement.classList.toggle(CSS_CLASSES.HIDDEN, !block.visible);
+    blockElement.classList.toggle(
+      CSS_CLASSES.OPACITY_HIDDEN,
+      this.isEdit && block.visible === false
+    );
 
     const spacingStylesObj = getBlockInlineStyles(
       (block.props.spacing || {}) as ISpacingData,
@@ -422,8 +426,11 @@ export class UIRenderer {
   `
       : '';
 
+    const opacityHiddenClass =
+      this.isEdit && block.visible === false ? ` ${CSS_CLASSES.OPACITY_HIDDEN}` : '';
+
     return `
-    <div class="${CSS_CLASSES.BLOCK} ${!block.visible ? CSS_CLASSES.HIDDEN : ''}" data-block-id="${block.id}"${styleAttr}>
+    <div class="${CSS_CLASSES.BLOCK}${opacityHiddenClass}" data-block-id="${block.id}"${styleAttr}>
       ${blockControlsHTML}
 
       <!-- Содержимое блока -->

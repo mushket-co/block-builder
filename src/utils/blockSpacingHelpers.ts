@@ -55,39 +55,3 @@ export function addSpacingFieldToFields(
   }
   return [...fieldsWithoutSpacing, spacingField];
 }
-export function processBlockConfigWithSpacing(blockConfig: {
-  fields?: IFormFieldConfig[];
-  spacingOptions?: IBlockSpacingOptions;
-  [key: string]: unknown;
-}): typeof blockConfig {
-  if (!blockConfig.fields) {
-    return blockConfig;
-  }
-  return {
-    ...blockConfig,
-    fields: addSpacingFieldToFields(blockConfig.fields, blockConfig.spacingOptions),
-  };
-}
-export function applySpacingToAllBlockConfigs(
-  blockConfigs: Record<
-    string,
-    { fields?: IFormFieldConfig[]; spacingOptions?: IBlockSpacingOptions; [key: string]: unknown }
-  >,
-  globalSpacingOptions?: IBlockSpacingOptions
-): Record<
-  string,
-  { fields?: IFormFieldConfig[]; spacingOptions?: IBlockSpacingOptions; [key: string]: unknown }
-> {
-  const result: Record<
-    string,
-    { fields?: IFormFieldConfig[]; spacingOptions?: IBlockSpacingOptions; [key: string]: unknown }
-  > = {};
-  for (const [key, config] of Object.entries(blockConfigs)) {
-    const spacingOptions = config.spacingOptions ?? globalSpacingOptions;
-    result[key] = processBlockConfigWithSpacing({
-      ...config,
-      spacingOptions,
-    });
-  }
-  return result;
-}

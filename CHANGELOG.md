@@ -10,6 +10,13 @@
 
 ### Изменено
 
+#### Видимость блоков (Vue, React, Pure JS, core API)
+
+- В режиме редактирования скрытые блоки остаются в DOM с классом `bb-opacity-hidden` (флаг `visible: false` только в данных)
+- В режиме просмотра скрытые блоки не попадают в DOM (SEO/боты не видят контент)
+- Экспорт `filterBlocksForDisplay` из `@mushket-co/block-builder/core` для пользовательского UI
+- Все CSS-классы в компонентах и тестах используют `CSS_CLASSES` из `constants.ts` (без захардкоженных строк)
+
 #### Реструктуризация `src/ui` по слоям UI
 
 - **`src/vue/`** — только Vue (`components/`, `composables/`)

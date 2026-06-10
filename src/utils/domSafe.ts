@@ -1,20 +1,9 @@
 import { ERROR_MESSAGES } from './constants';
 
-export function decodeHTMLEntities(text: string): string {
+function decodeHTMLEntities(text: string): string {
   const textarea = document.createElement('textarea');
   textarea.textContent = text;
   return textarea.value;
-}
-export function setTextContent(element: HTMLElement, text: string): void {
-  element.textContent = text;
-}
-export function setSafeHTML(element: HTMLElement, html: string): void {
-  element.innerHTML = '';
-  const temp = document.createElement('div');
-  temp.innerHTML = html;
-  while (temp.firstChild) {
-    element.append(temp.firstChild);
-  }
 }
 
 export function parseJSONFromAttribute(attrValue: string): unknown {
@@ -26,9 +15,4 @@ export function parseJSONFromAttribute(attrValue: string): unknown {
       `Не удалось распарсить JSON из атрибута: ${error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR}`
     );
   }
-}
-export function escapeHTML(text: string): string {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
 }

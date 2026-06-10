@@ -1,13 +1,13 @@
 <template>
-  <div class="bb-api-select">
-    <label v-if="config.label" class="bb-api-select__label">
+  <div :class="CSS_CLASSES.API_SELECT">
+    <label v-if="config.label" :class="CSS_CLASSES.BB_API_SELECT_LABEL">
       {{ config.label }}
-      <span v-if="isRequired" class="bb-api-select__required">*</span>
+      <span v-if="isRequired" :class="CSS_CLASSES.BB_API_SELECT_REQUIRED">*</span>
     </label>
 
     <CustomDropdown
       ref="dropdownRef"
-      class="bb-api-select__dropdown-control"
+      :class="CSS_CLASSES.BB_API_SELECT_DROPDOWN_CONTROL"
       :model-value="normalizedDropdownValue"
       :options="dropdownOptions"
       :multiple="isMultiple"
@@ -26,22 +26,27 @@
       @scroll-bottom="handleScrollBottom"
     >
       <template #trigger="{ state, actions }">
-        <div class="bb-api-select__search" :class="{ 'bb-api-select__search--open': state.isOpen }">
+        <div
+          :class="[
+            CSS_CLASSES.BB_API_SELECT_SEARCH,
+            { [CSS_CLASSES.BB_API_SELECT_SEARCH_OPEN]: state.isOpen },
+          ]"
+        >
           <input
             ref="searchInput"
             v-model="searchQuery"
             type="text"
-            class="bb-api-select__input"
+            :class="CSS_CLASSES.BB_API_SELECT_INPUT"
             :placeholder="effectivePlaceholder(state.selectedOptions)"
             @focus="onSearchFocus(actions.open)"
             @click.stop="onSearchClick(actions.open)"
             @input="onSearchInput"
           />
 
-          <span v-if="loading" class="bb-api-select__loader">⏳</span>
+          <span v-if="loading" :class="CSS_CLASSES.BB_API_SELECT_LOADER">⏳</span>
           <span
             v-else-if="hasValue"
-            class="bb-api-select__clear"
+            :class="CSS_CLASSES.BB_API_SELECT_CLEAR"
             @click.stop="() => handleClear(actions.clear)"
           >
             ✕
@@ -49,8 +54,10 @@
 
           <button
             type="button"
-            class="bb-api-select__toggle"
-            :class="{ 'bb-api-select__toggle--open': state.isOpen }"
+            :class="[
+              CSS_CLASSES.BB_API_SELECT_TOGGLE,
+              { [CSS_CLASSES.BB_API_SELECT_TOGGLE_OPEN]: state.isOpen },
+            ]"
             @click.stop="actions.toggle"
           >
             ▼
@@ -61,7 +68,7 @@
       <template #after-options>
         <div
           v-if="!loading && !error && (hasMore || items.length === 0)"
-          class="bb-api-select__load-more"
+          :class="CSS_CLASSES.BB_API_SELECT_LOAD_MORE"
           @click.stop="loadMore"
         >
           Загрузить ещё...
@@ -69,16 +76,17 @@
       </template>
     </CustomDropdown>
 
-    <div v-if="isMultiple && selectedItems.length > 0" class="bb-api-select__selected">
-      <div v-for="item in selectedItems" :key="item.id" class="bb-api-select__tag">
-        <span class="bb-api-select__tag-name">{{ item.name }}</span>
-        <span class="bb-api-select__tag-remove" @click="removeItem(item.id)">✕</span>
+    <div v-if="isMultiple && selectedItems.length > 0" :class="CSS_CLASSES.BB_API_SELECT_SELECTED">
+      <div v-for="item in selectedItems" :key="item.id" :class="CSS_CLASSES.BB_API_SELECT_TAG">
+        <span :class="CSS_CLASSES.BB_API_SELECT_TAG_NAME">{{ item.name }}</span>
+        <span :class="CSS_CLASSES.BB_API_SELECT_TAG_REMOVE" @click="removeItem(item.id)">✕</span>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { CSS_CLASSES } from '../../utils/constants';
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import { defineAsyncComponent } from 'vue';
 

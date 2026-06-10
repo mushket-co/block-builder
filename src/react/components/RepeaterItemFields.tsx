@@ -114,15 +114,15 @@ function renderSingleFieldSlot(
         />
       );
     }
-    return <div className="bb-warning-box">⚠️ {apiSelectRestrictionMessage}</div>;
+    return <div className={CSS_CLASSES.BB_WARNING_BOX}>⚠️ {apiSelectRestrictionMessage}</div>;
   }
 
   if (slotField.type === 'custom') {
     return (
       <>
-        <label htmlFor={getFieldId(item._id, slotField.field)} className="bb-form-label">
+        <label htmlFor={getFieldId(item._id, slotField.field)} className={CSS_CLASSES.FORM_LABEL}>
           {slotField.label}
-          {isFieldRequired(slotField) ? <span className="bb-required">*</span> : null}
+          {isFieldRequired(slotField) ? <span className={CSS_CLASSES.REQUIRED}>*</span> : null}
         </label>
         {isCustomFieldAvailable(slotField) &&
         customFieldRendererRegistry?.get(slotField.customFieldConfig?.rendererId || '') ? (
@@ -135,7 +135,7 @@ function renderSingleFieldSlot(
             onChange={value => updateItemField(itemIndex, slotField.field, value)}
           />
         ) : (
-          <div className="bb-warning-box">⚠️ {customFieldRestrictionMessage}</div>
+          <div className={CSS_CLASSES.BB_WARNING_BOX}>⚠️ {customFieldRestrictionMessage}</div>
         )}
       </>
     );

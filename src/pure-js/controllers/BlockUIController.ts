@@ -108,9 +108,6 @@ export class BlockUIController {
       getRepeaterFieldConfigs: () => this.repeaterFieldConfigs,
       getRepeaterRenderers: () => this.repeaterRenderers,
       findNestedRepeaterRenderer: (fieldPath: string) => this.findNestedRepeaterRenderer(fieldPath),
-      onAfterRepeaterRender: () => {
-        // Убрано - используем только событие repeater-rendered
-      },
     });
 
     this.registerEventHandlers();
@@ -274,10 +271,6 @@ export class BlockUIController {
   showAddBlockForm(type: string): void {
     this.showAddBlockFormAtPosition(type);
   }
-
-  /**
-   * @deprecated Используйте initializeAllControls() через ControlManager
-   */
 
   private findNestedRepeaterRenderer(fieldPath: string): RepeaterControlRenderer | null {
     for (const [key, renderer] of this.repeaterRenderers.entries()) {
@@ -456,12 +449,6 @@ export class BlockUIController {
       }
       this.initializeImageUploadControls();
     });
-  }
-
-  private async initializeAllControls(): Promise<void> {
-    await new Promise(resolve => setTimeout(resolve, 0));
-    await this.controlManager.initializeControlsInContainer(document.body);
-    this.initializeImageUploadControls();
   }
 
   private async handleUpdateBlock(

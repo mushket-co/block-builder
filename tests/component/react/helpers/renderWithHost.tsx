@@ -1,6 +1,8 @@
 import { render, type RenderOptions, type RenderResult } from '@testing-library/react';
 import type { ReactElement } from 'react';
 
+import { cleanupReactTestHost } from './cleanupReactTestHost';
+
 export type TRenderWithHostResult = RenderResult & { host: HTMLElement };
 
 export function renderWithHost(
@@ -14,6 +16,4 @@ export function renderWithHost(
   return { ...result, host };
 }
 
-export function cleanupReactTestHost(): void {
-  document.body.innerHTML = '';
-}
+export { cleanupReactTestHost };

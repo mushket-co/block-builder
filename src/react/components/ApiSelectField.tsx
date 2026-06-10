@@ -357,7 +357,7 @@ export function ApiSelectField({
   }, []);
 
   return (
-    <div className="bb-api-select">
+    <div className={CSS_CLASSES.API_SELECT}>
       {config.label ? (
         <label className={CSS_CLASSES.BB_API_SELECT_LABEL}>
           {config.label}
@@ -369,7 +369,7 @@ export function ApiSelectField({
 
       <CustomDropdown
         ref={dropdownRef}
-        className="bb-api-select__dropdown-control"
+        className={CSS_CLASSES.BB_API_SELECT_DROPDOWN_CONTROL}
         modelValue={normalizedDropdownValue}
         options={dropdownOptions}
         multiple={isMultiple}
@@ -391,7 +391,12 @@ export function ApiSelectField({
         }}
         renderTrigger={({ state, actions }) => (
           <div
-            className={`${CSS_CLASSES.BB_API_SELECT_SEARCH}${state.isOpen ? ` ${CSS_CLASSES.BB_API_SELECT_SEARCH_OPEN}` : ''}`}
+            className={[
+              CSS_CLASSES.BB_API_SELECT_SEARCH,
+              state.isOpen ? CSS_CLASSES.BB_API_SELECT_SEARCH_OPEN : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
           >
             <input
               ref={searchInputRef}
@@ -428,7 +433,12 @@ export function ApiSelectField({
 
             <button
               type="button"
-              className={`${CSS_CLASSES.BB_API_SELECT_TOGGLE}${state.isOpen ? ` ${CSS_CLASSES.BB_API_SELECT_TOGGLE_OPEN}` : ''}`}
+              className={[
+                CSS_CLASSES.BB_API_SELECT_TOGGLE,
+                state.isOpen ? CSS_CLASSES.BB_API_SELECT_TOGGLE_OPEN : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
               onClick={event => {
                 event.stopPropagation();
                 actions.toggle();

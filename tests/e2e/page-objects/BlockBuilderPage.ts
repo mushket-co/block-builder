@@ -1,3 +1,4 @@
+import { CSS_CLASSES } from '../../../src/utils/constants';
 import type { Locator, Page } from '@playwright/test';
 
 import { LOCAL_STORAGE_KEY } from '../../fixtures/block-types';
@@ -7,7 +8,10 @@ export class BlockBuilderPage {
 
   async gotoApp(): Promise<void> {
     await this.page.goto('/');
-    await this.page.locator('.bb-app, .block-builder, #block-builder-container').first().waitFor({
+    await this.page
+      .locator(`.${CSS_CLASSES.APP}, .${CSS_CLASSES.BLOCK_BUILDER_ROOT}, #block-builder-container`)
+      .first()
+      .waitFor({
       state: 'visible',
     });
   }
@@ -17,7 +21,7 @@ export class BlockBuilderPage {
   }
 
   async clearAllBlocksIfNeeded(): Promise<void> {
-    const blocks = this.page.locator('.bb-block');
+    const blocks = this.page.locator(`.${CSS_CLASSES.BLOCK}`);
     if ((await blocks.count()) === 0) {
       return;
     }
@@ -33,29 +37,29 @@ export class BlockBuilderPage {
   }
 
   addBlockButton(): Locator {
-    return this.page.locator('.bb-add-block-btn').first();
+    return this.page.locator(`.${CSS_CLASSES.ADD_BLOCK_BTN}`).first();
   }
 
   async openBlockTypeSelection(): Promise<void> {
     await this.addBlockButton().click();
-    await this.page.locator('.bb-block-type-selection, .bb-modal-body').first().waitFor({
+    await this.page.locator(`.${CSS_CLASSES.BLOCK_TYPE_SELECTION}, .${CSS_CLASSES.MODAL_BODY}`).first().waitFor({
       state: 'visible',
     });
   }
 
   blockTypeCard(title: string): Locator {
-    return this.page.locator('.bb-block-type-card').filter({ hasText: title });
+    return this.page.locator(`.${CSS_CLASSES.BLOCK_TYPE_CARD}`).filter({ hasText: title });
   }
 
   async selectBlockType(title: string): Promise<void> {
     await this.blockTypeCard(title).click();
-    await this.page.locator('.bb-modal-body .bb-form, form.bb-form').first().waitFor({
+    await this.page.locator(`.${CSS_CLASSES.MODAL_BODY} .${CSS_CLASSES.FORM}, form.${CSS_CLASSES.FORM}`).first().waitFor({
       state: 'visible',
     });
   }
 
   blockElements(): Locator {
-    return this.page.locator('.bb-block');
+    return this.page.locator(`.${CSS_CLASSES.BLOCK}`);
   }
 
   async getBlockCount(): Promise<number> {

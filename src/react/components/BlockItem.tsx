@@ -39,7 +39,9 @@ export function BlockItem({
 }: IBlockItemProps) {
   return (
     <div
-      className={`${CSS_CLASSES.BLOCK}${!block.visible ? ` ${CSS_CLASSES.HIDDEN}` : ''}`}
+      className={[CSS_CLASSES.BLOCK, isEdit && block.visible === false ? CSS_CLASSES.OPACITY_HIDDEN : '']
+        .filter(Boolean)
+        .join(' ')}
       data-block-id={block.id}
       style={spacingStyles}
     >

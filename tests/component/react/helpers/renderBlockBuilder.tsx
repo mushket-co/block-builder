@@ -11,6 +11,7 @@ import {
   toggleGroupBlockType,
 } from '../../../fixtures/minimal-block-configs';
 import { createTestBlockManagementUseCase } from '../../helpers/mockUseCases';
+import { cleanupReactTestHost } from './cleanupReactTestHost';
 
 export interface IRenderBlockBuilderOptions {
   blockTypes?: ITestBlockTypeConfig[];
@@ -43,9 +44,7 @@ export function renderBlockBuilder(
   return { ...result, host };
 }
 
-export function cleanupReactTestHost(): void {
-  document.body.innerHTML = '';
-}
+export { cleanupReactTestHost };
 
 export {
   linkBlockType,

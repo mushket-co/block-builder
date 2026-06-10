@@ -30,7 +30,6 @@ export interface IControlInitializerFactoryConfig {
   getRepeaterFieldConfigs: () => Map<string, Map<string, TFieldConfig>>;
   getRepeaterRenderers: () => Map<string, any>;
   findNestedRepeaterRenderer?: (fieldPath: string) => any;
-  onAfterRepeaterRender?: () => void;
 }
 
 export const ControlInitializerFactory = {
@@ -40,8 +39,6 @@ export const ControlInitializerFactory = {
     initializers.push(new SpacingControlInitializer());
 
     const repeaterConfig: IRepeaterControlInitializerConfig = {
-      onAfterRender: config.onAfterRepeaterRender,
-      getRepeaterFieldConfigs: config.getRepeaterFieldConfigs,
       getRepeaterRenderers: config.getRepeaterRenderers,
     };
     initializers.push(new RepeaterControlInitializer(repeaterConfig));

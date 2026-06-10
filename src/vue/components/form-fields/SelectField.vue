@@ -1,7 +1,7 @@
 <template>
-  <label v-if="showLabel" :for="fieldId" class="bb-form-label">
+  <label v-if="showLabel" :for="fieldId" :class="CSS_CLASSES.FORM_LABEL">
     {{ label }}
-    <span v-if="required" class="bb-required">*</span>
+    <span v-if="required" :class="CSS_CLASSES.REQUIRED">*</span>
   </label>
   <CustomDropdown
     :model-value="modelValue"
@@ -14,6 +14,7 @@
 </template>
 
 <script setup lang="ts">
+import { CSS_CLASSES } from '../../../utils/constants';
 import { computed } from 'vue';
 
 import CustomDropdown from '../CustomDropdown.vue';

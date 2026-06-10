@@ -76,6 +76,36 @@ describe('FormController', () => {
     expect(document.querySelector(`.${CSS_CLASSES.FORM_ERRORS}[data-field="title"]`)).toBeTruthy();
   });
 
+  test('submits checked radio value, not the first option in the group', async () => {
+    const radioFields: TFieldConfig[] = [
+      {
+        field: 'linkTarget',
+        label: 'Как открывать ссылку',
+        type: 'radio',
+        options: [
+          { value: '_self', label: 'В текущей вкладке' },
+          { value: '_blank', label: 'В новой вкладке' },
+        ],
+        rules: [{ type: 'required', message: 'Выберите способ открытия' }],
+        defaultValue: '_self',
+      },
+    ];
+    const onSubmit = jest.fn().mockResolvedValue(true);
+
+    formController.showCreateForm('Создать блок', radioFields, onSubmit);
+
+    const blankRadio = document.querySelector(
+      '[name="linkTarget"][value="_blank"]'
+    ) as HTMLInputElement;
+    blankRadio.checked = true;
+
+    modalManager.submitModal();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(onSubmit).toHaveBeenCalledWith({ linkTarget: '_blank' });
+  });
+
   test('forwards repeater validation errors to active controls', async () => {
     const updateErrors = jest.fn();
     controlManager.activeControls.set('items', {

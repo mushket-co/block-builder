@@ -1,3 +1,4 @@
+import { CSS_CLASSES } from '../../../../src/utils/constants';
 import { flushPromises } from '@vue/test-utils';
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -10,11 +11,11 @@ describe('BlockBuilder', () => {
 
   it('opens block type selection modal', async () => {
     const wrapper = mountBlockBuilder();
-    await wrapper.find('.bb-add-block-btn').trigger('click');
+    await wrapper.find(`.${CSS_CLASSES.ADD_BLOCK_BTN}`).trigger('click');
     await flushPromises();
 
-    expect(wrapper.find('.bb-block-type-selection').exists()).toBe(true);
-    expect(wrapper.find('.bb-block-type-card').text()).toContain('Text block');
+    expect(wrapper.find(`.${CSS_CLASSES.BLOCK_TYPE_SELECTION}`).exists()).toBe(true);
+    expect(wrapper.find(`.${CSS_CLASSES.BLOCK_TYPE_CARD}`).text()).toContain('Text block');
 
     wrapper.unmount();
   });
@@ -22,21 +23,21 @@ describe('BlockBuilder', () => {
   it('creates a text block from the modal form', async () => {
     const wrapper = mountBlockBuilder();
 
-    await wrapper.find('.bb-add-block-btn').trigger('click');
+    await wrapper.find(`.${CSS_CLASSES.ADD_BLOCK_BTN}`).trigger('click');
     await flushPromises();
 
-    await wrapper.find('.bb-block-type-card').trigger('click');
+    await wrapper.find(`.${CSS_CLASSES.BLOCK_TYPE_CARD}`).trigger('click');
     await flushPromises();
 
     const textarea = wrapper.find('#field-content');
     await textarea.setValue('Hello from component test');
     await flushPromises();
 
-    await wrapper.find('.bb-modal-footer .bb-btn--primary').trigger('click');
+    await wrapper.find(`.${CSS_CLASSES.MODAL_FOOTER} .${CSS_CLASSES.BTN_PRIMARY}`).trigger('click');
     await flushPromises();
     await flushPromises();
 
-    expect(wrapper.findAll('.bb-block')).toHaveLength(1);
+    expect(wrapper.findAll(`.${CSS_CLASSES.BLOCK}`)).toHaveLength(1);
 
     wrapper.unmount();
   });

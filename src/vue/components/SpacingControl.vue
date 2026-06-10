@@ -1,40 +1,42 @@
 <template>
-  <div class="bb-spacing-control">
-    <div class="bb-spacing-control__header">
-      <label class="bb-spacing-control__label">
+  <div :class="CSS_CLASSES.SPACING_CONTROL">
+    <div :class="CSS_CLASSES.SPACING_CONTROL_HEADER">
+      <label :class="CSS_CLASSES.SPACING_CONTROL_LABEL">
         {{ label }}
-        <span v-if="required" class="bb-required">*</span>
+        <span v-if="required" :class="CSS_CLASSES.REQUIRED">*</span>
       </label>
     </div>
 
-    <div class="bb-spacing-control__breakpoints">
+    <div :class="CSS_CLASSES.SPACING_CONTROL_BREAKPOINTS">
       <button
         v-for="bp in allBreakpoints"
         :key="bp.name"
         type="button"
-        class="bb-spacing-control__breakpoint-btn"
-        :class="{ 'bb-spacing-control__breakpoint-btn--active': currentBreakpoint === bp.name }"
+        :class="[
+          CSS_CLASSES.SPACING_CONTROL_BREAKPOINT_BTN,
+          { [CSS_CLASSES.SPACING_CONTROL_BREAKPOINT_BTN_ACTIVE]: currentBreakpoint === bp.name },
+        ]"
         @click="currentBreakpoint = bp.name"
       >
         {{ bp.label }}
       </button>
     </div>
 
-    <div class="bb-spacing-control__groups">
+    <div :class="CSS_CLASSES.SPACING_CONTROL_GROUPS">
       <div
         v-for="spacingType in availableSpacingTypes"
         :key="spacingType"
-        class="bb-spacing-control__group"
+        :class="CSS_CLASSES.SPACING_CONTROL_GROUP"
       >
-        <label :for="getFieldId(spacingType)" class="bb-spacing-control__group-label">
+        <label :for="getFieldId(spacingType)" :class="CSS_CLASSES.SPACING_CONTROL_GROUP_LABEL">
           {{ getSpacingLabel(spacingType) }}
         </label>
 
-        <div class="bb-spacing-control__slider-wrapper">
+        <div :class="CSS_CLASSES.SPACING_CONTROL_SLIDER_WRAPPER">
           <input
             :id="getFieldId(spacingType)"
             type="range"
-            class="bb-spacing-control__slider"
+            :class="CSS_CLASSES.SPACING_CONTROL_SLIDER"
             :min="minValue"
             :max="maxValue"
             :step="stepValue"
@@ -43,27 +45,29 @@
           />
           <input
             type="number"
-            class="bb-spacing-control__value-input"
+            :class="CSS_CLASSES.SPACING_CONTROL_VALUE_INPUT"
             :min="minValue"
             :max="maxValue"
             :step="stepValue"
             :value="getSpacingValue(spacingType)"
             @input="handleValueInputChange(spacingType, $event)"
           />
-          <span class="bb-spacing-control__unit">px</span>
+          <span :class="CSS_CLASSES.SPACING_CONTROL_UNIT">px</span>
         </div>
       </div>
     </div>
 
-    <div v-if="showPreview" class="bb-spacing-control__preview">
-      <div class="bb-spacing-control__preview-title">CSS переменные:</div>
-      <pre class="bb-spacing-control__preview-code">{{ getCSSVariablesPreview() }}</pre>
+    <div v-if="showPreview" :class="CSS_CLASSES.SPACING_CONTROL_PREVIEW">
+      <div :class="CSS_CLASSES.SPACING_CONTROL_PREVIEW_TITLE">CSS переменные:</div>
+      <pre :class="CSS_CLASSES.SPACING_CONTROL_PREVIEW_CODE">{{ getCSSVariablesPreview() }}</pre>
     </div>
   </div>
 </template>
 
 <script>
 import { computed, onMounted, ref, watch } from 'vue';
+
+import { CSS_CLASSES } from '../../utils/constants';
 
 const DEFAULT_BREAKPOINTS = [
   { name: 'desktop', label: 'Десктоп', maxWidth: undefined },
@@ -270,6 +274,7 @@ export default {
     });
 
     return {
+      CSS_CLASSES,
       currentBreakpoint,
       spacingData,
       allBreakpoints,
@@ -287,10 +292,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-/* 
- * Стили bb-spacing-control уже включены в @mushket-co/block-builder/index.esm.css
- * Импортируйте стили отдельно: import '@mushket-co/block-builder/index.esm.css'
- */
-</style>

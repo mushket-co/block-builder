@@ -55,7 +55,7 @@ describe('FormBuilder', () => {
     const html = formBuilder.generateCreateFormHTML(fields);
 
     expect(html).toContain('required');
-    expect(html).toContain('<span class="bb-required">*</span>');
+    expect(html).toContain(`<span class="${CSS_CLASSES.REQUIRED}">*</span>`);
   });
 
   test('должен сгенерировать HTML для нескольких полей', () => {

@@ -197,26 +197,28 @@ export function ImageUploadField({
   return (
     <div
       ref={containerRef}
-      className={`bb-image-upload-field${error ? ` ${CSS_CLASSES.ERROR}` : ''}`}
+      className={[CSS_CLASSES.IMAGE_UPLOAD_FIELD, error ? CSS_CLASSES.ERROR : '']
+        .filter(Boolean)
+        .join(' ')}
       data-field-name={fieldNamePath || undefined}
     >
       {label ? (
-        <label htmlFor={inputId} className="bb-image-upload-field__label">
+        <label htmlFor={inputId} className={CSS_CLASSES.IMAGE_UPLOAD_FIELD_LABEL}>
           {label}
-          {required ? <span className="bb-image-upload-field__required">*</span> : null}
+          {required ? <span className={CSS_CLASSES.IMAGE_UPLOAD_FIELD_REQUIRED}>*</span> : null}
         </label>
       ) : null}
 
       {displayValue ? (
-        <div className="bb-image-upload-field__preview">
+        <div className={CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW}>
           <img
             src={displayValue}
             alt={label || 'Изображение'}
-            className="bb-image-upload-field__preview-img"
+            className={CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW_IMG}
           />
           <button
             type="button"
-            className="bb-image-upload-field__preview-clear"
+            className={CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW_CLEAR}
             title="Удалить изображение"
             onClick={clearImage}
           >
@@ -225,20 +227,23 @@ export function ImageUploadField({
         </div>
       ) : null}
 
-      <div className="bb-image-upload-field__file">
+      <div className={CSS_CLASSES.IMAGE_UPLOAD_FIELD_FILE}>
         <input
           id={inputId}
           ref={fileInputRef}
           type="file"
           accept="image/*"
-          className="bb-image-upload-field__file-input"
+          className={CSS_CLASSES.IMAGE_UPLOAD_FIELD_FILE_INPUT}
           onChange={handleFileChange}
         />
         <label
           htmlFor={inputId}
-          className={`bb-image-upload-field__file-label${
-            isLoading ? ' bb-image-upload-field__file-label--loading' : ''
-          }`}
+          className={[
+            CSS_CLASSES.IMAGE_UPLOAD_FIELD_FILE_LABEL,
+            isLoading ? CSS_CLASSES.IMAGE_UPLOAD_FIELD_FILE_LABEL_LOADING : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
         >
           {isLoading ? (
             <span>⏳ Загрузка...</span>
@@ -246,7 +251,7 @@ export function ImageUploadField({
             <span>{displayValue ? 'Изменить файл' : placeholder || 'Выберите изображение'}</span>
           )}
         </label>
-        {fileError ? <span className="bb-image-upload-field__error">{fileError}</span> : null}
+        {fileError ? <span className={CSS_CLASSES.IMAGE_UPLOAD_FIELD_ERROR}>{fileError}</span> : null}
       </div>
     </div>
   );

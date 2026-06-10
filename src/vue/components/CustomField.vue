@@ -1,8 +1,8 @@
 <template>
-  <div v-if="initError" class="custom-field-container">
+  <div v-if="initError" :class="CSS_CLASSES.CUSTOM_FIELD_CONTAINER">
     <div :class="CSS_CLASSES.BB_ERROR_BOX">❌ {{ initError }}</div>
   </div>
-  <div v-else ref="containerRef" class="custom-field-container" />
+  <div v-else ref="containerRef" :class="CSS_CLASSES.CUSTOM_FIELD_CONTAINER" />
 </template>
 
 <script setup lang="ts">

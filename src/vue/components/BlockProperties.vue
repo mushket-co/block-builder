@@ -1,23 +1,23 @@
 <template>
-  <div class="block-properties">
-    <div v-if="!block" class="no-selection">
+  <div :class="CSS_CLASSES.BLOCK_PROPERTIES">
+    <div v-if="!block" :class="CSS_CLASSES.BLOCK_PROPERTIES_NO_SELECTION">
       <p>Select a block to edit its properties</p>
     </div>
 
-    <div v-else class="properties-content">
-      <div class="property-section">
+    <div v-else :class="CSS_CLASSES.BLOCK_PROPERTIES_CONTENT">
+      <div :class="CSS_CLASSES.BLOCK_PROPERTIES_SECTION">
         <h4>General</h4>
-        <div class="property-group">
+        <div :class="CSS_CLASSES.BLOCK_PROPERTIES_GROUP">
           <label>Type</label>
-          <input :value="block.type" disabled class="property-input" />
+          <input :value="block.type" disabled :class="CSS_CLASSES.BLOCK_PROPERTIES_INPUT" />
         </div>
 
-        <div class="property-group">
+        <div :class="CSS_CLASSES.BLOCK_PROPERTIES_GROUP">
           <label>ID</label>
-          <input :value="block.id" disabled class="property-input" />
+          <input :value="block.id" disabled :class="CSS_CLASSES.BLOCK_PROPERTIES_INPUT" />
         </div>
 
-        <div class="property-group">
+        <div :class="CSS_CLASSES.BLOCK_PROPERTIES_GROUP">
           <label>
             <input
               type="checkbox"
@@ -29,37 +29,49 @@
         </div>
       </div>
 
-      <div class="property-section">
+      <div :class="CSS_CLASSES.BLOCK_PROPERTIES_SECTION">
         <h4>Props</h4>
-        <div v-for="(value, key) in block.props" :key="`prop-${key}`" class="property-group">
+        <div
+          v-for="(value, key) in block.props"
+          :key="`prop-${key}`"
+          :class="CSS_CLASSES.BLOCK_PROPERTIES_GROUP"
+        >
           <label>{{ key }}</label>
           <input
             :value="value"
-            class="property-input"
+            :class="CSS_CLASSES.BLOCK_PROPERTIES_INPUT"
             @input="updateProp(key, $event.target.value)"
           />
         </div>
       </div>
 
-      <div class="property-section">
+      <div :class="CSS_CLASSES.BLOCK_PROPERTIES_SECTION">
         <h4>Settings</h4>
-        <div v-for="(value, key) in block.settings" :key="`setting-${key}`" class="property-group">
+        <div
+          v-for="(value, key) in block.settings"
+          :key="`setting-${key}`"
+          :class="CSS_CLASSES.BLOCK_PROPERTIES_GROUP"
+        >
           <label>{{ key }}</label>
           <input
             :value="value"
-            class="property-input"
+            :class="CSS_CLASSES.BLOCK_PROPERTIES_INPUT"
             @input="updateSetting(key, $event.target.value)"
           />
         </div>
       </div>
 
-      <div class="property-section">
+      <div :class="CSS_CLASSES.BLOCK_PROPERTIES_SECTION">
         <h4>Style</h4>
-        <div v-for="(value, key) in block.style" :key="`style-${key}`" class="property-group">
+        <div
+          v-for="(value, key) in block.style"
+          :key="`style-${key}`"
+          :class="CSS_CLASSES.BLOCK_PROPERTIES_GROUP"
+        >
           <label>{{ key }}</label>
           <input
             :value="value"
-            class="property-input"
+            :class="CSS_CLASSES.BLOCK_PROPERTIES_INPUT"
             @input="updateStyle(key, $event.target.value)"
           />
         </div>
@@ -70,6 +82,7 @@
 
 <script setup lang="ts">
 import { IBlock, TBlockId } from '../../core/types';
+import { CSS_CLASSES } from '../../utils/constants';
 
 interface IProps {
   block: IBlock | null;

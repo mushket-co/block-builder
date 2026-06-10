@@ -2,65 +2,75 @@
   <div :class="appClass">
     <div
       v-if="props.isEdit"
-      :class="['bb-controls', controlsFixedClass]"
+      :class="[CSS_CLASSES.CONTROLS, controlsFixedClass]"
       :style="controlsInlineStyles"
     >
-      <div :class="['bb-controls-container', props.controlsContainerClass].filter(Boolean)">
-        <div class="bb-controls-inner">
-          <button v-if="props.isEdit" class="bb-btn bb-btn--success" @click="handleSave">
-            <span class="bb-icon-wrapper" v-html="saveIconHTML" /> Сохранить
+      <div :class="[CSS_CLASSES.CONTROLS_CONTAINER, props.controlsContainerClass].filter(Boolean)">
+        <div :class="CSS_CLASSES.CONTROLS_INNER">
+          <button
+            v-if="props.isEdit"
+            :class="[CSS_CLASSES.BTN, CSS_CLASSES.BTN_SUCCESS]"
+            @click="handleSave"
+          >
+            <span :class="CSS_CLASSES.BB_ICON_WRAPPER" v-html="saveIconHTML" /> Сохранить
           </button>
-          <button v-if="props.isEdit" class="bb-btn bb-btn--danger" @click="handleClearAll">
-            <span class="bb-icon-wrapper" v-html="deleteIconHTML" /> Очистить все
+          <button
+            v-if="props.isEdit"
+            :class="[CSS_CLASSES.BTN, CSS_CLASSES.BTN_DANGER]"
+            @click="handleClearAll"
+          >
+            <span :class="CSS_CLASSES.BB_ICON_WRAPPER" v-html="deleteIconHTML" /> Очистить все
           </button>
 
-          <div class="bb-stats">
-            <p>
+          <div :class="CSS_CLASSES.STATS">
+            <span>
               Всего блоков: <span>{{ props.isEdit ? blocks.length : visibleBlocks.length }}</span>
-            </p>
+            </span>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="bb-blocks">
-      <div v-if="visibleBlocks.length === 0" class="bb-empty-state">
-        <div v-if="props.isEdit" class="bb-add-block-separator">
+    <div :class="CSS_CLASSES.BLOCKS">
+      <div v-if="visibleBlocks.length === 0" :class="CSS_CLASSES.EMPTY_STATE">
+        <div v-if="props.isEdit" :class="CSS_CLASSES.ADD_BLOCK_SEPARATOR">
           <button
-            class="bb-add-block-btn"
+            :class="CSS_CLASSES.ADD_BLOCK_BTN"
             title="Добавить блок"
             @click="openBlockTypeSelectionModal(0)"
           >
-            <span class="bb-add-block-btn__icon">+</span>
-            <span class="bb-add-block-btn__text">Добавить блок</span>
+            <span :class="CSS_CLASSES.ADD_BLOCK_BTN_ICON">+</span>
+            <span :class="CSS_CLASSES.ADD_BLOCK_BTN_TEXT">Добавить блок</span>
           </button>
         </div>
       </div>
 
       <template v-else>
-        <div v-if="props.isEdit" class="bb-add-block-separator">
+        <div v-if="props.isEdit" :class="CSS_CLASSES.ADD_BLOCK_SEPARATOR">
           <button
-            class="bb-add-block-btn"
+            :class="CSS_CLASSES.ADD_BLOCK_BTN"
             title="Добавить блок"
             @click="openBlockTypeSelectionModal(0)"
           >
-            <span class="bb-add-block-btn__icon">+</span>
-            <span class="bb-add-block-btn__text">Добавить блок</span>
+            <span :class="CSS_CLASSES.ADD_BLOCK_BTN_ICON">+</span>
+            <span :class="CSS_CLASSES.ADD_BLOCK_BTN_TEXT">Добавить блок</span>
           </button>
         </div>
 
         <template v-for="(block, index) in visibleBlocks" :key="block.id">
           <div
-            class="bb-block"
-            :class="{ [CSS_CLASSES.HIDDEN]: !block.visible }"
+            :class="[
+              CSS_CLASSES.BLOCK,
+              { [CSS_CLASSES.OPACITY_HIDDEN]: props.isEdit && block.visible === false },
+            ]"
             :data-block-id="block.id"
             :style="getBlockSpacingStyles(block)"
           >
-            <div v-if="props.isEdit" class="bb-block-controls">
-              <div class="bb-block-controls-container" :class="props.controlsContainerClass">
-                <div class="bb-block-controls-inner">
+            <div v-if="props.isEdit" :class="CSS_CLASSES.BLOCK_CONTROLS">
+              <div :class="[CSS_CLASSES.BLOCK_CONTROLS_CONTAINER, props.controlsContainerClass]">
+                <div :class="CSS_CLASSES.BLOCK_CONTROLS_INNER">
                   <button
-                    class="bb-control-btn"
+                    :class="CSS_CLASSES.CONTROL_BTN"
                     title="Копировать ID: {{ block.id }}"
                     @click="handleCopyId(block.id)"
                   >
@@ -68,7 +78,7 @@
                   </button>
                   <button
                     v-if="props.isEdit"
-                    class="bb-control-btn"
+                    :class="CSS_CLASSES.CONTROL_BTN"
                     title="Переместить вверх"
                     :disabled="index === 0"
                     @click="handleMoveUp(block.id)"
@@ -77,7 +87,7 @@
                   </button>
                   <button
                     v-if="props.isEdit"
-                    class="bb-control-btn"
+                    :class="CSS_CLASSES.CONTROL_BTN"
                     title="Переместить вниз"
                     :disabled="index === visibleBlocks.length - 1"
                     @click="handleMoveDown(block.id)"
@@ -86,7 +96,7 @@
                   </button>
                   <button
                     v-if="props.isEdit"
-                    class="bb-control-btn"
+                    :class="CSS_CLASSES.CONTROL_BTN"
                     title="Редактировать"
                     @click="openEditModal(block)"
                   >
@@ -94,7 +104,7 @@
                   </button>
                   <button
                     v-if="props.isEdit"
-                    class="bb-control-btn"
+                    :class="CSS_CLASSES.CONTROL_BTN"
                     title="Дублировать"
                     @click="handleDuplicateBlock(block.id)"
                   >
@@ -102,7 +112,7 @@
                   </button>
                   <button
                     v-if="props.isEdit"
-                    class="bb-control-btn"
+                    :class="CSS_CLASSES.CONTROL_BTN"
                     :title="getBlockVisibilityTooltip(block)"
                     @click="handleToggleVisibility(block.id)"
                   >
@@ -110,7 +120,7 @@
                   </button>
                   <button
                     v-if="props.isEdit"
-                    class="bb-control-btn"
+                    :class="CSS_CLASSES.CONTROL_BTN"
                     title="Удалить"
                     @click="handleDeleteBlock(block.id)"
                   >
@@ -120,58 +130,58 @@
               </div>
             </div>
 
-            <div class="bb-block-content">
+            <div :class="CSS_CLASSES.BLOCK_CONTENT">
               <component
                 :is="getVueComponent(block)"
                 v-if="isVueComponent(block)"
                 v-bind="getUserComponentProps(block)"
               />
-              <div v-else class="bb-block-content-fallback">
+              <div v-else :class="CSS_CLASSES.BLOCK_CONTENT_FALLBACK">
                 <strong>{{ getBlockTitle(block) }}</strong>
                 <pre>{{ JSON.stringify(getUserComponentProps(block), null, 2) }}</pre>
               </div>
             </div>
           </div>
 
-          <div v-if="props.isEdit" class="bb-add-block-separator">
+          <div v-if="props.isEdit" :class="CSS_CLASSES.ADD_BLOCK_SEPARATOR">
             <button
-              class="bb-add-block-btn"
+              :class="CSS_CLASSES.ADD_BLOCK_BTN"
               title="Добавить блок"
               @click="openBlockTypeSelectionModal(index + 1)"
             >
-              <span class="bb-add-block-btn__icon">+</span>
-              <span class="bb-add-block-btn__text">Добавить блок</span>
+              <span :class="CSS_CLASSES.ADD_BLOCK_BTN_ICON">+</span>
+              <span :class="CSS_CLASSES.ADD_BLOCK_BTN_TEXT">Добавить блок</span>
             </button>
           </div>
         </template>
       </template>
     </div>
 
-    <div v-if="showTypeSelectionModal" class="bb-modal" @mousedown="closeTypeSelectionModal">
-      <div class="bb-modal-content" @mousedown.stop>
-        <div class="bb-modal-header">
+    <div v-if="showTypeSelectionModal" :class="CSS_CLASSES.MODAL" @mousedown="closeTypeSelectionModal">
+      <div :class="CSS_CLASSES.MODAL_CONTENT" @mousedown.stop>
+        <div :class="CSS_CLASSES.MODAL_HEADER">
           <h3>Выберите тип блока</h3>
-          <button class="bb-modal-close" @click="closeTypeSelectionModal">×</button>
+          <button :class="CSS_CLASSES.MODAL_CLOSE" @click="closeTypeSelectionModal">×</button>
         </div>
 
-        <div class="bb-modal-body">
-          <div class="bb-block-type-selection">
+        <div :class="CSS_CLASSES.MODAL_BODY">
+          <div :class="CSS_CLASSES.BLOCK_TYPE_SELECTION">
             <button
               v-for="blockType in availableBlockTypes"
               :key="blockType.type"
-              class="bb-block-type-card"
+              :class="CSS_CLASSES.BLOCK_TYPE_CARD"
               @click="selectBlockType(blockType.type)"
             >
-              <span class="bb-block-type-card__icon">
+              <span :class="CSS_CLASSES.BLOCK_TYPE_CARD_ICON">
                 <img
                   v-if="getBlockConfig(blockType.type)?.icon"
                   :src="getBlockConfig(blockType.type)?.icon"
                   :alt="blockType.label"
-                  class="bb-block-type-card__icon-img"
+                  :class="CSS_CLASSES.BLOCK_TYPE_CARD_ICON_IMG"
                 />
                 <span v-else>📦</span>
               </span>
-              <span class="bb-block-type-card__title">
+              <span :class="CSS_CLASSES.BLOCK_TYPE_CARD_TITLE">
                 {{ blockType.label }}
               </span>
             </button>
@@ -180,17 +190,17 @@
       </div>
     </div>
 
-    <div v-if="showModal" class="bb-modal" @mousedown="handleOverlayClick">
-      <div class="bb-modal-content" @mousedown.stop>
-        <div class="bb-modal-header">
+    <div v-if="showModal" :class="CSS_CLASSES.MODAL" @mousedown="handleOverlayClick">
+      <div :class="CSS_CLASSES.MODAL_CONTENT" @mousedown.stop>
+        <div :class="CSS_CLASSES.MODAL_HEADER">
           <h3>
             {{ modalMode === 'create' ? 'Создать' : 'Редактировать' }} {{ currentBlockType?.label }}
           </h3>
-          <button class="bb-modal-close" @click="closeModal">×</button>
+          <button :class="CSS_CLASSES.MODAL_CLOSE" @click="closeModal">×</button>
         </div>
 
-        <div class="bb-modal-body">
-          <form class="bb-form" @submit.prevent="handleSubmit">
+        <div :class="CSS_CLASSES.MODAL_BODY">
+          <form :class="CSS_CLASSES.FORM" @submit.prevent="handleSubmit">
             <template v-for="fieldGroup in groupedFields" :key="fieldGroup.key">
               <!-- Группа полей с ToggleControl (checkbox + зависимые поля) -->
               <ToggleControl
@@ -303,7 +313,7 @@
                     @update:model-value="formData[slotField.field] = $event"
                   />
 
-                  <div v-else-if="slotField.type === 'api-select'" class="bb-form-group">
+                  <div v-else-if="slotField.type === 'api-select'" :class="CSS_CLASSES.FORM_GROUP">
                     <ApiSelectField
                       v-if="isApiSelectAvailable(slotField) && props.apiSelectUseCase"
                       :model-value="slotModelValue"
@@ -313,15 +323,15 @@
                       @update:model-value="formData[slotField.field] = $event"
                     />
 
-                    <div v-else class="bb-warning-box">
+                    <div v-else :class="CSS_CLASSES.BB_WARNING_BOX">
                       ⚠️ {{ getApiSelectRestrictionMessage() }}
                     </div>
                   </div>
 
-                  <div v-else-if="slotField.type === 'custom'" class="bb-form-group">
-                    <label :for="slotFieldId" class="bb-form-label">
+                  <div v-else-if="slotField.type === 'custom'" :class="CSS_CLASSES.FORM_GROUP">
+                    <label :for="slotFieldId" :class="CSS_CLASSES.FORM_LABEL">
                       {{ slotField.label }}
-                      <span v-if="isFieldRequired(slotField)" class="bb-required">*</span>
+                      <span v-if="isFieldRequired(slotField)" :class="CSS_CLASSES.REQUIRED">*</span>
                     </label>
                     <CustomField
                       v-if="
@@ -337,7 +347,7 @@
                       :is-field-required="isFieldRequired"
                       @update:model-value="formData[slotField.field] = $event"
                     />
-                    <div v-else class="bb-warning-box">
+                    <div v-else :class="CSS_CLASSES.BB_WARNING_BOX">
                       ⚠️ {{ getCustomFieldsRestrictionMessage() }}
                     </div>
                   </div>
@@ -347,9 +357,15 @@
           </form>
         </div>
 
-        <div class="bb-modal-footer">
-          <button type="button" class="bb-btn bb-btn--secondary" @click="closeModal">Отмена</button>
-          <button type="submit" class="bb-btn bb-btn--primary" @click="handleSubmit">
+        <div :class="CSS_CLASSES.MODAL_FOOTER">
+          <button
+            type="button"
+            :class="[CSS_CLASSES.BTN, CSS_CLASSES.BTN_SECONDARY]"
+            @click="closeModal"
+          >
+            Отмена
+          </button>
+          <button type="submit" :class="[CSS_CLASSES.BTN, CSS_CLASSES.BTN_PRIMARY]" @click="handleSubmit">
             {{ modalMode === 'create' ? 'Создать' : 'Сохранить' }}
           </button>
         </div>
@@ -370,10 +386,15 @@ import {
   resolveVueComponentForBlock,
 } from '../../utils/blockDisplayHelpers';
 import { seedRepositoryFromBlocks } from '../../utils/blockRepositorySync';
+import { filterBlocksForDisplay } from '../../utils/blockHelpers';
 import { addSpacingFieldToFields } from '../../utils/blockSpacingHelpers';
 import { getBlockInlineStyles, watchBreakpointChanges } from '../../utils/breakpointHelpers';
 import { enableViewportBreakpointDetection, isClient } from '../../utils/ssr';
-import { CSS_CLASSES, ERROR_MESSAGES } from '../../utils/constants';
+import {
+  CSS_CLASSES,
+  ERROR_MESSAGES,
+  getControlsFixedClass,
+} from '../../utils/constants';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { lockBodyScroll, unlockBodyScroll } from '../../utils/scrollLock';
 import { getBlockScrollMargins } from '../../utils/scrollHelpers';
@@ -494,7 +515,7 @@ const controlsFixedClass = computed(() => {
   if (!props.controlsFixedPosition) {
     return '';
   }
-  return `bb-controls--fixed-${props.controlsFixedPosition}`;
+  return getControlsFixedClass(props.controlsFixedPosition);
 });
 
 const controlsInlineStyles = computed(() => {
@@ -518,11 +539,11 @@ const controlsInlineStyles = computed(() => {
 
 const appClass = computed(() => {
   return {
-    'bb-app': true,
-    'block-builder': true,
-    'bb-has-fixed-controls': !!props.controlsFixedPosition,
-    'bb-has-top-controls': props.controlsFixedPosition === 'top',
-    'bb-has-bottom-controls': props.controlsFixedPosition === 'bottom',
+    [CSS_CLASSES.APP]: true,
+    [CSS_CLASSES.BLOCK_BUILDER_ROOT]: true,
+    [CSS_CLASSES.HAS_FIXED_CONTROLS]: !!props.controlsFixedPosition,
+    [CSS_CLASSES.HAS_TOP_CONTROLS]: props.controlsFixedPosition === 'top',
+    [CSS_CLASSES.HAS_BOTTOM_CONTROLS]: props.controlsFixedPosition === 'bottom',
   };
 });
 
@@ -596,12 +617,7 @@ const groupedFields = computed(() => {
   return groups;
 });
 
-const visibleBlocks = computed(() => {
-  if (props.isEdit) {
-    return blocks.value;
-  }
-  return blocks.value.filter((block: IBlock) => block.visible !== false);
-});
+const visibleBlocks = computed(() => filterBlocksForDisplay(blocks.value, props.isEdit));
 
 const getBlockTitle = (block: IBlock): string => {
   return getBlockConfig(block.type)?.title || block.type;
@@ -795,7 +811,7 @@ const openEditModal = (block: IBlock) => {
 const handleOverlayClick = (event: MouseEvent) => {
   const target = event.target as HTMLElement;
 
-  if (target.classList.contains('bb-modal')) {
+  if (target.classList.contains(CSS_CLASSES.MODAL)) {
     closeModal();
   }
 };

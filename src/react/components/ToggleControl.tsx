@@ -1,3 +1,4 @@
+import { CSS_CLASSES } from '../../utils/constants';
 import type { ReactNode } from 'react';
 
 interface IToggleControlProps {
@@ -13,24 +14,34 @@ export function ToggleControl({ modelValue, onChange, label, children }: IToggle
   };
 
   return (
-    <div className="bb-toggle-control">
-      <div className="bb-toggle-control__header">
+    <div className={CSS_CLASSES.TOGGLE_CONTROL}>
+      <div className={CSS_CLASSES.TOGGLE_CONTROL_HEADER}>
         <div
-          className={`bb-toggle-control__label${modelValue ? ' bb-toggle-control__label--is-active' : ''}`}
+          className={[
+            CSS_CLASSES.TOGGLE_CONTROL_LABEL,
+            modelValue ? CSS_CLASSES.TOGGLE_CONTROL_LABEL_ACTIVE : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
           onClick={handleToggleClick}
         >
           {label}
         </div>
         <div
-          className={`bb-toggle-control__button${modelValue ? ' bb-toggle-control__button--is-active' : ''}`}
+          className={[
+            CSS_CLASSES.TOGGLE_CONTROL_BUTTON,
+            modelValue ? CSS_CLASSES.TOGGLE_CONTROL_BUTTON_ACTIVE : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
           onClick={handleToggleClick}
         >
-          <div className="bb-toggle-control__button-inner">
-            <div className="bb-toggle-control__button-circle" />
+          <div className={CSS_CLASSES.TOGGLE_CONTROL_BUTTON_INNER}>
+            <div className={CSS_CLASSES.TOGGLE_CONTROL_BUTTON_CIRCLE} />
           </div>
         </div>
       </div>
-      {modelValue ? <div className="bb-toggle-control__body">{children}</div> : null}
+      {modelValue ? <div className={CSS_CLASSES.TOGGLE_CONTROL_BODY}>{children}</div> : null}
     </div>
   );
 }

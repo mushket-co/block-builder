@@ -1,25 +1,26 @@
 <template>
-  <label class="bb-form-label">
+  <label :class="CSS_CLASSES.FORM_LABEL">
     {{ label }}
-    <span v-if="required" class="bb-required">*</span>
+    <span v-if="required" :class="CSS_CLASSES.REQUIRED">*</span>
   </label>
-  <div class="bb-form-radio-group">
-    <label v-for="option in options" :key="option.value" class="bb-form-radio">
+  <div :class="CSS_CLASSES.FORM_RADIO_GROUP">
+    <label v-for="option in options" :key="option.value" :class="CSS_CLASSES.FORM_RADIO">
       <input
         :id="`${fieldId}-${option.value}`"
         :checked="modelValue === option.value"
         type="radio"
         :name="fieldId"
         :value="option.value"
-        class="bb-form-radio-input"
+        :class="CSS_CLASSES.FORM_RADIO_INPUT"
         @change="handleChange(option.value)"
       />
-      <span class="bb-form-radio-label">{{ option.label }}</span>
+      <span :class="CSS_CLASSES.FORM_RADIO_LABEL">{{ option.label }}</span>
     </label>
   </div>
 </template>
 
 <script setup lang="ts">
+import { CSS_CLASSES } from '../../../utils/constants';
 interface Option {
   value: string | number;
   label: string;

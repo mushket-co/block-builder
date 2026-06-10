@@ -1,3 +1,4 @@
+import { CSS_CLASSES } from '../../../../src/utils/constants';
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 
@@ -15,7 +16,7 @@ describe('ToggleControl', () => {
       },
     });
 
-    expect(wrapper.find('.bb-toggle-control__body').exists()).toBe(true);
+    expect(wrapper.find(`.${CSS_CLASSES.TOGGLE_CONTROL_BODY}`).exists()).toBe(true);
     expect(wrapper.find('.dependent-field').exists()).toBe(true);
   });
 
@@ -30,7 +31,7 @@ describe('ToggleControl', () => {
       },
     });
 
-    expect(wrapper.find('.bb-toggle-control__body').exists()).toBe(false);
+    expect(wrapper.find(`.${CSS_CLASSES.TOGGLE_CONTROL_BODY}`).exists()).toBe(false);
   });
 
   it('emits update when toggled', async () => {
@@ -41,7 +42,7 @@ describe('ToggleControl', () => {
       },
     });
 
-    await wrapper.find('.bb-toggle-control__button').trigger('click');
+    await wrapper.find(`.${CSS_CLASSES.TOGGLE_CONTROL_BUTTON}`).trigger('click');
 
     expect(wrapper.emitted('update:modelValue')).toEqual([[true]]);
   });

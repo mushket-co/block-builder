@@ -1,4 +1,5 @@
 import { CSS_CLASSES } from '../constants';
+import { CSS_CLASSES } from '../constants';
 import { getScrollContainer, scrollToElement } from '../scrollHelpers';
 
 describe('scrollHelpers', () => {

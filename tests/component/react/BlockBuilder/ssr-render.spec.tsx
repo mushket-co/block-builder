@@ -1,3 +1,4 @@
+import { CSS_CLASSES } from '../../../../src/utils/constants';
 import { renderToString } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
@@ -50,7 +51,60 @@ describe('BlockBuilder SSR (React)', () => {
 
     expect(editHtml).toContain('SEO visible content');
     expect(viewHtml).toContain('SEO visible content');
-    expect(editHtml).toContain('bb-add-block-btn');
-    expect(viewHtml).not.toContain('bb-add-block-btn');
+    expect(editHtml).toContain(CSS_CLASSES.ADD_BLOCK_BTN);
+    expect(viewHtml).not.toContain(CSS_CLASSES.ADD_BLOCK_BTN);
+  });
+
+  it('omits hidden blocks from server HTML in view mode but keeps them in edit mode', () => {
+    const blockManagementUseCase = createTestBlockManagementUseCase();
+    const componentRegistry = blockManagementUseCase.getComponentRegistry();
+    componentRegistry.register('text', TextBlock);
+
+    const initialBlocks = [
+      {
+        id: 'block-visible',
+        type: 'text',
+        props: { content: 'Public content' },
+        settings: {},
+        visible: true,
+      },
+      {
+        id: 'block-hidden',
+        type: 'text',
+        props: { content: 'Secret hidden content' },
+        settings: {},
+        visible: false,
+      },
+    ];
+
+    const blockTypes = [
+      {
+        type: 'text',
+        label: 'Text',
+        render: { kind: 'component', framework: 'react', component: TextBlock },
+        fields: [],
+        defaultProps: {},
+      },
+    ];
+
+    const renderMode = (isEdit: boolean) =>
+      renderToString(
+        <BlockBuilderComponent
+          config={{ availableBlockTypes: blockTypes }}
+          blockManagementUseCase={blockManagementUseCase}
+          initialBlocks={initialBlocks}
+          isEdit={isEdit}
+          onSave={async () => true}
+        />
+      );
+
+    const editHtml = renderMode(true);
+    const viewHtml = renderMode(false);
+
+    expect(editHtml).toContain('Public content');
+    expect(editHtml).toContain('Secret hidden content');
+    expect(viewHtml).toContain('Public content');
+    expect(viewHtml).not.toContain('Secret hidden content');
+    expect(viewHtml).not.toContain('block-hidden');
   });
 });

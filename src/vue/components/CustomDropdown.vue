@@ -1,17 +1,19 @@
 <template>
   <div
     ref="rootRef"
-    class="bb-dropdown"
-    :class="{
-      'bb-dropdown--open': isOpen,
-      'bb-dropdown--disabled': disabled,
-      'bb-dropdown--invalid': invalid,
-      'bb-dropdown--multiple': multiple,
-    }"
+    :class="[
+      CSS_CLASSES.BB_DROPDOWN,
+      {
+        [CSS_CLASSES.BB_DROPDOWN_OPEN]: isOpen,
+        [CSS_CLASSES.BB_DROPDOWN_DISABLED]: disabled,
+        [CSS_CLASSES.BB_DROPDOWN_INVALID]: invalid,
+        [CSS_CLASSES.BB_DROPDOWN_MULTIPLE]: multiple,
+      },
+    ]"
   >
     <div
       ref="triggerRef"
-      class="bb-dropdown__control"
+      :class="CSS_CLASSES.BB_DROPDOWN_CONTROL"
       role="combobox"
       :aria-expanded="isOpen"
       :aria-disabled="disabled"
@@ -20,30 +22,33 @@
       @keydown="handleTriggerKeydown"
     >
       <slot name="trigger" v-bind="triggerSlotProps">
-        <div class="bb-dropdown__value">
+        <div :class="CSS_CLASSES.BB_DROPDOWN_VALUE">
           <template v-if="multiple">
-            <div v-if="selectedOptions.length > 0" class="bb-dropdown__chips">
+            <div v-if="selectedOptions.length > 0" :class="CSS_CLASSES.BB_DROPDOWN_CHIPS">
               <span
                 v-for="option in visibleChipOptions"
                 :key="option.value"
-                class="bb-dropdown__chip"
+                :class="CSS_CLASSES.BB_DROPDOWN_CHIP"
               >
                 {{ option.label }}
               </span>
-              <span v-if="hiddenChipCount > 0" class="bb-dropdown__chip bb-dropdown__chip--more">
+              <span
+                v-if="hiddenChipCount > 0"
+                :class="[CSS_CLASSES.BB_DROPDOWN_CHIP, CSS_CLASSES.BB_DROPDOWN_CHIP_MORE]"
+              >
                 +{{ hiddenChipCount }}
               </span>
             </div>
-            <span v-else class="bb-dropdown__placeholder">
+            <span v-else :class="CSS_CLASSES.BB_DROPDOWN_PLACEHOLDER">
               {{ placeholder }}
             </span>
           </template>
 
           <template v-else>
-            <span v-if="displayValue" class="bb-dropdown__single">
+            <span v-if="displayValue" :class="CSS_CLASSES.BB_DROPDOWN_SINGLE">
               {{ displayValue }}
             </span>
-            <span v-else class="bb-dropdown__placeholder">
+            <span v-else :class="CSS_CLASSES.BB_DROPDOWN_PLACEHOLDER">
               {{ placeholder }}
             </span>
           </template>
@@ -52,22 +57,29 @@
         <button
           v-if="showClear"
           type="button"
-          class="bb-dropdown__clear"
+          :class="CSS_CLASSES.BB_DROPDOWN_CLEAR"
           @click.stop="clearSelection"
         >
           ✕
         </button>
 
-        <span class="bb-dropdown__arrow" :class="{ 'bb-dropdown__arrow--open': isOpen }">▼</span>
+        <span
+          :class="[
+            CSS_CLASSES.BB_DROPDOWN_ARROW,
+            { [CSS_CLASSES.BB_DROPDOWN_ARROW_OPEN]: isOpen },
+          ]"
+        >
+          ▼
+        </span>
       </slot>
     </div>
 
     <Teleport :to="teleportTo">
-      <Transition name="bb-dropdown-fade">
+      <Transition :name="CSS_CLASSES.BB_DROPDOWN_FADE">
         <div
           v-if="isOpen"
           ref="panelRef"
-          class="bb-dropdown__panel"
+          :class="CSS_CLASSES.BB_DROPDOWN_PANEL"
           :style="panelStyle"
           role="listbox"
           :aria-multiselectable="multiple"
@@ -76,43 +88,48 @@
           <slot name="panel" v-bind="panelSlotProps">
             <div
               ref="contentRef"
-              class="bb-dropdown__content"
+              :class="CSS_CLASSES.BB_DROPDOWN_CONTENT"
               :style="contentStyle"
               @scroll.passive="handleContentScroll"
             >
               <slot name="before-options" />
 
-              <div v-if="loading" class="bb-dropdown__message">
+              <div v-if="loading" :class="CSS_CLASSES.BB_DROPDOWN_MESSAGE">
                 <slot name="loading">
                   {{ loadingText }}
                 </slot>
               </div>
 
-              <div v-else-if="errorText" class="bb-dropdown__message bb-dropdown__message--error">
+              <div
+                v-else-if="errorText"
+                :class="[CSS_CLASSES.BB_DROPDOWN_MESSAGE, CSS_CLASSES.BB_DROPDOWN_MESSAGE_ERROR]"
+              >
                 <slot name="error">
                   {{ errorText }}
                 </slot>
               </div>
 
               <template v-else-if="options.length > 0">
-                <ul class="bb-dropdown__list">
+                <ul :class="CSS_CLASSES.BB_DROPDOWN_LIST">
                   <li
                     v-for="(option, index) in options"
                     :key="option.value"
-                    class="bb-dropdown__option"
-                    :class="{
-                      'bb-dropdown__option--selected': isOptionSelected(option.value),
-                      'bb-dropdown__option--disabled': option.disabled,
-                      'bb-dropdown__option--active': highlightedIndex === index,
-                    }"
+                    :class="[
+                      CSS_CLASSES.BB_DROPDOWN_OPTION,
+                      {
+                        [CSS_CLASSES.BB_DROPDOWN_OPTION_SELECTED]: isOptionSelected(option.value),
+                        [CSS_CLASSES.BB_DROPDOWN_OPTION_DISABLED]: option.disabled,
+                        [CSS_CLASSES.BB_DROPDOWN_OPTION_ACTIVE]: highlightedIndex === index,
+                      },
+                    ]"
                     role="option"
                     :aria-selected="isOptionSelected(option.value)"
                     @click="onOptionClick(option)"
                     @mouseenter="highlight(index)"
                   >
                     <slot name="option" :option="option" :selected="isOptionSelected(option.value)">
-                      <span class="bb-dropdown__option-label">{{ option.label }}</span>
-                      <span v-if="isOptionSelected(option.value)" class="bb-dropdown__option-check"
+                      <span :class="CSS_CLASSES.BB_DROPDOWN_OPTION_LABEL">{{ option.label }}</span>
+                      <span v-if="isOptionSelected(option.value)" :class="CSS_CLASSES.BB_DROPDOWN_OPTION_CHECK"
                         >✓</span
                       >
                     </slot>
@@ -120,7 +137,7 @@
                 </ul>
               </template>
 
-              <div v-else class="bb-dropdown__message">
+              <div v-else :class="CSS_CLASSES.BB_DROPDOWN_MESSAGE">
                 <slot name="empty">
                   {{ emptyText }}
                 </slot>
@@ -136,6 +153,7 @@
 </template>
 
 <script setup lang="ts">
+import { CSS_CLASSES } from '../../utils/constants';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 interface IDropdownOption {
@@ -567,7 +585,9 @@ const scrollHighlightedIntoView = () => {
     return;
   }
 
-  const optionElements = contentRef.value.querySelectorAll<HTMLElement>('.bb-dropdown__option');
+  const optionElements = contentRef.value.querySelectorAll<HTMLElement>(
+    `.${CSS_CLASSES.BB_DROPDOWN_OPTION}`
+  );
   const element = optionElements[highlightedIndex.value];
 
   if (!element) {

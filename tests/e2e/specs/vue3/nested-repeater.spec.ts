@@ -1,3 +1,4 @@
+import { CSS_CLASSES } from '../../../../src/utils/constants';
 import { getBlockLabel } from '../../../fixtures/block-types';
 import { expect, test } from '../../fixtures';
 
@@ -27,7 +28,7 @@ test.describe('E04 nested repeater catalog', () => {
     await blockForm.waitForModalClosed();
 
     await expect.poll(() => blockForm.getBlockCount()).toBe(1);
-    await expect(page.locator('.bb-block').first()).toContainText(productName);
+    await expect(page.locator(`.${CSS_CLASSES.BLOCK}`).first()).toContainText(productName);
   });
 
   test('adds new category with nested products repeater', async ({ blockForm }) => {

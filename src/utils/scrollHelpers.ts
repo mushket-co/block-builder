@@ -1,5 +1,5 @@
-import { afterPaint, waitForLayoutStable, waitForScrollSettled } from './scheduling';
 import { CSS_CLASSES } from './constants';
+import { afterPaint, waitForLayoutStable, waitForScrollSettled } from './scheduling';
 
 export function getBlocksLayoutRoot(): HTMLElement | null {
   return (

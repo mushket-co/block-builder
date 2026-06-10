@@ -1,30 +1,35 @@
 <template>
-  <div class="bb-toggle-control">
-    <div class="bb-toggle-control__header">
+  <div :class="CSS_CLASSES.TOGGLE_CONTROL">
+    <div :class="CSS_CLASSES.TOGGLE_CONTROL_HEADER">
       <div
-        class="bb-toggle-control__label"
-        :class="{ 'bb-toggle-control__label--is-active': modelValue }"
+        :class="[
+          CSS_CLASSES.TOGGLE_CONTROL_LABEL,
+          { [CSS_CLASSES.TOGGLE_CONTROL_LABEL_ACTIVE]: modelValue },
+        ]"
         @click="handleToggleClick"
       >
         <slot name="label">{{ label }}</slot>
       </div>
       <div
-        class="bb-toggle-control__button"
-        :class="{ 'bb-toggle-control__button--is-active': modelValue }"
+        :class="[
+          CSS_CLASSES.TOGGLE_CONTROL_BUTTON,
+          { [CSS_CLASSES.TOGGLE_CONTROL_BUTTON_ACTIVE]: modelValue },
+        ]"
         @click="handleToggleClick"
       >
-        <div class="bb-toggle-control__button-inner">
-          <div class="bb-toggle-control__button-circle" />
+        <div :class="CSS_CLASSES.TOGGLE_CONTROL_BUTTON_INNER">
+          <div :class="CSS_CLASSES.TOGGLE_CONTROL_BUTTON_CIRCLE" />
         </div>
       </div>
     </div>
-    <div v-if="modelValue" class="bb-toggle-control__body">
+    <div v-if="modelValue" :class="CSS_CLASSES.TOGGLE_CONTROL_BODY">
       <slot name="body" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { CSS_CLASSES } from '../../utils/constants';
 interface Props {
   modelValue: boolean;
   label?: string;

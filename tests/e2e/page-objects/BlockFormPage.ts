@@ -1,3 +1,4 @@
+import { CSS_CLASSES } from '../../../src/utils/constants';
 import type { Locator, Page } from '@playwright/test';
 
 import { BlockBuilderPage } from './BlockBuilderPage';
@@ -47,7 +48,7 @@ export class BlockFormPage extends BlockBuilderPage {
 
   async submitCreateForm(): Promise<void> {
     if (this.isComponentUi) {
-      await this.page.locator('.bb-modal-footer .bb-btn--primary').click();
+      await this.page.locator(`.${CSS_CLASSES.MODAL_FOOTER} .${CSS_CLASSES.BTN_PRIMARY}`).click();
       return;
     }
     await this.page.locator('button[data-action="submitModal"]').click();
@@ -55,14 +56,14 @@ export class BlockFormPage extends BlockBuilderPage {
 
   async submitEditForm(): Promise<void> {
     if (this.isComponentUi) {
-      await this.page.locator('.bb-modal-footer .bb-btn--primary').click();
+      await this.page.locator(`.${CSS_CLASSES.MODAL_FOOTER} .${CSS_CLASSES.BTN_PRIMARY}`).click();
       return;
     }
     await this.page.locator('button[data-action="submitModal"]').click();
   }
 
   async waitForModalClosed(): Promise<void> {
-    await this.page.locator('.bb-modal').waitFor({ state: 'hidden', timeout: 10_000 });
+    await this.page.locator(`.${CSS_CLASSES.MODAL}`).waitFor({ state: 'hidden', timeout: 10_000 });
   }
 
   async createTextBlock(blockTypeTitle: string, content: string): Promise<void> {
@@ -82,7 +83,7 @@ export class BlockFormPage extends BlockBuilderPage {
   repeater(fieldName: string) {
     return this.page
       .locator(
-        `.bb-repeater-control[data-field-name="${fieldName}"], .bb-repeater-control-container[data-field-name="${fieldName}"]`
+        `.${CSS_CLASSES.REPEATER_CONTROL}[data-field-name="${fieldName}"], .${CSS_CLASSES.REPEATER_CONTROL_CONTAINER}[data-field-name="${fieldName}"]`
       )
       .first();
   }
@@ -91,18 +92,22 @@ export class BlockFormPage extends BlockBuilderPage {
     const root = this.repeater(repeaterFieldName);
 
     if (this.uiMode === 'pure-js') {
-      return root.locator('.bb-repeater-control__items').first().locator('> .bb-repeater-control__item');
+      return root.locator(`.${CSS_CLASSES.REPEATER_CONTROL_ITEMS}`).first().locator('> .${CSS_CLASSES.REPEATER_CONTROL_ITEM}');
     }
 
-    return root.locator(':scope > .bb-repeater-control__items > .bb-repeater-control__item');
+    return root.locator(
+      `:scope > .${CSS_CLASSES.REPEATER_CONTROL_ITEMS} > .${CSS_CLASSES.REPEATER_CONTROL_ITEM}`
+    );
   }
 
   nestedRepeaterItems(repeater: Locator) {
     if (this.uiMode === 'pure-js') {
-      return repeater.locator('.bb-repeater-control__items').first().locator('> .bb-repeater-control__item');
+      return repeater.locator(`.${CSS_CLASSES.REPEATER_CONTROL_ITEMS}`).first().locator('> .${CSS_CLASSES.REPEATER_CONTROL_ITEM}');
     }
 
-    return repeater.locator(':scope > .bb-repeater-control__items > .bb-repeater-control__item');
+    return repeater.locator(
+      `:scope > .${CSS_CLASSES.REPEATER_CONTROL_ITEMS} > .${CSS_CLASSES.REPEATER_CONTROL_ITEM}`
+    );
   }
 
   repeaterItem(repeaterFieldName: string, itemIndex: number) {
@@ -122,7 +127,9 @@ export class BlockFormPage extends BlockBuilderPage {
   }
 
   fieldInRepeaterItem(item: Locator, subField: string) {
-    const fieldsContainer = item.locator(':scope > .bb-repeater-control__item-fields').first();
+    const fieldsContainer = item
+      .locator(`:scope > .${CSS_CLASSES.REPEATER_CONTROL_ITEM_FIELDS}`)
+      .first();
 
     if (this.isComponentUi) {
       return fieldsContainer.locator(`input[id$="-${subField}"], textarea[id$="-${subField}"]`).first();
@@ -134,7 +141,9 @@ export class BlockFormPage extends BlockBuilderPage {
   }
 
   numberInRepeaterItem(item: Locator, subField: string) {
-    const fieldsContainer = item.locator(':scope > .bb-repeater-control__item-fields').first();
+    const fieldsContainer = item
+      .locator(`:scope > .${CSS_CLASSES.REPEATER_CONTROL_ITEM_FIELDS}`)
+      .first();
 
     if (this.isComponentUi) {
       return fieldsContainer
@@ -150,8 +159,8 @@ export class BlockFormPage extends BlockBuilderPage {
   }
 
   async clickToggleByLabel(label: string): Promise<void> {
-    const toggle = this.page.locator('.bb-toggle-control').filter({ hasText: label });
-    await toggle.locator('.bb-toggle-control__button').click();
+    const toggle = this.page.locator(`.${CSS_CLASSES.TOGGLE_CONTROL}`).filter({ hasText: label });
+    await toggle.locator(`.${CSS_CLASSES.TOGGLE_CONTROL_BUTTON}`).click();
   }
 
   colorField(fieldName: string) {
@@ -163,7 +172,7 @@ export class BlockFormPage extends BlockBuilderPage {
 
   repeaterItemField(fieldName: string, itemIndex: number, subField: string) {
     const repeater = this.repeater(fieldName);
-    const item = repeater.locator('.bb-repeater-control__item').nth(itemIndex);
+    const item = repeater.locator(`.${CSS_CLASSES.REPEATER_CONTROL_ITEM}`).nth(itemIndex);
 
     if (this.isComponentUi) {
       return item.locator(
@@ -178,20 +187,20 @@ export class BlockFormPage extends BlockBuilderPage {
 
   async collapseRepeaterItem(fieldName: string, itemIndex: number): Promise<void> {
     const item = this.repeaterItem(fieldName, itemIndex);
-    await item.locator('.bb-repeater-control__item-btn--collapse').click();
+    await item.locator(`.${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_COLLAPSE}`).click();
     await item.waitFor({ state: 'attached' });
   }
 
   async collapseRepeaterItemLocator(item: Locator): Promise<void> {
-    await item.locator('.bb-repeater-control__item-btn--collapse').click();
+    await item.locator(`.${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_COLLAPSE}`).click();
     await item.waitFor({ state: 'attached' });
   }
 
   modal() {
-    return this.page.locator('.bb-modal');
+    return this.page.locator(`.${CSS_CLASSES.MODAL}`);
   }
 
   formErrors() {
-    return this.page.locator('.bb-form-errors, .bb-error');
+    return this.page.locator(`.${CSS_CLASSES.FORM_ERRORS}, .${CSS_CLASSES.ERROR}`);
   }
 }

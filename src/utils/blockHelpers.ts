@@ -53,3 +53,13 @@ export function isChildOf(childBlock: TBlock, parentBlock: TBlock, allBlocks: TB
   }
   return isChildOf(parent, parentBlock, allBlocks);
 }
+
+export function filterBlocksForDisplay<T extends { visible?: boolean }>(
+  blocks: readonly T[],
+  isEdit: boolean
+): T[] {
+  if (isEdit) {
+    return [...blocks];
+  }
+  return blocks.filter(block => block.visible !== false);
+}

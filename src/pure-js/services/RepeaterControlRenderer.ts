@@ -16,7 +16,6 @@ export interface IRepeaterControlOptions {
   config?: IRepeaterFieldConfig;
   value?: any[];
   onChange?: (value: any[]) => void;
-  onAfterRender?: () => void;
   nestingDepth?: number;
   maxNestingDepth?: number;
   parentFieldPath?: string;
@@ -30,7 +29,6 @@ export class RepeaterControlRenderer {
   private config: IRepeaterFieldConfig;
   private value: any[];
   private onChange?: (value: any[]) => void;
-  private onAfterRender?: () => void;
   private container?: HTMLElement;
   private collapsedItems: Set<number> = new Set();
   private rendererFactory: FieldRendererFactory;
@@ -47,7 +45,6 @@ export class RepeaterControlRenderer {
     this.config = options.config || { fields: [] };
     this.value = options.value || [];
     this.onChange = options.onChange;
-    this.onAfterRender = options.onAfterRender;
     this.nestingDepth = options.nestingDepth || 0;
     this.maxNestingDepth = options.maxNestingDepth ?? 2;
     this.parentFieldPath = options.parentFieldPath || '';
@@ -534,10 +531,6 @@ export class RepeaterControlRenderer {
     container.innerHTML = this.generateHTML();
     this.attachEventListeners();
     this.renderNestedRepeaters();
-
-    if (this.onAfterRender) {
-      this.onAfterRender();
-    }
 
     const event = new CustomEvent('repeater-rendered', {
       bubbles: true,

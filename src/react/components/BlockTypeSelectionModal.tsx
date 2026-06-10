@@ -43,18 +43,18 @@ export function BlockTypeSelectionModal({
                 className={CSS_CLASSES.BLOCK_TYPE_CARD}
                 onClick={() => onSelect(blockType.type)}
               >
-                <span className="bb-block-type-card__icon">
+                <span className={CSS_CLASSES.BLOCK_TYPE_CARD_ICON}>
                   {blockType.icon ? (
                     <img
                       src={blockType.icon}
                       alt={blockType.label}
-                      className="bb-block-type-card__icon-img"
+                      className={CSS_CLASSES.BLOCK_TYPE_CARD_ICON_IMG}
                     />
                   ) : (
                     <span>📦</span>
                   )}
                 </span>
-                <span className="bb-block-type-card__title">{blockType.label}</span>
+                <span className={CSS_CLASSES.BLOCK_TYPE_CARD_TITLE}>{blockType.label}</span>
               </button>
             ))}
           </div>

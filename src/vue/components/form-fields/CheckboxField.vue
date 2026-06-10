@@ -1,20 +1,21 @@
 <template>
-  <label :for="fieldId" class="bb-form-checkbox">
+  <label :for="fieldId" :class="CSS_CLASSES.FORM_CHECKBOX">
     <input
       :id="fieldId"
       :checked="modelValue"
       type="checkbox"
-      class="bb-form-checkbox-input"
+      :class="CSS_CLASSES.FORM_CHECKBOX_INPUT"
       @change="handleChange"
     />
-    <span class="bb-form-checkbox-label">
+    <span :class="CSS_CLASSES.FORM_CHECKBOX_LABEL">
       {{ label }}
-      <span v-if="required" class="bb-required">*</span>
+      <span v-if="required" :class="CSS_CLASSES.REQUIRED">*</span>
     </span>
   </label>
 </template>
 
 <script setup lang="ts">
+import { CSS_CLASSES } from '../../../utils/constants';
 interface Props {
   fieldId: string;
   modelValue?: boolean;

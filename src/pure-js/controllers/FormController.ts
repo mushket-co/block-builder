@@ -147,6 +147,8 @@ export class FormController {
       if (input) {
         if (input.type === 'checkbox') {
           data[key] = (input as HTMLInputElement).checked;
+        } else if (input.type === 'radio') {
+          data[key] = value;
         } else if (input.type === 'number') {
           data[key] = input.value ? Number.parseFloat(input.value) : null;
         } else {

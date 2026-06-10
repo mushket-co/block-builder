@@ -797,7 +797,12 @@ export const CustomDropdown = forwardRef<ICustomDropdownRef, ICustomDropdownProp
         ) : null}
 
         <span
-          className={`${CSS_CLASSES.BB_DROPDOWN_ARROW}${isOpen ? ` ${CSS_CLASSES.BB_DROPDOWN_ARROW_OPEN}` : ''}`}
+          className={[
+            CSS_CLASSES.BB_DROPDOWN_ARROW,
+            isOpen ? CSS_CLASSES.BB_DROPDOWN_ARROW_OPEN : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
         >
           ▼
         </span>

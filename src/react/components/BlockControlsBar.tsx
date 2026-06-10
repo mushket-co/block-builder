@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
 import { deleteIconHTML, saveIconHTML } from '../../shared/icons/iconHelpers';
-import { CSS_CLASSES } from '../../utils/constants';
+import { CSS_CLASSES, getControlsFixedClass } from '../../utils/constants';
 
 interface IBlockControlsBarProps {
   isEdit: boolean;
@@ -50,7 +50,7 @@ export function BlockControlsBar({
     <div
       className={[
         CSS_CLASSES.CONTROLS,
-        controlsFixedPosition ? `bb-controls--fixed-${controlsFixedPosition}` : '',
+        getControlsFixedClass(controlsFixedPosition),
       ]
         .filter(Boolean)
         .join(' ')}
@@ -59,15 +59,15 @@ export function BlockControlsBar({
       <div className={[CSS_CLASSES.CONTROLS_CONTAINER, controlsContainerClass].filter(Boolean).join(' ')}>
         <div className={CSS_CLASSES.CONTROLS_INNER}>
           <button type="button" className={`${CSS_CLASSES.BTN} ${CSS_CLASSES.BTN_SUCCESS}`} onClick={onSave}>
-            <span className="bb-icon-wrapper" dangerouslySetInnerHTML={{ __html: saveIconHTML }} /> Сохранить
+            <span className={CSS_CLASSES.BB_ICON_WRAPPER} dangerouslySetInnerHTML={{ __html: saveIconHTML }} /> Сохранить
           </button>
           <button type="button" className={`${CSS_CLASSES.BTN} ${CSS_CLASSES.BTN_DANGER}`} onClick={onClearAll}>
-            <span className="bb-icon-wrapper" dangerouslySetInnerHTML={{ __html: deleteIconHTML }} /> Очистить все
+            <span className={CSS_CLASSES.BB_ICON_WRAPPER} dangerouslySetInnerHTML={{ __html: deleteIconHTML }} /> Очистить все
           </button>
           <div className={CSS_CLASSES.STATS}>
-            <p>
+            <span>
               Всего блоков: <span>{isEdit ? blocksCount : visibleCount}</span>
-            </p>
+            </span>
           </div>
         </div>
       </div>

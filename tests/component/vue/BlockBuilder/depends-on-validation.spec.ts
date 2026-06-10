@@ -1,3 +1,4 @@
+import { CSS_CLASSES } from '../../../../src/utils/constants';
 import { flushPromises } from '@vue/test-utils';
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -13,17 +14,17 @@ describe('BlockBuilder dependsOn', () => {
       blockTypes: [toggleGroupBlockType],
     });
 
-    await wrapper.find('.bb-add-block-btn').trigger('click');
+    await wrapper.find(`.${CSS_CLASSES.ADD_BLOCK_BTN}`).trigger('click');
     await flushPromises();
-    await wrapper.find('.bb-block-type-card').trigger('click');
-    await flushPromises();
-
-    await wrapper.find('.bb-modal-footer .bb-btn--primary').trigger('click');
-    await flushPromises();
+    await wrapper.find(`.${CSS_CLASSES.BLOCK_TYPE_CARD}`).trigger('click');
     await flushPromises();
 
-    expect(wrapper.findAll('.bb-block')).toHaveLength(1);
-    expect(wrapper.find('.bb-form-errors, .bb-error').exists()).toBe(false);
+    await wrapper.find(`.${CSS_CLASSES.MODAL_FOOTER} .${CSS_CLASSES.BTN_PRIMARY}`).trigger('click');
+    await flushPromises();
+    await flushPromises();
+
+    expect(wrapper.findAll(`.${CSS_CLASSES.BLOCK}`)).toHaveLength(1);
+    expect(wrapper.find(`.${CSS_CLASSES.FORM_ERRORS}, .${CSS_CLASSES.ERROR}`).exists()).toBe(false);
 
     wrapper.unmount();
   });
@@ -33,19 +34,19 @@ describe('BlockBuilder dependsOn', () => {
       blockTypes: [toggleGroupBlockType],
     });
 
-    await wrapper.find('.bb-add-block-btn').trigger('click');
+    await wrapper.find(`.${CSS_CLASSES.ADD_BLOCK_BTN}`).trigger('click');
     await flushPromises();
-    await wrapper.find('.bb-block-type-card').trigger('click');
-    await flushPromises();
-
-    await wrapper.find('.bb-toggle-control__button').trigger('click');
+    await wrapper.find(`.${CSS_CLASSES.BLOCK_TYPE_CARD}`).trigger('click');
     await flushPromises();
 
-    await wrapper.find('.bb-modal-footer .bb-btn--primary').trigger('click');
+    await wrapper.find(`.${CSS_CLASSES.TOGGLE_CONTROL_BUTTON}`).trigger('click');
     await flushPromises();
 
-    expect(wrapper.find('.bb-form-errors, .bb-error').exists()).toBe(true);
-    expect(wrapper.findAll('.bb-block')).toHaveLength(0);
+    await wrapper.find(`.${CSS_CLASSES.MODAL_FOOTER} .${CSS_CLASSES.BTN_PRIMARY}`).trigger('click');
+    await flushPromises();
+
+    expect(wrapper.find(`.${CSS_CLASSES.FORM_ERRORS}, .${CSS_CLASSES.ERROR}`).exists()).toBe(true);
+    expect(wrapper.findAll(`.${CSS_CLASSES.BLOCK}`)).toHaveLength(0);
 
     wrapper.unmount();
   });

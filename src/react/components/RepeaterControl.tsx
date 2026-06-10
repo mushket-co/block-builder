@@ -4,7 +4,7 @@ import type { ICustomFieldRendererRegistry } from '../../core/ports/CustomFieldR
 import type { IRepeaterItemFieldConfig } from '../../core/types/form';
 import type { ApiSelectUseCase } from '../../core/use-cases/ApiSelectUseCase';
 import type { IRepeaterRef } from '../../shared/services/ValidationErrorHandler';
-import { UI_STRINGS } from '../../utils/constants';
+import { CSS_CLASSES, UI_STRINGS } from '../../utils/constants';
 import { useRepeaterControl } from '../hooks/useRepeaterControl';
 import { RepeaterItemFields } from './RepeaterItemFields';
 
@@ -104,38 +104,38 @@ export function RepeaterControl({
   }, [fieldName, onRendererReady, repeater.expandItem, repeater.isItemCollapsed]);
 
   return (
-    <div className="bb-repeater-control" data-field-name={fieldName}>
-      <div className="bb-repeater-control__header">
-        <label className="bb-repeater-control__label">
+    <div className={CSS_CLASSES.REPEATER_CONTROL} data-field-name={fieldName}>
+      <div className={CSS_CLASSES.REPEATER_CONTROL_HEADER}>
+        <label className={CSS_CLASSES.REPEATER_CONTROL_LABEL}>
           {label}
-          {repeater.isRequired ? <span className="bb-required">*</span> : null}
+          {repeater.isRequired ? <span className={CSS_CLASSES.REQUIRED}>*</span> : null}
         </label>
         {repeater.itemCount > 0 ? (
-          <span className="bb-repeater-control__count">
+          <span className={CSS_CLASSES.REPEATER_CONTROL_COUNT}>
             {repeater.getCountText(repeater.itemCount)}
           </span>
         ) : null}
       </div>
 
-      <div className="bb-repeater-control__items">
+      <div className={CSS_CLASSES.REPEATER_CONTROL_ITEMS}>
         {repeater.items.map((item, index) => (
           <div
             key={item._id}
             className={[
-              'bb-repeater-control__item',
-              repeater.collapsedItems[item._id] ? 'bb-repeater-control__item--collapsed' : '',
+              CSS_CLASSES.REPEATER_CONTROL_ITEM,
+              repeater.collapsedItems[item._id] ? CSS_CLASSES.REPEATER_CONTROL_ITEM_COLLAPSED : '',
             ]
               .filter(Boolean)
               .join(' ')}
           >
-            <div className="bb-repeater-control__item-header">
-              <span className="bb-repeater-control__item-title">
+            <div className={CSS_CLASSES.REPEATER_CONTROL_ITEM_HEADER}>
+              <span className={CSS_CLASSES.REPEATER_CONTROL_ITEM_TITLE}>
                 {itemTitle} #{index + 1}
               </span>
-              <div className="bb-repeater-control__item-actions">
+              <div className={CSS_CLASSES.REPEATER_CONTROL_ITEM_ACTIONS}>
                 <button
                   type="button"
-                  className="bb-repeater-control__item-btn bb-repeater-control__item-btn--collapse"
+                  className={`${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN} ${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_COLLAPSE}`}
                   title={repeater.collapsedItems[item._id] ? 'Развернуть' : 'Свернуть'}
                   onClick={() => repeater.toggleCollapse(item._id)}
                 >
@@ -144,7 +144,7 @@ export function RepeaterControl({
                 {index > 0 ? (
                   <button
                     type="button"
-                    className="bb-repeater-control__item-btn bb-repeater-control__item-btn--move"
+                    className={`${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN} ${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_MOVE}`}
                     title="Переместить вверх"
                     onClick={() => repeater.moveItem(index, index - 1)}
                   >
@@ -154,7 +154,7 @@ export function RepeaterControl({
                 {index < repeater.items.length - 1 ? (
                   <button
                     type="button"
-                    className="bb-repeater-control__item-btn bb-repeater-control__item-btn--move"
+                    className={`${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN} ${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_MOVE}`}
                     title="Переместить вниз"
                     onClick={() => repeater.moveItem(index, index + 1)}
                   >
@@ -163,7 +163,7 @@ export function RepeaterControl({
                 ) : null}
                 <button
                   type="button"
-                  className="bb-repeater-control__item-btn bb-repeater-control__item-btn--remove"
+                  className={`${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN} ${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_REMOVE}`}
                   disabled={!repeater.canRemove}
                   title={removeButtonText}
                   onClick={() => repeater.removeItem(index)}
@@ -174,7 +174,7 @@ export function RepeaterControl({
             </div>
 
             {!repeater.collapsedItems[item._id] ? (
-              <div className="bb-repeater-control__item-fields">
+              <div className={CSS_CLASSES.REPEATER_CONTROL_ITEM_FIELDS}>
                 <RepeaterItemFields
                   itemIndex={index}
                   item={item}
@@ -211,7 +211,7 @@ export function RepeaterControl({
 
       <button
         type="button"
-        className="bb-repeater-control__add-btn"
+        className={CSS_CLASSES.REPEATER_CONTROL_ADD_BTN}
         disabled={!repeater.canAdd}
         onClick={repeater.addItem}
       >
@@ -219,13 +219,13 @@ export function RepeaterControl({
       </button>
 
       {repeater.effectiveMin || max ? (
-        <div className="bb-repeater-control__hint">
+        <div className={CSS_CLASSES.REPEATER_CONTROL_HINT}>
           {repeater.effectiveMin && repeater.itemCount < repeater.effectiveMin ? (
-            <span className="bb-repeater-control__hint--error">
+            <span className={CSS_CLASSES.REPEATER_CONTROL_HINT_ERROR}>
               {repeater.repeaterMinText} {repeater.effectiveMin}
             </span>
           ) : max && repeater.itemCount >= max ? (
-            <span className="bb-repeater-control__hint--warning">
+            <span className={CSS_CLASSES.REPEATER_CONTROL_HINT_WARNING}>
               {repeater.repeaterMaxText} {max}
             </span>
           ) : null}

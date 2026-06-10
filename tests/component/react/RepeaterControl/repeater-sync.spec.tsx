@@ -1,3 +1,4 @@
+import { CSS_CLASSES } from '../../../../src/utils/constants';
 import { fireEvent, waitFor } from '@testing-library/react';
 import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -65,7 +66,7 @@ describe('RepeaterControl sync (React)', () => {
 
     const { host } = renderWithHost(<ControlledCardsRepeater />);
 
-    fireEvent.click(host.querySelector('.bb-repeater-control__add-btn')!);
+    fireEvent.click(host.querySelector(`.${CSS_CLASSES.REPEATER_CONTROL_ADD_BTN}`)!);
 
     await waitFor(() => {
       expect(host.querySelector('[data-testid="count"]')?.textContent).toBe('2');
@@ -96,7 +97,7 @@ describe('RepeaterControl sync (React)', () => {
       />
     );
 
-    fireEvent.click(host.querySelector('.bb-toggle-control__button')!);
+    fireEvent.click(host.querySelector(`.${CSS_CLASSES.TOGGLE_CONTROL_BUTTON}`)!);
 
     await waitFor(() => {
       expect(onChange).toHaveBeenCalled();
@@ -111,7 +112,7 @@ describe('RepeaterControl sync (React)', () => {
 
     expect(host.querySelector('[data-testid="has-link"]')?.textContent).toBe('false');
 
-    fireEvent.click(host.querySelector('.bb-toggle-control__button')!);
+    fireEvent.click(host.querySelector(`.${CSS_CLASSES.TOGGLE_CONTROL_BUTTON}`)!);
 
     await waitFor(() => {
       expect(host.querySelector('[data-testid="has-link"]')?.textContent).toBe('true');

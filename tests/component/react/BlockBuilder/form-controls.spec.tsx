@@ -1,3 +1,4 @@
+import { CSS_CLASSES } from '../../../../src/utils/constants';
 import { fireEvent, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -17,14 +18,14 @@ describe('BlockBuilder link toggle (React)', () => {
   it('reveals background color field when toggle is on', async () => {
     const { host } = renderBlockBuilder({ blockTypes: [linkBlockType] });
 
-    fireEvent.click(host.querySelector('.bb-add-block-btn')!);
-    await waitFor(() => host.querySelector('.bb-block-type-card'));
-    fireEvent.click(host.querySelector('.bb-block-type-card')!);
-    await waitFor(() => host.querySelector('.bb-toggle-control__button'));
+    fireEvent.click(host.querySelector(`.${CSS_CLASSES.ADD_BLOCK_BTN}`)!);
+    await waitFor(() => host.querySelector(`.${CSS_CLASSES.BLOCK_TYPE_CARD}`));
+    fireEvent.click(host.querySelector(`.${CSS_CLASSES.BLOCK_TYPE_CARD}`)!);
+    await waitFor(() => host.querySelector(`.${CSS_CLASSES.TOGGLE_CONTROL_BUTTON}`));
 
     expect(host.querySelector('#field-backgroundColor')).toBeNull();
 
-    fireEvent.click(host.querySelector('.bb-toggle-control__button')!);
+    fireEvent.click(host.querySelector(`.${CSS_CLASSES.TOGGLE_CONTROL_BUTTON}`)!);
 
     await waitFor(() => {
       expect(host.querySelector('#field-backgroundColor')).toBeTruthy();
@@ -34,18 +35,18 @@ describe('BlockBuilder link toggle (React)', () => {
   it('creates link block with required fields', async () => {
     const { host } = renderBlockBuilder({ blockTypes: [linkBlockType] });
 
-    fireEvent.click(host.querySelector('.bb-add-block-btn')!);
-    await waitFor(() => host.querySelector('.bb-block-type-card'));
-    fireEvent.click(host.querySelector('.bb-block-type-card')!);
+    fireEvent.click(host.querySelector(`.${CSS_CLASSES.ADD_BLOCK_BTN}`)!);
+    await waitFor(() => host.querySelector(`.${CSS_CLASSES.BLOCK_TYPE_CARD}`));
+    fireEvent.click(host.querySelector(`.${CSS_CLASSES.BLOCK_TYPE_CARD}`)!);
     await waitFor(() => host.querySelector('#field-url'));
 
     fireEvent.change(host.querySelector('#field-url') as HTMLInputElement, {
       target: { value: 'https://example.com' },
     });
-    fireEvent.click(host.querySelector('.bb-modal-footer .bb-btn--primary')!);
+    fireEvent.click(host.querySelector(`.${CSS_CLASSES.MODAL_FOOTER} .${CSS_CLASSES.BTN_PRIMARY}`)!);
 
     await waitFor(() => {
-      expect(host.querySelectorAll('.bb-block')).toHaveLength(1);
+      expect(host.querySelectorAll(`.${CSS_CLASSES.BLOCK}`)).toHaveLength(1);
     });
   });
 });
@@ -58,46 +59,46 @@ describe('BlockBuilder repeater (React)', () => {
   it('adds repeater item and validates nested required fields', async () => {
     const { host } = renderBlockBuilder({ blockTypes: [repeaterBlockType] });
 
-    fireEvent.click(host.querySelector('.bb-add-block-btn')!);
-    await waitFor(() => host.querySelector('.bb-block-type-card'));
-    fireEvent.click(host.querySelector('.bb-block-type-card')!);
+    fireEvent.click(host.querySelector(`.${CSS_CLASSES.ADD_BLOCK_BTN}`)!);
+    await waitFor(() => host.querySelector(`.${CSS_CLASSES.BLOCK_TYPE_CARD}`));
+    fireEvent.click(host.querySelector(`.${CSS_CLASSES.BLOCK_TYPE_CARD}`)!);
     await waitFor(() => host.querySelector('[data-field-name="cards"]'));
 
     const repeater = host.querySelector('[data-field-name="cards"]')!;
-    fireEvent.click(repeater.querySelector('.bb-repeater-control__add-btn')!);
+    fireEvent.click(repeater.querySelector(`.${CSS_CLASSES.REPEATER_CONTROL_ADD_BTN}`)!);
 
     await waitFor(() => {
-      expect(repeater.querySelectorAll('.bb-repeater-control__item')).toHaveLength(2);
+      expect(repeater.querySelectorAll(`.${CSS_CLASSES.REPEATER_CONTROL_ITEM}`)).toHaveLength(2);
     });
 
-    fireEvent.click(host.querySelector('.bb-modal-footer .bb-btn--primary')!);
+    fireEvent.click(host.querySelector(`.${CSS_CLASSES.MODAL_FOOTER} .${CSS_CLASSES.BTN_PRIMARY}`)!);
 
     await waitFor(() => {
-      expect(host.querySelector('.bb-form-errors')).toBeTruthy();
-      expect(host.querySelectorAll('.bb-block')).toHaveLength(0);
+      expect(host.querySelector(`.${CSS_CLASSES.FORM_ERRORS}`)).toBeTruthy();
+      expect(host.querySelectorAll(`.${CSS_CLASSES.BLOCK}`)).toHaveLength(0);
     });
   });
 
   it('validates toggle-dependent field inside repeater item', async () => {
     const { host } = renderBlockBuilder({ blockTypes: [repeaterToggleBlockType] });
 
-    fireEvent.click(host.querySelector('.bb-add-block-btn')!);
-    await waitFor(() => host.querySelector('.bb-block-type-card'));
-    fireEvent.click(host.querySelector('.bb-block-type-card')!);
+    fireEvent.click(host.querySelector(`.${CSS_CLASSES.ADD_BLOCK_BTN}`)!);
+    await waitFor(() => host.querySelector(`.${CSS_CLASSES.BLOCK_TYPE_CARD}`));
+    fireEvent.click(host.querySelector(`.${CSS_CLASSES.BLOCK_TYPE_CARD}`)!);
     await waitFor(() => host.querySelector('[data-field-name="slides"]'));
 
     const repeater = host.querySelector('[data-field-name="slides"]')!;
-    fireEvent.click(repeater.querySelector('.bb-toggle-control__button')!);
+    fireEvent.click(repeater.querySelector(`.${CSS_CLASSES.TOGGLE_CONTROL_BUTTON}`)!);
 
     await waitFor(() => {
-      expect(repeater.querySelector('.bb-toggle-control__body')).toBeTruthy();
+      expect(repeater.querySelector(`.${CSS_CLASSES.TOGGLE_CONTROL_BODY}`)).toBeTruthy();
     });
 
-    fireEvent.click(host.querySelector('.bb-modal-footer .bb-btn--primary')!);
+    fireEvent.click(host.querySelector(`.${CSS_CLASSES.MODAL_FOOTER} .${CSS_CLASSES.BTN_PRIMARY}`)!);
 
     await waitFor(() => {
-      expect(host.querySelector('.bb-form-errors, .bb-error')).toBeTruthy();
-      expect(host.querySelectorAll('.bb-block')).toHaveLength(0);
+      expect(host.querySelector(`.${CSS_CLASSES.FORM_ERRORS}, .${CSS_CLASSES.ERROR}`)).toBeTruthy();
+      expect(host.querySelectorAll(`.${CSS_CLASSES.BLOCK}`)).toHaveLength(0);
     });
   });
 });

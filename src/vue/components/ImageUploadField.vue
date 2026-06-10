@@ -1,24 +1,23 @@
 <template>
   <div
     ref="containerRef"
-    class="bb-image-upload-field"
-    :class="{ [CSS_CLASSES.ERROR]: error }"
+    :class="[CSS_CLASSES.IMAGE_UPLOAD_FIELD, { [CSS_CLASSES.ERROR]: error }]"
     :data-field-name="fieldNamePath"
   >
-    <label v-if="label" :for="inputId" class="bb-image-upload-field__label">
+    <label v-if="label" :for="inputId" :class="CSS_CLASSES.IMAGE_UPLOAD_FIELD_LABEL">
       {{ label }}
-      <span v-if="required" class="bb-image-upload-field__required">*</span>
+      <span v-if="required" :class="CSS_CLASSES.IMAGE_UPLOAD_FIELD_REQUIRED">*</span>
     </label>
 
-    <div v-if="displayValue" class="bb-image-upload-field__preview">
+    <div v-if="displayValue" :class="CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW">
       <img
         :src="displayValue"
         :alt="label || 'Изображение'"
-        class="bb-image-upload-field__preview-img"
+        :class="CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW_IMG"
       />
       <button
         type="button"
-        class="bb-image-upload-field__preview-clear"
+        :class="CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW_CLEAR"
         title="Удалить изображение"
         @click="clearImage"
       >
@@ -26,24 +25,26 @@
       </button>
     </div>
 
-    <div class="bb-image-upload-field__file">
+    <div :class="CSS_CLASSES.IMAGE_UPLOAD_FIELD_FILE">
       <input
         :id="inputId"
         ref="fileInputRef"
         type="file"
         accept="image/*"
-        class="bb-image-upload-field__file-input"
+        :class="CSS_CLASSES.IMAGE_UPLOAD_FIELD_FILE_INPUT"
         @change="handleFileChange"
       />
       <label
         :for="inputId"
-        class="bb-image-upload-field__file-label"
-        :class="{ 'bb-image-upload-field__file-label--loading': isLoading }"
+        :class="[
+          CSS_CLASSES.IMAGE_UPLOAD_FIELD_FILE_LABEL,
+          { [CSS_CLASSES.IMAGE_UPLOAD_FIELD_FILE_LABEL_LOADING]: isLoading },
+        ]"
       >
         <span v-if="isLoading">⏳ Загрузка...</span>
         <span v-else>{{ displayValue ? 'Изменить файл' : 'Выберите изображение' }}</span>
       </label>
-      <span v-if="fileError" class="bb-image-upload-field__error">{{ fileError }}</span>
+      <span v-if="fileError" :class="CSS_CLASSES.IMAGE_UPLOAD_FIELD_ERROR">{{ fileError }}</span>
     </div>
   </div>
 </template>

@@ -1,3 +1,4 @@
+import { CSS_CLASSES } from '../../utils/constants';
 import {
   createElement,
   useCallback,
@@ -126,11 +127,11 @@ export function useBlockBuilder({
   }, [controlsFixedPosition, controlsOffset, controlsOffsetVar]);
 
   const appClassName = [
-    'bb-app',
-    'block-builder',
-    controlsFixedPosition ? 'bb-has-fixed-controls' : '',
-    controlsFixedPosition === 'top' ? 'bb-has-top-controls' : '',
-    controlsFixedPosition === 'bottom' ? 'bb-has-bottom-controls' : '',
+    CSS_CLASSES.APP,
+    CSS_CLASSES.BLOCK_BUILDER_ROOT,
+    controlsFixedPosition ? CSS_CLASSES.HAS_FIXED_CONTROLS : '',
+    controlsFixedPosition === 'top' ? CSS_CLASSES.HAS_TOP_CONTROLS : '',
+    controlsFixedPosition === 'bottom' ? CSS_CLASSES.HAS_BOTTOM_CONTROLS : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -170,7 +171,7 @@ export function useBlockBuilder({
       if (!canRenderReactBlock(block, componentRegistry)) {
         return createElement(
           'div',
-          { className: 'bb-block-content-fallback' },
+          { className: CSS_CLASSES.BLOCK_CONTENT_FALLBACK },
           createElement(
             'strong',
             null,

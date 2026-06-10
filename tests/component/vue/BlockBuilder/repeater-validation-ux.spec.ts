@@ -1,3 +1,4 @@
+import { CSS_CLASSES } from '../../../../src/utils/constants';
 import { flushPromises } from '@vue/test-utils';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -16,30 +17,30 @@ describe('BlockBuilder repeater validation UX', () => {
       blockTypes: [repeaterBlockType],
     });
 
-    await wrapper.find('.bb-add-block-btn').trigger('click');
+    await wrapper.find(`.${CSS_CLASSES.ADD_BLOCK_BTN}`).trigger('click');
     await flushPromises();
-    await wrapper.find('.bb-block-type-card').trigger('click');
-    await flushPromises();
-
-    await wrapper.find('.bb-repeater-control__add-btn').trigger('click');
+    await wrapper.find(`.${CSS_CLASSES.BLOCK_TYPE_CARD}`).trigger('click');
     await flushPromises();
 
-    const items = wrapper.findAll('.bb-repeater-control__item');
+    await wrapper.find(`.${CSS_CLASSES.REPEATER_CONTROL_ADD_BTN}`).trigger('click');
+    await flushPromises();
+
+    const items = wrapper.findAll(`.${CSS_CLASSES.REPEATER_CONTROL_ITEM}`);
     expect(items).toHaveLength(2);
 
-    await items[1].find('.bb-repeater-control__item-btn--collapse').trigger('click');
+    await items[1].find(`.${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_COLLAPSE}`).trigger('click');
     await flushPromises();
-    expect(items[1].classes()).toContain('bb-repeater-control__item--collapsed');
+    expect(items[1].classes()).toContain(CSS_CLASSES.REPEATER_CONTROL_ITEM_COLLAPSED);
 
-    await wrapper.find('.bb-modal-footer .bb-btn--primary').trigger('click');
+    await wrapper.find(`.${CSS_CLASSES.MODAL_FOOTER} .${CSS_CLASSES.BTN_PRIMARY}`).trigger('click');
     await flushPromises();
 
     await vi.advanceTimersByTimeAsync(500);
     await flushPromises();
 
-    expect(wrapper.find('.bb-form-errors, .bb-error').exists()).toBe(true);
-    expect(wrapper.findAll('.bb-repeater-control__item')[1].classes()).not.toContain(
-      'bb-repeater-control__item--collapsed'
+    expect(wrapper.find(`.${CSS_CLASSES.FORM_ERRORS}, .${CSS_CLASSES.ERROR}`).exists()).toBe(true);
+    expect(wrapper.findAll(`.${CSS_CLASSES.REPEATER_CONTROL_ITEM}`)[1].classes()).not.toContain(
+      CSS_CLASSES.REPEATER_CONTROL_ITEM_COLLAPSED
     );
 
     wrapper.unmount();

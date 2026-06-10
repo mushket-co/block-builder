@@ -30,7 +30,7 @@
       </div>
 
       <!-- Визуальный рендер блока -->
-      <div class="block-visual" v-if="block.visible">
+      <div class="block-visual" :class="{ 'block-visual--hidden': !block.visible }">
         <BlockRenderer :type="block.type" :props="block.props" />
       </div>
 
@@ -84,6 +84,10 @@ defineEmits(['add-block', 'edit', 'delete', 'duplicate', 'toggle-lock', 'toggle-
   background: #f8f9fa;
   border-radius: 8px;
   border: 2px dashed #ddd;
+}
+
+.block-visual--hidden {
+  opacity: 0.55;
 }
 
 .block-preview {

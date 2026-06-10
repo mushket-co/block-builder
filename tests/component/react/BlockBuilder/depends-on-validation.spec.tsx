@@ -1,3 +1,4 @@
+import { CSS_CLASSES } from '../../../../src/utils/constants';
 import { fireEvent, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -17,16 +18,16 @@ describe('BlockBuilder dependsOn (React)', () => {
       blockTypes: [toggleGroupBlockType],
     });
 
-    fireEvent.click(host.querySelector('.bb-add-block-btn')!);
-    await waitFor(() => host.querySelector('.bb-block-type-card'));
-    fireEvent.click(host.querySelector('.bb-block-type-card')!);
-    await waitFor(() => host.querySelector('.bb-modal-footer'));
+    fireEvent.click(host.querySelector(`.${CSS_CLASSES.ADD_BLOCK_BTN}`)!);
+    await waitFor(() => host.querySelector(`.${CSS_CLASSES.BLOCK_TYPE_CARD}`));
+    fireEvent.click(host.querySelector(`.${CSS_CLASSES.BLOCK_TYPE_CARD}`)!);
+    await waitFor(() => host.querySelector(`.${CSS_CLASSES.MODAL_FOOTER}`));
 
-    fireEvent.click(host.querySelector('.bb-modal-footer .bb-btn--primary')!);
+    fireEvent.click(host.querySelector(`.${CSS_CLASSES.MODAL_FOOTER} .${CSS_CLASSES.BTN_PRIMARY}`)!);
 
     await waitFor(() => {
-      expect(host.querySelectorAll('.bb-block')).toHaveLength(1);
-      expect(host.querySelector('.bb-form-errors, .bb-error')).toBeNull();
+      expect(host.querySelectorAll(`.${CSS_CLASSES.BLOCK}`)).toHaveLength(1);
+      expect(host.querySelector(`.${CSS_CLASSES.FORM_ERRORS}, .${CSS_CLASSES.ERROR}`)).toBeNull();
     });
   });
 
@@ -35,17 +36,17 @@ describe('BlockBuilder dependsOn (React)', () => {
       blockTypes: [toggleGroupBlockType],
     });
 
-    fireEvent.click(host.querySelector('.bb-add-block-btn')!);
-    await waitFor(() => host.querySelector('.bb-block-type-card'));
-    fireEvent.click(host.querySelector('.bb-block-type-card')!);
-    await waitFor(() => host.querySelector('.bb-toggle-control__button'));
+    fireEvent.click(host.querySelector(`.${CSS_CLASSES.ADD_BLOCK_BTN}`)!);
+    await waitFor(() => host.querySelector(`.${CSS_CLASSES.BLOCK_TYPE_CARD}`));
+    fireEvent.click(host.querySelector(`.${CSS_CLASSES.BLOCK_TYPE_CARD}`)!);
+    await waitFor(() => host.querySelector(`.${CSS_CLASSES.TOGGLE_CONTROL_BUTTON}`));
 
-    fireEvent.click(host.querySelector('.bb-toggle-control__button')!);
-    fireEvent.click(host.querySelector('.bb-modal-footer .bb-btn--primary')!);
+    fireEvent.click(host.querySelector(`.${CSS_CLASSES.TOGGLE_CONTROL_BUTTON}`)!);
+    fireEvent.click(host.querySelector(`.${CSS_CLASSES.MODAL_FOOTER} .${CSS_CLASSES.BTN_PRIMARY}`)!);
 
     await waitFor(() => {
-      expect(host.querySelector('.bb-form-errors, .bb-error')).toBeTruthy();
-      expect(host.querySelectorAll('.bb-block')).toHaveLength(0);
+      expect(host.querySelector(`.${CSS_CLASSES.FORM_ERRORS}, .${CSS_CLASSES.ERROR}`)).toBeTruthy();
+      expect(host.querySelectorAll(`.${CSS_CLASSES.BLOCK}`)).toHaveLength(0);
     });
   });
 });

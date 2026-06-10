@@ -1,4 +1,4 @@
-import { getTextBlockLabel } from '../../../fixtures/block-types';
+import { getBlockLabel } from '../../../fixtures/block-types';
 import { expect, test } from '../../fixtures';
 
 test.describe('E01 smoke', () => {
@@ -8,7 +8,7 @@ test.describe('E01 smoke', () => {
   });
 
   test('creates text block and saves to localStorage', async ({ blockForm }, testInfo) => {
-    const blockTitle = getTextBlockLabel(testInfo.project.name as 'react' | 'pure-js');
+    const blockTitle = getBlockLabel('text', testInfo.project.name as 'react' | 'pure-js');
     const content = `E2E smoke ${Date.now()}`;
 
     await blockForm.prepareCleanEditor();
