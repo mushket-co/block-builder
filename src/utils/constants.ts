@@ -48,6 +48,7 @@ export const CSS_CLASSES = {
   MODAL_HEADER: 'bb-modal-header',
   MODAL_CLOSE: 'bb-modal-close',
   MODAL_FOOTER: 'bb-modal-footer',
+  VALIDATION_ERROR_INDICATOR: 'bb-validation-error-indicator',
   BLOCK_TYPE_SELECTION: 'bb-block-type-selection',
   BLOCK_TYPE_CARD: 'bb-block-type-card',
   BLOCK_TYPE_CARD_ICON: 'bb-block-type-card__icon',

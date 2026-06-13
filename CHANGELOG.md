@@ -5,6 +5,32 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/),
 и проект следует [Semantic Versioning](https://semver.org/lang/ru/).
 
+## [1.4.0] - 2026-06-13
+
+### Добавлено
+
+#### Индикатор ошибок валидации в футере модалки
+
+- Кнопка с количеством ошибок валидации в форме создания/редактирования блоков
+- Клик по индикатору скроллит к первому полю с ошибкой (тот же UX, что при «Сохранить» с ошибками)
+- Работает в Pure JS (`ModalManager` + `FormController`), Vue (`BlockBuilder`) и React (`BlockFormModal`)
+- Утилиты `countValidationErrors`, `getSortedErrorKeys`; метод `ValidationErrorHandler.navigateToValidationError`
+- CSS-класс `VALIDATION_ERROR_INDICATOR` (`.bb-validation-error-indicator`)
+
+#### Реактивная валидация формы
+
+- После неуспешного submit форма переходит в режим «touched»: ошибки обновляются на каждом изменении поля
+- Общий трекер `ReactiveFormValidationTracker` и хелпер `applyFormErrors` — экспорт из `@mushket-co/block-builder/core`
+- Pure JS (`FormController`), Vue (`BlockBuilder`, composable `useBlockForm`), React (`useBlockForm`)
+
+### Изменено
+
+- Pure-JS контролы (spacing, repeater, select, api-select, custom) триггерят перевалидацию через `onFieldChange` в `ControlInitializerFactory`
+
+### Исправлено
+
+- **CustomField (Vue/React)**: `setError` у кастомного рендерера вызывается только при изменении текста ошибки — WYSIWYG-редактор не теряет фокус при реактивной валидации
+
 ## [1.3.2] - 2026-06-10
 minors
 

@@ -1,4 +1,5 @@
 import { CSS_CLASSES } from '../../utils/constants';
+import { countValidationErrors } from '../../utils/formErrorHelpers';
 import { lockBodyScroll, unlockBodyScroll } from '../../utils/scrollLock';
 
 export interface IModalOptions {
@@ -13,6 +14,7 @@ export interface IModalOptions {
   onAfterModalOpen?: () => void;
   onBeforeModalClose?: () => void;
   onAfterModalClose?: () => void;
+  onValidationErrorNavigate?: () => void;
   preventBodyScroll?: boolean;
   lockBodyScroll?: () => void;
   unlockBodyScroll?: () => void;
@@ -26,6 +28,7 @@ export class ModalManager {
   private modalHandlers: {
     onSubmit?: () => void;
     onCancel?: () => void;
+    onValidationErrorNavigate?: () => void;
     onBeforeModalClose?: () => void;
     onAfterModalClose?: () => void;
     lockBodyScroll?: () => void;
@@ -46,6 +49,7 @@ export class ModalManager {
     this.modalHandlers = {
       onSubmit: options.onSubmit,
       onCancel: options.onCancel,
+      onValidationErrorNavigate: options.onValidationErrorNavigate,
       onBeforeModalClose: options.onBeforeModalClose,
       onAfterModalClose: options.onAfterModalClose,
       lockBodyScroll: options.lockBodyScroll,
@@ -77,6 +81,12 @@ export class ModalManager {
         <button data-action="submitModal" class="${CSS_CLASSES.BTN} ${CSS_CLASSES.BTN_PRIMARY}">
           ${escapedSubmitText}
         </button>
+        <button
+          type="button"
+          class="${CSS_CLASSES.VALIDATION_ERROR_INDICATOR} ${CSS_CLASSES.BB_HIDDEN}"
+          data-action="validationErrorNavigate"
+          aria-label="Ошибки валидации"
+        ></button>
       </div>
     `;
 
@@ -162,6 +172,35 @@ export class ModalManager {
     if (this.modalHandlers?.onSubmit) {
       this.modalHandlers.onSubmit();
     }
+  }
+
+  navigateToValidationError(): void {
+    if (this.modalHandlers?.onValidationErrorNavigate) {
+      this.modalHandlers.onValidationErrorNavigate();
+    }
+  }
+
+  updateValidationErrorIndicator(errors: Record<string, string[]>): void {
+    const indicator = document.querySelector(
+      `.${CSS_CLASSES.MODAL_FOOTER} .${CSS_CLASSES.VALIDATION_ERROR_INDICATOR}`
+    ) as HTMLButtonElement | null;
+
+    if (!indicator) {
+      return;
+    }
+
+    const errorCount = countValidationErrors(errors);
+
+    if (errorCount === 0) {
+      indicator.classList.add(CSS_CLASSES.BB_HIDDEN);
+      indicator.textContent = '';
+      indicator.removeAttribute('aria-label');
+      return;
+    }
+
+    indicator.classList.remove(CSS_CLASSES.BB_HIDDEN);
+    indicator.textContent = String(errorCount);
+    indicator.setAttribute('aria-label', `Ошибки валидации: ${errorCount}`);
   }
 
   getFormData(formId: string): Record<string, unknown> {

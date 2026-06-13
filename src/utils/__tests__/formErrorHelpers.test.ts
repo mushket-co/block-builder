@@ -1,12 +1,11 @@
 import { CSS_CLASSES } from '../constants';
-import { CSS_CLASSES } from '../constants';
 import {
+  countValidationErrors,
   findFieldElement,
   getFirstErrorKey,
   parseErrorKey,
   scrollToFirstError,
 } from '../formErrorHelpers';
-
 jest.mock('../scrollHelpers', () => ({
   scrollToElement: jest.fn(),
 }));
@@ -142,13 +141,27 @@ describe('formErrorHelpers', () => {
     });
   });
 
+  describe('countValidationErrors', () => {
+    test('returns total number of validation messages', () => {
+      expect(
+        countValidationErrors({
+          title: ['Required'],
+          subtitle: ['Too short', 'Invalid format'],
+        })
+      ).toBe(3);
+    });
+
+    test('returns 0 for empty errors', () => {
+      expect(countValidationErrors({})).toBe(0);
+    });
+  });
+
   describe('scrollToFirstError', () => {
     beforeEach(() => {
       jest.useFakeTimers();
     });
 
-    test('returns parsed info for the first error key', () => {
-      const container = document.createElement('div');
+    test('returns parsed info for the first error key', () => {      const container = document.createElement('div');
 
       const result = scrollToFirstError(container, { title: ['Required'] });
 

@@ -9,6 +9,7 @@ export interface IApiSelectControlInitializerConfig {
   apiSelectUseCase: ApiSelectUseCase;
   getRepeaterFieldConfigs?: () => Map<string, Map<string, any>>;
   getRepeaterRenderers?: () => Map<string, any>;
+  onFieldChange?: () => void;
 }
 
 export class ApiSelectControlInitializer implements IControlInitializer {
@@ -143,6 +144,8 @@ export class ApiSelectControlInitializer implements IControlInitializer {
               }
             }
           }
+
+          this.config.onFieldChange?.();
         },
       });
 

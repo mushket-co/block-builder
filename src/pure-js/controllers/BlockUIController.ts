@@ -116,6 +116,7 @@ export class BlockUIController {
       getRepeaterFieldConfigs: () => this.repeaterFieldConfigs,
       getRepeaterRenderers: () => this.repeaterRenderers,
       findNestedRepeaterRenderer: (fieldPath: string) => this.findNestedRepeaterRenderer(fieldPath),
+      onFieldChange: () => this.formController.triggerReactiveValidation(),
     });
 
     this.registerEventHandlers();
@@ -1032,6 +1033,9 @@ export class BlockUIController {
     );
     this.eventDelegation.register('closeModal', () => this.closeModal());
     this.eventDelegation.register('submitModal', () => this.submitModal());
+    this.eventDelegation.register('validationErrorNavigate', () =>
+      this.modalManager.navigateToValidationError()
+    );
   }
 
   setIsEdit(isEdit: boolean): void {

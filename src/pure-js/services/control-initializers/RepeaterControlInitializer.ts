@@ -6,6 +6,7 @@ import { RepeaterControlRenderer } from '../RepeaterControlRenderer';
 
 export interface IRepeaterControlInitializerConfig {
   getRepeaterRenderers?: () => Map<string, RepeaterControlRenderer>;
+  onFieldChange?: () => void;
 }
 
 export class RepeaterControlInitializer implements IControlInitializer {
@@ -69,6 +70,7 @@ export class RepeaterControlInitializer implements IControlInitializer {
         value: (parsed.value as unknown[]) || [],
         onChange: value => {
           container.dataset.repeaterValue = JSON.stringify(value);
+          this.config?.onFieldChange?.();
         },
       });
 

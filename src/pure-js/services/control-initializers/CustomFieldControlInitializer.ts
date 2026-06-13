@@ -7,6 +7,7 @@ import { IControlInitializer, IControlRenderer } from '../IControlRenderer';
 export interface ICustomFieldControlInitializerConfig {
   customFieldRendererRegistry: ICustomFieldRendererRegistry;
   getRepeaterRenderers?: () => Map<string, any>;
+  onFieldChange?: () => void;
 }
 
 export class CustomFieldControlInitializer implements IControlInitializer {
@@ -106,6 +107,8 @@ export class CustomFieldControlInitializer implements IControlInitializer {
               }
             }
           }
+
+          this.config.onFieldChange?.();
         },
         onError: _error => {},
       });

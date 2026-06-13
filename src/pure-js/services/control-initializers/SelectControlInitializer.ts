@@ -5,6 +5,7 @@ import { ISelectControlOptions, SelectControlRenderer } from '../SelectControlRe
 
 export interface ISelectControlInitializerConfig {
   getCurrentFormFields: () => Map<string, TFieldConfig>;
+  onFieldChange?: () => void;
 }
 
 export class SelectControlInitializer implements IControlInitializer {
@@ -106,6 +107,7 @@ export class SelectControlInitializer implements IControlInitializer {
           }
 
           container.dataset.selectValue = JSON.stringify(newValue);
+          this.config.onFieldChange?.();
         },
       };
 

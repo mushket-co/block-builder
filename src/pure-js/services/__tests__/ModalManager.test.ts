@@ -60,9 +60,11 @@ describe('ModalManager', () => {
     const footer = document.querySelector(`.${CSS_CLASSES.MODAL_FOOTER}`);
     const buttons = footer?.querySelectorAll('button');
 
-    expect(buttons?.length).toBe(2);
+    expect(buttons?.length).toBe(3);
     expect(buttons?.[0].textContent?.trim()).toBe('Отмена');
     expect(buttons?.[1].textContent?.trim()).toBe('Сохранить');
+    expect(buttons?.[2].classList.contains(CSS_CLASSES.VALIDATION_ERROR_INDICATOR)).toBe(true);
+    expect(buttons?.[2].classList.contains(CSS_CLASSES.BB_HIDDEN)).toBe(true);
   });
 
   test('должен использовать кастомные тексты кнопок', () => {
@@ -166,6 +168,55 @@ describe('ModalManager', () => {
     expect(() => {
       modalManager.submitModal();
     }).not.toThrow();
+  });
+  });
+
+  describe('updateValidationErrorIndicator', () => {
+  test('должен показать количество ошибок в индикаторе', () => {
+    modalManager.showModal(createBasicOptions());
+
+    modalManager.updateValidationErrorIndicator({
+      title: ['Required'],
+      subtitle: ['Too short', 'Invalid format'],
+    });
+
+    const indicator = document.querySelector(
+      `.${CSS_CLASSES.VALIDATION_ERROR_INDICATOR}`
+    ) as HTMLButtonElement;
+
+    expect(indicator.classList.contains(CSS_CLASSES.BB_HIDDEN)).toBe(false);
+    expect(indicator.textContent).toBe('3');
+    expect(indicator.getAttribute('aria-label')).toBe('Ошибки валидации: 3');
+  });
+
+  test('должен скрыть индикатор при отсутствии ошибок', () => {
+    modalManager.showModal(createBasicOptions());
+
+    modalManager.updateValidationErrorIndicator({
+      title: ['Required'],
+    });
+    modalManager.updateValidationErrorIndicator({});
+
+    const indicator = document.querySelector(
+      `.${CSS_CLASSES.VALIDATION_ERROR_INDICATOR}`
+    ) as HTMLButtonElement;
+
+    expect(indicator.classList.contains(CSS_CLASSES.BB_HIDDEN)).toBe(true);
+    expect(indicator.textContent).toBe('');
+  });
+  });
+
+  describe('navigateToValidationError', () => {
+  test('должен вызвать onValidationErrorNavigate обработчик', () => {
+    const onValidationErrorNavigate = jest.fn();
+    modalManager.showModal({
+      ...createBasicOptions(),
+      onValidationErrorNavigate,
+    });
+
+    modalManager.navigateToValidationError();
+
+    expect(onValidationErrorNavigate).toHaveBeenCalledTimes(1);
   });
   });
 

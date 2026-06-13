@@ -31,6 +31,21 @@ export class ValidationErrorHandler {
     formErrors: Record<string, string[]>,
     delay: number = 350
   ): Promise<void> {
+    await this.scrollToFirstValidationError(formErrors, delay);
+  }
+
+  async navigateToValidationError(formErrors: Record<string, string[]>): Promise<void> {
+    if (Object.keys(formErrors).length === 0) {
+      return;
+    }
+
+    await this.scrollToFirstValidationError(formErrors, 100);
+  }
+
+  private async scrollToFirstValidationError(
+    formErrors: Record<string, string[]>,
+    delay: number
+  ): Promise<void> {
     this.cancelPending();
     await afterPaint();
 

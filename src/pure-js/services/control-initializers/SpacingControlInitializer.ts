@@ -1,10 +1,13 @@
 import { ISpacingFieldConfig } from '../../../core/types/form';
 import { CSS_CLASSES } from '../../../utils/constants';
 import { parseJSONFromAttribute } from '../../../utils/domSafe';
+import type { IControlInitializerFactoryConfig } from '../ControlInitializerFactory';
 import { IControlInitializer, IControlRenderer } from '../IControlRenderer';
 import { SpacingControlRenderer } from '../SpacingControlRenderer';
 
 export class SpacingControlInitializer implements IControlInitializer {
+  constructor(private factoryConfig?: Pick<IControlInitializerFactoryConfig, 'onFieldChange'>) {}
+
   getControlType(): string {
     return 'spacing';
   }
@@ -36,6 +39,7 @@ export class SpacingControlInitializer implements IControlInitializer {
         value: (spacingConfig.value as Record<string, Record<string, number>>) || {},
         onChange: value => {
           container.dataset.spacingValue = JSON.stringify(value);
+          this.factoryConfig?.onFieldChange?.();
         },
       });
 

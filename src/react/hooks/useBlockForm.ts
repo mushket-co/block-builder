@@ -15,7 +15,9 @@ import {
   type IRepeaterRef,
 } from '../../shared/services/ValidationErrorHandler';
 import { addSpacingFieldToFields } from '../../utils/blockSpacingHelpers';
+import { countValidationErrors } from '../../utils/formErrorHelpers';
 import { isFieldVisible } from '../../utils/formFieldHelpers';
+import { ReactiveFormValidationTracker } from '../../utils/reactiveFormValidation';
 import { UniversalValidator } from '../../utils/universalValidation';
 import type { IBlockType } from '../types/blockBuilder';
 
@@ -51,6 +53,7 @@ export function useBlockForm({
   const [selectedPosition, setSelectedPosition] = useState<number | undefined>(undefined);
   const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [formErrors, setFormErrors] = useState<Record<string, string[]>>({});
+  const validationTrackerRef = useRef(new ReactiveFormValidationTracker());
   const repeaterRefs = useRef<Map<string, IRepeaterRef>>(new Map());
   const validationErrorHandler = useMemo(
     () => new ValidationErrorHandler(repeaterRefs.current),
@@ -71,15 +74,41 @@ export function useBlockForm({
     return addSpacingFieldToFields(currentBlockType.fields || [], currentBlockType.spacingOptions);
   }, [currentBlockType]);
 
-  const updateFormField = useCallback((fieldName: string, value: unknown) => {
-    setFormData(prev => ({ ...prev, [fieldName]: value }));
-  }, []);
+  const updateFormField = useCallback(
+    (fieldName: string, value: unknown) => {
+      setFormData(prev => {
+        const nextFormData = { ...prev, [fieldName]: value };
+        const nextErrors = validationTrackerRef.current.revalidateIfTouched(
+          nextFormData,
+          currentBlockFields,
+          (field, itemData) =>
+            isFieldVisible(field, nextFormData, itemData as Record<string, unknown> | undefined)
+        );
+
+        if (nextErrors) {
+          setFormErrors(nextErrors);
+        }
+
+        return nextFormData;
+      });
+    },
+    [currentBlockFields]
+  );
 
   const handleValidationErrors = useCallback(
     async (errors: Record<string, string[]>) => {
       await validationErrorHandler.handleValidationErrors(errors, 350);
     },
     [validationErrorHandler]
+  );
+
+  const navigateToValidationError = useCallback(async () => {
+    await validationErrorHandler.navigateToValidationError(formErrors);
+  }, [formErrors, validationErrorHandler]);
+
+  const validationErrorCount = useMemo(
+    () => countValidationErrors(formErrors),
+    [formErrors]
   );
 
   useEffect(() => {
@@ -94,6 +123,7 @@ export function useBlockForm({
     setCurrentBlockId(null);
     setFormData({});
     setFormErrors({});
+    validationTrackerRef.current.reset();
     repeaterRefs.current.clear();
   }, []);
 
@@ -121,6 +151,7 @@ export function useBlockForm({
       });
       setFormData(nextFormData);
       setFormErrors({});
+      validationTrackerRef.current.reset();
       setShowModal(true);
     },
     [availableBlockTypes, isEdit]
@@ -136,6 +167,7 @@ export function useBlockForm({
       setCurrentBlockId(block.id);
       setFormData({ ...block.props });
       setFormErrors({});
+      validationTrackerRef.current.reset();
       setShowModal(true);
     },
     [isEdit]
@@ -153,6 +185,7 @@ export function useBlockForm({
         isFieldVisible(field, formData, itemData as Record<string, unknown> | undefined)
     );
     if (!validation.isValid) {
+      validationTrackerRef.current.touch();
       setFormErrors(validation.errors);
       await handleValidationErrors(validation.errors);
       return null;
@@ -210,6 +243,7 @@ export function useBlockForm({
         isFieldVisible(field, formData, itemData as Record<string, unknown> | undefined)
     );
     if (!validation.isValid) {
+      validationTrackerRef.current.touch();
       setFormErrors(validation.errors);
       await handleValidationErrors(validation.errors);
       return false;
@@ -283,5 +317,7 @@ export function useBlockForm({
     handleSubmit,
     updateFormField,
     registerRepeaterRef,
+    validationErrorCount,
+    navigateToValidationError,
   };
 }

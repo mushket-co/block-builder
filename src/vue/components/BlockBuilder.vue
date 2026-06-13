@@ -207,7 +207,7 @@
                 v-if="fieldGroup.type === 'toggle-group'"
                 :model-value="formData[fieldGroup.toggleField.field] || false"
                 :field-name="fieldGroup.toggleField.field"
-                @update:model-value="formData[fieldGroup.toggleField.field] = $event"
+                @update:model-value="updateFormField(fieldGroup.toggleField.field, $event)"
               >
                 <template #label>{{ fieldGroup.toggleField.label }}</template>
                 <template #body>
@@ -224,7 +224,7 @@
                         ? `${CSS_CLASSES.FORM_GROUP} ${CSS_CLASSES.ERROR}`
                         : CSS_CLASSES.FORM_GROUP
                     "
-                    @update:model-value="formData[dependentField.field] = $event"
+                    @update:model-value="updateFormField(dependentField.field, $event)"
                   >
                     <template #default="{ field: slotField, modelValue: slotModelValue }">
                       <SpacingControl
@@ -239,7 +239,7 @@
                         :breakpoints="getSpacingBreakpoints(slotField)"
                         :required="isFieldRequired(slotField)"
                         :show-preview="true"
-                        @update:model-value="formData[slotField.field] = $event"
+                        @update:model-value="updateFormField(slotField.field, $event)"
                       />
                     </template>
                   </FormField>
@@ -260,7 +260,7 @@
                     ? `${CSS_CLASSES.FORM_GROUP} ${CSS_CLASSES.ERROR}`
                     : CSS_CLASSES.FORM_GROUP
                 "
-                @update:model-value="formData[fieldGroup.field.field] = $event"
+                @update:model-value="updateFormField(fieldGroup.field.field, $event)"
               >
                 <!-- Специальные поля, которые не обрабатываются FormField -->
                 <template
@@ -283,7 +283,7 @@
                     :breakpoints="getSpacingBreakpoints(slotField)"
                     :required="isFieldRequired(slotField)"
                     :show-preview="true"
-                    @update:model-value="formData[slotField.field] = $event"
+                    @update:model-value="updateFormField(slotField.field, $event)"
                   />
 
                   <!-- eslint-disable-next-line vue/valid-v-bind -->
@@ -310,7 +310,7 @@
                     :custom-field-renderer-registry="props.customFieldRendererRegistry"
                     :is-custom-field-available="isCustomFieldAvailable"
                     :get-custom-field-restriction-message="getCustomFieldsRestrictionMessage"
-                    @update:model-value="formData[slotField.field] = $event"
+                    @update:model-value="updateFormField(slotField.field, $event)"
                   />
 
                   <div v-else-if="slotField.type === 'api-select'" :class="CSS_CLASSES.FORM_GROUP">
@@ -320,7 +320,7 @@
                       :config="slotField"
                       :validation-error="slotError"
                       :api-select-use-case="props.apiSelectUseCase"
-                      @update:model-value="formData[slotField.field] = $event"
+                      @update:model-value="updateFormField(slotField.field, $event)"
                     />
 
                     <div v-else :class="CSS_CLASSES.BB_WARNING_BOX">
@@ -345,7 +345,7 @@
                       :form-errors="formErrors"
                       :custom-field-renderer-registry="props.customFieldRendererRegistry"
                       :is-field-required="isFieldRequired"
-                      @update:model-value="formData[slotField.field] = $event"
+                      @update:model-value="updateFormField(slotField.field, $event)"
                     />
                     <div v-else :class="CSS_CLASSES.BB_WARNING_BOX">
                       ⚠️ {{ getCustomFieldsRestrictionMessage() }}
@@ -367,6 +367,15 @@
           </button>
           <button type="submit" :class="[CSS_CLASSES.BTN, CSS_CLASSES.BTN_PRIMARY]" @click="handleSubmit">
             {{ modalMode === 'create' ? 'Создать' : 'Сохранить' }}
+          </button>
+          <button
+            v-if="validationErrorCount > 0"
+            type="button"
+            :class="CSS_CLASSES.VALIDATION_ERROR_INDICATOR"
+            :aria-label="`Ошибки валидации: ${validationErrorCount}`"
+            @click="navigateToValidationError"
+          >
+            {{ validationErrorCount }}
           </button>
         </div>
       </div>
@@ -396,6 +405,11 @@ import {
   getControlsFixedClass,
 } from '../../utils/constants';
 import { copyToClipboard } from '../../utils/copyToClipboard';
+import { countValidationErrors } from '../../utils/formErrorHelpers';
+import {
+  applyFormErrors,
+  ReactiveFormValidationTracker,
+} from '../../utils/reactiveFormValidation';
 import { lockBodyScroll, unlockBodyScroll } from '../../utils/scrollLock';
 import { getBlockScrollMargins } from '../../utils/scrollHelpers';
 import { ISpacingData } from '../../utils/spacingHelpers';
@@ -473,6 +487,7 @@ const currentBlockId = ref<TBlockId | null>(null);
 const selectedPosition = ref<number | undefined>(undefined);
 const formData = reactive<Record<string, any>>({});
 const formErrors = reactive<Record<string, string[]>>({});
+const validationTracker = new ReactiveFormValidationTracker();
 const repeaterRefs = new Map<string, any>();
 const validationErrorHandler = new ValidationErrorHandler(repeaterRefs);
 const originalInitialBlocks = ref(
@@ -672,6 +687,23 @@ const getFieldError = (field: any): string => {
   return errors[0] || '';
 };
 
+const revalidateIfTouched = (): void => {
+  const nextErrors = validationTracker.revalidateIfTouched(
+    formData,
+    currentBlockFields.value,
+    isFieldVisible
+  );
+
+  if (nextErrors) {
+    applyFormErrors(formErrors, nextErrors);
+  }
+};
+
+const updateFormField = (fieldName: string, value: unknown): void => {
+  formData[fieldName] = value;
+  revalidateIfTouched();
+};
+
 const isFieldRequired = (field: any): boolean => {
   return field.rules?.some((rule: any) => rule.type === 'required') ?? false;
 };
@@ -831,6 +863,7 @@ const closeModal = () => {
   currentBlockId.value = null;
   Object.keys(formData).forEach(key => delete formData[key]);
   Object.keys(formErrors).forEach(key => delete formErrors[key]);
+  validationTracker.reset();
   repeaterRefs.clear();
 };
 
@@ -857,10 +890,9 @@ const createBlock = async (): Promise<boolean> => {
   const fields = currentBlockFields.value;
   const validation = UniversalValidator.validateForm(formData, fields, isFieldVisible);
 
-  Object.keys(formErrors).forEach(key => delete formErrors[key]);
-
   if (!validation.isValid) {
-    Object.assign(formErrors, validation.errors);
+    validationTracker.touch();
+    applyFormErrors(formErrors, validation.errors);
 
     await nextTick();
     await handleValidationErrors();
@@ -913,10 +945,9 @@ const updateBlock = async (): Promise<boolean> => {
   const fields = currentBlockFields.value;
   const validation = UniversalValidator.validateForm(formData, fields, isFieldVisible);
 
-  Object.keys(formErrors).forEach(key => delete formErrors[key]);
-
   if (!validation.isValid) {
-    Object.assign(formErrors, validation.errors);
+    validationTracker.touch();
+    applyFormErrors(formErrors, validation.errors);
 
     await nextTick();
     await handleValidationErrors();
@@ -1151,6 +1182,12 @@ const cleanupBreakpointWatchers = () => {
 
 const handleValidationErrors = async () => {
   await validationErrorHandler.handleValidationErrors(formErrors, 350);
+};
+
+const validationErrorCount = computed(() => countValidationErrors(formErrors));
+
+const navigateToValidationError = async () => {
+  await validationErrorHandler.navigateToValidationError(formErrors);
 };
 
 watch(

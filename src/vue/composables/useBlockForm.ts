@@ -3,6 +3,10 @@ import { computed, reactive, ref } from 'vue';
 import { IBlock, TBlockId } from '../../core/types';
 import { BlockManagementUseCase } from '../../core/use-cases/BlockManagementUseCase';
 import { addSpacingFieldToFields } from '../../utils/blockSpacingHelpers';
+import {
+  applyFormErrors,
+  ReactiveFormValidationTracker,
+} from '../../utils/reactiveFormValidation';
 import { UniversalValidator } from '../../utils/universalValidation';
 
 export function useBlockForm(
@@ -16,6 +20,7 @@ export function useBlockForm(
   const selectedPosition = ref<number | undefined>(undefined);
   const formData = reactive<Record<string, any>>({});
   const formErrors = reactive<Record<string, string[]>>({});
+  const validationTracker = new ReactiveFormValidationTracker();
 
   const currentBlockType = computed(() => {
     if (!currentType.value) {
@@ -32,13 +37,27 @@ export function useBlockForm(
     return addSpacingFieldToFields(blockType.fields || [], blockType.spacingOptions);
   });
 
+  const revalidateIfTouched = (): void => {
+    const nextErrors = validationTracker.revalidateIfTouched(formData, currentBlockFields.value);
+    if (nextErrors) {
+      applyFormErrors(formErrors, nextErrors);
+    }
+  };
+
+  const updateFormField = (fieldName: string, value: unknown): void => {
+    formData[fieldName] = value;
+    revalidateIfTouched();
+  };
+
   const openCreateModal = (type: string, position?: number) => {
     modalMode.value = 'create';
     currentType.value = type;
     currentBlockId.value = null;
     selectedPosition.value = position;
+    validationTracker.reset();
 
     Object.keys(formData).forEach(key => delete formData[key]);
+    Object.keys(formErrors).forEach(key => delete formErrors[key]);
     const blockType = currentBlockType.value;
     blockType?.fields?.forEach((field: any) => {
       if (field.type === 'api-select') {
@@ -56,8 +75,10 @@ export function useBlockForm(
     modalMode.value = 'edit';
     currentType.value = block.type;
     currentBlockId.value = block.id;
+    validationTracker.reset();
 
     Object.keys(formData).forEach(key => delete formData[key]);
+    Object.keys(formErrors).forEach(key => delete formErrors[key]);
     Object.assign(formData, { ...block.props });
 
     showModal.value = true;
@@ -67,6 +88,7 @@ export function useBlockForm(
     showModal.value = false;
     currentType.value = null;
     currentBlockId.value = null;
+    validationTracker.reset();
     Object.keys(formData).forEach(key => delete formData[key]);
     Object.keys(formErrors).forEach(key => delete formErrors[key]);
   };
@@ -84,10 +106,9 @@ export function useBlockForm(
     const fields = currentBlockFields.value;
     const validation = UniversalValidator.validateForm(formData, fields);
 
-    Object.keys(formErrors).forEach(key => delete formErrors[key]);
-
     if (!validation.isValid) {
-      Object.assign(formErrors, validation.errors);
+      validationTracker.touch();
+      applyFormErrors(formErrors, validation.errors);
       return false;
     }
 
@@ -129,10 +150,9 @@ export function useBlockForm(
     const fields = currentBlockFields.value;
     const validation = UniversalValidator.validateForm(formData, fields);
 
-    Object.keys(formErrors).forEach(key => delete formErrors[key]);
-
     if (!validation.isValid) {
-      Object.assign(formErrors, validation.errors);
+      validationTracker.touch();
+      applyFormErrors(formErrors, validation.errors);
       return false;
     }
 
@@ -170,5 +190,7 @@ export function useBlockForm(
     openEditModal,
     closeModal,
     handleSubmit,
+    updateFormField,
+    validationTracker,
   };
 }

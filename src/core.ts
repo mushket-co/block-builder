@@ -59,3 +59,7 @@ export {
   validateSpacing,
 } from './utils/spacingHelpers';
 export { UniversalValidator } from './utils/universalValidation';
+export {
+  applyFormErrors,
+  ReactiveFormValidationTracker,
+} from './utils/reactiveFormValidation';

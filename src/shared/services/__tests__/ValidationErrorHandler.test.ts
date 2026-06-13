@@ -99,4 +99,42 @@ describe('ValidationErrorHandler', () => {
     expect(clickSpy).toHaveBeenCalled();
     clickSpy.mockRestore();
   });
+
+  test('navigateToValidationError reuses scroll flow with shorter delay', async () => {
+    document.body.innerHTML = `
+      <div class="${CSS_CLASSES.MODAL_CONTENT}">
+        <div class="${CSS_CLASSES.MODAL_BODY}">
+          <div class="${CSS_CLASSES.FORM_GROUP} ${CSS_CLASSES.ERROR}">
+            <span class="${CSS_CLASSES.ERROR}">Required</span>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const expandItem = jest.fn();
+    const handler = new ValidationErrorHandler(
+      new Map([
+        [
+          'categories',
+          {
+            isItemCollapsed: () => true,
+            expandItem,
+          },
+        ],
+      ])
+    );
+
+    await handler.navigateToValidationError({
+      'categories[0].name': ['Name is required'],
+    });
+
+    jest.advanceTimersByTime(100);
+    await Promise.resolve();
+    jest.advanceTimersByTime(150);
+    await Promise.resolve();
+    jest.advanceTimersByTime(100);
+    await Promise.resolve();
+
+    expect(expandItem).toHaveBeenCalledWith(0);
+  });
 });

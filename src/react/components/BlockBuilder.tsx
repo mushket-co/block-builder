@@ -66,8 +66,10 @@ export function BlockBuilder(props: IBlockBuilderProps) {
           submitLabel={builder.modalMode === 'create' ? 'Создать' : 'Сохранить'}
           contentClassName={CSS_CLASSES.MODAL_CONTENT}
           bodyClassName={CSS_CLASSES.MODAL_BODY}
+          validationErrorCount={builder.validationErrorCount}
           onClose={builder.closeModal}
           onSubmit={() => void builder.handleSubmit()}
+          onValidationErrorNavigate={() => void builder.navigateToValidationError()}
         >
           <form
             className={CSS_CLASSES.FORM}

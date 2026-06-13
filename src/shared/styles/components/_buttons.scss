@@ -13,6 +13,7 @@
   text-align: center;
   font-family: var(--bb-font-family);
   gap: var(--bb-spacing-sm);
+  border: 1px solid transparent;
 
   &:hover {
     transform: translateY(-2px);
@@ -30,12 +31,21 @@
   }
 }
 
-@mixin btn-variant($bg-color, $hover-color) {
+@mixin btn-variant($bg-color, $color) {
   background: $bg-color;
-  color: white;
+  color: $color;
+  border-color: $bg-color;
 
   &:hover:not(:disabled) {
-    background: $hover-color;
+    background: $color;
+    color: $bg-color;
+    border-color: $bg-color;
+  }
+
+  &:active:not(:disabled) {
+    background: $bg-color;
+    color: $color;
+    border-color: $color;
   }
 }
 
@@ -53,19 +63,19 @@
   }
 
   &--primary {
-    @include btn-variant(var(--bb-color-primary), var(--bb-color-primary-dark));
+    @include btn-variant(var(--bb-color-primary), var(--bb-text-white));
   }
 
   &--secondary {
-    @include btn-variant(var(--bb-color-secondary), var(--bb-color-secondary-dark));
+    @include btn-variant(var(--bb-color-secondary), var(--bb-text-white));
   }
 
   &--success {
-    @include btn-variant(var(--bb-color-success), var(--bb-color-success-dark));
+    @include btn-variant(var(--bb-color-success), var(--bb-text-white));
   }
 
   &--danger {
-    @include btn-variant(var(--bb-color-danger), var(--bb-color-danger-dark));
+    @include btn-variant(var(--bb-color-danger), var(--bb-text-white));
   }
 }
 

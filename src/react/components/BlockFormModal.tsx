@@ -8,9 +8,11 @@ interface IBlockFormModalProps {
   cancelLabel?: string;
   contentClassName?: string;
   bodyClassName?: string;
+  validationErrorCount?: number;
   children: ReactNode;
   onClose: () => void;
   onSubmit: () => void;
+  onValidationErrorNavigate?: () => void;
 }
 
 export function BlockFormModal({
@@ -19,9 +21,11 @@ export function BlockFormModal({
   cancelLabel = 'Отмена',
   contentClassName,
   bodyClassName,
+  validationErrorCount = 0,
   children,
   onClose,
   onSubmit,
+  onValidationErrorNavigate,
 }: IBlockFormModalProps) {
   const handleOverlayMouseDown = (event: MouseEvent<HTMLDivElement>) => {
     if ((event.target as HTMLElement).classList.contains(CSS_CLASSES.MODAL)) {
@@ -49,6 +53,16 @@ export function BlockFormModal({
           <button type="submit" className={`${CSS_CLASSES.BTN} ${CSS_CLASSES.BTN_PRIMARY}`} onClick={onSubmit}>
             {submitLabel}
           </button>
+          {validationErrorCount > 0 ? (
+            <button
+              type="button"
+              className={CSS_CLASSES.VALIDATION_ERROR_INDICATOR}
+              aria-label={`Ошибки валидации: ${validationErrorCount}`}
+              onClick={onValidationErrorNavigate}
+            >
+              {validationErrorCount}
+            </button>
+          ) : null}
         </div>
       </div>
     </div>

@@ -30,16 +30,18 @@ export interface IControlInitializerFactoryConfig {
   getRepeaterFieldConfigs: () => Map<string, Map<string, TFieldConfig>>;
   getRepeaterRenderers: () => Map<string, any>;
   findNestedRepeaterRenderer?: (fieldPath: string) => any;
+  onFieldChange?: () => void;
 }
 
 export const ControlInitializerFactory = {
   createInitializers(config: IControlInitializerFactoryConfig): IControlInitializer[] {
     const initializers: IControlInitializer[] = [];
 
-    initializers.push(new SpacingControlInitializer());
+    initializers.push(new SpacingControlInitializer(config));
 
     const repeaterConfig: IRepeaterControlInitializerConfig = {
       getRepeaterRenderers: config.getRepeaterRenderers,
+      onFieldChange: config.onFieldChange,
     };
     initializers.push(new RepeaterControlInitializer(repeaterConfig));
 
@@ -47,11 +49,13 @@ export const ControlInitializerFactory = {
       apiSelectUseCase: config.apiSelectUseCase,
       getRepeaterFieldConfigs: config.getRepeaterFieldConfigs,
       getRepeaterRenderers: config.getRepeaterRenderers,
+      onFieldChange: config.onFieldChange,
     };
     initializers.push(new ApiSelectControlInitializer(apiSelectConfig));
 
     const selectConfig: ISelectControlInitializerConfig = {
       getCurrentFormFields: config.getCurrentFormFields,
+      onFieldChange: config.onFieldChange,
     };
     initializers.push(new SelectControlInitializer(selectConfig));
 
@@ -59,6 +63,7 @@ export const ControlInitializerFactory = {
       const customFieldConfig: ICustomFieldControlInitializerConfig = {
         customFieldRendererRegistry: config.customFieldRendererRegistry,
         getRepeaterRenderers: config.getRepeaterRenderers,
+        onFieldChange: config.onFieldChange,
       };
       initializers.push(new CustomFieldControlInitializer(customFieldConfig));
     }

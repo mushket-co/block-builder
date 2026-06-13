@@ -35,6 +35,7 @@ export function CustomField({
   const isFieldRequiredRef = useRef(isFieldRequired);
   const fieldRef = useRef(field);
   const formErrorsRef = useRef(formErrors);
+  const lastSyncedValidationErrorRef = useRef<string | null>(null);
   const [initError, setInitError] = useState<string | null>(null);
 
   const rendererId = field.customFieldConfig?.rendererId || '';
@@ -101,6 +102,7 @@ export function CustomField({
           rendererInstanceRef.current.destroy();
         }
         rendererInstanceRef.current = instance;
+        lastSyncedValidationErrorRef.current = fieldError || null;
       } catch (error) {
         const message =
           error instanceof Error ? error.message : 'Ошибка инициализации кастомного поля';
@@ -125,9 +127,16 @@ export function CustomField({
 
   useEffect(() => {
     const instance = rendererInstanceRef.current;
-    const fieldError = getFieldError(field, formErrors);
+    const fieldError = getFieldError(field, formErrors) || null;
+
+    if (fieldError === lastSyncedValidationErrorRef.current) {
+      return;
+    }
+
+    lastSyncedValidationErrorRef.current = fieldError;
+
     if (instance?.setError) {
-      instance.setError(fieldError || null);
+      instance.setError(fieldError);
     }
   }, [field, formErrors]);
 

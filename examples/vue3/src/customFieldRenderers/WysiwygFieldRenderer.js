@@ -61,7 +61,19 @@ export class WysiwygFieldRenderer {
       },
 
       setError: error => {
-        currentError = error || ''
+        const nextError = error || ''
+        if (nextError === currentError) {
+          return
+        }
+
+        currentError = nextError
+
+        const editorRoot = wrapper.querySelector('.wyz-editor')
+        if (editorRoot) {
+          editorRoot.classList.toggle('wyz-editor--is-error', !!currentError)
+          return
+        }
+
         mountEditor()
       },
 

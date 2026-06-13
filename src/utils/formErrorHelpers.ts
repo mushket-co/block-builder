@@ -66,12 +66,13 @@ function parseNestedPath(path: string): Array<{ fieldName: string; index: number
   return parts;
 }
 
-export function getFirstErrorKey(errors: Record<string, string[]>): string | null {
+export function getSortedErrorKeys(errors: Record<string, string[]>): string[] {
   const errorKeys = Object.keys(errors);
   if (errorKeys.length === 0) {
-    return null;
+    return [];
   }
-  const sortedKeys = errorKeys.sort((a, b) => {
+
+  return errorKeys.sort((a, b) => {
     const aInfo = parseErrorKey(a);
     const bInfo = parseErrorKey(b);
     if (!aInfo.isRepeaterField && bInfo.isRepeaterField) {
@@ -120,7 +121,15 @@ export function getFirstErrorKey(errors: Record<string, string[]>): string | nul
     }
     return a.localeCompare(b);
   });
-  return sortedKeys[0];
+}
+
+export function getFirstErrorKey(errors: Record<string, string[]>): string | null {
+  const sortedKeys = getSortedErrorKeys(errors);
+  return sortedKeys[0] ?? null;
+}
+
+export function countValidationErrors(errors: Record<string, string[]>): number {
+  return Object.values(errors).reduce((total, fieldErrors) => total + fieldErrors.length, 0);
 }
 
 export function findFieldElement(

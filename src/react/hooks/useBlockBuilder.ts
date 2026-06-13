@@ -97,6 +97,8 @@ export function useBlockBuilder({
     handleSubmit,
     updateFormField,
     registerRepeaterRef,
+    validationErrorCount,
+    navigateToValidationError,
   } = useBlockForm({
     blockService,
     availableBlockTypes,
@@ -289,5 +291,7 @@ export function useBlockBuilder({
     handleSubmit,
     updateFormField,
     registerRepeaterRef,
+    validationErrorCount,
+    navigateToValidationError,
   };
 }

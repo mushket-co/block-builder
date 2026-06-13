@@ -34,6 +34,7 @@ const emit = defineEmits<{
 const containerRef = ref<HTMLElement | null>(null);
 const initError = ref<string | null>(null);
 let rendererInstance: any = null;
+let lastSyncedValidationError: string | null = null;
 
 const getValidationError = () => getFieldError(props.field, props.formErrors || {});
 
@@ -54,6 +55,7 @@ const initializeRenderer = async () => {
     rendererInstance = null;
   }
 
+  lastSyncedValidationError = null;
   initError.value = null;
 
   const context = {
@@ -75,6 +77,7 @@ const initializeRenderer = async () => {
 
   try {
     rendererInstance = await renderer.render(containerRef.value, context);
+    lastSyncedValidationError = getValidationError() || null;
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Ошибка инициализации кастомного поля';
     initError.value = message;
@@ -83,10 +86,15 @@ const initializeRenderer = async () => {
 };
 
 const syncValidationError = () => {
-  const fieldError = getValidationError();
-  if (rendererInstance?.setError) {
-    rendererInstance.setError(fieldError || null);
+  const fieldError = getValidationError() || null;
+  if (fieldError === lastSyncedValidationError) {
     return;
+  }
+
+  lastSyncedValidationError = fieldError;
+
+  if (rendererInstance?.setError) {
+    rendererInstance.setError(fieldError);
   }
 };
 

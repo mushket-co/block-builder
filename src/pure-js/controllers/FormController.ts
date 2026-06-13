@@ -1,4 +1,7 @@
 import { CSS_CLASSES, FORM_ID_PREFIX } from '../../utils/constants';
+import {
+  ReactiveFormValidationTracker,
+} from '../../utils/reactiveFormValidation';
 import { UniversalValidator } from '../../utils/universalValidation';
 import { ControlManager } from '../services/ControlManager';
 import { FormBuilder, TFieldConfig } from '../services/FormBuilder';
@@ -21,6 +24,10 @@ export class FormController {
   private onFormCancel?: () => void;
   private onValidationError?: (errors: Record<string, string[]>) => void;
   private currentFormFields: Map<string, TFieldConfig> = new Map();
+  private activeFields: TFieldConfig[] = [];
+  private lastValidationErrors: Record<string, string[]> = {};
+  private validationTracker = new ReactiveFormValidationTracker();
+  private boundHandleReactiveValidation: (() => void) | null = null;
 
   constructor(config: IFormControllerConfig) {
     this.formBuilder = config.formBuilder;
@@ -31,11 +38,21 @@ export class FormController {
     this.onValidationError = config.onValidationError;
   }
 
+  triggerReactiveValidation(): void {
+    if (!this.validationTracker.isTouched || this.activeFields.length === 0) {
+      return;
+    }
+
+    const validation = UniversalValidator.validateForm(this.getFormData(), this.activeFields);
+    this.showValidationErrors(validation.errors);
+  }
+
   showCreateForm(
     title: string,
     fields: TFieldConfig[],
     onSubmit: (data: Record<string, any>) => Promise<boolean>
   ): void {
+    this.activeFields = fields;
     this.currentFormFields.clear();
     fields.forEach(field => {
       this.currentFormFields.set(field.field, field);
@@ -61,9 +78,12 @@ export class FormController {
         this.cleanup();
         this.modalManager.closeModal();
       },
+      onValidationErrorNavigate: () => this.navigateToValidationError(),
       submitButtonText: 'Добавить',
       preventBodyScroll: true,
       onAfterModalOpen: () => {
+        this.validationTracker.reset();
+        this.setupReactiveValidationListeners();
         this.initializeControls();
       },
     });
@@ -75,6 +95,7 @@ export class FormController {
     initialData: Record<string, any>,
     onSubmit: (data: Record<string, any>) => Promise<boolean>
   ): void {
+    this.activeFields = fields;
     this.currentFormFields.clear();
     fields.forEach(field => {
       this.currentFormFields.set(field.field, field);
@@ -100,9 +121,12 @@ export class FormController {
         this.cleanup();
         this.modalManager.closeModal();
       },
+      onValidationErrorNavigate: () => this.navigateToValidationError(),
       submitButtonText: 'Сохранить',
       preventBodyScroll: true,
       onAfterModalOpen: () => {
+        this.validationTracker.reset();
+        this.setupReactiveValidationListeners();
         this.initializeControls();
       },
     });
@@ -116,6 +140,7 @@ export class FormController {
     const validation = UniversalValidator.validateForm(formData, fields);
 
     if (!validation.isValid) {
+      this.validationTracker.touch();
       this.showValidationErrors(validation.errors);
       if (this.onValidationError) {
         this.onValidationError(validation.errors);
@@ -170,7 +195,8 @@ export class FormController {
   }
 
   private showValidationErrors(errors: Record<string, string[]>): void {
-    this.clearValidationErrors();
+    this.lastValidationErrors = errors;
+    this.clearValidationErrors(false);
 
     const activeControls = (this.controlManager as any).activeControls as Map<string, any>;
     activeControls.forEach(control => {
@@ -207,9 +233,17 @@ export class FormController {
         input.parentElement?.append(errorContainer);
       }
     });
+
+    this.modalManager.updateValidationErrorIndicator(errors);
   }
 
-  private clearValidationErrors(): void {
+  private navigateToValidationError(): void {
+    if (this.onValidationError && Object.keys(this.lastValidationErrors).length > 0) {
+      this.onValidationError(this.lastValidationErrors);
+    }
+  }
+
+  private clearValidationErrors(updateIndicator: boolean = true): void {
     document
       .querySelectorAll(`.${CSS_CLASSES.FORM_CONTROL}.${CSS_CLASSES.ERROR}`)
       .forEach(input => {
@@ -223,6 +257,37 @@ export class FormController {
     document.querySelectorAll(`.${CSS_CLASSES.FORM_ERRORS}`).forEach(container => {
       container.remove();
     });
+
+    if (updateIndicator) {
+      this.lastValidationErrors = {};
+      this.modalManager.updateValidationErrorIndicator({});
+    }
+  }
+
+  private setupReactiveValidationListeners(): void {
+    this.teardownReactiveValidationListeners();
+
+    const form = document.querySelector(`#${FORM_ID_PREFIX}`) as HTMLFormElement | null;
+    if (!form) {
+      return;
+    }
+
+    this.boundHandleReactiveValidation = () => {
+      this.triggerReactiveValidation();
+    };
+
+    form.addEventListener('input', this.boundHandleReactiveValidation);
+    form.addEventListener('change', this.boundHandleReactiveValidation);
+  }
+
+  private teardownReactiveValidationListeners(): void {
+    const form = document.querySelector(`#${FORM_ID_PREFIX}`) as HTMLFormElement | null;
+    if (form && this.boundHandleReactiveValidation) {
+      form.removeEventListener('input', this.boundHandleReactiveValidation);
+      form.removeEventListener('change', this.boundHandleReactiveValidation);
+    }
+
+    this.boundHandleReactiveValidation = null;
   }
 
   private async initializeControls(): Promise<void> {
@@ -237,6 +302,10 @@ export class FormController {
   }
 
   private cleanup(): void {
+    this.teardownReactiveValidationListeners();
+    this.validationTracker.reset();
+    this.activeFields = [];
+
     const modalBody = document.querySelector(`.${CSS_CLASSES.MODAL_BODY}`) as HTMLElement;
     if (modalBody && (this.controlManager as any).destroyControlsInContainer) {
       (this.controlManager as any).destroyControlsInContainer(modalBody);
