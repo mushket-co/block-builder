@@ -37,6 +37,7 @@
 
 ### Изменено
 
+- Лимиты `check:bundle-size`: JS 180 KB, CSS 46 KB (рост из‑за `block-anchor`, file-upload UI и pure-js initializers)
 - Кнопка «Добавить» в repeater: визуал через `bb-btn bb-btn--success bb-btn--block`; `bb-repeater-control__add-btn` оставлен только как служебный хук (Vue, React, Pure JS)
 - Для file-полей превью-картинки отключено (`shouldShowUploadImagePreview` при `variant: 'file'`)
 
