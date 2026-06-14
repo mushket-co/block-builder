@@ -82,6 +82,73 @@ export const toggleRepeaterBlockType: ITestBlockTypeConfig = {
   defaultProps: { showItems: false, items: [{ name: '' }] },
 };
 
+/** Regression: два repeater с одинаковыми полями (как mainLogoList / otherLogoList в head-banner). */
+export const dualRepeaterCheckboxBlockType: ITestBlockTypeConfig = {
+  type: 'dual-repeater-demo',
+  label: 'Dual repeater demo',
+  fields: [
+    {
+      field: 'showMainLogo',
+      label: 'Main logos',
+      type: 'checkbox',
+      defaultValue: false,
+    },
+    {
+      field: 'mainLogoList',
+      label: 'Main list',
+      type: 'repeater',
+      dependsOn: { field: 'showMainLogo', value: true },
+      defaultValue: [{ backing: false }],
+      repeaterConfig: {
+        itemTitle: 'Main logo',
+        min: 1,
+        fields: [
+          {
+            field: 'backing',
+            label: 'Backing',
+            type: 'checkbox',
+            defaultValue: false,
+          },
+        ],
+        defaultItemValue: { backing: false },
+      },
+    },
+    {
+      field: 'showOtherLogo',
+      label: 'Other logos',
+      type: 'checkbox',
+      defaultValue: false,
+    },
+    {
+      field: 'otherLogoList',
+      label: 'Other list',
+      type: 'repeater',
+      dependsOn: { field: 'showOtherLogo', value: true },
+      defaultValue: [{ backing: false }],
+      repeaterConfig: {
+        itemTitle: 'Other logo',
+        min: 1,
+        fields: [
+          {
+            field: 'backing',
+            label: 'Backing',
+            type: 'checkbox',
+            defaultValue: false,
+          },
+        ],
+        defaultItemValue: { backing: false },
+      },
+    },
+  ],
+  defaultSettings: {},
+  defaultProps: {
+    showMainLogo: false,
+    mainLogoList: [{ backing: false }],
+    showOtherLogo: false,
+    otherLogoList: [{ backing: false }],
+  },
+};
+
 export const linkBlockType: ITestBlockTypeConfig = {
   type: 'link',
   label: 'Link block',

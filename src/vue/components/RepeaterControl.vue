@@ -575,7 +575,8 @@ export default {
     };
 
     const getFieldId = (itemId, fieldName) => {
-      return `repeater-${itemId}-${fieldName}`;
+      const scope = props.parentFieldPath || props.fieldName || 'repeater';
+      return `repeater-${scope}-${itemId}-${fieldName}`;
     };
 
     const isFieldRequired = field => {

@@ -2,6 +2,7 @@ import { mount, type VueWrapper } from '@vue/test-utils';
 
 import { BlockBuilderComponent } from '../../../../src/vue';
 import {
+  dualRepeaterCheckboxBlockType,
   linkBlockType,
   minimalTextBlockType,
   nestedRepeaterBlockType,
@@ -42,4 +43,5 @@ export {
   repeaterToggleBlockType,
   toggleGroupBlockType,
   toggleRepeaterBlockType,
+  dualRepeaterCheckboxBlockType,
 };

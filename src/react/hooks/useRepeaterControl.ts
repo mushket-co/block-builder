@@ -248,9 +248,13 @@ export function useRepeaterControl({
     [emitUpdate, fields]
   );
 
-  const getFieldId = useCallback((itemId: string, fieldKey: string) => {
-    return `repeater-${itemId}-${fieldKey}`;
-  }, []);
+  const getFieldId = useCallback(
+    (itemId: string, fieldKey: string) => {
+      const scope = parentFieldPath || fieldName || 'repeater';
+      return `repeater-${scope}-${itemId}-${fieldKey}`;
+    },
+    [fieldName, parentFieldPath]
+  );
 
   const getFullFieldPath = useCallback(
     (index: number, fieldKey: string) => {
