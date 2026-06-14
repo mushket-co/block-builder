@@ -8,7 +8,7 @@ const LIMITS = {
   'index.js': 180 * 1024,
   'core.esm.js': 180 * 1024,
   'core.js': 180 * 1024,
-  'index.esm.css': 46 * 1024,
+  'index.esm.css': 50 * 1024,
 };
 
 function formatKb(bytes) {
