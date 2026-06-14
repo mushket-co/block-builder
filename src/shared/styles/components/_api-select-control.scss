@@ -310,6 +310,11 @@
     &:hover {
       color: var(--bb-color-danger);
     }
+
+    svg {
+      width: 16px;
+      height: 16px;
+    }
   }
 
   &__error {
