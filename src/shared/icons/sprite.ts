@@ -26,12 +26,15 @@ export const ICON_SYMBOLS = {
   save: '<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" stroke="currentColor" fill="none"/><polyline points="17 21 17 13 7 13 7 21" stroke="currentColor" fill="none"/><polyline points="7 3 7 8 15 8" stroke="currentColor" fill="none"/>',
 
   close:
-    '<line x1="18" y1="6" x2="6" y2="18" stroke="currentColor"/><line x1="6" y1="6" x2="18" y2="18" stroke="currentColor"/>',
+    '<g transform="translate(12 12) scale(1.25654450262) translate(-9.53 -9.53)"><path fill="currentColor" d="M8.8-3.2h1.5v25.5H8.8z" transform="rotate(-45.001 9.53 9.53)"/><path fill="currentColor" d="M-3.2 8.8h25.5v1.5H-3.2z" transform="rotate(-45.001 9.53 9.53)"/></g>',
 } as const;
 
 export function generateSVGSprite(): string {
   const symbols = Object.entries(ICON_SYMBOLS)
-    .map(([name, content]) => `<symbol id="icon-${name}" viewBox="0 0 24 24">${content}</symbol>`)
+    .map(
+      ([name, content]) =>
+        `<symbol id="block-builder-icon-${name}" viewBox="0 0 24 24">${content}</symbol>`
+    )
     .join('\n    ');
 
   return `<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
@@ -42,5 +45,5 @@ export function generateSVGSprite(): string {
 }
 
 export function getIconHTML(name: keyof typeof ICON_SYMBOLS, size = 16): string {
-  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-${name}"/></svg>`;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#block-builder-icon-${name}"/></svg>`;
 }

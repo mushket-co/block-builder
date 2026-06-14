@@ -10,7 +10,7 @@
     stroke-linejoin="round"
     :class="className"
   >
-    <use :href="`#icon-${name}`" />
+    <use :href="`#block-builder-icon-${name}`" />
   </svg>
 </template>
 

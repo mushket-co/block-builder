@@ -274,6 +274,7 @@ export default {
     CustomField,
     ImageUploadField,
     ToggleControl,
+    Icon,
   },
 
   props: {
