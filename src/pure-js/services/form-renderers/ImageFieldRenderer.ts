@@ -1,5 +1,6 @@
 import { IFormFieldConfig, TFieldType } from '../../../core/types/form';
 import { CSS_CLASSES } from '../../../utils/constants';
+import { getIconHTML } from '../../../shared/icons/sprite';
 import {
   getDefaultAccept,
   getFileExtensionBadge,
@@ -298,7 +299,7 @@ export class ImageFieldRenderer extends BaseFieldRenderer {
       return `
         <div class="${CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW}">
           <img src="${this.escapeHtml(url)}" alt="${escapedLabel}" class="${CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW_IMG}" />
-          <button type="button" class="${CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW_CLEAR}" ${clearButtonDataAttrs.join(' ')} title="Удалить">×</button>
+          <button type="button" class="${CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW_CLEAR}" ${clearButtonDataAttrs.join(' ')} title="Удалить">${getIconHTML('close', 14)}</button>
         </div>
       `;
     }
@@ -306,7 +307,7 @@ export class ImageFieldRenderer extends BaseFieldRenderer {
     return `
       <div class="${CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW} ${CSS_CLASSES.IMAGE_UPLOAD_FIELD_FILE_INFO}">
         <a href="${this.escapeHtml(url)}" target="_blank" rel="noopener noreferrer" class="${CSS_CLASSES.IMAGE_UPLOAD_FIELD_FILE_NAME}">${this.escapeHtml(getFileNameFromUrl(url))}</a>
-        <button type="button" class="${CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW_CLEAR}" ${clearButtonDataAttrs.join(' ')} title="Удалить">×</button>
+        <button type="button" class="${CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW_CLEAR}" ${clearButtonDataAttrs.join(' ')} title="Удалить">${getIconHTML('close', 14)}</button>
       </div>
     `;
   }
@@ -330,7 +331,7 @@ export class ImageFieldRenderer extends BaseFieldRenderer {
         return `
           <div class="${CSS_CLASSES.IMAGE_UPLOAD_FIELD_GALLERY_ITEM}">
             ${preview}
-            <button type="button" class="${CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW_CLEAR}" ${clearButtonDataAttrs.join(' ')} title="Удалить">×</button>
+            <button type="button" class="${CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW_CLEAR}" ${clearButtonDataAttrs.join(' ')} title="Удалить">${getIconHTML('close', 14)}</button>
           </div>
         `;
       })

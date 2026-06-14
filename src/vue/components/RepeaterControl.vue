@@ -55,7 +55,7 @@
               :title="removeButtonText"
               @click="removeItem(index)"
             >
-              ✕
+              <Icon name="close" :width="16" :height="16" />
             </button>
           </div>
         </div>
@@ -252,6 +252,7 @@
 import { computed, onMounted, ref, watch } from 'vue';
 
 import { CSS_CLASSES, UI_STRINGS } from '../../utils/constants';
+import Icon from '../../shared/icons/Icon.vue';
 import { getRepeaterCountText } from '../../utils/repeaterCountText';
 import {
   assignRepeaterItemId,

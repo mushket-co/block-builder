@@ -53,25 +53,27 @@
 
     &-circle {
       position: absolute;
-      left: 2px;
+      left: var(--bb-toggle-offset, 2px);
       top: 50%;
       width: 20px;
       height: 20px;
       border-radius: 50%;
       background-color: white;
-      transform: translateY(-50%) translateX(0);
-      transition: transform var(--bb-transition-base, 0.2s ease);
+      --bb-toggle-translate-x: 0;
+      transform: translateY(-50%) translateX(var(--bb-toggle-translate-x));
+      transition:
+        left var(--bb-transition-base, 0.2s ease),
+        transform var(--bb-transition-base, 0.2s ease);
     }
 
     &--is-active &-circle {
       left: 100%;
-      transform: translateY(-50%) translateX(calc(-100% - 2px));
+      --bb-toggle-translate-x: calc((100% + var(--bb-toggle-offset, 2px)) * -1);
     }
   }
 
   &__body {
     margin-top: var(--bb-spacing-lg, 16px);
-
     display: flex;
     flex-direction: column;
     gap: var(--bb-spacing-lg);

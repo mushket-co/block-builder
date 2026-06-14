@@ -11,3 +11,4 @@ export const eyeIconHTML = getIconHTML('eye');
 export const eyeOffIconHTML = getIconHTML('eyeOff');
 export const deleteIconHTML = getIconHTML('delete');
 export const saveIconHTML = getIconHTML('save');
+export const closeIconHTML = getIconHTML('close');

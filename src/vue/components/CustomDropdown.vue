@@ -60,7 +60,7 @@
           :class="CSS_CLASSES.BB_DROPDOWN_CLEAR"
           @click.stop="clearSelection"
         >
-          ✕
+          <Icon name="close" :width="12" :height="12" />
         </button>
 
         <span
@@ -154,6 +154,7 @@
 
 <script setup lang="ts">
 import { CSS_CLASSES } from '../../utils/constants';
+import Icon from '../../shared/icons/Icon.vue';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 interface IDropdownOption {

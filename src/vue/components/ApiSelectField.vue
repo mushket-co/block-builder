@@ -70,7 +70,7 @@
             :class="CSS_CLASSES.BB_API_SELECT_CLEAR"
             @click.stop="() => handleClear(actions.clear)"
           >
-            ✕
+            <Icon name="close" :width="14" :height="14" />
           </span>
 
           <button
@@ -100,7 +100,9 @@
     <div v-if="isMultiple && selectedItems.length > 0" :class="CSS_CLASSES.BB_API_SELECT_SELECTED">
       <div v-for="item in selectedItems" :key="item.id" :class="CSS_CLASSES.BB_API_SELECT_TAG">
         <span :class="CSS_CLASSES.BB_API_SELECT_TAG_NAME">{{ item.name }}</span>
-        <span :class="CSS_CLASSES.BB_API_SELECT_TAG_REMOVE" @click="removeItem(item.id)">✕</span>
+        <span :class="CSS_CLASSES.BB_API_SELECT_TAG_REMOVE" @click="removeItem(item.id)">
+          <Icon name="close" :width="12" :height="12" />
+        </span>
       </div>
     </div>
   </div>
@@ -113,6 +115,7 @@ import {
   scheduleApiSelectSearch,
 } from '../../utils/apiSelectSearchDebounce';
 import { CSS_CLASSES } from '../../utils/constants';
+import Icon from '../../shared/icons/Icon.vue';
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import { defineAsyncComponent } from 'vue';
 

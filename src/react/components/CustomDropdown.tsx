@@ -14,6 +14,7 @@ import {
 import { createPortal } from 'react-dom';
 
 import { CSS_CLASSES } from '../../utils/constants';
+import { Icon } from './icons/Icon';
 
 export interface IDropdownOption {
   value: string | number;
@@ -791,7 +792,7 @@ export const CustomDropdown = forwardRef<ICustomDropdownRef, ICustomDropdownProp
               clearSelection();
             }}
           >
-            ✕
+            <Icon name="close" width={12} height={12} />
           </button>
         ) : null}
 

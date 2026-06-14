@@ -1,4 +1,5 @@
 import { CSS_CLASSES } from '../../utils/constants';
+import { getIconHTML } from '../../shared/icons/sprite';
 import {
   getDefaultAccept,
   getMaxUploadCountErrorMessage,
@@ -394,7 +395,7 @@ export class ImageUploadControlInitializer {
     preview.style.display = 'block';
     preview.innerHTML = `
       <img src="${imageUrl}" alt="" class="${CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW_IMG}" />
-      <button type="button" class="${CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW_CLEAR}" title="Удалить изображение">×</button>
+      <button type="button" class="${CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW_CLEAR}" title="Удалить изображение">${getIconHTML('close', 14)}</button>
     `;
   }
 
@@ -418,7 +419,7 @@ export class ImageUploadControlInitializer {
     item.className = CSS_CLASSES.IMAGE_UPLOAD_FIELD_GALLERY_ITEM;
     item.innerHTML = `
       <img src="${imageUrl}" alt="" class="${CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW_IMG}" />
-      <button type="button" class="${CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW_CLEAR}" title="Удалить">×</button>
+      <button type="button" class="${CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW_CLEAR}" title="Удалить">${getIconHTML('close', 14)}</button>
     `;
     gallery.append(item);
   }

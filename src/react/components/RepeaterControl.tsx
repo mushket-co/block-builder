@@ -5,6 +5,7 @@ import type { IRepeaterItemFieldConfig } from '../../core/types/form';
 import type { ApiSelectUseCase } from '../../core/use-cases/ApiSelectUseCase';
 import type { IRepeaterRef } from '../../shared/services/ValidationErrorHandler';
 import { CSS_CLASSES, UI_STRINGS } from '../../utils/constants';
+import { Icon } from './icons/Icon';
 import { useRepeaterControl } from '../hooks/useRepeaterControl';
 import { RepeaterItemFields } from './RepeaterItemFields';
 
@@ -168,7 +169,7 @@ export function RepeaterControl({
                   title={removeButtonText}
                   onClick={() => repeater.removeItem(index)}
                 >
-                  ✕
+                  <Icon name="close" width={16} height={16} />
                 </button>
               </div>
             </div>

@@ -128,7 +128,7 @@
           title="Удалить"
           @click="removeItem(index)"
         >
-          ×
+          <Icon name="close" :width="14" :height="14" />
         </button>
       </div>
 
@@ -158,7 +158,7 @@
           title="Удалить изображение"
           @click="clearValue"
         >
-          ×
+          <Icon name="close" :width="14" :height="14" />
         </button>
       </div>
     </template>
@@ -194,6 +194,7 @@ import { computed, nextTick, onMounted, ref, watch } from 'vue';
 
 import type { IFileUploadConfig } from '../../core/types/form';
 import { CSS_CLASSES } from '../../utils/constants';
+import Icon from '../../shared/icons/Icon.vue';
 import {
   canAddUploadItems,
   getDefaultAccept,

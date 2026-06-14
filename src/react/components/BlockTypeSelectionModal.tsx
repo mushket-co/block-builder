@@ -1,6 +1,7 @@
 import type { MouseEvent } from 'react';
 
 import { CSS_CLASSES } from '../../utils/constants';
+import { Icon } from './icons/Icon';
 
 export interface IBlockTypeOption {
   type: string;
@@ -31,7 +32,7 @@ export function BlockTypeSelectionModal({
         <div className={CSS_CLASSES.MODAL_HEADER}>
           <h3>Выберите тип блока</h3>
           <button type="button" className={CSS_CLASSES.MODAL_CLOSE} onClick={onClose}>
-            ×
+            <Icon name="close" width={20} height={20} />
           </button>
         </div>
         <div className={CSS_CLASSES.MODAL_BODY}>

@@ -1,6 +1,7 @@
 import type { MouseEvent, ReactNode } from 'react';
 
 import { CSS_CLASSES } from '../../utils/constants';
+import { Icon } from './icons/Icon';
 
 interface IBlockFormModalProps {
   title: string;
@@ -42,7 +43,7 @@ export function BlockFormModal({
         <div className={CSS_CLASSES.MODAL_HEADER}>
           <h3>{title}</h3>
           <button type="button" className={CSS_CLASSES.MODAL_CLOSE} onClick={onClose}>
-            ×
+            <Icon name="close" width={20} height={20} />
           </button>
         </div>
         <div className={[CSS_CLASSES.MODAL_BODY, bodyClassName].filter(Boolean).join(' ')}>{children}</div>

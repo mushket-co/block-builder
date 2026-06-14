@@ -4,6 +4,7 @@ import {
   IRepeaterItemFieldConfig,
 } from '../../core/types/form';
 import { CSS_CLASSES } from '../../utils/constants';
+import { getIconHTML } from '../../shared/icons/sprite';
 import { getRepeaterCountText } from '../../utils/repeaterCountText';
 import {
   assignRepeaterItemId,
@@ -461,7 +462,7 @@ export class RepeaterControlRenderer {
             ${!canRemove ? 'disabled' : ''}
             title="${this.config.removeButtonText || 'Удалить'}"
           >
-            ✕
+            ${getIconHTML('close', 16)}
           </button>
         </div>
       </div>

@@ -16,6 +16,7 @@ import {
   type IApiSelectDebounceTimerRef,
 } from '../../utils/apiSelectSearchDebounce';
 import { CSS_CLASSES } from '../../utils/constants';
+import { getIconHTML } from '../../shared/icons/sprite';
 
 export interface IApiSelectControlOptions {
   fieldName: string;
@@ -437,7 +438,7 @@ export class ApiSelectControlRenderer {
     } else if (this.hasValue()) {
       const clear = document.createElement('span');
       clear.className = CSS_CLASSES.BB_API_SELECT_CLEAR;
-      clear.textContent = '✕';
+      clear.innerHTML = getIconHTML('close', 14);
       clear.dataset.apiSelectClear = '';
       toggleButton.before(clear);
     }
@@ -688,7 +689,7 @@ export class ApiSelectControlRenderer {
         tag.className = CSS_CLASSES.BB_API_SELECT_TAG;
         tag.innerHTML = `
         <span class="${CSS_CLASSES.BB_API_SELECT_TAG_NAME}">${item.name}</span>
-        <span class="${CSS_CLASSES.BB_API_SELECT_TAG_REMOVE}" data-api-select-remove="${item.id}">✕</span>
+        <span class="${CSS_CLASSES.BB_API_SELECT_TAG_REMOVE}" data-api-select-remove="${item.id}">${getIconHTML('close', 12)}</span>
       `;
         tagsContainer.append(tag);
       });
@@ -756,7 +757,7 @@ export class ApiSelectControlRenderer {
             />
           </div>
           ${this.loading ? `<span class="${CSS_CLASSES.BB_API_SELECT_LOADER}">⏳</span>` : ''}
-          ${!this.loading && this.hasValue() ? `<span class="${CSS_CLASSES.BB_API_SELECT_CLEAR}" data-api-select-clear>✕</span>` : ''}
+          ${!this.loading && this.hasValue() ? `<span class="${CSS_CLASSES.BB_API_SELECT_CLEAR}" data-api-select-clear>${getIconHTML('close', 14)}</span>` : ''}
           <button
             type="button"
             class="${CSS_CLASSES.BB_API_SELECT_TOGGLE} ${this.isDropdownOpen ? CSS_CLASSES.BB_API_SELECT_TOGGLE_OPEN : ''}"
@@ -812,7 +813,7 @@ export class ApiSelectControlRenderer {
               item => `
             <div class="${CSS_CLASSES.BB_API_SELECT_TAG}">
               <span class="${CSS_CLASSES.BB_API_SELECT_TAG_NAME}">${item.name}</span>
-              <span class="${CSS_CLASSES.BB_API_SELECT_TAG_REMOVE}" data-api-select-remove="${item.id}">✕</span>
+              <span class="${CSS_CLASSES.BB_API_SELECT_TAG_REMOVE}" data-api-select-remove="${item.id}">${getIconHTML('close', 12)}</span>
             </div>
           `
             )

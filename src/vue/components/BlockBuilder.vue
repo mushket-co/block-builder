@@ -161,7 +161,9 @@
       <div :class="CSS_CLASSES.MODAL_CONTENT" @mousedown.stop>
         <div :class="CSS_CLASSES.MODAL_HEADER">
           <h3>Выберите тип блока</h3>
-          <button :class="CSS_CLASSES.MODAL_CLOSE" @click="closeTypeSelectionModal">×</button>
+          <button :class="CSS_CLASSES.MODAL_CLOSE" @click="closeTypeSelectionModal">
+            <Icon name="close" :width="20" :height="20" />
+          </button>
         </div>
 
         <div :class="CSS_CLASSES.MODAL_BODY">
@@ -196,7 +198,9 @@
           <h3>
             {{ modalMode === 'create' ? 'Создать' : 'Редактировать' }} {{ currentBlockType?.label }}
           </h3>
-          <button :class="CSS_CLASSES.MODAL_CLOSE" @click="closeModal">×</button>
+          <button :class="CSS_CLASSES.MODAL_CLOSE" @click="closeModal">
+            <Icon name="close" :width="20" :height="20" />
+          </button>
         </div>
 
         <div :class="CSS_CLASSES.MODAL_BODY">

@@ -1,4 +1,5 @@
 import { CSS_CLASSES } from '../../utils/constants';
+import { getIconHTML } from '../../shared/icons/sprite';
 import { countValidationErrors } from '../../utils/formErrorHelpers';
 import { lockBodyScroll, unlockBodyScroll } from '../../utils/scrollLock';
 
@@ -95,7 +96,7 @@ export class ModalManager {
       <div class="${CSS_CLASSES.MODAL_CONTENT}" id="${ModalManager.MODAL_CONTENT_ID}">
         <div class="${CSS_CLASSES.MODAL_HEADER}">
           <h3>${escapedTitle}</h3>
-          <button data-action="closeModal" class="${CSS_CLASSES.MODAL_CLOSE}">&times;</button>
+          <button data-action="closeModal" class="${CSS_CLASSES.MODAL_CLOSE}">${getIconHTML('close', 20)}</button>
         </div>
         <div class="${CSS_CLASSES.MODAL_BODY}">
           ${options.bodyHTML}

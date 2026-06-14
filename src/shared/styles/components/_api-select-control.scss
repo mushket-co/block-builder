@@ -121,7 +121,9 @@
   &__clear {
     position: absolute;
     right: 40px;
-    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     color: var(--bb-text-muted);
     cursor: pointer;
     user-select: none;
@@ -292,8 +294,10 @@
   }
 
   &__tag-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
-    font-weight: bold;
     color: var(--bb-color-primary);
     transition: color 0.2s;
 

@@ -1,4 +1,5 @@
 import { CSS_CLASSES } from '../../utils/constants';
+import { getIconHTML } from '../../shared/icons/sprite';
 import {
   BaseDropdownRenderer,
   IBaseDropdownRendererOptions,
@@ -205,7 +206,7 @@ export class SelectControlRenderer extends BaseDropdownRenderer {
           clearBtn.type = 'button';
           clearBtn.className = CSS_CLASSES.BB_DROPDOWN_CLEAR;
           clearBtn.dataset.selectClear = '';
-          clearBtn.textContent = '✕';
+          clearBtn.innerHTML = getIconHTML('close', 12);
           clearBtn.addEventListener('click', e => {
             e.stopPropagation();
             e.preventDefault();
@@ -293,7 +294,7 @@ export class SelectControlRenderer extends BaseDropdownRenderer {
           <div class="${CSS_CLASSES.BB_DROPDOWN_VALUE}">
             ${displayValue ? `<span class="${CSS_CLASSES.BB_DROPDOWN_SINGLE}">${this.escapeHtml(displayValue)}</span>` : `<span class="${CSS_CLASSES.BB_DROPDOWN_PLACEHOLDER}">${this.escapeHtml(this.placeholder)}</span>`}
           </div>
-          ${showClear ? `<button type="button" class="${CSS_CLASSES.BB_DROPDOWN_CLEAR}" data-select-clear>✕</button>` : ''}
+          ${showClear ? `<button type="button" class="${CSS_CLASSES.BB_DROPDOWN_CLEAR}" data-select-clear>${getIconHTML('close', 12)}</button>` : ''}
           <span class="${CSS_CLASSES.BB_DROPDOWN_ARROW} ${this.isDropdownOpen ? CSS_CLASSES.BB_DROPDOWN_ARROW_OPEN : ''}">▼</span>
         </div>
         ${this.multiple && hasValue ? this.renderSelectedTags() : ''}
@@ -323,7 +324,7 @@ export class SelectControlRenderer extends BaseDropdownRenderer {
             opt => `
           <div class="${CSS_CLASSES.BB_API_SELECT_TAG}">
             <span class="${CSS_CLASSES.BB_API_SELECT_TAG_NAME}">${this.escapeHtml(opt.label)}</span>
-            <span class="${CSS_CLASSES.BB_API_SELECT_TAG_REMOVE}" data-select-remove="${opt.value}">✕</span>
+            <span class="${CSS_CLASSES.BB_API_SELECT_TAG_REMOVE}" data-select-remove="${opt.value}">${getIconHTML('close', 12)}</span>
           </div>
         `
           )

@@ -2,6 +2,7 @@ import { useEffect, useId, useMemo, useRef, useState } from 'react';
 
 import type { IFileUploadConfig } from '../../core/types/form';
 import { CSS_CLASSES } from '../../utils/constants';
+import { Icon } from './icons/Icon';
 import {
   canAddUploadItems,
   getDefaultAccept,
@@ -349,7 +350,7 @@ export function ImageUploadField({
                 title="Удалить"
                 onClick={() => removeItem(index)}
               >
-                ×
+                <Icon name="close" width={14} height={14} />
               </button>
             </div>
           ))}
@@ -383,7 +384,7 @@ export function ImageUploadField({
             title="Удалить изображение"
             onClick={clearValue}
           >
-            ×
+            <Icon name="close" width={14} height={14} />
           </button>
         </div>
       ) : null}

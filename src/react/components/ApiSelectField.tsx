@@ -24,6 +24,7 @@ import {
   scheduleApiSelectSearch,
 } from '../../utils/apiSelectSearchDebounce';
 import { CSS_CLASSES } from '../../utils/constants';
+import { Icon } from './icons/Icon';
 import {
   CustomDropdown,
   type ICustomDropdownRef,
@@ -434,7 +435,7 @@ export function ApiSelectField({
                   handleClear(actions.clear);
                 }}
               >
-                ✕
+                <Icon name="close" width={14} height={14} />
               </span>
             ) : null}
 
@@ -477,7 +478,7 @@ export function ApiSelectField({
                 className={CSS_CLASSES.BB_API_SELECT_TAG_REMOVE}
                 onClick={() => removeItem(item.id)}
               >
-                ✕
+                <Icon name="close" width={12} height={12} />
               </span>
             </div>
           ))}
