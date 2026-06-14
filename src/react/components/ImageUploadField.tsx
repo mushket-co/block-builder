@@ -1,7 +1,21 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 
-import type { IImageUploadConfig } from '../../core/types/form';
+import type { IFileUploadConfig } from '../../core/types/form';
 import { CSS_CLASSES } from '../../utils/constants';
+import {
+  canAddUploadItems,
+  getDefaultAccept,
+  getFileExtensionBadge,
+  getFileNameFromUrl,
+  getMaxUploadCountErrorMessage,
+  getUploadUrl,
+  normalizeUploadItems,
+  partitionFilesForUpload,
+  processUploadFile,
+  resolveUploadConfig,
+  serializeUploadValue,
+  type TUploadFieldVariant,
+} from '../../utils/uploadFieldUtils';
 
 interface IImageUploadFieldProps {
   modelValue?: unknown;
@@ -9,43 +23,14 @@ interface IImageUploadFieldProps {
   required?: boolean;
   placeholder?: string;
   error?: string;
-  imageUploadConfig?: IImageUploadConfig;
+  variant?: TUploadFieldVariant;
+  multiple?: boolean;
+  fileUploadConfig?: IFileUploadConfig;
   fieldNamePath?: string;
   dataRepeaterField?: string;
   dataRepeaterIndex?: number | string;
   dataRepeaterItemField?: string;
   onChange: (value: unknown) => void;
-}
-
-async function uploadFileToServer(file: File, config: IImageUploadConfig): Promise<unknown> {
-  const uploadUrl = config.uploadUrl;
-  if (!uploadUrl) {
-    throw new Error('uploadUrl не указан в конфигурации');
-  }
-
-  const uploadHeaders = config.uploadHeaders || {};
-  const fileParamName = config.fileParamName || 'file';
-
-  const formData = new FormData();
-  formData.append(fileParamName, file);
-
-  const response = await fetch(uploadUrl, {
-    method: 'POST',
-    headers: uploadHeaders,
-    body: formData,
-  });
-
-  if (!response.ok) {
-    throw new Error(`Ошибка загрузки: ${response.statusText}`);
-  }
-
-  const responseData = await response.json();
-
-  if (config.responseMapper) {
-    return config.responseMapper(responseData);
-  }
-
-  return responseData;
 }
 
 export function ImageUploadField({
@@ -54,7 +39,9 @@ export function ImageUploadField({
   required = false,
   placeholder = '',
   error = '',
-  imageUploadConfig,
+  variant = 'image',
+  multiple = false,
+  fileUploadConfig,
   fieldNamePath: fieldNamePathProp,
   dataRepeaterField,
   dataRepeaterIndex,
@@ -66,6 +53,19 @@ export function ImageUploadField({
   const [fileError, setFileError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const inputId = useId();
+
+  const uploadConfig = useMemo(() => resolveUploadConfig({ fileUploadConfig }), [fileUploadConfig]);
+
+  const isMultiple = multiple;
+  const isFileVariant = variant === 'file';
+  const accept = getDefaultAccept(variant, uploadConfig);
+  const items = useMemo(() => normalizeUploadItems(modelValue, isMultiple), [modelValue, isMultiple]);
+  const singleDisplayValue = items[0] || '';
+  const canAddMore = canAddUploadItems(items, uploadConfig, isMultiple);
+
+  const chooseButtonLabel = placeholder || (isFileVariant ? 'Выберите файл' : 'Выберите изображение');
+  const changeButtonLabel = isFileVariant ? 'Заменить файл' : 'Изменить изображение';
+  const addButtonLabel = isFileVariant ? 'Добавить файл' : 'Добавить';
 
   const fieldNamePath = useMemo(() => {
     if (fieldNamePathProp) {
@@ -116,39 +116,42 @@ export function ImageUploadField({
     }
   }, [dataRepeaterField, dataRepeaterIndex, dataRepeaterItemField]);
 
-  const displayValue = useMemo(() => {
-    const value = modelValue;
-    if (!value) {
-      return '';
-    }
+  const emitValue = (nextItems: string[]) => {
+    onChange(serializeUploadValue(nextItems, isMultiple));
+  };
 
-    if (typeof value === 'string') {
-      return value;
+  const clearValue = () => {
+    emitValue([]);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
+    setFileError('');
+  };
 
-    if (typeof value === 'object' && value !== null && 'src' in value) {
-      return String((value as { src?: string }).src || '');
-    }
-
-    return '';
-  }, [modelValue]);
+  const removeItem = (index: number) => {
+    emitValue(items.filter((_, itemIndex) => itemIndex !== index));
+  };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) {
+    const selectedFiles = Array.from(event.target.files || []);
+    if (!selectedFiles.length) {
       return;
     }
 
-    const config = imageUploadConfig || {};
-    const maxFileSize = config.maxFileSize || 10 * 1024 * 1024;
+    const { filesToUpload, maxCountExceeded, maxCount } = partitionFilesForUpload(
+      selectedFiles,
+      items.length,
+      uploadConfig,
+      isMultiple
+    );
 
-    if (!file.type.startsWith('image/')) {
-      setFileError('Пожалуйста, выберите файл изображения');
-      return;
-    }
-
-    if (file.size > maxFileSize) {
-      setFileError(`Размер файла не должен превышать ${Math.round(maxFileSize / 1024 / 1024)}MB`);
+    if (!filesToUpload.length) {
+      if (maxCountExceeded) {
+        setFileError(getMaxUploadCountErrorMessage(maxCount));
+      }
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
       return;
     }
 
@@ -156,19 +159,28 @@ export function ImageUploadField({
     setIsLoading(true);
 
     try {
-      if (config.uploadUrl) {
-        const uploadedUrl = await uploadFileToServer(file, config);
-        onChange(uploadedUrl);
+      const uploadedItems: string[] = [];
+
+      for (const file of filesToUpload) {
+        const result = await processUploadFile(file, uploadConfig, variant);
+        const url = getUploadUrl(result);
+        if (url) {
+          uploadedItems.push(url);
+        }
+      }
+
+      if (!uploadedItems.length) {
+        return;
+      }
+
+      if (isMultiple) {
+        emitValue([...items, ...uploadedItems]);
       } else {
-        const reader = new FileReader();
-        reader.addEventListener('load', loadEvent => {
-          const result = loadEvent.target?.result as string;
-          onChange(result);
-        });
-        reader.addEventListener('error', () => {
-          setFileError('Ошибка при чтении файла');
-        });
-        reader.readAsDataURL(file);
+        emitValue([uploadedItems[0]]);
+      }
+
+      if (maxCountExceeded) {
+        setFileError(getMaxUploadCountErrorMessage(maxCount));
       }
     } catch (uploadError) {
       if (uploadError instanceof TypeError && uploadError.message === 'Failed to fetch') {
@@ -178,29 +190,142 @@ export function ImageUploadField({
           uploadError instanceof Error ? uploadError.message : 'Ошибка при загрузке файла'
         );
       }
-      if (config.onUploadError && uploadError instanceof Error) {
-        config.onUploadError(uploadError);
+      if (uploadConfig.onUploadError && uploadError instanceof Error) {
+        uploadConfig.onUploadError(uploadError);
       }
     } finally {
       setIsLoading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
-  const clearImage = () => {
-    onChange('');
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-    setFileError('');
-  };
+  if (isFileVariant) {
+    return (
+      <div
+        ref={containerRef}
+        className={[
+          CSS_CLASSES.FILE_UPLOAD_FIELD,
+          error ? CSS_CLASSES.ERROR : '',
+          isMultiple ? CSS_CLASSES.FILE_UPLOAD_FIELD_MULTIPLE : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+        data-field-name={fieldNamePath || undefined}
+        data-upload-variant="file"
+        data-upload-multiple={isMultiple ? 'true' : 'false'}
+      >
+        {label ? (
+          <label htmlFor={inputId} className={CSS_CLASSES.FILE_UPLOAD_FIELD_LABEL}>
+            {label}
+            {required ? <span className={CSS_CLASSES.FILE_UPLOAD_FIELD_REQUIRED}>*</span> : null}
+          </label>
+        ) : null}
+
+        {isMultiple && items.length ? (
+          <ul className={CSS_CLASSES.FILE_UPLOAD_FIELD_LIST}>
+            {items.map((itemUrl, index) => (
+              <li key={`${itemUrl}-${index}`} className={CSS_CLASSES.FILE_UPLOAD_FIELD_ROW}>
+                <span className={CSS_CLASSES.FILE_UPLOAD_FIELD_BADGE}>
+                  {getFileExtensionBadge(itemUrl)}
+                </span>
+                <a
+                  href={itemUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={CSS_CLASSES.FILE_UPLOAD_FIELD_NAME}
+                >
+                  {getFileNameFromUrl(itemUrl)}
+                </a>
+                <button
+                  type="button"
+                  className={CSS_CLASSES.FILE_UPLOAD_FIELD_REMOVE}
+                  title="Удалить"
+                  onClick={() => removeItem(index)}
+                >
+                  Удалить
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+
+        {!isMultiple && singleDisplayValue ? (
+          <div className={CSS_CLASSES.FILE_UPLOAD_FIELD_ROW}>
+            <span className={CSS_CLASSES.FILE_UPLOAD_FIELD_BADGE}>
+              {getFileExtensionBadge(singleDisplayValue)}
+            </span>
+            <a
+              href={singleDisplayValue}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={CSS_CLASSES.FILE_UPLOAD_FIELD_NAME}
+            >
+              {getFileNameFromUrl(singleDisplayValue)}
+            </a>
+            <button
+              type="button"
+              className={CSS_CLASSES.FILE_UPLOAD_FIELD_REMOVE}
+              title="Удалить файл"
+              onClick={clearValue}
+            >
+              Удалить
+            </button>
+          </div>
+        ) : null}
+
+        <div className={CSS_CLASSES.FILE_UPLOAD_FIELD_PICKER}>
+          <input
+            id={inputId}
+            ref={fileInputRef}
+            type="file"
+            accept={accept}
+            multiple={isMultiple}
+            className={CSS_CLASSES.FILE_UPLOAD_FIELD_INPUT}
+            onChange={handleFileChange}
+          />
+          {!isMultiple || canAddMore ? (
+            <label
+              htmlFor={inputId}
+              className={[
+                CSS_CLASSES.BTN,
+                CSS_CLASSES.BTN_OUTLINE,
+                isLoading ? CSS_CLASSES.BTN_LOADING : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+            >
+              {isLoading ? (
+                '⏳ Загрузка...'
+              ) : isMultiple ? (
+                `+ ${addButtonLabel}`
+              ) : singleDisplayValue ? (
+                changeButtonLabel
+              ) : (
+                chooseButtonLabel
+              )}
+            </label>
+          ) : null}
+          {fileError ? <span className={CSS_CLASSES.FILE_UPLOAD_FIELD_ERROR}>{fileError}</span> : null}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
       ref={containerRef}
-      className={[CSS_CLASSES.IMAGE_UPLOAD_FIELD, error ? CSS_CLASSES.ERROR : '']
+      className={[
+        CSS_CLASSES.IMAGE_UPLOAD_FIELD,
+        error ? CSS_CLASSES.ERROR : '',
+        isMultiple ? CSS_CLASSES.IMAGE_UPLOAD_FIELD_MULTIPLE : '',
+      ]
         .filter(Boolean)
         .join(' ')}
       data-field-name={fieldNamePath || undefined}
+      data-upload-variant="image"
+      data-upload-multiple={isMultiple ? 'true' : 'false'}
     >
       {label ? (
         <label htmlFor={inputId} className={CSS_CLASSES.IMAGE_UPLOAD_FIELD_LABEL}>
@@ -209,10 +334,46 @@ export function ImageUploadField({
         </label>
       ) : null}
 
-      {displayValue ? (
+      {isMultiple ? (
+        <div className={CSS_CLASSES.IMAGE_UPLOAD_FIELD_GALLERY}>
+          {items.map((itemUrl, index) => (
+            <div key={`${itemUrl}-${index}`} className={CSS_CLASSES.IMAGE_UPLOAD_FIELD_GALLERY_ITEM}>
+              <img
+                src={itemUrl}
+                alt={label || 'Изображение'}
+                className={CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW_IMG}
+              />
+              <button
+                type="button"
+                className={CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW_CLEAR}
+                title="Удалить"
+                onClick={() => removeItem(index)}
+              >
+                ×
+              </button>
+            </div>
+          ))}
+
+          {canAddMore ? (
+            <label
+              htmlFor={inputId}
+              className={[
+                CSS_CLASSES.IMAGE_UPLOAD_FIELD_GALLERY_ADD,
+                isLoading ? CSS_CLASSES.IMAGE_UPLOAD_FIELD_FILE_LABEL_LOADING : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+            >
+              {isLoading ? <span>⏳ Загрузка...</span> : <span>+ {addButtonLabel}</span>}
+            </label>
+          ) : null}
+        </div>
+      ) : null}
+
+      {!isMultiple && singleDisplayValue ? (
         <div className={CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW}>
           <img
-            src={displayValue}
+            src={singleDisplayValue}
             alt={label || 'Изображение'}
             className={CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW_IMG}
           />
@@ -220,7 +381,7 @@ export function ImageUploadField({
             type="button"
             className={CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW_CLEAR}
             title="Удалить изображение"
-            onClick={clearImage}
+            onClick={clearValue}
           >
             ×
           </button>
@@ -232,25 +393,28 @@ export function ImageUploadField({
           id={inputId}
           ref={fileInputRef}
           type="file"
-          accept="image/*"
+          accept={accept}
+          multiple={isMultiple}
           className={CSS_CLASSES.IMAGE_UPLOAD_FIELD_FILE_INPUT}
           onChange={handleFileChange}
         />
-        <label
-          htmlFor={inputId}
-          className={[
-            CSS_CLASSES.IMAGE_UPLOAD_FIELD_FILE_LABEL,
-            isLoading ? CSS_CLASSES.IMAGE_UPLOAD_FIELD_FILE_LABEL_LOADING : '',
-          ]
-            .filter(Boolean)
-            .join(' ')}
-        >
-          {isLoading ? (
-            <span>⏳ Загрузка...</span>
-          ) : (
-            <span>{displayValue ? 'Изменить файл' : placeholder || 'Выберите изображение'}</span>
-          )}
-        </label>
+        {!isMultiple ? (
+          <label
+            htmlFor={inputId}
+            className={[
+              CSS_CLASSES.IMAGE_UPLOAD_FIELD_FILE_LABEL,
+              isLoading ? CSS_CLASSES.IMAGE_UPLOAD_FIELD_FILE_LABEL_LOADING : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
+          >
+            {isLoading ? (
+              <span>⏳ Загрузка...</span>
+            ) : (
+              <span>{singleDisplayValue ? changeButtonLabel : chooseButtonLabel}</span>
+            )}
+          </label>
+        ) : null}
         {fileError ? <span className={CSS_CLASSES.IMAGE_UPLOAD_FIELD_ERROR}>{fileError}</span> : null}
       </div>
     </div>

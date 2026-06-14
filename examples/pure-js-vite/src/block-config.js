@@ -89,7 +89,40 @@ export const blockConfigs = {
     description: 'Добавьте текстовый контент',
     render: {
       kind: 'html',
-      template: (props) => `
+      template: (props) => {
+        const getUrl = (value) => {
+          if (!value) return '';
+          if (typeof value === 'string') return value;
+          if (typeof value === 'object') return value.src || value.url || '';
+          return '';
+        };
+        const getUrls = (value) => {
+          if (Array.isArray(value)) {
+            return value.map(getUrl).filter(Boolean);
+          }
+          const single = getUrl(value);
+          return single ? [single] : [];
+        };
+
+        const imageUrl = getUrl(props.image);
+        const imageUrls = getUrls(props.images);
+        const fileUrl = getUrl(props.file);
+        const fileUrls = getUrls(props.files);
+
+        const imagesHtml = imageUrl
+          ? `<div class="text-block__media" style="margin-top:16px;text-align:left;"><p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#6c757d;">Изображение</p><img src="${imageUrl}" alt="" style="display:block;max-width:100%;height:auto;border-radius:4px;" /></div>`
+          : '';
+        const galleryHtml = imageUrls.length
+          ? `<div class="text-block__media" style="margin-top:16px;text-align:left;"><p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#6c757d;">Изображения</p><div style="display:flex;flex-wrap:wrap;gap:8px;">${imageUrls.map(url => `<img src="${url}" alt="" style="width:120px;height:120px;object-fit:cover;border-radius:4px;" />`).join('')}</div></div>`
+          : '';
+        const fileHtml = fileUrl
+          ? `<div class="text-block__media" style="margin-top:16px;text-align:left;"><p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#6c757d;">Файл</p><a href="${fileUrl}" target="_blank" rel="noopener noreferrer" style="color:var(--bb-color-primary,#0066cc);font-size:14px;">Скачать файл</a></div>`
+          : '';
+        const filesHtml = fileUrls.length
+          ? `<div class="text-block__media" style="margin-top:16px;text-align:left;"><p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#6c757d;">Файлы</p><ul style="margin:0;padding-left:18px;">${fileUrls.map((url, index) => `<li><a href="${url}" target="_blank" rel="noopener noreferrer" style="color:var(--bb-color-primary,#0066cc);font-size:14px;">Файл ${index + 1}</a></li>`).join('')}</ul></div>`
+          : '';
+
+        return `
         <div class="text-block">
           <div class="container">
             <div style="
@@ -102,11 +135,16 @@ export const blockConfigs = {
               background: #f8f9fa;
               transition: all 0.2s ease;
             " onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'" onmouseout="this.style.boxShadow='none'">
-              ${props.content}
+              <p class="text-block__content" style="margin:0 0 12px;">${props.content}</p>
+              ${imagesHtml}
+              ${galleryHtml}
+              ${fileHtml}
+              ${filesHtml}
             </div>
           </div>
         </div>
-      `
+      `;
+      }
     },
     fields: [
       {
@@ -148,6 +186,64 @@ export const blockConfigs = {
         ],
         rules: [{ type: 'required', message: 'Выравнивание обязательно' }],
         defaultValue: 'left'
+      },
+      {
+        field: 'image',
+        label: 'Изображение (одно)',
+        type: 'image',
+        rules: [],
+        defaultValue: '',
+        fileUploadConfig: {
+          uploadUrl: '/api/upload',
+          fileParamName: 'file',
+          maxFileSize: 5 * 1024 * 1024,
+          responseMapper: (response) => ({ src: response.url })
+        }
+      },
+      {
+        field: 'images',
+        label: 'Изображения (несколько)',
+        type: 'image',
+        multiple: true,
+        rules: [],
+        defaultValue: [],
+        fileUploadConfig: {
+          uploadUrl: '/api/upload',
+          fileParamName: 'file',
+          maxFileSize: 5 * 1024 * 1024,
+          maxCount: 5,
+          responseMapper: (response) => ({ src: response.url })
+        }
+      },
+      {
+        field: 'file',
+        label: 'Файл (один)',
+        type: 'file',
+        rules: [],
+        defaultValue: '',
+        fileUploadConfig: {
+          uploadUrl: '/api/upload',
+          fileParamName: 'file',
+          maxFileSize: 5 * 1024 * 1024,
+          accept: '.pdf,.doc,.docx,.zip',
+          responseMapper: (response) => response.url
+        }
+      },
+      {
+        field: 'files',
+        label: 'Файлы (несколько)',
+        type: 'file',
+        multiple: true,
+        rules: [],
+        defaultValue: [],
+        fileUploadConfig: {
+          uploadUrl: '/api/upload',
+          fileParamName: 'file',
+          maxFileSize: 5 * 1024 * 1024,
+          accept: '.pdf,.doc,.docx,.zip',
+          maxCount: 5,
+          responseMapper: (response) => response.url
+        }
       }
     ],
     spacingOptions: {
@@ -216,7 +312,7 @@ export const blockConfigs = {
           { type: 'required', message: 'Изображение обязательно' }
         ],
         defaultValue: '',
-        imageUploadConfig: {
+        fileUploadConfig: {
           uploadUrl: '/api/upload',
           fileParamName: 'file',
           maxFileSize: 1 * 1024 * 1024,
@@ -398,7 +494,7 @@ export const blockConfigs = {
               type: 'image',
               rules: [{ type: 'required', message: 'Изображение обязательно' }],
               defaultValue: '',
-              imageUploadConfig: {
+              fileUploadConfig: {
                 uploadUrl: '/api/upload',
                 fileParamName: 'file',
                 maxFileSize: 1 * 1024 * 1024, // 1MB для демо
@@ -1639,14 +1735,19 @@ export const blockConfigs = {
           : '';
         const target = props.linkTarget || '_self';
         const rel = target === '_blank' ? ' rel="noopener noreferrer"' : '';
+        const url = props.url || '#';
+        const anchorClick = url.startsWith('#')
+          ? `onclick="event.preventDefault(); document.querySelector('[data-block-id=&quot;${url.slice(1)}&quot;]')?.scrollIntoView({behavior:'smooth',block:'start'});"`
+          : '';
 
         return `
           <div class="link-block" style="${blockStyle} text-align: center; margin: 20px 0;">
             <div class="container">
               <a
-                href="${props.url || '#'}"
+                href="${url}"
                 target="${target}"
                 ${rel}
+                ${anchorClick}
                 style="
                   color: var(--bb-color-primary);
                   text-decoration: none;
@@ -1677,12 +1778,14 @@ export const blockConfigs = {
       },
       {
         field: 'url',
-        label: 'URL',
-        type: 'text',
-        placeholder: '/news/123/ или https://example.com',
+        label: 'Якорь или URL',
+        type: 'block-anchor',
+        blockAnchorConfig: {
+          placeholder: 'Выберите блок на странице',
+          allowCustomUrl: true
+        },
         rules: [
-          { type: 'required', message: 'URL обязателен' },
-          { type: 'minLength', value: 1, message: 'Ссылка не может быть пустой' }
+          { type: 'required', message: 'Укажите якорь или URL' }
         ],
         defaultValue: ''
       },
@@ -2032,7 +2135,7 @@ export const blockConfigs = {
                     type: 'image',
                     rules: [],
                     defaultValue: '',
-                    imageUploadConfig: {
+                    fileUploadConfig: {
                       uploadUrl: '/api/upload',
                       fileParamName: 'file',
                       maxFileSize: 5 * 1024 * 1024,

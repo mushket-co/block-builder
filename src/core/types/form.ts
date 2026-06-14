@@ -16,7 +16,8 @@ export type TFieldType =
   | 'spacing'
   | 'repeater'
   | 'api-select'
-  | 'custom';
+  | 'custom'
+  | 'block-anchor';
 export type TSpacingType = 'padding-top' | 'padding-bottom' | 'margin-top' | 'margin-bottom';
 export interface IBreakpoint {
   name: string;
@@ -54,7 +55,8 @@ export interface IRepeaterItemFieldConfig {
   multiple?: boolean;
   apiSelectConfig?: IApiSelectConfig;
   customFieldConfig?: ICustomFieldConfig;
-  imageUploadConfig?: IImageUploadConfig;
+  fileUploadConfig?: IFileUploadConfig;
+  blockAnchorConfig?: IBlockAnchorConfig;
   repeaterConfig?: IRepeaterFieldConfig;
   /**
    * Условное отображение поля: поле показывается только если другое поле имеет определенное значение
@@ -81,8 +83,8 @@ export interface IRepeaterFieldConfig {
   max?: number;
   defaultItemValue?: Record<string, unknown>;
   /**
-   * Максимальная глубина вложенности репитеров (по умолчанию 2)
-   * Используется для предотвращения бесконечной рекурсии
+   * Системное поле `id` элементов генерируется автоматически (не отображается в форме),
+   * если в fields нет пользовательского поля `id` другого типа (например api-select).
    */
   maxNestingDepth?: number;
 }
@@ -124,7 +126,7 @@ export interface IApiSelectConfig {
   loadingText?: string;
   errorText?: string;
 }
-export interface IImageUploadConfig {
+export interface IFileUploadConfig {
   uploadUrl?: string;
 
   fileParamName?: string;
@@ -135,9 +137,21 @@ export interface IImageUploadConfig {
 
   accept?: string;
 
+  /** Максимум файлов при field.multiple = true */
+  maxCount?: number;
+
   responseMapper?: (response: unknown) => unknown;
 
   onUploadError?: (error: Error) => void;
+}
+export interface IBlockAnchorConfig {
+  placeholder?: string;
+  /** Разрешить произвольный URL помимо якоря на блок страницы */
+  allowCustomUrl?: boolean;
+  /** Исключить редактируемый блок из списка (по умолчанию true) */
+  excludeEditingBlock?: boolean;
+  /** Показывать только видимые блоки (по умолчанию true) */
+  onlyVisibleBlocks?: boolean;
 }
 export interface IFormFieldConfig {
   field: string;
@@ -152,7 +166,8 @@ export interface IFormFieldConfig {
   repeaterConfig?: IRepeaterFieldConfig;
   apiSelectConfig?: IApiSelectConfig;
   customFieldConfig?: ICustomFieldConfig;
-  imageUploadConfig?: IImageUploadConfig;
+  fileUploadConfig?: IFileUploadConfig;
+  blockAnchorConfig?: IBlockAnchorConfig;
   /**
    * Условное отображение поля: поле показывается только если другое поле имеет определенное значение
    * Используется только в Vue версии

@@ -1,5 +1,6 @@
 export { ApiSelectFieldRenderer } from './ApiSelectFieldRenderer';
 export { BaseFieldRenderer } from './BaseFieldRenderer';
+export { BlockAnchorFieldRenderer } from './BlockAnchorFieldRenderer';
 export { CheckboxFieldRenderer } from './CheckboxFieldRenderer';
 export { ColorFieldRenderer } from './ColorFieldRenderer';
 export { CustomFieldRenderer } from './CustomFieldRenderer';

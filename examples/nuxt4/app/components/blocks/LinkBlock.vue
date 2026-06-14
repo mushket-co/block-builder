@@ -6,6 +6,7 @@
         :target="linkTarget"
         :rel="linkRel"
         class="link-block__link"
+        @click="handleClick"
       >
         {{ text }}
       </a>
@@ -27,7 +28,7 @@ const props = defineProps({
   },
   linkTarget: {
     type: String,
-    default: '_self' // '_self' или '_blank'
+    default: '_self'
   },
   hasBackground: {
     type: Boolean,
@@ -57,6 +58,17 @@ const blockStyle = computed(() => {
   }
   return styles
 })
+
+const handleClick = (event) => {
+  if (!props.url.startsWith('#')) {
+    return
+  }
+
+  event.preventDefault()
+  const blockId = props.url.slice(1)
+  const target = document.querySelector(`[data-block-id="${blockId}"]`)
+  target?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
 </script>
 
 <style scoped>
@@ -82,4 +94,3 @@ const blockStyle = computed(() => {
   color: var(--bb-color-primary);
 }
 </style>
-

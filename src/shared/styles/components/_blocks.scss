@@ -80,7 +80,7 @@
     background-color: var(--bb-bg-primary);
     transition: all var(--bb-transition-base);
     padding: 8px;
-    border-radius: 8px;
+    border-radius: var(--bb-radius-md);
     opacity: 0.5;
     transform: translateX(200vw) translateY(200vh);
 

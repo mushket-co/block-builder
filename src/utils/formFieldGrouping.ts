@@ -1,4 +1,5 @@
-import type { IFormFieldConfig } from '../core/types/form';
+import type { IFormFieldConfig, IRepeaterItemFieldConfig } from '../core/types/form';
+import { getRepeaterFormFields } from './repeaterItemId';
 
 export type TFormFieldGroup =
   | {
@@ -14,16 +15,17 @@ export type TFormFieldGroup =
     };
 
 export function groupFormFields(fields: IFormFieldConfig[]): TFormFieldGroup[] {
+  const visibleFields = getRepeaterFormFields(fields as IRepeaterItemFieldConfig[]);
   const groups: TFormFieldGroup[] = [];
   const processedFields = new Set<string>();
 
-  for (const field of fields) {
+  for (const field of visibleFields) {
     if (processedFields.has(field.field)) {
       continue;
     }
 
     if (field.type === 'checkbox') {
-      const dependentFields = fields.filter(
+      const dependentFields = visibleFields.filter(
         f =>
           f.dependsOn?.field === field.field &&
           f.dependsOn?.value === true &&

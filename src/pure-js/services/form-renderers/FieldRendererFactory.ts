@@ -1,5 +1,6 @@
 import { TFieldType } from '../../../core/types/form';
 import { ApiSelectFieldRenderer } from './ApiSelectFieldRenderer';
+import { BlockAnchorFieldRenderer } from './BlockAnchorFieldRenderer';
 import { CheckboxFieldRenderer } from './CheckboxFieldRenderer';
 import { ColorFieldRenderer } from './ColorFieldRenderer';
 import { CustomFieldRenderer } from './CustomFieldRenderer';
@@ -47,6 +48,7 @@ export class FieldRendererFactory {
     this.register('repeater', new RepeaterFieldRenderer());
     this.register('api-select', new ApiSelectFieldRenderer());
     this.register('custom', new CustomFieldRenderer());
+    this.register('block-anchor', new BlockAnchorFieldRenderer());
   }
 
   register(fieldType: TFieldType, renderer: IFieldRenderer): void {

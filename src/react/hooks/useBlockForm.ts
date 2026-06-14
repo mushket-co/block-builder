@@ -305,6 +305,7 @@ export function useBlockForm({
   return {
     showModal,
     modalMode,
+    currentBlockId,
     currentBlockType,
     currentBlockFields,
     formData,

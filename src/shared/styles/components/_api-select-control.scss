@@ -39,7 +39,7 @@
     align-items: center;
     width: 100%;
     border: 1px solid var(--bb-border-color);
-    border-radius: 6px;
+    border-radius: var(--bb-radius-md);
     background-color: var(--bb-bg-primary);
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 
@@ -100,7 +100,7 @@
       display: none;
     }
     border: unset !important;
-    border-radius: 6px;
+    border-radius: var(--bb-radius-md);
     font-size: 14px;
     color: var(--bb-text-primary);
     background-color: var(--bb-bg-primary);
@@ -174,7 +174,7 @@
     background: var(--bb-bg-primary);
     border: 1px solid var(--bb-border-color);
     color: var(--bb-text-primary);
-    border-radius: 6px;
+    border-radius: var(--bb-radius-md);
     max-height: 300px;
     min-width: 200px;
     overflow-y: auto;
@@ -191,7 +191,7 @@
 
     &::-webkit-scrollbar-thumb {
       background-color: var(--bb-color-scrollbar);
-      border-radius: 4px;
+      border-radius: var(--bb-radius-md);
 
       &:hover {
         background-color: var(--bb-color-scrollbar-hover);
@@ -275,7 +275,7 @@
     padding: 4px 8px;
     background-color: var(--bb-color-primary-hover);
     color: var(--bb-color-primary);
-    border-radius: 4px;
+    border-radius: var(--bb-radius-md);
     font-size: 13px;
     transition: background-color 0.2s;
 

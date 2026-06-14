@@ -104,7 +104,7 @@ describe('BlockFormFields (React)', () => {
 
     await waitFor(() => {
       expect(onFieldChange).toHaveBeenCalledWith('slides', [
-        { title: 'Slide 1', hasLink: true, linkUrl: '' },
+        expect.objectContaining({ title: 'Slide 1', hasLink: true, linkUrl: '' }),
       ]);
     });
   });

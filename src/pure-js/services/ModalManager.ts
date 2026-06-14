@@ -218,12 +218,12 @@ export class ModalManager {
       }
 
       const hiddenInput = form.querySelector(
-        `input[type="hidden"][name="${key}"][data-image-value="true"]`
+        `input[type="hidden"][name="${key}"][data-image-value="true"], input[type="hidden"][name="${key}"][data-file-value="true"]`
       );
       if (hiddenInput && typeof value === 'string') {
         try {
           const parsed = JSON.parse(value);
-          props[key] = typeof parsed === 'object' && parsed !== null ? parsed : value;
+          props[key] = parsed;
         } catch {
           props[key] = value;
         }

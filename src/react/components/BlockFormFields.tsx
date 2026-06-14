@@ -20,7 +20,7 @@ import { SpacingControl } from './SpacingControl';
 import { ToggleControl } from './ToggleControl';
 import type { IBlockType } from '../types/blockBuilder';
 
-const SPECIAL_FIELD_TYPES = new Set(['spacing', 'repeater', 'api-select', 'custom', 'image']);
+const SPECIAL_FIELD_TYPES = new Set(['spacing', 'repeater', 'api-select', 'custom', 'image', 'file']);
 
 interface IBlockFormFieldsProps {
   fields: IFormFieldConfig[];
@@ -139,7 +139,7 @@ export function BlockFormFields({
       );
     }
 
-    if (field.type === 'image') {
+    if (field.type === 'image' || field.type === 'file') {
       return (
         <ImageUploadField
           modelValue={value}
@@ -147,7 +147,9 @@ export function BlockFormFields({
           required={isFieldRequired(field)}
           placeholder={field.placeholder}
           error={error}
-          imageUploadConfig={field.imageUploadConfig}
+          variant={field.type === 'file' ? 'file' : 'image'}
+          multiple={field.multiple ?? false}
+          fileUploadConfig={field.fileUploadConfig}
           fieldNamePath={field.field}
           onChange={nextValue => onFieldChange(field.field, nextValue)}
         />

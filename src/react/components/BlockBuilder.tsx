@@ -1,6 +1,8 @@
 import { CSS_CLASSES } from '../../utils/constants';
+import { useMemo } from 'react';
 import { useBlockBuilder } from '../hooks/useBlockBuilder';
 import type { IBlockBuilderProps } from '../types/blockBuilder';
+import { BlockAnchorContext } from '../context/blockAnchorContext';
 import { BlockControlsBar } from './BlockControlsBar';
 import { BlockFormFields } from './BlockFormFields';
 import { BlockFormModal } from './BlockFormModal';
@@ -21,6 +23,25 @@ export function BlockBuilder(props: IBlockBuilderProps) {
   } = props;
 
   const builder = useBlockBuilder(props);
+
+  const blockAnchorContext = useMemo(() => {
+    const blockTypeLabels: Record<string, string> = {};
+    builder.availableBlockTypes.forEach(blockType => {
+      blockTypeLabels[blockType.type] = blockType.label || blockType.type;
+    });
+
+    return {
+      blocks: builder.blocks.map(block => ({
+        id: block.id,
+        type: block.type,
+        props: block.props,
+        settings: block.settings,
+        visible: block.visible,
+      })),
+      editingBlockId: builder.currentBlockId,
+      blockTypeLabels,
+    };
+  }, [builder.availableBlockTypes, builder.blocks, builder.currentBlockId]);
 
   return (
     <div className={builder.appClassName}>
@@ -78,16 +99,18 @@ export function BlockBuilder(props: IBlockBuilderProps) {
               void builder.handleSubmit();
             }}
           >
-            <BlockFormFields
-              fields={builder.currentBlockFields}
-              currentBlockType={builder.currentBlockType}
-              formData={builder.formData}
-              formErrors={builder.formErrors}
-              apiSelectUseCase={apiSelectUseCase}
-              customFieldRendererRegistry={customFieldRendererRegistry}
-              onFieldChange={builder.updateFormField}
-              onRepeaterReady={builder.registerRepeaterRef}
-            />
+            <BlockAnchorContext.Provider value={blockAnchorContext}>
+              <BlockFormFields
+                fields={builder.currentBlockFields}
+                currentBlockType={builder.currentBlockType}
+                formData={builder.formData}
+                formErrors={builder.formErrors}
+                apiSelectUseCase={apiSelectUseCase}
+                customFieldRendererRegistry={customFieldRendererRegistry}
+                onFieldChange={builder.updateFormField}
+                onRepeaterReady={builder.registerRepeaterRef}
+              />
+            </BlockAnchorContext.Provider>
           </form>
         </BlockFormModal>
       ) : null}

@@ -1,0 +1,9 @@
+@use '../variables' as *;
+
+.bb-block-anchor-custom {
+  margin-top: var(--bb-spacing-sm, 8px);
+}
+
+.bb-block-anchor-placeholder {
+  width: 100%;
+}

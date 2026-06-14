@@ -1,40 +1,180 @@
 <template>
   <div
+    v-if="isFileVariant"
     ref="containerRef"
-    :class="[CSS_CLASSES.IMAGE_UPLOAD_FIELD, { [CSS_CLASSES.ERROR]: error }]"
+    :class="[
+      CSS_CLASSES.FILE_UPLOAD_FIELD,
+      { [CSS_CLASSES.ERROR]: error },
+      isMultiple ? CSS_CLASSES.FILE_UPLOAD_FIELD_MULTIPLE : '',
+    ]"
     :data-field-name="fieldNamePath"
+    data-upload-variant="file"
+    :data-upload-multiple="isMultiple ? 'true' : 'false'"
+  >
+    <label v-if="label" :for="inputId" :class="CSS_CLASSES.FILE_UPLOAD_FIELD_LABEL">
+      {{ label }}
+      <span v-if="required" :class="CSS_CLASSES.FILE_UPLOAD_FIELD_REQUIRED">*</span>
+    </label>
+
+    <ul v-if="isMultiple && items.length" :class="CSS_CLASSES.FILE_UPLOAD_FIELD_LIST">
+      <li
+        v-for="(itemUrl, index) in items"
+        :key="`${itemUrl}-${index}`"
+        :class="CSS_CLASSES.FILE_UPLOAD_FIELD_ROW"
+      >
+        <span :class="CSS_CLASSES.FILE_UPLOAD_FIELD_BADGE">{{ getExtensionBadge(itemUrl) }}</span>
+        <a
+          :href="itemUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+          :class="CSS_CLASSES.FILE_UPLOAD_FIELD_NAME"
+        >
+          {{ getFileName(itemUrl) }}
+        </a>
+        <button
+          type="button"
+          :class="CSS_CLASSES.FILE_UPLOAD_FIELD_REMOVE"
+          title="Удалить"
+          @click="removeItem(index)"
+        >
+          Удалить
+        </button>
+      </li>
+    </ul>
+
+    <div
+      v-else-if="!isMultiple && singleDisplayValue"
+      :class="CSS_CLASSES.FILE_UPLOAD_FIELD_ROW"
+    >
+      <span :class="CSS_CLASSES.FILE_UPLOAD_FIELD_BADGE">
+        {{ getExtensionBadge(singleDisplayValue) }}
+      </span>
+      <a
+        :href="singleDisplayValue"
+        target="_blank"
+        rel="noopener noreferrer"
+        :class="CSS_CLASSES.FILE_UPLOAD_FIELD_NAME"
+      >
+        {{ getFileName(singleDisplayValue) }}
+      </a>
+      <button
+        type="button"
+        :class="CSS_CLASSES.FILE_UPLOAD_FIELD_REMOVE"
+        title="Удалить файл"
+        @click="clearValue"
+      >
+        Удалить
+      </button>
+    </div>
+
+    <div :class="CSS_CLASSES.FILE_UPLOAD_FIELD_PICKER">
+      <input
+        :id="inputId"
+        ref="fileInputRef"
+        type="file"
+        :accept="accept"
+        :multiple="isMultiple"
+        :class="CSS_CLASSES.FILE_UPLOAD_FIELD_INPUT"
+        @change="handleFileChange"
+      />
+      <label
+        v-if="!isMultiple || canAddMore"
+        :for="inputId"
+        :class="[
+          CSS_CLASSES.BTN,
+          CSS_CLASSES.BTN_OUTLINE,
+          { [CSS_CLASSES.BTN_LOADING]: isLoading },
+        ]"
+      >
+        <template v-if="isLoading">⏳ Загрузка...</template>
+        <template v-else-if="isMultiple">+ {{ addButtonLabel }}</template>
+        <template v-else>{{ singleDisplayValue ? changeButtonLabel : chooseButtonLabel }}</template>
+      </label>
+      <span v-if="fileError" :class="CSS_CLASSES.FILE_UPLOAD_FIELD_ERROR">{{ fileError }}</span>
+    </div>
+  </div>
+
+  <div
+    v-else
+    ref="containerRef"
+    :class="[
+      CSS_CLASSES.IMAGE_UPLOAD_FIELD,
+      { [CSS_CLASSES.ERROR]: error },
+      isMultiple ? CSS_CLASSES.IMAGE_UPLOAD_FIELD_MULTIPLE : '',
+    ]"
+    :data-field-name="fieldNamePath"
+    data-upload-variant="image"
+    :data-upload-multiple="isMultiple ? 'true' : 'false'"
   >
     <label v-if="label" :for="inputId" :class="CSS_CLASSES.IMAGE_UPLOAD_FIELD_LABEL">
       {{ label }}
       <span v-if="required" :class="CSS_CLASSES.IMAGE_UPLOAD_FIELD_REQUIRED">*</span>
     </label>
 
-    <div v-if="displayValue" :class="CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW">
-      <img
-        :src="displayValue"
-        :alt="label || 'Изображение'"
-        :class="CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW_IMG"
-      />
-      <button
-        type="button"
-        :class="CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW_CLEAR"
-        title="Удалить изображение"
-        @click="clearImage"
+    <div v-if="isMultiple" :class="CSS_CLASSES.IMAGE_UPLOAD_FIELD_GALLERY">
+      <div
+        v-for="(itemUrl, index) in items"
+        :key="`${itemUrl}-${index}`"
+        :class="CSS_CLASSES.IMAGE_UPLOAD_FIELD_GALLERY_ITEM"
       >
-        ×
-      </button>
+        <img
+          :src="itemUrl"
+          :alt="label || 'Изображение'"
+          :class="CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW_IMG"
+        />
+        <button
+          type="button"
+          :class="CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW_CLEAR"
+          title="Удалить"
+          @click="removeItem(index)"
+        >
+          ×
+        </button>
+      </div>
+
+      <label
+        v-if="canAddMore"
+        :for="inputId"
+        :class="[
+          CSS_CLASSES.IMAGE_UPLOAD_FIELD_GALLERY_ADD,
+          { [CSS_CLASSES.IMAGE_UPLOAD_FIELD_FILE_LABEL_LOADING]: isLoading },
+        ]"
+      >
+        <span v-if="isLoading">⏳ Загрузка...</span>
+        <span v-else>+ {{ addButtonLabel }}</span>
+      </label>
     </div>
+
+    <template v-if="!isMultiple">
+      <div v-if="singleDisplayValue" :class="CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW">
+        <img
+          :src="singleDisplayValue"
+          :alt="label || 'Изображение'"
+          :class="CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW_IMG"
+        />
+        <button
+          type="button"
+          :class="CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW_CLEAR"
+          title="Удалить изображение"
+          @click="clearValue"
+        >
+          ×
+        </button>
+      </div>
+    </template>
 
     <div :class="CSS_CLASSES.IMAGE_UPLOAD_FIELD_FILE">
       <input
         :id="inputId"
         ref="fileInputRef"
         type="file"
-        accept="image/*"
+        :accept="accept"
+        :multiple="isMultiple"
         :class="CSS_CLASSES.IMAGE_UPLOAD_FIELD_FILE_INPUT"
         @change="handleFileChange"
       />
       <label
+        v-if="!isMultiple"
         :for="inputId"
         :class="[
           CSS_CLASSES.IMAGE_UPLOAD_FIELD_FILE_LABEL,
@@ -42,7 +182,7 @@
         ]"
       >
         <span v-if="isLoading">⏳ Загрузка...</span>
-        <span v-else>{{ displayValue ? 'Изменить файл' : 'Выберите изображение' }}</span>
+        <span v-else>{{ singleDisplayValue ? changeButtonLabel : chooseButtonLabel }}</span>
       </label>
       <span v-if="fileError" :class="CSS_CLASSES.IMAGE_UPLOAD_FIELD_ERROR">{{ fileError }}</span>
     </div>
@@ -52,16 +192,32 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
 
-import type { IImageUploadConfig } from '../../core/types/form';
+import type { IFileUploadConfig } from '../../core/types/form';
 import { CSS_CLASSES } from '../../utils/constants';
+import {
+  canAddUploadItems,
+  getDefaultAccept,
+  getFileExtensionBadge,
+  getFileNameFromUrl,
+  getMaxUploadCountErrorMessage,
+  getUploadUrl,
+  normalizeUploadItems,
+  partitionFilesForUpload,
+  processUploadFile,
+  resolveUploadConfig,
+  serializeUploadValue,
+  type TUploadFieldVariant,
+} from '../../utils/uploadFieldUtils';
 
 interface Props {
-  modelValue?: any;
+  modelValue?: unknown;
   label?: string;
   required?: boolean;
   placeholder?: string;
   error?: string;
-  imageUploadConfig?: IImageUploadConfig;
+  variant?: TUploadFieldVariant;
+  multiple?: boolean;
+  fileUploadConfig?: IFileUploadConfig;
   dataRepeaterField?: string;
   dataRepeaterIndex?: number | string;
   dataRepeaterItemField?: string;
@@ -73,11 +229,46 @@ const props = withDefaults(defineProps<Props>(), {
   required: false,
   placeholder: '',
   error: '',
-  imageUploadConfig: undefined,
+  variant: 'image',
+  multiple: false,
+  fileUploadConfig: undefined,
   dataRepeaterField: undefined,
   dataRepeaterIndex: undefined,
   dataRepeaterItemField: undefined,
 });
+
+const emit = defineEmits<{
+  'update:modelValue': [value: unknown];
+}>();
+
+const containerRef = ref<HTMLElement | null>(null);
+const fileInputRef = ref<HTMLInputElement | null>(null);
+const fileError = ref('');
+const isLoading = ref(false);
+const inputId = computed(
+  () => `${props.variant === 'file' ? 'file' : 'image'}-upload-${Math.random().toString(36).slice(7)}`
+);
+
+const uploadConfig = computed(() => resolveUploadConfig({ fileUploadConfig: props.fileUploadConfig }));
+
+const isMultiple = computed(() => props.multiple);
+const isFileVariant = computed(() => props.variant === 'file');
+const accept = computed(() => getDefaultAccept(props.variant, uploadConfig.value));
+const items = computed(() => normalizeUploadItems(props.modelValue, isMultiple.value));
+const singleDisplayValue = computed(() => items.value[0] || '');
+const canAddMore = computed(() => canAddUploadItems(items.value, uploadConfig.value, isMultiple.value));
+
+const chooseButtonLabel = computed(() => {
+  if (props.placeholder) {
+    return props.placeholder;
+  }
+  return isFileVariant.value ? 'Выберите файл' : 'Выберите изображение';
+});
+
+const changeButtonLabel = computed(() =>
+  isFileVariant.value ? 'Заменить файл' : 'Изменить изображение'
+);
+const addButtonLabel = computed(() => (isFileVariant.value ? 'Добавить файл' : 'Добавить'));
 
 const dataRepeaterField = computed(() => {
   const value = props.dataRepeaterField;
@@ -111,16 +302,6 @@ const fieldNamePath = computed(() => {
   }
   return '';
 });
-
-const emit = defineEmits<{
-  'update:modelValue': [value: any];
-}>();
-
-const containerRef = ref<HTMLElement | null>(null);
-const fileInputRef = ref<HTMLInputElement | null>(null);
-const fileError = ref('');
-const isLoading = ref(false);
-const inputId = computed(() => `image-upload-${Math.random().toString(36).slice(7)}`);
 
 const updateDataAttributes = () => {
   if (!containerRef.value) {
@@ -164,41 +345,47 @@ onMounted(() => {
   });
 });
 
-const displayValue = computed(() => {
-  const value = props.modelValue;
-  if (!value) {
-    return '';
-  }
+const getFileName = (url: string) => getFileNameFromUrl(url);
+const getExtensionBadge = (url: string) => getFileExtensionBadge(url);
 
-  if (typeof value === 'string') {
-    return value;
-  }
-  if (typeof value === 'object') {
-    return value.src || '';
-  }
+const emitValue = (nextItems: string[]) => {
+  emit('update:modelValue', serializeUploadValue(nextItems, isMultiple.value));
+};
 
-  return '';
-});
+const clearValue = () => {
+  emitValue([]);
+  if (fileInputRef.value) {
+    fileInputRef.value.value = '';
+  }
+  fileError.value = '';
+};
+
+const removeItem = (index: number) => {
+  const nextItems = items.value.filter((_, itemIndex) => itemIndex !== index);
+  emitValue(nextItems);
+};
 
 const handleFileChange = async (event: Event) => {
   const target = event.target as HTMLInputElement;
-  const file = target.files?.[0];
-
-  if (!file) {
+  const selectedFiles = Array.from(target.files || []);
+  if (!selectedFiles.length) {
     return;
   }
 
-  const config = props.imageUploadConfig || {};
-  const _accept = config.accept || 'image/*';
-  const maxFileSize = config.maxFileSize || 10 * 1024 * 1024; // 10MB по умолчанию
+  const { filesToUpload, maxCountExceeded, maxCount } = partitionFilesForUpload(
+    selectedFiles,
+    items.value.length,
+    uploadConfig.value,
+    isMultiple.value
+  );
 
-  if (!file.type.startsWith('image/')) {
-    fileError.value = 'Пожалуйста, выберите файл изображения';
-    return;
-  }
-
-  if (file.size > maxFileSize) {
-    fileError.value = `Размер файла не должен превышать ${Math.round(maxFileSize / 1024 / 1024)}MB`;
+  if (!filesToUpload.length) {
+    if (maxCountExceeded) {
+      fileError.value = getMaxUploadCountErrorMessage(maxCount);
+    }
+    if (fileInputRef.value) {
+      fileInputRef.value.value = '';
+    }
     return;
   }
 
@@ -206,19 +393,28 @@ const handleFileChange = async (event: Event) => {
   isLoading.value = true;
 
   try {
-    if (config.uploadUrl) {
-      const uploadedUrl = await uploadFileToServer(file, config);
-      emit('update:modelValue', uploadedUrl);
+    const uploadedItems: string[] = [];
+
+    for (const file of filesToUpload) {
+      const result = await processUploadFile(file, uploadConfig.value, props.variant);
+      const url = getUploadUrl(result);
+      if (url) {
+        uploadedItems.push(url);
+      }
+    }
+
+    if (!uploadedItems.length) {
+      return;
+    }
+
+    if (isMultiple.value) {
+      emitValue([...items.value, ...uploadedItems]);
     } else {
-      const reader = new FileReader();
-      reader.addEventListener('load', e => {
-        const result = e.target?.result as string;
-        emit('update:modelValue', result);
-      });
-      reader.addEventListener('error', () => {
-        fileError.value = 'Ошибка при чтении файла';
-      });
-      reader.readAsDataURL(file);
+      emitValue([uploadedItems[0]]);
+    }
+
+    if (maxCountExceeded) {
+      fileError.value = getMaxUploadCountErrorMessage(maxCount);
     }
   } catch (error) {
     if (error instanceof TypeError && error.message === 'Failed to fetch') {
@@ -226,49 +422,14 @@ const handleFileChange = async (event: Event) => {
     } else {
       fileError.value = error instanceof Error ? error.message : 'Ошибка при загрузке файла';
     }
-    if (config.onUploadError && error instanceof Error) {
-      config.onUploadError(error);
+    if (uploadConfig.value.onUploadError && error instanceof Error) {
+      uploadConfig.value.onUploadError(error);
     }
   } finally {
     isLoading.value = false;
+    if (fileInputRef.value) {
+      fileInputRef.value.value = '';
+    }
   }
-};
-
-const uploadFileToServer = async (file: File, config: IImageUploadConfig): Promise<any> => {
-  const uploadUrl = config.uploadUrl;
-  if (!uploadUrl) {
-    throw new Error('uploadUrl не указан в конфигурации');
-  }
-  const uploadHeaders = config.uploadHeaders || {};
-  const fileParamName = config.fileParamName || 'file';
-
-  const formData = new FormData();
-  formData.append(fileParamName, file);
-
-  const response = await fetch(uploadUrl, {
-    method: 'POST',
-    headers: uploadHeaders,
-    body: formData,
-  });
-
-  if (!response.ok) {
-    throw new Error(`Ошибка загрузки: ${response.statusText}`);
-  }
-
-  const responseData = await response.json();
-
-  if (config.responseMapper) {
-    return config.responseMapper(responseData);
-  }
-
-  return responseData;
-};
-
-const clearImage = () => {
-  emit('update:modelValue', '');
-  if (fileInputRef.value) {
-    fileInputRef.value.value = '';
-  }
-  fileError.value = '';
 };
 </script>

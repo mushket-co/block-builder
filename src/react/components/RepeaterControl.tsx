@@ -211,7 +211,7 @@ export function RepeaterControl({
 
       <button
         type="button"
-        className={CSS_CLASSES.REPEATER_CONTROL_ADD_BTN}
+        className={`${CSS_CLASSES.REPEATER_CONTROL_ADD_BTN} ${CSS_CLASSES.BTN} ${CSS_CLASSES.BTN_SUCCESS} ${CSS_CLASSES.BTN_BLOCK}`}
         disabled={!repeater.canAdd}
         onClick={repeater.addItem}
       >

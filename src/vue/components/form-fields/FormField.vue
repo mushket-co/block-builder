@@ -103,13 +103,26 @@
       @update:model-value="handleUpdate"
     />
     <ImageUploadField
-      v-else-if="field.type === 'image'"
+      v-else-if="field.type === 'image' || field.type === 'file'"
       :model-value="modelValue"
       :label="showLabel ? field.label : ''"
       :required="required"
       :placeholder="field.placeholder"
       :error="error"
-      :image-upload-config="field.imageUploadConfig"
+      :variant="field.type === 'file' ? 'file' : 'image'"
+      :multiple="field.multiple ?? false"
+      :file-upload-config="field.fileUploadConfig"
+      @update:model-value="handleUpdate"
+    />
+    <BlockAnchorField
+      v-else-if="field.type === 'block-anchor'"
+      :field-id="fieldId"
+      :model-value="modelValue"
+      :label="field.label"
+      :required="required"
+      :error="error"
+      :show-label="showLabel"
+      :block-anchor-config="field.blockAnchorConfig"
       @update:model-value="handleUpdate"
     />
     <slot v-else :field="field" :field-id="fieldId" :model-value="modelValue" :error="error" />
@@ -123,6 +136,7 @@
 import type { IFormFieldConfig } from '../../../core/types/form';
 import { CSS_CLASSES } from '../../../utils/constants';
 import ImageUploadField from '../ImageUploadField.vue';
+import BlockAnchorField from '../BlockAnchorField.vue';
 import CheckboxField from './CheckboxField.vue';
 import ColorField from './ColorField.vue';
 import NumberField from './NumberField.vue';

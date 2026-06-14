@@ -85,6 +85,7 @@ export function useBlockBuilder({
   const {
     showModal,
     modalMode,
+    currentBlockId,
     currentBlockType,
     currentBlockFields,
     formData,
@@ -269,6 +270,7 @@ export function useBlockBuilder({
     showModal,
     showTypeSelectionModal,
     modalMode,
+    currentBlockId,
     currentBlockType,
     currentBlockFields,
     formData,

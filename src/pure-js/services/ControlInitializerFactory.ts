@@ -1,6 +1,10 @@
 import { ICustomFieldRendererRegistry } from '../../core/ports/CustomFieldRenderer';
 import { ApiSelectUseCase } from '../../core/use-cases/ApiSelectUseCase';
 import {
+  BlockAnchorControlInitializer,
+  IBlockAnchorControlInitializerConfig,
+} from './control-initializers/BlockAnchorControlInitializer';
+import {
   ApiSelectControlInitializer,
   IApiSelectControlInitializerConfig,
 } from './control-initializers/ApiSelectControlInitializer';
@@ -22,6 +26,7 @@ import { ControlManager } from './ControlManager';
 import { TFieldConfig } from './FormBuilder';
 import { IControlInitializer } from './IControlRenderer';
 import { IImageUploadControlConfig } from './ImageUploadControlInitializer';
+import type { IBlockAnchorContext } from '../../utils/blockAnchorHelpers';
 
 export interface IControlInitializerFactoryConfig {
   apiSelectUseCase: ApiSelectUseCase;
@@ -30,6 +35,7 @@ export interface IControlInitializerFactoryConfig {
   getRepeaterFieldConfigs: () => Map<string, Map<string, TFieldConfig>>;
   getRepeaterRenderers: () => Map<string, any>;
   findNestedRepeaterRenderer?: (fieldPath: string) => any;
+  getBlockAnchorContext?: () => IBlockAnchorContext;
   onFieldChange?: () => void;
 }
 
@@ -58,6 +64,16 @@ export const ControlInitializerFactory = {
       onFieldChange: config.onFieldChange,
     };
     initializers.push(new SelectControlInitializer(selectConfig));
+
+    if (config.getBlockAnchorContext) {
+      const blockAnchorConfig: IBlockAnchorControlInitializerConfig = {
+        getCurrentFormFields: config.getCurrentFormFields,
+        getRepeaterFieldConfigs: config.getRepeaterFieldConfigs,
+        getBlockAnchorContext: config.getBlockAnchorContext,
+        onFieldChange: config.onFieldChange,
+      };
+      initializers.push(new BlockAnchorControlInitializer(blockAnchorConfig));
+    }
 
     if (config.customFieldRendererRegistry) {
       const customFieldConfig: ICustomFieldControlInitializerConfig = {

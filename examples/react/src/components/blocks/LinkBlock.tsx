@@ -7,6 +7,17 @@ interface ILinkBlockProps {
   padding?: string
 }
 
+function scrollToBlockAnchor(url: string) {
+  if (!url.startsWith('#')) {
+    return false
+  }
+
+  const blockId = url.slice(1)
+  const target = document.querySelector(`[data-block-id="${blockId}"]`)
+  target?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  return true
+}
+
 export default function LinkBlock({
   text = 'Ссылка',
   url = '#',
@@ -35,6 +46,11 @@ export default function LinkBlock({
             textDecoration: 'none',
             fontSize: '16px',
             fontWeight: 500,
+          }}
+          onClick={event => {
+            if (scrollToBlockAnchor(url)) {
+              event.preventDefault()
+            }
           }}
         >
           {text}

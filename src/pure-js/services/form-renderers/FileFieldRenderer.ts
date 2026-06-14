@@ -1,30 +1,17 @@
-import { IFormFieldConfig } from '../../../core/types/form';
-import { BaseFieldRenderer } from './BaseFieldRenderer';
+import { IFormFieldConfig, TFieldType } from '../../../core/types/form';
+import { ImageFieldRenderer } from './ImageFieldRenderer';
 import { IRenderContext } from './IRenderContext';
 
-export class FileFieldRenderer extends BaseFieldRenderer {
-  readonly fieldType = 'file';
+export class FileFieldRenderer extends ImageFieldRenderer {
+  readonly fieldType: TFieldType = 'file';
 
-  protected renderInput(
+  render(
     fieldId: string,
     field: IFormFieldConfig,
     value: any,
     required: string,
     context?: IRenderContext
   ): string {
-    const inputClass = this.getInputClass(context);
-    const fieldName = this.getFieldName(context, field);
-    const dataAttributes = this.getInputDataAttributes(context);
-
-    return `
-      <input
-        type="file"
-        id="${fieldId}"
-        name="${fieldName}"
-        class="${inputClass}"
-        ${required}
-        ${dataAttributes}
-      />
-    `;
+    return this.renderUploadField(fieldId, field, value, required, context, 'file');
   }
 }

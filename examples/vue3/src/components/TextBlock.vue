@@ -1,13 +1,80 @@
 <template>
   <div class="text-block">
     <div class="container" :style="blockStyle">
-      {{ content }}
+      <p class="text-block__content">{{ content }}</p>
+
+      <div v-if="imageUrl" class="text-block__media">
+        <p class="text-block__media-label">Изображение</p>
+        <img :src="imageUrl" alt="" class="text-block__image" />
+      </div>
+
+      <div v-if="imageUrls.length" class="text-block__media">
+        <p class="text-block__media-label">Изображения</p>
+        <div class="text-block__gallery">
+          <img
+            v-for="(url, index) in imageUrls"
+            :key="`image-${index}`"
+            :src="url"
+            alt=""
+            class="text-block__image"
+          />
+        </div>
+      </div>
+
+      <div v-if="fileUrl" class="text-block__media">
+        <p class="text-block__media-label">Файл</p>
+        <a
+          :href="fileUrl"
+          class="text-block__file-link"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Скачать файл
+        </a>
+      </div>
+
+      <div v-if="fileUrls.length" class="text-block__media">
+        <p class="text-block__media-label">Файлы</p>
+        <ul class="text-block__file-list">
+          <li v-for="(url, index) in fileUrls" :key="`file-${index}`">
+            <a
+              :href="url"
+              class="text-block__file-link"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Файл {{ index + 1 }}
+            </a>
+          </li>
+        </ul>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
 import { computed } from 'vue'
+
+function resolveUploadUrl(value) {
+  if (!value) {
+    return ''
+  }
+  if (typeof value === 'string') {
+    return value
+  }
+  if (typeof value === 'object') {
+    return value.src || value.url || ''
+  }
+  return ''
+}
+
+function resolveUploadUrls(value) {
+  if (Array.isArray(value)) {
+    return value.map(resolveUploadUrl).filter(Boolean)
+  }
+  const single = resolveUploadUrl(value)
+  return single ? [single] : []
+}
 
 const props = defineProps({
   content: {
@@ -25,6 +92,22 @@ const props = defineProps({
   textAlign: {
     type: String,
     default: 'left'
+  },
+  image: {
+    type: [String, Object],
+    default: ''
+  },
+  images: {
+    type: Array,
+    default: () => []
+  },
+  file: {
+    type: [String, Object],
+    default: ''
+  },
+  files: {
+    type: Array,
+    default: () => []
   }
 })
 
@@ -37,6 +120,11 @@ const blockStyle = computed(() => ({
   borderRadius: '4px',
   background: '#f8f9fa'
 }))
+
+const imageUrl = computed(() => resolveUploadUrl(props.image))
+const imageUrls = computed(() => resolveUploadUrls(props.images))
+const fileUrl = computed(() => resolveUploadUrl(props.file))
+const fileUrls = computed(() => resolveUploadUrls(props.files))
 </script>
 
 <style scoped>
@@ -47,5 +135,49 @@ const blockStyle = computed(() => ({
 .text-block:hover {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
-</style>
 
+.text-block__content {
+  margin: 0 0 12px;
+}
+
+.text-block__media {
+  margin-top: 16px;
+  text-align: left;
+}
+
+.text-block__media-label {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #6c757d;
+}
+
+.text-block__image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+
+.text-block__gallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.text-block__gallery .text-block__image {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+}
+
+.text-block__file-list {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.text-block__file-link {
+  color: var(--bb-color-primary);
+  font-size: 14px;
+}
+</style>

@@ -12,7 +12,6 @@ export * from './infrastructure/repositories/MemoryBlockRepositoryImpl';
 export { default as ApiSelectField } from './vue/components/ApiSelectField.vue';
 export { default as BlockBuilderComponent } from './vue/components/BlockBuilder.vue';
 export { default as BlockComponent } from './vue/components/BlockComponent.vue';
-export { default as BlockProperties } from './vue/components/BlockProperties.vue';
 export { default as RepeaterControl } from './vue/components/RepeaterControl.vue';
 export { default as SpacingControl } from './vue/components/SpacingControl.vue';
 export type { ICreateBlockManagementUseCaseOptions } from './utils/createBlockManagementUseCase';

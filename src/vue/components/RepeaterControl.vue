@@ -95,12 +95,14 @@
                     #default="{ field: slotField, modelValue: slotModelValue, error: slotError }"
                   >
                     <ImageUploadField
-                      v-if="slotField.type === 'image'"
+                      v-if="slotField.type === 'image' || slotField.type === 'file'"
                       :model-value="slotModelValue"
                       :label="''"
                       :required="isFieldRequired(slotField)"
                       :error="slotError"
-                      :image-upload-config="slotField.imageUploadConfig"
+                      :variant="slotField.type === 'file' ? 'file' : 'image'"
+                      :multiple="slotField.multiple ?? false"
+                      :file-upload-config="slotField.fileUploadConfig"
                       :data-repeater-field="fieldName"
                       :data-repeater-index="index"
                       :data-repeater-item-field="slotField.field"
@@ -167,12 +169,14 @@
                 </template>
 
                 <ImageUploadField
-                  v-else-if="slotField.type === 'image'"
+                  v-else-if="slotField.type === 'image' || slotField.type === 'file'"
                   :model-value="slotModelValue"
                   :label="''"
                   :required="isFieldRequired(slotField)"
                   :error="slotError"
-                  :image-upload-config="slotField.imageUploadConfig"
+                  :variant="slotField.type === 'file' ? 'file' : 'image'"
+                  :multiple="slotField.multiple ?? false"
+                  :file-upload-config="slotField.fileUploadConfig"
                   :data-repeater-field="fieldName"
                   :data-repeater-index="index"
                   :data-repeater-item-field="slotField.field"
@@ -216,7 +220,17 @@
       </div>
     </div>
 
-    <button type="button" :class="CSS_CLASSES.REPEATER_CONTROL_ADD_BTN" :disabled="!canAdd" @click="addItem">
+    <button
+      type="button"
+      :class="[
+        CSS_CLASSES.REPEATER_CONTROL_ADD_BTN,
+        CSS_CLASSES.BTN,
+        CSS_CLASSES.BTN_SUCCESS,
+        CSS_CLASSES.BTN_BLOCK,
+      ]"
+      :disabled="!canAdd"
+      @click="addItem"
+    >
       + {{ addButtonText }}
     </button>
 
@@ -239,6 +253,12 @@ import { computed, onMounted, ref, watch } from 'vue';
 
 import { CSS_CLASSES, UI_STRINGS } from '../../utils/constants';
 import { getRepeaterCountText } from '../../utils/repeaterCountText';
+import {
+  assignRepeaterItemId,
+  getRepeaterFormFields,
+  isAutoRepeaterItemIdField,
+  isReadonlyRepeaterItemField,
+} from '../../utils/repeaterItemId';
 import ApiSelectField from './ApiSelectField.vue';
 import CustomField from './CustomField.vue';
 import { FormField } from './form-fields';
@@ -403,10 +423,13 @@ export default {
 
     const initializeItems = () => {
       if (props.modelValue && props.modelValue.length > 0) {
-        items.value = props.modelValue.map(item => ({
-          _id: `item-${idCounter++}`,
-          ...item,
-        }));
+        items.value = props.modelValue.map(item => {
+          const withId = assignRepeaterItemId({ ...item }, props.fields);
+          return {
+            _id: `item-${idCounter++}`,
+            ...withId,
+          };
+        });
       } else if (effectiveMin.value > 0) {
         for (let i = 0; i < effectiveMin.value; i++) {
           items.value.push(createNewItem());
@@ -419,6 +442,10 @@ export default {
       const newItem = { _id: `item-${idCounter++}` };
 
       props.fields.forEach(field => {
+        if (isAutoRepeaterItemIdField(field)) {
+          return;
+        }
+
         if (props.defaultItemValue && props.defaultItemValue[field.field] !== undefined) {
           newItem[field.field] = props.defaultItemValue[field.field];
         } else if (field.defaultValue !== undefined) {
@@ -434,6 +461,10 @@ export default {
             case 'api-select':
               newItem[field.field] = field.apiSelectConfig?.multiple ? [] : null;
               break;
+            case 'image':
+            case 'file':
+              newItem[field.field] = field.multiple ? [] : '';
+              break;
             case 'repeater':
               newItem[field.field] = [];
               break;
@@ -446,7 +477,7 @@ export default {
         }
       });
 
-      return newItem;
+      return assignRepeaterItemId(newItem, props.fields, { forceNew: true });
     };
 
     const itemCount = computed(() => items.value.length);
@@ -499,6 +530,10 @@ export default {
     };
 
     const updateItemField = (index, fieldName, value) => {
+      if (isReadonlyRepeaterItemField(fieldName, props.fields)) {
+        return;
+      }
+
       items.value[index][fieldName] = value;
       emitUpdate();
     };
@@ -514,7 +549,8 @@ export default {
         rules: field.rules,
         apiSelectConfig: field.apiSelectConfig,
         customFieldConfig: field.customFieldConfig,
-        imageUploadConfig: field.imageUploadConfig,
+        fileUploadConfig: field.fileUploadConfig,
+        multiple: field.multiple,
       };
     };
 
@@ -632,13 +668,15 @@ export default {
       const groups = [];
       const processedFields = new Set();
 
-      for (const field of props.fields) {
+      const formFields = getRepeaterFormFields(props.fields);
+
+      for (const field of formFields) {
         if (processedFields.has(field.field)) {
           continue;
         }
 
         if (field.type === 'checkbox') {
-          const dependentFields = props.fields.filter(
+          const dependentFields = formFields.filter(
             f =>
               f.dependsOn?.field === field.field &&
               f.dependsOn?.value === true &&

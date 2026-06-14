@@ -5,6 +5,12 @@ import {
 } from '../../core/types/form';
 import { CSS_CLASSES } from '../../utils/constants';
 import { getRepeaterCountText } from '../../utils/repeaterCountText';
+import {
+  assignRepeaterItemId,
+  getRepeaterFormFields,
+  isAutoRepeaterItemIdField,
+  isReadonlyRepeaterItemField,
+} from '../../utils/repeaterItemId';
 import { FieldRendererFactory } from './form-renderers/FieldRendererFactory';
 import { IRenderContext } from './form-renderers/IRenderContext';
 
@@ -43,7 +49,9 @@ export class RepeaterControlRenderer {
     this.rules = options.rules || [];
     this.errors = options.errors || {};
     this.config = options.config || { fields: [] };
-    this.value = options.value || [];
+    this.value = (options.value || []).map(item =>
+      assignRepeaterItemId({ ...item }, this.config.fields)
+    );
     this.onChange = options.onChange;
     this.nestingDepth = options.nestingDepth || 0;
     this.maxNestingDepth = options.maxNestingDepth ?? 2;
@@ -83,6 +91,10 @@ export class RepeaterControlRenderer {
     const newItem: Record<string, any> = {};
 
     this.config.fields.forEach(field => {
+      if (isAutoRepeaterItemIdField(field)) {
+        return;
+      }
+
       if (this.config.defaultItemValue && this.config.defaultItemValue[field.field] !== undefined) {
         newItem[field.field] = this.config.defaultItemValue[field.field];
       } else if (field.defaultValue !== undefined) {
@@ -100,6 +112,10 @@ export class RepeaterControlRenderer {
             newItem[field.field] = apiSelectConfig?.multiple ? [] : null;
             break;
           }
+          case 'image':
+          case 'file':
+            newItem[field.field] = field.multiple ? [] : '';
+            break;
           case 'repeater':
             newItem[field.field] = [];
             break;
@@ -112,7 +128,7 @@ export class RepeaterControlRenderer {
       }
     });
 
-    return newItem;
+    return assignRepeaterItemId(newItem, this.config.fields, { forceNew: true });
   }
 
   private addItem(): void {
@@ -155,6 +171,10 @@ export class RepeaterControlRenderer {
   }
 
   private onFieldChange(itemIndex: number, fieldName: string, value: any): void {
+    if (isReadonlyRepeaterItemField(fieldName, this.config.fields)) {
+      return;
+    }
+
     this.value[itemIndex][fieldName] = value;
     this.emitChange();
   }
@@ -250,7 +270,7 @@ export class RepeaterControlRenderer {
       inputDataAttributes,
     };
 
-    if (field.type === 'image') {
+    if (field.type === 'image' || field.type === 'file') {
       context.containerDataAttributes = {
         ...context.containerDataAttributes,
         'field-name': fieldNamePath,
@@ -340,7 +360,7 @@ export class RepeaterControlRenderer {
 
   /**
    * Преобразует IRepeaterItemFieldConfig в IFormFieldConfig для использования с рендерерами
-   * Поддерживает расширенные свойства через приведение типов (например, imageUploadConfig)
+   * Поддерживает расширенные свойства через приведение типов (например, fileUploadConfig)
    */
   private convertToFormFieldConfig(field: IRepeaterItemFieldConfig): IFormFieldConfig {
     const baseConfig: IFormFieldConfig = {
@@ -354,13 +374,14 @@ export class RepeaterControlRenderer {
     };
 
     const extendedField = field as IRepeaterItemFieldConfig & {
-      imageUploadConfig?: any;
+      fileUploadConfig?: any;
       apiSelectConfig?: any;
       customFieldConfig?: any;
+      blockAnchorConfig?: any;
     };
 
-    if (field.type === 'image' && extendedField.imageUploadConfig) {
-      baseConfig.imageUploadConfig = extendedField.imageUploadConfig;
+    if ((field.type === 'image' || field.type === 'file') && extendedField.fileUploadConfig) {
+      baseConfig.fileUploadConfig = extendedField.fileUploadConfig;
     }
 
     if (field.type === 'api-select' && extendedField.apiSelectConfig) {
@@ -369,6 +390,10 @@ export class RepeaterControlRenderer {
 
     if (field.type === 'custom' && extendedField.customFieldConfig) {
       baseConfig.customFieldConfig = extendedField.customFieldConfig;
+    }
+
+    if (field.type === 'block-anchor' && extendedField.blockAnchorConfig) {
+      baseConfig.blockAnchorConfig = extendedField.blockAnchorConfig;
     }
 
     return baseConfig;
@@ -380,7 +405,7 @@ export class RepeaterControlRenderer {
     const effectiveMin = this.getEffectiveMin();
     const canRemove = this.value.length > effectiveMin;
 
-    const fieldsHTML = this.config.fields
+    const fieldsHTML = getRepeaterFormFields(this.config.fields)
       .map(field => this.generateFieldHTML(field, index, item[field.field]))
       .join('');
 
@@ -485,7 +510,7 @@ export class RepeaterControlRenderer {
 
       <button
         type="button"
-        class="${CSS_CLASSES.REPEATER_CONTROL_ADD_BTN}"
+        class="${CSS_CLASSES.REPEATER_CONTROL_ADD_BTN} ${CSS_CLASSES.BTN} ${CSS_CLASSES.BTN_SUCCESS} ${CSS_CLASSES.BTN_BLOCK}"
         data-action="add"
         ${!canAdd ? 'disabled' : ''}
       >

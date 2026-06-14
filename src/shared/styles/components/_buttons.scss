@@ -77,6 +77,35 @@
   &--danger {
     @include btn-variant(var(--bb-color-danger), var(--bb-text-white));
   }
+
+  &--outline {
+    background: var(--bb-bg-secondary, #fff);
+    color: var(--bb-text-primary);
+    border-color: var(--bb-border-color);
+
+    &:hover:not(:disabled):not(.bb-btn--loading) {
+      border-color: var(--bb-color-primary);
+      color: var(--bb-color-primary);
+      background: var(--bb-color-primary-light);
+    }
+  }
+
+  &--dashed {
+    border-style: dashed;
+    border-color: var(--bb-border-color-dashed);
+  }
+
+  &--block {
+    width: 100%;
+  }
+
+  &--loading {
+    opacity: 0.7;
+    cursor: not-allowed;
+    pointer-events: none;
+    transform: none !important;
+    box-shadow: none !important;
+  }
 }
 
 .bb-control-btn {

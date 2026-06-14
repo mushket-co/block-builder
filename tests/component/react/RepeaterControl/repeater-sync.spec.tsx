@@ -102,7 +102,7 @@ describe('RepeaterControl sync (React)', () => {
     await waitFor(() => {
       expect(onChange).toHaveBeenCalled();
       expect(onChange.mock.calls.at(-1)?.[0]).toEqual([
-        { title: 'Slide 1', hasLink: true, linkUrl: '' },
+        expect.objectContaining({ title: 'Slide 1', hasLink: true, linkUrl: '' }),
       ]);
     });
   });

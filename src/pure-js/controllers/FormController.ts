@@ -165,6 +165,19 @@ export class FormController {
     const data: Record<string, any> = {};
 
     for (const [key, value] of formData.entries()) {
+      if (key.includes('[') && key.includes('].')) {
+        continue;
+      }
+
+      const uploadHiddenInput = form.querySelector(
+        `input[type="hidden"][name="${key}"][data-image-value="true"], input[type="hidden"][name="${key}"][data-file-value="true"]`
+      ) as HTMLInputElement | null;
+
+      if (uploadHiddenInput) {
+        data[key] = this.readUploadHiddenValue(uploadHiddenInput);
+        continue;
+      }
+
       const input = form.querySelector(`[name="${key}"]`) as
         | HTMLInputElement
         | HTMLTextAreaElement
@@ -176,6 +189,8 @@ export class FormController {
           data[key] = value;
         } else if (input.type === 'number') {
           data[key] = input.value ? Number.parseFloat(input.value) : null;
+        } else if (input.type === 'file') {
+          continue;
         } else {
           data[key] = input.value;
         }
@@ -183,6 +198,8 @@ export class FormController {
         data[key] = value;
       }
     }
+
+    this.applyUploadHiddenValues(form, data);
 
     const activeControls = (this.controlManager as any).activeControls as Map<string, any>;
     activeControls.forEach((control, controlId) => {
@@ -192,6 +209,46 @@ export class FormController {
     });
 
     return data;
+  }
+
+  private readUploadHiddenValue(hiddenInput: HTMLInputElement): unknown {
+    const container = hiddenInput.closest(
+      `.${CSS_CLASSES.IMAGE_UPLOAD_FIELD}, .${CSS_CLASSES.FILE_UPLOAD_FIELD}`
+    ) as HTMLElement | null;
+    const isMultiple = container?.dataset.uploadMultiple === 'true';
+
+    if (!hiddenInput.value) {
+      return isMultiple ? [] : '';
+    }
+
+    try {
+      const parsed = JSON.parse(hiddenInput.value.replaceAll('&quot;', '"'));
+      if (Array.isArray(parsed)) {
+        return parsed;
+      }
+      if (typeof parsed === 'object' && parsed !== null) {
+        return parsed;
+      }
+    } catch {
+      // keep raw string value
+    }
+
+    return hiddenInput.value;
+  }
+
+  private applyUploadHiddenValues(form: HTMLFormElement, data: Record<string, any>): void {
+    const hiddenInputs = form.querySelectorAll(
+      `input[type="hidden"][data-image-value="true"], input[type="hidden"][data-file-value="true"]`
+    );
+
+    hiddenInputs.forEach(node => {
+      const hiddenInput = node as HTMLInputElement;
+      const name = hiddenInput.getAttribute('name');
+      if (!name || name.includes('[')) {
+        return;
+      }
+      data[name] = this.readUploadHiddenValue(hiddenInput);
+    });
   }
 
   private showValidationErrors(errors: Record<string, string[]>): void {

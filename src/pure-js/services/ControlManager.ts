@@ -45,10 +45,15 @@ export class ControlManager {
     );
     await this.initializeControls(customFieldContainers);
 
-    const imageUploadFields = container.querySelectorAll(
-      `.${CSS_CLASSES.IMAGE_UPLOAD_FIELD}:not([data-control-initialized])`
+    const uploadFields = container.querySelectorAll(
+      `.${CSS_CLASSES.IMAGE_UPLOAD_FIELD}:not([data-control-initialized]), .${CSS_CLASSES.FILE_UPLOAD_FIELD}:not([data-control-initialized])`
     );
-    await this.initializeControls(imageUploadFields);
+    await this.initializeControls(uploadFields);
+
+    const blockAnchorContainers = container.querySelectorAll(
+      `.${CSS_CLASSES.BLOCK_ANCHOR_PLACEHOLDER}:not([data-control-initialized])`
+    );
+    await this.initializeControls(blockAnchorContainers);
 
     const selectContainers = container.querySelectorAll(
       `.${CSS_CLASSES.SELECT_PLACEHOLDER}:not([data-control-initialized])`

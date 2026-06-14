@@ -384,7 +384,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, provide, reactive, ref, watch } from 'vue';
 
 import { IBlock, TBlockId } from '../../core/types';
 import type { ApiSelectUseCase } from '../../core/use-cases/ApiSelectUseCase';
@@ -428,6 +428,7 @@ import RepeaterControl from './RepeaterControl.vue';
 import SpacingControl from './SpacingControl.vue';
 import ToggleControl from './ToggleControl.vue';
 import { usePageLeaveWarning } from '../composables/usePageLeaveWarning';
+import { BLOCK_ANCHOR_CONTEXT_KEY } from '../composables/blockAnchorContext';
 
 interface IBlockType {
   type: string;
@@ -642,6 +643,28 @@ const groupedFields = computed(() => {
 });
 
 const visibleBlocks = computed(() => filterBlocksForDisplay(blocks.value, props.isEdit));
+
+const blockTypeLabels = computed(() => {
+  const labels: Record<string, string> = {};
+  (props.config?.availableBlockTypes || []).forEach(blockType => {
+    labels[blockType.type] = blockType.label || blockType.title || blockType.type;
+  });
+  return labels;
+});
+
+const blockAnchorContext = computed(() => ({
+  blocks: blocks.value.map(block => ({
+    id: block.id,
+    type: block.type,
+    props: block.props,
+    settings: block.settings,
+    visible: block.visible,
+  })),
+  editingBlockId: currentBlockId.value,
+  blockTypeLabels: blockTypeLabels.value,
+}));
+
+provide(BLOCK_ANCHOR_CONTEXT_KEY, blockAnchorContext);
 
 const getBlockTitle = (block: IBlock): string => {
   return getBlockConfig(block.type)?.title || block.type;

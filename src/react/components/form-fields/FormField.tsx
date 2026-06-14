@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import type { IFormFieldConfig } from '../../../core/types/form';
 import { CSS_CLASSES } from '../../../utils/constants';
 import { ImageUploadField } from '../ImageUploadField';
+import { BlockAnchorField } from '../BlockAnchorField';
 import { CheckboxField } from './CheckboxField';
 import { ColorField } from './ColorField';
 import { NumberField } from './NumberField';
@@ -160,6 +161,7 @@ export function FormField({
           />
         );
       case 'image':
+      case 'file':
         return (
           <ImageUploadField
             modelValue={modelValue}
@@ -167,8 +169,23 @@ export function FormField({
             required={required}
             placeholder={field.placeholder}
             error={error}
-            imageUploadConfig={field.imageUploadConfig}
+            variant={field.type === 'file' ? 'file' : 'image'}
+            multiple={field.multiple ?? false}
+            fileUploadConfig={field.fileUploadConfig}
             fieldNamePath={fieldPath || field.field}
+            onChange={onChange}
+          />
+        );
+      case 'block-anchor':
+        return (
+          <BlockAnchorField
+            fieldId={fieldId}
+            modelValue={String(modelValue ?? '')}
+            label={field.label}
+            required={required}
+            error={error}
+            showLabel={showLabel}
+            blockAnchorConfig={field.blockAnchorConfig}
             onChange={onChange}
           />
         );

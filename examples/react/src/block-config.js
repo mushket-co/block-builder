@@ -127,6 +127,64 @@ export const blockConfigs = {
         ],
         rules: [{ type: 'required', message: 'Выравнивание обязательно' }],
         defaultValue: 'left'
+      },
+      {
+        field: 'image',
+        label: 'Изображение (одно)',
+        type: 'image',
+        rules: [],
+        defaultValue: '',
+        fileUploadConfig: {
+          uploadUrl: '/api/upload',
+          fileParamName: 'file',
+          maxFileSize: 5 * 1024 * 1024,
+          responseMapper: (response) => ({ src: response.url })
+        }
+      },
+      {
+        field: 'images',
+        label: 'Изображения (несколько)',
+        type: 'image',
+        multiple: true,
+        rules: [],
+        defaultValue: [],
+        fileUploadConfig: {
+          uploadUrl: '/api/upload',
+          fileParamName: 'file',
+          maxFileSize: 5 * 1024 * 1024,
+          maxCount: 5,
+          responseMapper: (response) => ({ src: response.url })
+        }
+      },
+      {
+        field: 'file',
+        label: 'Файл (один)',
+        type: 'file',
+        rules: [],
+        defaultValue: '',
+        fileUploadConfig: {
+          uploadUrl: '/api/upload',
+          fileParamName: 'file',
+          maxFileSize: 5 * 1024 * 1024,
+          accept: '.pdf,.doc,.docx,.zip',
+          responseMapper: (response) => response.url
+        }
+      },
+      {
+        field: 'files',
+        label: 'Файлы (несколько)',
+        type: 'file',
+        multiple: true,
+        rules: [],
+        defaultValue: [],
+        fileUploadConfig: {
+          uploadUrl: '/api/upload',
+          fileParamName: 'file',
+          maxFileSize: 5 * 1024 * 1024,
+          accept: '.pdf,.doc,.docx,.zip',
+          maxCount: 5,
+          responseMapper: (response) => response.url
+        }
       }
     ],
     // 🧪 Кастомные брекпоинты для тестирования
@@ -165,7 +223,7 @@ export const blockConfigs = {
         ],
         defaultValue: '',
 
-        imageUploadConfig: {
+        fileUploadConfig: {
           uploadUrl: '/api/upload',
           fileParamName: 'file',
           maxFileSize: 5 * 1024 * 1024, // 5MB для демо
@@ -434,7 +492,7 @@ export const blockConfigs = {
               type: 'image',
               rules: [{ type: 'required', message: 'Изображение обязательно' }],
               defaultValue: '',
-              imageUploadConfig: {
+              fileUploadConfig: {
                 uploadUrl: '/api/upload',
                 fileParamName: 'file',
                 maxFileSize: 5 * 1024 * 1024, // 5MB для демо
@@ -1081,12 +1139,14 @@ export const blockConfigs = {
       },
       {
         field: 'url',
-        label: 'URL',
-        type: 'text',
-        placeholder: '/news/123/ или https://example.com',
+        label: 'Якорь или URL',
+        type: 'block-anchor',
+        blockAnchorConfig: {
+          placeholder: 'Выберите блок на странице',
+          allowCustomUrl: true
+        },
         rules: [
-          { type: 'required', message: 'URL обязателен' },
-          { type: 'minLength', value: 1, message: 'Ссылка не может быть пустой' }
+          { type: 'required', message: 'Укажите якорь или URL' }
         ],
         defaultValue: ''
       },
@@ -1262,7 +1322,7 @@ export const blockConfigs = {
                     type: 'image',
                     rules: [],
                     defaultValue: '',
-                    imageUploadConfig: {
+                    fileUploadConfig: {
                       uploadUrl: '/api/upload',
                       fileParamName: 'file',
                       maxFileSize: 5 * 1024 * 1024,

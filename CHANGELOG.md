@@ -5,6 +5,57 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/),
 и проект следует [Semantic Versioning](https://semver.org/lang/ru/).
 
+## [1.5.0] - 2026-06-14
+
+### Добавлено
+
+#### Поле `block-anchor`
+
+- Тип поля `block-anchor` и конфиг `blockAnchorConfig` (`placeholder`, `allowCustomUrl`)
+- Выбор якоря на блок страницы (`#block-id`) или произвольного URL
+- Подписи опций: `props.title` / `props.name` через ` | ` + тип блока
+- Vue: `BlockAnchorField`, контекст в `BlockBuilder`
+- React: `BlockAnchorField`, `BlockAnchorContext`
+- Pure JS: `BlockAnchorFieldRenderer`, `BlockAnchorControlInitializer`
+- Утилиты `blockAnchorHelpers` и тесты
+- Примеры: поле `url` в блоке **link** (vue3, react, pure-js-vite, nuxt3, nuxt4)
+
+#### Загрузка файлов и изображений
+
+- Отдельный UI для `type: 'file'` / `files`: `bb-file-upload-field` (список с бейджем расширения, именем и кнопкой удаления) — без галереи изображений
+- Стили `_file-upload-field.scss`; кнопка выбора на `bb-btn bb-btn--outline`
+- Pure JS: `FileUploadControlInitializer`, раздельная разметка в `ImageFieldRenderer.renderFileUploadField`
+- Примеры **Текстовый блок**: поля `image`, `images`, `file`, `files` (одиночные и множественные)
+
+#### Кнопки
+
+- Темы `bb-btn--outline`, `bb-btn--dashed`, `bb-btn--block`, `bb-btn--loading` в `_buttons.scss`
+
+#### Загрузка с лимитом
+
+- `partitionFilesForUpload`, `getMaxUploadCountErrorMessage` в `uploadFieldUtils` — при превышении `maxCount` загружается только допустимое число файлов и показывается ошибка (Vue/React)
+
+### Изменено
+
+- Кнопка «Добавить» в repeater: визуал через `bb-btn bb-btn--success bb-btn--block`; `bb-repeater-control__add-btn` оставлен только как служебный хук (Vue, React, Pure JS)
+- Для file-полей превью-картинки отключено (`shouldShowUploadImagePreview` при `variant: 'file'`)
+
+### Исправлено
+
+#### Pure JS
+
+- **Изображения в форме**: превью после загрузки для одиночного и множественного режима; галерея и динамическое создание DOM
+- **Множественные файлы**: загрузка всех выбранных файлов (не только первого), с учётом `maxCount`
+- **Сохранение file/image полей**: `ControlManager` регистрирует `FILE_UPLOAD_FIELD`; `FormController` читает hidden-значения (`data-file-value` / `data-image-value`); у `input[type=file]` убран `name`, чтобы не перетирать hidden при submit
+- **`block-anchor`**: инициализация `.bb-block-anchor-placeholder` в `ControlManager`
+- **Контекст якоря**: `getBlockAnchorContext` в `BlockUIController` (список блоков, `editingBlockId`, подписи типов)
+
+### Удалено
+
+- Vue-компонент `BlockProperties` и константы `BLOCK_PROPERTIES_*` из публичного API `@mushket-co/block-builder/vue` (не использовались в пакете и примерах)
+- Мёртвый код react/pure-js: `FormField.tsx` (шим), `hooks/index.ts`, `FieldControlRegistry`, `control-initializers/index.ts` (нигде не импортировались)
+- Кастомные стили `bb-repeater-control__add-btn` и `bb-file-upload-field__picker-btn` (визуал перенесён на `bb-btn`)
+
 ## [1.4.0] - 2026-06-13
 
 ### Добавлено

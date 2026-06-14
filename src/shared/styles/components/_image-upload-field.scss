@@ -15,7 +15,7 @@
   &__preview {
     position: relative;
     margin-bottom: 12px;
-    border-radius: 8px;
+    border-radius: var(--bb-radius-md);
     overflow: hidden;
     border: 1px solid var(--bb-border-color-light);
     background: var(--bb-bg-tertiary);
@@ -88,7 +88,7 @@
     display: block;
     padding: 12px;
     border: 2px dashed var(--bb-border-color);
-    border-radius: 4px;
+    border-radius: var(--bb-radius-md);
     text-align: center;
     cursor: pointer;
     color: var(--bb-text-tertiary);
@@ -127,6 +127,83 @@
     .bb-image-upload-field__file-label {
       border-color: var(--bb-color-danger);
       background-color: var(--bb-color-danger-bg);
+    }
+  }
+
+  &--multiple {
+    .bb-image-upload-field__file-input {
+      display: none;
+    }
+  }
+
+  &__gallery {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  &__gallery-item {
+    position: relative;
+    width: 120px;
+    min-height: 120px;
+    border-radius: var(--bb-radius-md);
+    overflow: hidden;
+    border: 1px solid var(--bb-border-color-light);
+    background: var(--bb-bg-tertiary);
+
+    .bb-image-upload-field__preview-img {
+      width: 100%;
+      height: 120px;
+      max-height: 120px;
+      object-fit: cover;
+    }
+
+    .bb-image-upload-field__preview-clear {
+      top: 4px;
+      right: 4px;
+      width: 24px;
+      height: 24px;
+      font-size: 16px;
+    }
+  }
+
+  &__gallery-add {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 120px;
+    min-height: 120px;
+    border: 2px dashed var(--bb-border-color);
+    border-radius: var(--bb-radius-md);
+    text-align: center;
+    cursor: pointer;
+    color: var(--bb-text-tertiary);
+    font-size: 14px;
+    transition: all 0.2s;
+
+    &:hover:not(&--loading) {
+      border-color: var(--bb-color-primary);
+      background: var(--bb-color-primary-light);
+      color: var(--bb-color-primary);
+    }
+  }
+
+  &__file-info {
+    display: flex;
+    align-items: center;
+    min-height: 48px;
+    padding: 12px;
+  }
+
+  &__file-name {
+    color: var(--bb-color-primary);
+    text-decoration: none;
+    word-break: break-all;
+    font-size: 14px;
+
+    &:hover {
+      text-decoration: underline;
     }
   }
 }

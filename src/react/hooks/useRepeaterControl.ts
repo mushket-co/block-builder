@@ -5,6 +5,11 @@ import { UI_STRINGS } from '../../utils/constants';
 import { groupFormFields, type TFormFieldGroup } from '../../utils/formFieldGrouping';
 import { isFieldRequired, isFieldVisible } from '../../utils/formFieldHelpers';
 import { getRepeaterCountText } from '../../utils/repeaterCountText';
+import {
+  assignRepeaterItemId,
+  isAutoRepeaterItemIdField,
+  isReadonlyRepeaterItemField,
+} from '../../utils/repeaterItemId';
 
 export type TRepeaterItem = Record<string, unknown> & { _id: string };
 
@@ -40,7 +45,8 @@ export function toRepeaterFormFieldConfig(field: IRepeaterItemFieldConfig): IFor
     rules: field.rules,
     apiSelectConfig: field.apiSelectConfig,
     customFieldConfig: field.customFieldConfig,
-    imageUploadConfig: field.imageUploadConfig,
+    fileUploadConfig: field.fileUploadConfig,
+    multiple: field.multiple,
   };
 }
 
@@ -84,6 +90,10 @@ export function useRepeaterControl({
     const newItem: TRepeaterItem = { _id: `item-${idCounterRef.current++}` };
 
     fields.forEach(field => {
+      if (isAutoRepeaterItemIdField(field)) {
+        return;
+      }
+
       if (defaultItemValue && defaultItemValue[field.field] !== undefined) {
         newItem[field.field] = defaultItemValue[field.field];
       } else if (field.defaultValue !== undefined) {
@@ -99,6 +109,10 @@ export function useRepeaterControl({
           case 'api-select':
             newItem[field.field] = field.apiSelectConfig?.multiple ? [] : null;
             break;
+          case 'image':
+          case 'file':
+            newItem[field.field] = field.multiple ? [] : '';
+            break;
           case 'repeater':
             newItem[field.field] = [];
             break;
@@ -111,7 +125,7 @@ export function useRepeaterControl({
       }
     });
 
-    return newItem;
+    return assignRepeaterItemId(newItem, fields, { forceNew: true }) as TRepeaterItem;
   }, [defaultItemValue, fields]);
 
   const emitUpdate = useCallback(
@@ -128,10 +142,16 @@ export function useRepeaterControl({
   const initializeItems = useCallback(() => {
     if (modelValue && modelValue.length > 0) {
       setItems(
-        modelValue.map(item => ({
-          _id: `item-${idCounterRef.current++}`,
-          ...(item as Record<string, unknown>),
-        }))
+        modelValue.map(item => {
+          const withId = assignRepeaterItemId(
+            { ...(item as Record<string, unknown>) },
+            fields
+          );
+          return {
+            _id: `item-${idCounterRef.current++}`,
+            ...withId,
+          } as TRepeaterItem;
+        })
       );
       return;
     }
@@ -146,7 +166,7 @@ export function useRepeaterControl({
     } else {
       setItems([]);
     }
-  }, [createNewItem, effectiveMin, emitUpdate, modelValue]);
+  }, [createNewItem, effectiveMin, emitUpdate, fields, modelValue]);
 
   useEffect(() => {
     initializeItems();
@@ -215,13 +235,17 @@ export function useRepeaterControl({
 
   const updateItemField = useCallback(
     (index: number, fieldKey: string, value: unknown) => {
+      if (isReadonlyRepeaterItemField(fieldKey, fields)) {
+        return;
+      }
+
       const next = itemsRef.current.map((item, i) =>
         i === index ? { ...item, [fieldKey]: value } : item
       );
       setItems(next);
       emitUpdate(next);
     },
-    [emitUpdate]
+    [emitUpdate, fields]
   );
 
   const getFieldId = useCallback((itemId: string, fieldKey: string) => {

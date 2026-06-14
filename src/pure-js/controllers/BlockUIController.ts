@@ -14,6 +14,7 @@ import {
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { afterRender } from '../../utils/scheduling';
 import { getBlockScrollMargins } from '../../utils/scrollHelpers';
+import type { IBlockAnchorContext } from '../../utils/blockAnchorHelpers';
 import { getFirstErrorKey, parseErrorKey, scrollToFirstError } from '../../utils/formErrorHelpers';
 import {
   attachPageLeaveWarning,
@@ -24,6 +25,7 @@ import { EventDelegation } from '../EventDelegation';
 import { ControlInitializerFactory } from '../services/ControlInitializerFactory';
 import { ControlManager } from '../services/ControlManager';
 import { FormBuilder, TFieldConfig } from '../services/FormBuilder';
+import { FileUploadControlInitializer } from '../services/FileUploadControlInitializer';
 import { ImageUploadControlInitializer } from '../services/ImageUploadControlInitializer';
 import { ModalManager } from '../services/ModalManager';
 import { notificationService } from '../../shared/services/NotificationService';
@@ -75,6 +77,7 @@ export class BlockUIController {
   private formController: FormController;
   private unsavedChangesTracker = createUnsavedChangesTracker();
   private detachPageLeaveWarning: (() => void) | null = null;
+  private editingBlockId: string | null = null;
 
   constructor(config: IBlockUIControllerConfig) {
     this.config = config;
@@ -116,6 +119,7 @@ export class BlockUIController {
       getRepeaterFieldConfigs: () => this.repeaterFieldConfigs,
       getRepeaterRenderers: () => this.repeaterRenderers,
       findNestedRepeaterRenderer: (fieldPath: string) => this.findNestedRepeaterRenderer(fieldPath),
+      getBlockAnchorContext: () => this.getBlockAnchorContext(),
       onFieldChange: () => this.formController.triggerReactiveValidation(),
     });
 
@@ -262,6 +266,7 @@ export class BlockUIController {
     );
 
     this.prepareFormFields(fields);
+    this.editingBlockId = null;
 
     this.formController.showCreateForm(
       `${config.title} ${UI_STRINGS.addBlockTitle}`,
@@ -293,6 +298,26 @@ export class BlockUIController {
         this.repeaterFieldConfigs.set(field.field, repeaterFieldsMap);
       }
     });
+  }
+
+  private getBlockAnchorContext(): IBlockAnchorContext {
+    const blockTypeLabels: Record<string, string> = {};
+    Object.entries(this.config.blockConfigs).forEach(([type, blockConfig]) => {
+      const title = typeof blockConfig.title === 'string' ? blockConfig.title : type;
+      blockTypeLabels[type] = title;
+    });
+
+    return {
+      blocks: this.blocks.map(block => ({
+        id: block.id,
+        type: block.type,
+        props: block.props,
+        settings: block.settings,
+        visible: block.visible,
+      })),
+      editingBlockId: this.editingBlockId,
+      blockTypeLabels,
+    };
   }
 
   showAddBlockForm(type: string): void {
@@ -360,16 +385,25 @@ export class BlockUIController {
   }
 
   private initializeImageUploadControls(): void {
-    const containers = document.querySelectorAll(`.${CSS_CLASSES.IMAGE_UPLOAD_FIELD}`);
-    const initializer = new ImageUploadControlInitializer({
+    const containers = document.querySelectorAll(
+      `.${CSS_CLASSES.IMAGE_UPLOAD_FIELD}, .${CSS_CLASSES.FILE_UPLOAD_FIELD}`
+    );
+    const config = {
       getCurrentFormFields: () => this.currentFormFields,
       getRepeaterFieldConfigs: () => this.repeaterFieldConfigs,
       getRepeaterRenderers: () => this.repeaterRenderers,
       findNestedRepeaterRenderer: (fieldPath: string) => this.findNestedRepeaterRenderer(fieldPath),
-    });
+    };
+    const imageInitializer = new ImageUploadControlInitializer(config);
+    const fileInitializer = new FileUploadControlInitializer(config);
 
     containers.forEach(container => {
-      initializer.initialize(container as HTMLElement);
+      const element = container as HTMLElement;
+      if (element.classList.contains(CSS_CLASSES.FILE_UPLOAD_FIELD)) {
+        fileInitializer.initialize(element);
+      } else {
+        imageInitializer.initialize(element);
+      }
     });
   }
 
@@ -459,6 +493,7 @@ export class BlockUIController {
     );
 
     this.prepareFormFields(fields);
+    this.editingBlockId = blockId;
 
     this.formController.showEditForm(
       `${config.title} ${UI_STRINGS.editBlockTitle}`,
