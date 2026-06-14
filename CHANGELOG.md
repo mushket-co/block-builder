@@ -5,6 +5,9 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/),
 и проект следует [Semantic Versioning](https://semver.org/lang/ru/).
 
+## [1.5.1] - 2026-06-14
+fix bug; repeater into depends
+
 ## [1.5.0] - 2026-06-14
 
 ### Добавлено
