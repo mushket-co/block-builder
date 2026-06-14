@@ -1822,6 +1822,108 @@ export const blockConfigs = {
     ]
   },
 
+  toggleRepeater: {
+    title: 'Toggle + Repeater (regression)',
+    icon: '/icons/button.svg',
+    description: 'Проверка фикса: repeater внутри toggle-group (checkbox + dependsOn)',
+    render: {
+      kind: 'html',
+      template: (props) => {
+        const logos = Array.isArray(props.logos) ? props.logos : [];
+        const links = Array.isArray(props.links) ? props.links : [];
+        const logosHtml = props.showLogos && logos.length
+          ? `<section style="margin-bottom:20px;"><h3 style="margin:0 0 8px;font-size:16px;">Логотипы</h3><ul style="margin:0;padding-left:20px;">${logos.map((item, index) => `<li><strong>${item.name || `Логотип ${index + 1}`}</strong>${item.url ? ` — ${item.url}` : ''}</li>`).join('')}</ul></section>`
+          : '';
+        const linksHtml = props.showLinks && links.length
+          ? `<section><h3 style="margin:0 0 8px;font-size:16px;">Ссылки</h3><ul style="margin:0;padding-left:20px;">${links.map((item, index) => `<li>${item.url ? `<a href="${item.url}" style="color:var(--bb-color-primary,#0066cc);text-decoration:none;">${item.name || item.url}</a>` : (item.name || `Ссылка ${index + 1}`)}</li>`).join('')}</ul></section>`
+          : '';
+
+        return `
+          <div class="toggle-repeater-block" style="padding:16px 0;">
+            <div class="container">
+              <p style="margin:0 0 16px;padding:12px 16px;border-radius:8px;background:#fff8e6;border:1px solid #f0d78c;color:#6b5a1e;font-size:14px;line-height:1.5;">
+                Regression: включите «Основные логотипы» или «Ссылки» — в форме должен появиться repeater внутри toggle-group.
+              </p>
+              ${logosHtml}
+              ${linksHtml}
+            </div>
+          </div>
+        `;
+      }
+    },
+    fields: [
+      {
+        field: 'showLogos',
+        label: 'Основные логотипы',
+        type: 'checkbox',
+        defaultValue: false
+      },
+      {
+        field: 'logos',
+        label: 'Логотипы',
+        type: 'repeater',
+        dependsOn: { field: 'showLogos', value: true },
+        repeaterConfig: {
+          itemTitle: 'Логотип',
+          addButtonText: 'Добавить логотип',
+          min: 1,
+          fields: [
+            {
+              field: 'name',
+              label: 'Название',
+              type: 'text',
+              defaultValue: '',
+              rules: [{ type: 'required', message: 'Название обязательно' }]
+            },
+            {
+              field: 'url',
+              label: 'URL',
+              type: 'url',
+              defaultValue: ''
+            }
+          ],
+          defaultItemValue: { name: '', url: '' }
+        },
+        defaultValue: [{ name: '', url: '' }]
+      },
+      {
+        field: 'showLinks',
+        label: 'Ссылки',
+        type: 'checkbox',
+        defaultValue: false
+      },
+      {
+        field: 'links',
+        label: 'Ссылки',
+        type: 'repeater',
+        dependsOn: { field: 'showLinks', value: true },
+        repeaterConfig: {
+          itemTitle: 'Ссылка',
+          addButtonText: 'Добавить ссылку',
+          min: 1,
+          fields: [
+            {
+              field: 'name',
+              label: 'Текст',
+              type: 'text',
+              defaultValue: '',
+              rules: [{ type: 'required', message: 'Текст обязателен' }]
+            },
+            {
+              field: 'url',
+              label: 'URL',
+              type: 'url',
+              defaultValue: '',
+              rules: [{ type: 'required', message: 'URL обязателен' }]
+            }
+          ],
+          defaultItemValue: { name: '', url: '' }
+        },
+        defaultValue: [{ name: '', url: '' }]
+      }
+    ]
+  },
+
   nestedRepeater: {
     title: 'Каталог с вложенными репитерами',
     icon: '/icons/card.svg',

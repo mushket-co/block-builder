@@ -8,6 +8,7 @@ import {
   repeaterBlockType,
   repeaterToggleBlockType,
   toggleGroupBlockType,
+  toggleRepeaterBlockType,
 } from '../../../fixtures/minimal-block-configs';
 import { createTestBlockManagementUseCase } from '../../helpers/mockUseCases';
 
@@ -40,4 +41,5 @@ export {
   repeaterBlockType,
   repeaterToggleBlockType,
   toggleGroupBlockType,
+  toggleRepeaterBlockType,
 };

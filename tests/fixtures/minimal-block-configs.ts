@@ -47,6 +47,41 @@ export const toggleGroupBlockType: ITestBlockTypeConfig = {
   defaultProps: { enabled: false, title: '' },
 };
 
+export const toggleRepeaterBlockType: ITestBlockTypeConfig = {
+  type: 'toggle-repeater-demo',
+  label: 'Toggle repeater demo',
+  fields: [
+    {
+      field: 'showItems',
+      label: 'Show items',
+      type: 'checkbox',
+      defaultValue: false,
+    },
+    {
+      field: 'items',
+      label: 'Items',
+      type: 'repeater',
+      dependsOn: { field: 'showItems', value: true },
+      defaultValue: [{ name: '' }],
+      repeaterConfig: {
+        itemTitle: 'Item',
+        min: 1,
+        fields: [
+          {
+            field: 'name',
+            label: 'Name',
+            type: 'text',
+            defaultValue: '',
+          },
+        ],
+        defaultItemValue: { name: '' },
+      },
+    },
+  ],
+  defaultSettings: {},
+  defaultProps: { showItems: false, items: [{ name: '' }] },
+};
+
 export const linkBlockType: ITestBlockTypeConfig = {
   type: 'link',
   label: 'Link block',

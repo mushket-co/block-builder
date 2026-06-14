@@ -19,6 +19,7 @@ import RichCardListBlock from './components/RichCardListBlock.vue'
 import NewsListBlock from './components/NewsListBlock.vue'
 import RichTextBlock from './components/RichTextBlock.vue'
 import LinkBlock from './components/LinkBlock.vue'
+import ToggleRepeaterBlock from './components/ToggleRepeaterBlock.vue'
 import NestedRepeaterBlock from './components/NestedRepeaterBlock.vue'
 
 const CardListBlock = defineAsyncComponent(() => import('./components/CardListBlock.vue'))
@@ -1185,6 +1186,88 @@ export const blockConfigs = {
           value: true,
           operator: 'equals',
         },
+      }
+    ]
+  },
+
+  toggleRepeater: {
+    title: 'Toggle + Repeater (regression)',
+    icon: '/icons/button.svg',
+    description: 'Проверка фикса: repeater внутри toggle-group (checkbox + dependsOn)',
+    render: {
+      kind: 'component',
+      framework: 'vue',
+      component: ToggleRepeaterBlock
+    },
+    fields: [
+      {
+        field: 'showLogos',
+        label: 'Основные логотипы',
+        type: 'checkbox',
+        defaultValue: false
+      },
+      {
+        field: 'logos',
+        label: 'Логотипы',
+        type: 'repeater',
+        dependsOn: { field: 'showLogos', value: true },
+        repeaterConfig: {
+          itemTitle: 'Логотип',
+          addButtonText: 'Добавить логотип',
+          min: 1,
+          fields: [
+            {
+              field: 'name',
+              label: 'Название',
+              type: 'text',
+              defaultValue: '',
+              rules: [{ type: 'required', message: 'Название обязательно' }]
+            },
+            {
+              field: 'url',
+              label: 'URL',
+              type: 'url',
+              defaultValue: ''
+            }
+          ],
+          defaultItemValue: { name: '', url: '' }
+        },
+        defaultValue: [{ name: '', url: '' }]
+      },
+      {
+        field: 'showLinks',
+        label: 'Ссылки',
+        type: 'checkbox',
+        defaultValue: false
+      },
+      {
+        field: 'links',
+        label: 'Ссылки',
+        type: 'repeater',
+        dependsOn: { field: 'showLinks', value: true },
+        repeaterConfig: {
+          itemTitle: 'Ссылка',
+          addButtonText: 'Добавить ссылку',
+          min: 1,
+          fields: [
+            {
+              field: 'name',
+              label: 'Текст',
+              type: 'text',
+              defaultValue: '',
+              rules: [{ type: 'required', message: 'Текст обязателен' }]
+            },
+            {
+              field: 'url',
+              label: 'URL',
+              type: 'url',
+              defaultValue: '',
+              rules: [{ type: 'required', message: 'URL обязателен' }]
+            }
+          ],
+          defaultItemValue: { name: '', url: '' }
+        },
+        defaultValue: [{ name: '', url: '' }]
       }
     ]
   },

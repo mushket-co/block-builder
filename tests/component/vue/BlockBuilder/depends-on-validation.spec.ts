@@ -2,7 +2,7 @@ import { CSS_CLASSES } from '../../../../src/utils/constants';
 import { flushPromises } from '@vue/test-utils';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { mountBlockBuilder, toggleGroupBlockType } from '../helpers/mountBlockBuilder';
+import { mountBlockBuilder, toggleGroupBlockType, toggleRepeaterBlockType } from '../helpers/mountBlockBuilder';
 
 describe('BlockBuilder dependsOn', () => {
   afterEach(() => {
@@ -47,6 +47,26 @@ describe('BlockBuilder dependsOn', () => {
 
     expect(wrapper.find(`.${CSS_CLASSES.FORM_ERRORS}, .${CSS_CLASSES.ERROR}`).exists()).toBe(true);
     expect(wrapper.findAll(`.${CSS_CLASSES.BLOCK}`)).toHaveLength(0);
+
+    wrapper.unmount();
+  });
+
+  it('renders repeater inside toggle group when toggle is on', async () => {
+    const wrapper = mountBlockBuilder({
+      blockTypes: [toggleRepeaterBlockType],
+    });
+
+    await wrapper.find(`.${CSS_CLASSES.ADD_BLOCK_BTN}`).trigger('click');
+    await flushPromises();
+    await wrapper.find(`.${CSS_CLASSES.BLOCK_TYPE_CARD}`).trigger('click');
+    await flushPromises();
+
+    expect(wrapper.find(`.${CSS_CLASSES.REPEATER_CONTROL}`).exists()).toBe(false);
+
+    await wrapper.find(`.${CSS_CLASSES.TOGGLE_CONTROL_BUTTON}`).trigger('click');
+    await flushPromises();
+
+    expect(wrapper.find(`.${CSS_CLASSES.REPEATER_CONTROL}`).exists()).toBe(true);
 
     wrapper.unmount();
   });

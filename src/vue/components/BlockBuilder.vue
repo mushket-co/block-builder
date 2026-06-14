@@ -226,7 +226,14 @@
                     "
                     @update:model-value="updateFormField(dependentField.field, $event)"
                   >
-                    <template #default="{ field: slotField, modelValue: slotModelValue }">
+                    <template
+                      #default="{
+                        field: slotField,
+                        fieldId: slotFieldId,
+                        modelValue: slotModelValue,
+                        error: slotError,
+                      }"
+                    >
                       <SpacingControl
                         v-if="slotField.type === 'spacing'"
                         :model-value="slotModelValue"
@@ -241,6 +248,71 @@
                         :show-preview="true"
                         @update:model-value="updateFormField(slotField.field, $event)"
                       />
+
+                      <RepeaterControl
+                        v-else-if="slotField.type === 'repeater'"
+                        :ref="createRepeaterRefCallback(slotField.field)"
+                        :model-value="slotModelValue"
+                        :field-name="slotField.field"
+                        :label="slotField.label"
+                        :fields="slotField.repeaterConfig?.fields || []"
+                        :rules="slotField.rules || []"
+                        :errors="formErrors"
+                        :add-button-text="slotField.repeaterConfig?.addButtonText"
+                        :remove-button-text="slotField.repeaterConfig?.removeButtonText"
+                        :item-title="slotField.repeaterConfig?.itemTitle"
+                        :count-label-variants="slotField.repeaterConfig?.countLabelVariants"
+                        :min="slotField.repeaterConfig?.min"
+                        :max="slotField.repeaterConfig?.max"
+                        :default-item-value="slotField.repeaterConfig?.defaultItemValue"
+                        :max-nesting-depth="slotField.repeaterConfig?.maxNestingDepth ?? 2"
+                        :api-select-use-case="props.apiSelectUseCase"
+                        :is-api-select-available="isApiSelectAvailable"
+                        :get-api-select-restriction-message="getApiSelectRestrictionMessage"
+                        :custom-field-renderer-registry="props.customFieldRendererRegistry"
+                        :is-custom-field-available="isCustomFieldAvailable"
+                        :get-custom-field-restriction-message="getCustomFieldsRestrictionMessage"
+                        @update:model-value="updateFormField(slotField.field, $event)"
+                      />
+
+                      <div v-else-if="slotField.type === 'api-select'" :class="CSS_CLASSES.FORM_GROUP">
+                        <ApiSelectField
+                          v-if="isApiSelectAvailable(slotField) && props.apiSelectUseCase"
+                          :model-value="slotModelValue"
+                          :config="slotField"
+                          :validation-error="slotError"
+                          :api-select-use-case="props.apiSelectUseCase"
+                          @update:model-value="updateFormField(slotField.field, $event)"
+                        />
+
+                        <div v-else :class="CSS_CLASSES.BB_WARNING_BOX">
+                          ⚠️ {{ getApiSelectRestrictionMessage() }}
+                        </div>
+                      </div>
+
+                      <div v-else-if="slotField.type === 'custom'" :class="CSS_CLASSES.FORM_GROUP">
+                        <label :for="slotFieldId" :class="CSS_CLASSES.FORM_LABEL">
+                          {{ slotField.label }}
+                          <span v-if="isFieldRequired(slotField)" :class="CSS_CLASSES.REQUIRED">*</span>
+                        </label>
+                        <CustomField
+                          v-if="
+                            isCustomFieldAvailable(slotField) &&
+                            props.customFieldRendererRegistry?.get(
+                              slotField.customFieldConfig?.rendererId
+                            )
+                          "
+                          :model-value="slotModelValue"
+                          :field="slotField"
+                          :form-errors="formErrors"
+                          :custom-field-renderer-registry="props.customFieldRendererRegistry"
+                          :is-field-required="isFieldRequired"
+                          @update:model-value="updateFormField(slotField.field, $event)"
+                        />
+                        <div v-else :class="CSS_CLASSES.BB_WARNING_BOX">
+                          ⚠️ {{ getCustomFieldsRestrictionMessage() }}
+                        </div>
+                      </div>
                     </template>
                   </FormField>
                 </template>
