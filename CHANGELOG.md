@@ -16,7 +16,7 @@
 - Vue: `MatrixTableControl`; React: `MatrixTableControl`
 - Утилиты `matrixTableHelpers` (`createDefaultMatrixTableValue`, `normalizeMatrixTableValue`, `isMatrixTableStoredValue` и др.), валидация в `universalValidation`
 - `resolveFormFieldDefaultValue` — дефолт `{ tableHead, tableBody }` для `matrix-table`
-- Примеры: блок **Таблица** (`table`) в vue3, react, nuxt3, nuxt4 — `TableBlock`, `examples/shared/tableBlockDefaults.js`, иконка `examples/static/icons/table.svg`
+- Примеры: блок **Таблица** (`table`) в vue3, react, nuxt3, nuxt4 и **demo-bb** (Vue/React) — `TableBlock`, `examples/shared/tableBlockDefaults.js`, иконка `examples/static/icons/table.svg`
 
 #### SVG-спрайт иконок
 
@@ -50,6 +50,12 @@
 
 - **Сохранение блока с `matrix-table`**: `UpdateBlockUseCase` принимает объект `{ tableHead, tableBody }` — устранена ошибка `Invalid prop value for key 'tableMatrix': must be primitive type` при изменении заголовков колонок
 - **Fill-иконки в `.bb-control-btn`**: SVG с `fill` больше не получают лишний `stroke`, из‑за которого иконки выглядели жирнее
+
+### Документация
+
+- Landing: разделы про `matrix-table` (1.6.0), таблица поддержки Pure JS; исправлена устаревшая информация о «заморозке» Pure JS на 1.0.30
+- `dependsOn` в документации: Vue 3 **и React** (не «только Vue»); Pure JS по-прежнему без `dependsOn`
+- demo-bb: демо-блок «Таблица (matrix-table)» в Vue 3 и React
 
 ## [1.5.5] - 2026-06-20
 
@@ -358,18 +364,17 @@ minors
 
 ### Примечания
 
-- **ToggleControl и `dependsOn` — только Vue3**. Pure-JS не получает эти возможности (политика версии 1.1.0)
+- **ToggleControl и `dependsOn`** — Vue 3 и React UI; в Pure JS поля с `dependsOn` не скрываются автоматически
+- **`matrix-table`** — только Vue 3 и React UI (1.6.0+)
 - **Обратная совместимость**: Поля без `dependsOn` работают как раньше; breaking change — только удаление API лицензирования
 - **Coverage Jest ~40%** — нормально: Vue (`.vue`) и E2E покрываются Vitest и Playwright, не Jest
 - **Полный локальный прогон перед PR**: `npm run test:ci:full` и `npm run check:bundle-size`
 
-### Политика поддержки версий
+### Политика поддержки UI-слоёв
 
-**Начиная с версии 1.1.0:**
-
-- ✅ **Фреймворки (Vue, React)**: Все новые функции и улучшения — только для версий с поддержкой фреймворков
-- 🔒 **Pure-JS версия**: Фиксирована на **1.0.30** — только критические security fixes, без новых фич
-- 📈 **Развитие**: Основной фокус — Vue3 (React в планах)
+- ✅ **Vue 3 / React**: новые UI-фичи по умолчанию добавляются в оба слоя (если не указано иное)
+- ✅ **Pure JS**: получает фичи выборочно — инфраструктурные улучшения и поля с pure-js renderers/initializers; без `matrix-table`, `dependsOn`, `ToggleControl`
+- 📈 **Основной фокус развития UI**: Vue 3 и React
 
 
 ## [1.0.30] - 2025-01-XX

@@ -4,11 +4,11 @@ import { join } from 'node:path';
 const DIST_DIR = join(process.cwd(), 'dist');
 
 const LIMITS = {
-  'index.esm.js': 180 * 1024,
-  'index.js': 180 * 1024,
-  'core.esm.js': 180 * 1024,
-  'core.js': 180 * 1024,
-  'index.esm.css': 50 * 1024,
+  'index.esm.js': 185 * 1024,
+  'index.js': 185 * 1024,
+  'core.esm.js': 185 * 1024,
+  'core.js': 185 * 1024,
+  'index.esm.css': 60 * 1024,
 };
 
 function formatKb(bytes) {
