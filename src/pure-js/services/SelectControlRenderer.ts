@@ -299,7 +299,6 @@ export class SelectControlRenderer extends BaseDropdownRenderer {
         </div>
         ${this.multiple && hasValue ? this.renderSelectedTags() : ''}
         ${this.errors[this.fieldName] ? `<div class="${CSS_CLASSES.FORM_ERRORS}"><span class="${CSS_CLASSES.ERROR}">${this.errors[this.fieldName].join(', ')}</span></div>` : ''}
-        <input type="hidden" name="${this.fieldName}" value="${this.multiple && Array.isArray(this.value) ? JSON.stringify(this.value) : (this.value ?? '')}" />
       </div>
     `;
 

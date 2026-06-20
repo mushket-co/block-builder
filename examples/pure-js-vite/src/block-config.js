@@ -108,6 +108,16 @@ export const blockConfigs = {
         const imageUrls = getUrls(props.images);
         const fileUrl = getUrl(props.file);
         const fileUrls = getUrls(props.files);
+        const topicLabels = {
+          dev: 'Разработка',
+          design: 'Дизайн',
+          marketing: 'Маркетинг',
+          analytics: 'Аналитика',
+        };
+        const topics = Array.isArray(props.topics) ? props.topics : [];
+        const topicsHtml = topics.length
+          ? `<div class="text-block__media" style="margin-top:16px;text-align:left;"><p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#6c757d;">Темы (select, multiple)</p><div style="display:flex;flex-wrap:wrap;gap:8px;">${topics.map((value) => `<span style="display:inline-block;padding:4px 10px;border-radius:999px;background:#e7f1ff;color:#0b5ed7;font-size:13px;">${topicLabels[value] || value}</span>`).join('')}</div></div>`
+          : '';
 
         const imagesHtml = imageUrl
           ? `<div class="text-block__media" style="margin-top:16px;text-align:left;"><p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#6c757d;">Изображение</p><img src="${imageUrl}" alt="" style="display:block;max-width:100%;height:auto;border-radius:4px;" /></div>`
@@ -136,6 +146,7 @@ export const blockConfigs = {
               transition: all 0.2s ease;
             " onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'" onmouseout="this.style.boxShadow='none'">
               <p class="text-block__content" style="margin:0 0 12px;">${props.content}</p>
+              ${topicsHtml}
               ${imagesHtml}
               ${galleryHtml}
               ${fileHtml}
@@ -186,6 +197,20 @@ export const blockConfigs = {
         ],
         rules: [{ type: 'required', message: 'Выравнивание обязательно' }],
         defaultValue: 'left'
+      },
+      {
+        field: 'topics',
+        label: 'Темы (select, множественный выбор)',
+        type: 'select',
+        multiple: true,
+        options: [
+          { value: 'dev', label: 'Разработка' },
+          { value: 'design', label: 'Дизайн' },
+          { value: 'marketing', label: 'Маркетинг' },
+          { value: 'analytics', label: 'Аналитика' }
+        ],
+        rules: [],
+        defaultValue: ['dev', 'design']
       },
       {
         field: 'image',

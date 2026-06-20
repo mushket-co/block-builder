@@ -80,6 +80,7 @@
       :required="required"
       :error="error"
       :options="field.options || []"
+      :multiple="field.multiple ?? false"
       :show-label="showLabel"
       @update:model-value="handleUpdate"
     />

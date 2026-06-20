@@ -24,21 +24,9 @@
       <slot name="trigger" v-bind="triggerSlotProps">
         <div :class="CSS_CLASSES.BB_DROPDOWN_VALUE">
           <template v-if="multiple">
-            <div v-if="selectedOptions.length > 0" :class="CSS_CLASSES.BB_DROPDOWN_CHIPS">
-              <span
-                v-for="option in visibleChipOptions"
-                :key="option.value"
-                :class="CSS_CLASSES.BB_DROPDOWN_CHIP"
-              >
-                {{ option.label }}
-              </span>
-              <span
-                v-if="hiddenChipCount > 0"
-                :class="[CSS_CLASSES.BB_DROPDOWN_CHIP, CSS_CLASSES.BB_DROPDOWN_CHIP_MORE]"
-              >
-                +{{ hiddenChipCount }}
-              </span>
-            </div>
+            <span v-if="multipleSummary" :class="CSS_CLASSES.BB_DROPDOWN_SINGLE">
+              {{ multipleSummary }}
+            </span>
             <span v-else :class="CSS_CLASSES.BB_DROPDOWN_PLACEHOLDER">
               {{ placeholder }}
             </span>
@@ -72,6 +60,25 @@
           ▼
         </span>
       </slot>
+    </div>
+
+    <div
+      v-if="multiple && selectedOptions.length > 0 && !hasCustomTrigger"
+      :class="CSS_CLASSES.BB_API_SELECT_SELECTED"
+    >
+      <div
+        v-for="option in selectedOptions"
+        :key="`bb-dropdown-tag-${option.value}`"
+        :class="CSS_CLASSES.BB_API_SELECT_TAG"
+      >
+        <span :class="CSS_CLASSES.BB_API_SELECT_TAG_NAME">{{ option.label }}</span>
+        <span
+          :class="CSS_CLASSES.BB_API_SELECT_TAG_REMOVE"
+          @click.stop="removeOption(option.value)"
+        >
+          <Icon name="close" :width="12" :height="12" />
+        </span>
+      </div>
     </div>
 
     <Teleport :to="teleportTo">
@@ -155,7 +162,7 @@
 <script setup lang="ts">
 import { CSS_CLASSES } from '../../utils/constants';
 import Icon from '../../shared/icons/Icon.vue';
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, useSlots, watch } from 'vue';
 
 interface IDropdownOption {
   value: string | number;
@@ -209,6 +216,9 @@ const emit = defineEmits<{
   (e: 'clear'): void;
 }>();
 
+const slots = useSlots();
+const hasCustomTrigger = computed(() => Boolean(slots.trigger));
+
 const rootRef = ref<HTMLElement | null>(null);
 const triggerRef = ref<HTMLElement | null>(null);
 const panelRef = ref<HTMLElement | null>(null);
@@ -245,6 +255,23 @@ const displayValue = computed(() => {
   return selectedOptions.value[0]?.label ?? '';
 });
 
+const multipleSummary = computed(() => {
+  if (!props.multiple || selectedOptions.value.length === 0) {
+    return '';
+  }
+
+  const limit = 3;
+  const visible = selectedOptions.value.slice(0, limit);
+  const rest = selectedOptions.value.length - limit;
+  const labels = visible.map(option => option.label);
+
+  if (rest > 0) {
+    labels.push(`+${rest}`);
+  }
+
+  return labels.join(', ');
+});
+
 const hasValue = computed(() => {
   if (props.multiple) {
     return Array.isArray(props.modelValue) && props.modelValue.length > 0;
@@ -259,29 +286,6 @@ const contentStyle = computed(() => {
   return {
     maxHeight: `${maxPanelHeight}px`,
   };
-});
-
-const visibleChipOptions = computed(() => {
-  if (!props.multiple) {
-    return [];
-  }
-
-  const limitConfig = props.chipDisplayLimit ?? 0;
-  const limit = Math.max(limitConfig, 0);
-
-  if (limit === 0) {
-    return selectedOptions.value;
-  }
-
-  return selectedOptions.value.slice(0, limit);
-});
-
-const hiddenChipCount = computed(() => {
-  if (!props.multiple) {
-    return 0;
-  }
-
-  return Math.max(0, selectedOptions.value.length - visibleChipOptions.value.length);
 });
 
 const open = async () => {
@@ -506,6 +510,18 @@ const onOptionClick = (option: IDropdownOption) => {
     emit('update:modelValue', option.value);
     close();
   }
+};
+
+const removeOption = (value: string | number) => {
+  if (!props.multiple || props.disabled) {
+    return;
+  }
+
+  const currentValue = Array.isArray(props.modelValue) ? props.modelValue : [];
+  emit(
+    'update:modelValue',
+    currentValue.filter(item => item !== value)
+  );
 };
 
 const clearSelection = () => {

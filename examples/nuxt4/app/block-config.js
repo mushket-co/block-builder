@@ -129,6 +129,20 @@ export const blockConfigs = {
         defaultValue: 'left'
       },
       {
+        field: 'topics',
+        label: 'Темы (select, множественный выбор)',
+        type: 'select',
+        multiple: true,
+        options: [
+          { value: 'dev', label: 'Разработка' },
+          { value: 'design', label: 'Дизайн' },
+          { value: 'marketing', label: 'Маркетинг' },
+          { value: 'analytics', label: 'Аналитика' }
+        ],
+        rules: [],
+        defaultValue: ['dev', 'design']
+      },
+      {
         field: 'image',
         label: 'Изображение (одно)',
         type: 'image',

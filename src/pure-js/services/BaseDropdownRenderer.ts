@@ -1,3 +1,5 @@
+import { CSS_CLASSES } from '../../utils/constants';
+
 export interface IDropdownOption {
   value: string | number;
   label: string;
@@ -158,11 +160,13 @@ export abstract class BaseDropdownRenderer {
   }
 
   protected updateHiddenInput(): void {
-    if (!this.container) {
+    const scope =
+      this.container?.closest(`.${CSS_CLASSES.FORM_GROUP}`) ?? this.container;
+    if (!scope) {
       return;
     }
 
-    const hiddenInput = this.container.querySelector(
+    const hiddenInput = scope.querySelector(
       `input[type="hidden"][name="${this.fieldName}"]`
     ) as HTMLInputElement;
     if (hiddenInput) {

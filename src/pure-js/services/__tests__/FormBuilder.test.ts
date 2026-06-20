@@ -365,6 +365,30 @@ describe('FormBuilder', () => {
       expect(html).toContain('value="center"');
     });
 
+    test('должен сохранить множественный select при редактировании блока', () => {
+      const fields: TFieldConfig[] = [
+        {
+          field: 'topics',
+          label: 'Темы',
+          type: 'select',
+          multiple: true,
+          options: [
+            { value: 'dev', label: 'Разработка' },
+            { value: 'design', label: 'Дизайн' },
+            { value: 'marketing', label: 'Маркетинг' },
+          ],
+        },
+      ];
+
+      const html = formBuilder.generateEditFormHTML(fields, {
+        topics: ['dev', 'design'],
+      });
+
+      expect(html).toContain('name="topics"');
+      expect(html).toContain('value="[&quot;dev&quot;,&quot;design&quot;]"');
+      expect(html).not.toMatch(/value="\["dev"/);
+    });
+
     test('должен работать без options', () => {
       const fields: TFieldConfig[] = [
         {

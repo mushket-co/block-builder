@@ -5,6 +5,31 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/),
 и проект следует [Semantic Versioning](https://semver.org/lang/ru/).
 
+
+## [1.5.5] - 2026-06-20
+
+### Добавлено
+
+#### Поле `select` с `multiple: true`
+
+- Множественный выбор для `type: 'select'` + `multiple: true` в Vue, React и Pure JS
+- Утилита `resolveFormFieldDefaultValue` — дефолт `[]` для `select`/`api-select`/`image`/`file` с `multiple`; используется в `BlockBuilder`, `useBlockForm`, `RepeaterControl` (Vue/React/Pure JS)
+- Vue/React: `SelectField` передаёт `multiple` в `CustomDropdown`, значение — массив
+- Pure JS: `SelectFieldRenderer`, `SelectControlInitializer`, `SelectControlRenderer` — toggle-выбор, теги, JSON в hidden input
+- Примеры: поле **«Темы (select, множественный выбор)»** в блоке **text** (vue3, react, nuxt3, nuxt4, pure-js-vite); отображение бейджей тем в `TextBlock`
+
+#### UX множественного выбора (Vue/React)
+
+- `CustomDropdown`: сводка выбранных значений через запятую в поле (до 3 + `+N`), теги с кнопкой удаления под полем
+- Стили тегов через классы `bb-api-select__tag` (общие с api-select)
+
+### Исправлено
+
+#### Pure JS
+
+- **Multi-select при редактировании блока**: выбранные значения не восстанавливались в форме — JSON в атрибуте `value` hidden input ломал разметку; исправлено кодирование `&quot;`, убран дублирующий hidden input, `updateHiddenInput` ищет поле в `bb-form-group`
+- Тест: `generateEditFormHTML` сохраняет массив значений multi-select
+
 ## [1.5.1] - 2026-06-14
 fix bug; repeater into depends
 

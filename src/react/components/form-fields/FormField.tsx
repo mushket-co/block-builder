@@ -127,12 +127,13 @@ export function FormField({
         return (
           <SelectField
             fieldId={fieldId}
-            modelValue={modelValue as string | number | undefined}
+            modelValue={modelValue as string | number | (string | number)[] | undefined}
             label={field.label}
             placeholder={field.placeholder}
             required={required}
             error={error}
             options={field.options || []}
+            multiple={field.multiple ?? false}
             showLabel={showLabel}
             onChange={onChange}
           />

@@ -17,16 +17,20 @@ export class SelectFieldRenderer extends BaseFieldRenderer {
   ): string {
     const fieldName = this.getFieldName(context, field);
     const hiddenValue = this.getHiddenInputValue(field, value);
+    const encodedHiddenValue = field.multiple
+      ? hiddenValue
+      : this.escapeHtml(hiddenValue);
 
     return `
       <div class="${CSS_CLASSES.SELECT_PLACEHOLDER}" data-field-name="${fieldName}" data-field-id="${fieldId}"></div>
-      <input type="hidden" name="${fieldName}" value="${this.escapeHtml(hiddenValue)}" />
+      <input type="hidden" name="${fieldName}" value="${encodedHiddenValue}" />
     `;
   }
 
   private getHiddenInputValue(field: IFormFieldConfig, value: unknown): string {
     if (field.multiple) {
-      return Array.isArray(value) ? JSON.stringify(value) : '[]';
+      const json = Array.isArray(value) ? JSON.stringify(value) : '[]';
+      return json.replaceAll('"', '&quot;');
     }
 
     if (value === null || value === undefined) {

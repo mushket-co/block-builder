@@ -6,6 +6,7 @@ import {
 import { CSS_CLASSES } from '../../utils/constants';
 import { getIconHTML } from '../../shared/icons/sprite';
 import { getRepeaterCountText } from '../../utils/repeaterCountText';
+import { resolveFormFieldDefaultValue } from '../../utils/formFieldDefaults';
 import {
   assignRepeaterItemId,
   getRepeaterFormFields,
@@ -101,31 +102,7 @@ export class RepeaterControlRenderer {
       } else if (field.defaultValue !== undefined) {
         newItem[field.field] = field.defaultValue;
       } else {
-        switch (field.type) {
-          case 'checkbox':
-            newItem[field.field] = false;
-            break;
-          case 'number':
-            newItem[field.field] = 0;
-            break;
-          case 'api-select': {
-            const apiSelectConfig = (field as any).apiSelectConfig;
-            newItem[field.field] = apiSelectConfig?.multiple ? [] : null;
-            break;
-          }
-          case 'image':
-          case 'file':
-            newItem[field.field] = field.multiple ? [] : '';
-            break;
-          case 'repeater':
-            newItem[field.field] = [];
-            break;
-          case 'custom':
-            newItem[field.field] = '';
-            break;
-          default:
-            newItem[field.field] = '';
-        }
+        newItem[field.field] = resolveFormFieldDefaultValue(field);
       }
     });
 

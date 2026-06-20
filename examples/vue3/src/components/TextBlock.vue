@@ -3,6 +3,19 @@
     <div class="container" :style="blockStyle">
       <p class="text-block__content">{{ content }}</p>
 
+      <div v-if="topicLabels.length" class="text-block__media">
+        <p class="text-block__media-label">Темы (select, multiple)</p>
+        <div class="text-block__topics">
+          <span
+            v-for="label in topicLabels"
+            :key="label"
+            class="text-block__topic"
+          >
+            {{ label }}
+          </span>
+        </div>
+      </div>
+
       <div v-if="imageUrl" class="text-block__media">
         <p class="text-block__media-label">Изображение</p>
         <img :src="imageUrl" alt="" class="text-block__image" />
@@ -54,6 +67,13 @@
 
 <script setup>
 import { computed } from 'vue'
+
+const TOPIC_LABELS = {
+  dev: 'Разработка',
+  design: 'Дизайн',
+  marketing: 'Маркетинг',
+  analytics: 'Аналитика'
+}
 
 function resolveUploadUrl(value) {
   if (!value) {
@@ -108,6 +128,10 @@ const props = defineProps({
   files: {
     type: Array,
     default: () => []
+  },
+  topics: {
+    type: Array,
+    default: () => []
   }
 })
 
@@ -125,6 +149,13 @@ const imageUrl = computed(() => resolveUploadUrl(props.image))
 const imageUrls = computed(() => resolveUploadUrls(props.images))
 const fileUrl = computed(() => resolveUploadUrl(props.file))
 const fileUrls = computed(() => resolveUploadUrls(props.files))
+const topicLabels = computed(() => {
+  if (!Array.isArray(props.topics)) {
+    return []
+  }
+
+  return props.topics.map(value => TOPIC_LABELS[value] || value).filter(Boolean)
+})
 </script>
 
 <style scoped>
@@ -179,5 +210,20 @@ const fileUrls = computed(() => resolveUploadUrls(props.files))
 .text-block__file-link {
   color: var(--bb-color-primary);
   font-size: 14px;
+}
+
+.text-block__topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.text-block__topic {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #e7f1ff;
+  color: #0b5ed7;
+  font-size: 13px;
 }
 </style>

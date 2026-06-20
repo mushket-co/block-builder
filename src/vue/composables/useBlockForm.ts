@@ -3,6 +3,7 @@ import { computed, reactive, ref } from 'vue';
 import { IBlock, TBlockId } from '../../core/types';
 import { BlockManagementUseCase } from '../../core/use-cases/BlockManagementUseCase';
 import { addSpacingFieldToFields } from '../../utils/blockSpacingHelpers';
+import { resolveFormFieldDefaultValue } from '../../utils/formFieldDefaults';
 import {
   applyFormErrors,
   ReactiveFormValidationTracker,
@@ -60,12 +61,7 @@ export function useBlockForm(
     Object.keys(formErrors).forEach(key => delete formErrors[key]);
     const blockType = currentBlockType.value;
     blockType?.fields?.forEach((field: any) => {
-      if (field.type === 'api-select') {
-        const isMultiple = field.apiSelectConfig?.multiple ?? false;
-        formData[field.field] = field.defaultValue ?? (isMultiple ? [] : null);
-      } else {
-        formData[field.field] = field.defaultValue;
-      }
+      formData[field.field] = resolveFormFieldDefaultValue(field);
     });
 
     showModal.value = true;

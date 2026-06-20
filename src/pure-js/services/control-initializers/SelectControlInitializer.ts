@@ -44,7 +44,7 @@ export class SelectControlInitializer implements IControlInitializer {
       let currentValue: string | number | (string | number)[] | null = null;
 
       if (hiddenInput) {
-        const inputValue = hiddenInput.value;
+        const inputValue = hiddenInput.value.replaceAll('&quot;', '"');
         if (fieldConfig.multiple) {
           try {
             currentValue = JSON.parse(inputValue || '[]');

@@ -482,6 +482,7 @@ import {
 } from '../../utils/constants';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { countValidationErrors } from '../../utils/formErrorHelpers';
+import { resolveFormFieldDefaultValue } from '../../utils/formFieldDefaults';
 import {
   applyFormErrors,
   ReactiveFormValidationTracker,
@@ -923,12 +924,7 @@ const openCreateModal = (type: string, position?: number) => {
 
   Object.keys(formData).forEach(key => delete formData[key]);
   currentBlockFields.value.forEach((field: any) => {
-    if (field.type === 'api-select') {
-      const isMultiple = field.apiSelectConfig?.multiple ?? false;
-      formData[field.field] = field.defaultValue ?? (isMultiple ? [] : null);
-    } else {
-      formData[field.field] = field.defaultValue;
-    }
+    formData[field.field] = resolveFormFieldDefaultValue(field);
   });
 
   showModal.value = true;

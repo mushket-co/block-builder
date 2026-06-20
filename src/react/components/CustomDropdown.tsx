@@ -221,6 +221,23 @@ export const CustomDropdown = forwardRef<ICustomDropdownRef, ICustomDropdownProp
 
     const displayValue = selectedOptions.length > 0 ? (selectedOptions[0]?.label ?? '') : '';
 
+    const multipleSummary = useMemo(() => {
+      if (!multiple || selectedOptions.length === 0) {
+        return '';
+      }
+
+      const limit = 3;
+      const visible = selectedOptions.slice(0, limit);
+      const rest = selectedOptions.length - limit;
+      const labels = visible.map(option => option.label);
+
+      if (rest > 0) {
+        labels.push(`+${rest}`);
+      }
+
+      return labels.join(', ');
+    }, [multiple, selectedOptions]);
+
     const hasValue = useMemo(() => {
       if (multiple) {
         return Array.isArray(modelValue) && modelValue.length > 0;
@@ -229,23 +246,6 @@ export const CustomDropdown = forwardRef<ICustomDropdownRef, ICustomDropdownProp
     }, [modelValue, multiple]);
 
     const showClear = clearable && hasValue && !disabled;
-
-    const visibleChipOptions = useMemo(() => {
-      if (!multiple) {
-        return [];
-      }
-
-      const limit = Math.max(chipDisplayLimit, 0);
-      if (limit === 0) {
-        return selectedOptions;
-      }
-
-      return selectedOptions.slice(0, limit);
-    }, [chipDisplayLimit, multiple, selectedOptions]);
-
-    const hiddenChipCount = multiple
-      ? Math.max(0, selectedOptions.length - visibleChipOptions.length)
-      : 0;
 
     const contentStyle = useMemo(
       () => ({
@@ -489,6 +489,18 @@ export const CustomDropdown = forwardRef<ICustomDropdownRef, ICustomDropdownProp
         }
       },
       [close, modelValue, multiple, onChange]
+    );
+
+    const removeOption = useCallback(
+      (value: string | number) => {
+        if (!multiple || disabled) {
+          return;
+        }
+
+        const currentValue = Array.isArray(modelValue) ? modelValue : [];
+        onChange(currentValue.filter(item => item !== value));
+      },
+      [disabled, modelValue, multiple, onChange]
     );
 
     const clearSelection = useCallback(() => {
@@ -758,21 +770,8 @@ export const CustomDropdown = forwardRef<ICustomDropdownRef, ICustomDropdownProp
       <>
         <div className={CSS_CLASSES.BB_DROPDOWN_VALUE}>
           {multiple ? (
-            selectedOptions.length > 0 ? (
-              <div className={CSS_CLASSES.BB_DROPDOWN_CHIPS}>
-                {visibleChipOptions.map(option => (
-                  <span key={option.value} className={CSS_CLASSES.BB_DROPDOWN_CHIP}>
-                    {option.label}
-                  </span>
-                ))}
-                {hiddenChipCount > 0 ? (
-                  <span
-                    className={`${CSS_CLASSES.BB_DROPDOWN_CHIP} ${CSS_CLASSES.BB_DROPDOWN_CHIP_MORE}`}
-                  >
-                    +{hiddenChipCount}
-                  </span>
-                ) : null}
-              </div>
+            multipleSummary ? (
+              <span className={CSS_CLASSES.BB_DROPDOWN_SINGLE}>{multipleSummary}</span>
             ) : (
               <span className={CSS_CLASSES.BB_DROPDOWN_PLACEHOLDER}>{placeholder}</span>
             )
@@ -920,6 +919,24 @@ export const CustomDropdown = forwardRef<ICustomDropdownRef, ICustomDropdownProp
         >
           {renderTrigger ? renderTrigger(triggerSlotProps) : defaultTrigger}
         </div>
+        {multiple && selectedOptions.length > 0 && !renderTrigger ? (
+          <div className={CSS_CLASSES.BB_API_SELECT_SELECTED}>
+            {selectedOptions.map(option => (
+              <div key={option.value} className={CSS_CLASSES.BB_API_SELECT_TAG}>
+                <span className={CSS_CLASSES.BB_API_SELECT_TAG_NAME}>{option.label}</span>
+                <span
+                  className={CSS_CLASSES.BB_API_SELECT_TAG_REMOVE}
+                  onClick={event => {
+                    event.stopPropagation();
+                    removeOption(option.value);
+                  }}
+                >
+                  <Icon name="close" width={12} height={12} />
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : null}
         {panelNode}
       </div>
     );

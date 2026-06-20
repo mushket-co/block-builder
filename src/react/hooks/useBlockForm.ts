@@ -15,6 +15,7 @@ import {
   type IRepeaterRef,
 } from '../../shared/services/ValidationErrorHandler';
 import { addSpacingFieldToFields } from '../../utils/blockSpacingHelpers';
+import { resolveFormFieldDefaultValue } from '../../utils/formFieldDefaults';
 import { countValidationErrors } from '../../utils/formErrorHelpers';
 import { isFieldVisible } from '../../utils/formFieldHelpers';
 import { ReactiveFormValidationTracker } from '../../utils/reactiveFormValidation';
@@ -142,12 +143,7 @@ export function useBlockForm({
         : [];
       const nextFormData: Record<string, unknown> = {};
       fields.forEach(field => {
-        if (field.type === 'api-select') {
-          const isMultiple = field.apiSelectConfig?.multiple ?? false;
-          nextFormData[field.field] = field.defaultValue ?? (isMultiple ? [] : null);
-        } else {
-          nextFormData[field.field] = field.defaultValue;
-        }
+        nextFormData[field.field] = resolveFormFieldDefaultValue(field);
       });
       setFormData(nextFormData);
       setFormErrors({});

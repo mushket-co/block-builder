@@ -11,25 +11,27 @@ export interface ISelectOption {
 
 export interface ISelectFieldProps {
   fieldId: string;
-  modelValue?: string | number;
+  modelValue?: string | number | (string | number)[];
   label?: string;
   placeholder?: string;
   required?: boolean;
   error?: string;
   options?: ISelectOption[];
   showLabel?: boolean;
-  onChange: (value: string | number) => void;
+  multiple?: boolean;
+  onChange: (value: string | number | (string | number)[]) => void;
 }
 
 export function SelectField({
   fieldId,
-  modelValue = '',
+  modelValue,
   label = '',
   placeholder = '',
   required = false,
   error = '',
   options = [],
   showLabel = true,
+  multiple = false,
   onChange,
 }: ISelectFieldProps) {
   const dropdownOptions = useMemo(
@@ -42,18 +44,39 @@ export function SelectField({
     [options]
   );
 
+  const dropdownValue = useMemo(() => {
+    if (multiple) {
+      return Array.isArray(modelValue) ? modelValue : [];
+    }
+
+    if (modelValue === null || modelValue === undefined) {
+      return '';
+    }
+
+    return modelValue as string | number;
+  }, [modelValue, multiple]);
+
   const showError = Boolean(error);
   const isClearable = !required;
 
   const handleUpdate = (value: TDropdownValue) => {
-    if (Array.isArray(value)) {
-      const [first] = value;
-      onChange((first ?? '') as string | number);
+    if (multiple) {
+      if (Array.isArray(value)) {
+        onChange(value);
+        return;
+      }
+
+      onChange(value === null || value === undefined ? [] : [value]);
       return;
     }
 
     if (value === null || value === undefined) {
       onChange('' as string);
+      return;
+    }
+
+    if (Array.isArray(value)) {
+      onChange((value[0] ?? '') as string | number);
       return;
     }
 
@@ -69,9 +92,10 @@ export function SelectField({
         </label>
       ) : null}
       <CustomDropdown
-        modelValue={modelValue}
+        modelValue={dropdownValue}
         options={dropdownOptions}
         placeholder={placeholder || 'Выберите...'}
+        multiple={multiple}
         clearable={isClearable}
         invalid={showError}
         onChange={handleUpdate}

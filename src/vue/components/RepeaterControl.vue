@@ -254,6 +254,7 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { CSS_CLASSES, UI_STRINGS } from '../../utils/constants';
 import Icon from '../../shared/icons/Icon.vue';
 import { getRepeaterCountText } from '../../utils/repeaterCountText';
+import { resolveFormFieldDefaultValue } from '../../utils/formFieldDefaults';
 import {
   assignRepeaterItemId,
   getRepeaterFormFields,
@@ -453,29 +454,7 @@ export default {
         } else if (field.defaultValue !== undefined) {
           newItem[field.field] = field.defaultValue;
         } else {
-          switch (field.type) {
-            case 'checkbox':
-              newItem[field.field] = false;
-              break;
-            case 'number':
-              newItem[field.field] = 0;
-              break;
-            case 'api-select':
-              newItem[field.field] = field.apiSelectConfig?.multiple ? [] : null;
-              break;
-            case 'image':
-            case 'file':
-              newItem[field.field] = field.multiple ? [] : '';
-              break;
-            case 'repeater':
-              newItem[field.field] = [];
-              break;
-            case 'custom':
-              newItem[field.field] = '';
-              break;
-            default:
-              newItem[field.field] = '';
-          }
+          newItem[field.field] = resolveFormFieldDefaultValue(field);
         }
       });
 
