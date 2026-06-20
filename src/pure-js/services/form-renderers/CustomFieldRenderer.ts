@@ -1,5 +1,6 @@
 import { IFormFieldConfig } from '../../../core/types/form';
 import { CSS_CLASSES } from '../../../utils/constants';
+import { getIconHTML } from '../../../shared/icons/sprite';
 import { BaseFieldRenderer } from './BaseFieldRenderer';
 import { IRenderContext } from './IRenderContext';
 
@@ -46,7 +47,7 @@ export class CustomFieldRenderer extends BaseFieldRenderer {
         ${escapedLabel} ${requiredMark}
       </label>
       <div class="${CSS_CLASSES.CUSTOM_FIELD_PLACEHOLDER} ${CSS_CLASSES.BB_PLACEHOLDER_BOX}">
-        ⏳ Инициализация кастомного поля...
+        ${getIconHTML('loader', 14, 'bb-icon--spin')} Инициализация кастомного поля...
       </div>
       ${errorsHtml}
     `;

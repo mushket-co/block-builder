@@ -11,6 +11,8 @@ import ImageBlock from './components/blocks/ImageBlock'
 import LinkBlock from './components/blocks/LinkBlock'
 import ToggleRepeaterBlock from './components/blocks/ToggleRepeaterBlock'
 import NestedRepeaterBlock from './components/blocks/NestedRepeaterBlock'
+import TableBlock from './components/blocks/TableBlock'
+import { createTableBlockConfig } from '../../shared/tableBlockDefaults.js'
 import NewsListBlock from './components/blocks/NewsListBlock'
 import RichCardListBlock from './components/blocks/RichCardListBlock'
 import RichTextBlock from './components/blocks/RichTextBlock'
@@ -1197,6 +1199,8 @@ export const blockConfigs = {
       }
     ]
   },
+
+  table: createTableBlockConfig({ component: TableBlock, framework: 'react' }),
 
   toggleRepeater: {
     title: 'Toggle + Repeater (regression)',

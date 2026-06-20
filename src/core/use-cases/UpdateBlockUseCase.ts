@@ -1,6 +1,7 @@
 import { IBlockRepository } from '../ports/BlockRepository';
 import { IBlockDto, IUpdateBlockDto } from '../types';
 import { isApiSelectStoredItem } from '../../utils/apiSelectValueHelpers';
+import { isMatrixTableStoredValue } from '../../utils/matrixTableHelpers';
 
 export class UpdateBlockUseCase {
   constructor(private blockRepository: IBlockRepository) {}
@@ -47,6 +48,10 @@ export class UpdateBlockUseCase {
       }
 
       if (isApiSelectStoredItem(value)) {
+        return;
+      }
+
+      if (isMatrixTableStoredValue(value)) {
         return;
       }
 

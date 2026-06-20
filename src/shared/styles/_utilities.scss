@@ -17,6 +17,30 @@
   margin-right: 6px;
 }
 
+.bb-icon--filled {
+  fill: currentColor;
+  stroke: none;
+}
+
+.bb-icon--stroke {
+  fill: none;
+  stroke: currentColor;
+}
+
+.bb-icon--spin {
+  animation: bb-icon-spin 0.8s linear infinite;
+}
+
+@keyframes bb-icon-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .bb-link-inherit {
   color: inherit;
   text-decoration: underline;

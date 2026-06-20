@@ -466,10 +466,10 @@ export class UIRenderer {
     const moveDownDisabled = isLast ? ' disabled' : '';
 
     return `
-      <button data-action="copyBlockId" data-args='["${block.id}"]' class="${CSS_CLASSES.CONTROL_BTN}" title="Копировать ID: ${block.id}">${copyIconHTML}</button>
+      <button data-action="editBlock" data-args='["${block.id}"]' class="${CSS_CLASSES.CONTROL_BTN}" title="Редактировать">${editIconHTML}</button>
       <button data-action="moveBlockUp" data-args='["${block.id}"]' class="${CSS_CLASSES.CONTROL_BTN}" title="Переместить вверх"${moveUpDisabled}>${arrowUpIconHTML}</button>
       <button data-action="moveBlockDown" data-args='["${block.id}"]' class="${CSS_CLASSES.CONTROL_BTN}" title="Переместить вниз"${moveDownDisabled}>${arrowDownIconHTML}</button>
-      <button data-action="editBlock" data-args='["${block.id}"]' class="${CSS_CLASSES.CONTROL_BTN}" title="Редактировать">${editIconHTML}</button>
+      <button data-action="copyBlockId" data-args='["${block.id}"]' class="${CSS_CLASSES.CONTROL_BTN}" title="Копировать ID: ${block.id}">${copyIconHTML}</button>
       <button data-action="duplicateBlockUI" data-args='["${block.id}"]' class="${CSS_CLASSES.CONTROL_BTN}" title="Дублировать">${duplicateIconHTML}</button>
       <button data-action="toggleBlockVisibility" data-args='["${block.id}"]' class="${CSS_CLASSES.CONTROL_BTN}" title="${block.visible ? 'Скрыть' : 'Показать'}">${visibilityIcon}</button>
       <button data-action="deleteBlockUI" data-args='["${block.id}"]' class="${CSS_CLASSES.CONTROL_BTN}" title="Удалить">${deleteIconHTML}</button>

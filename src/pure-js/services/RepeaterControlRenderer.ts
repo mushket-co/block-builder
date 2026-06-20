@@ -4,7 +4,7 @@ import {
   IRepeaterItemFieldConfig,
 } from '../../core/types/form';
 import { CSS_CLASSES } from '../../utils/constants';
-import { getIconHTML } from '../../shared/icons/sprite';
+import { arrowDownIconHTML, arrowUpIconHTML, chevronDownIconHTML, deleteIconHTML } from '../../shared/icons/iconHelpers';
 import { getRepeaterCountText } from '../../utils/repeaterCountText';
 import { resolveFormFieldDefaultValue } from '../../utils/formFieldDefaults';
 import {
@@ -392,15 +392,6 @@ export class RepeaterControlRenderer {
       <div class="${CSS_CLASSES.REPEATER_CONTROL_ITEM_HEADER}">
         <span class="${CSS_CLASSES.REPEATER_CONTROL_ITEM_TITLE}">${itemTitle} #${index + 1}</span>
         <div class="${CSS_CLASSES.REPEATER_CONTROL_ITEM_ACTIONS}">
-          <button
-            type="button"
-            class="${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN} ${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_COLLAPSE}"
-            data-action="collapse"
-            data-item-index="${index}"
-            title="${isCollapsed ? 'Развернуть' : 'Свернуть'}"
-          >
-            ${isCollapsed ? '▼' : '▲'}
-          </button>
           ${
             index > 0
               ? `
@@ -411,7 +402,7 @@ export class RepeaterControlRenderer {
               data-item-index="${index}"
               title="Переместить вверх"
             >
-              ↑
+              ${arrowUpIconHTML}
             </button>
           `
               : ''
@@ -426,7 +417,7 @@ export class RepeaterControlRenderer {
               data-item-index="${index}"
               title="Переместить вниз"
             >
-              ↓
+              ${arrowDownIconHTML}
             </button>
           `
               : ''
@@ -439,7 +430,17 @@ export class RepeaterControlRenderer {
             ${!canRemove ? 'disabled' : ''}
             title="${this.config.removeButtonText || 'Удалить'}"
           >
-            ${getIconHTML('close', 16)}
+            ${deleteIconHTML}
+          </button>
+          <span class="${CSS_CLASSES.REPEATER_CONTROL_ITEM_ACTIONS_SEPARATOR}" aria-hidden="true"></span>
+          <button
+            type="button"
+            class="${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN} ${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_COLLAPSE}"
+            data-action="collapse"
+            data-item-index="${index}"
+            title="${isCollapsed ? 'Развернуть' : 'Свернуть'}"
+          >
+            ${chevronDownIconHTML}
           </button>
         </div>
       </div>

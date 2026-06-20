@@ -54,10 +54,10 @@ export function BlockItem({
               <button
                 type="button"
                 className={CSS_CLASSES.CONTROL_BTN}
-                title={`Копировать ID: ${block.id}`}
-                onClick={() => onCopyId(block.id)}
+                title="Редактировать"
+                onClick={() => onEdit(block)}
               >
-                <Icon name="copy" />
+                <Icon name="edit" />
               </button>
               <button
                 type="button"
@@ -80,10 +80,10 @@ export function BlockItem({
               <button
                 type="button"
                 className={CSS_CLASSES.CONTROL_BTN}
-                title="Редактировать"
-                onClick={() => onEdit(block)}
+                title={`Копировать ID: ${block.id}`}
+                onClick={() => onCopyId(block.id)}
               >
-                <Icon name="edit" />
+                <Icon name="id" />
               </button>
               <button
                 type="button"

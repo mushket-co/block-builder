@@ -298,7 +298,9 @@ export function ImageUploadField({
                 .join(' ')}
             >
               {isLoading ? (
-                '⏳ Загрузка...'
+                <span>
+                  <Icon name="loader" width={14} height={14} className="bb-icon--spin" /> Загрузка...
+                </span>
               ) : isMultiple ? (
                 `+ ${addButtonLabel}`
               ) : singleDisplayValue ? (
@@ -365,7 +367,13 @@ export function ImageUploadField({
                 .filter(Boolean)
                 .join(' ')}
             >
-              {isLoading ? <span>⏳ Загрузка...</span> : <span>+ {addButtonLabel}</span>}
+              {isLoading ? (
+                <span>
+                  <Icon name="loader" width={14} height={14} className="bb-icon--spin" /> Загрузка...
+                </span>
+              ) : (
+                <span>+ {addButtonLabel}</span>
+              )}
             </label>
           ) : null}
         </div>
@@ -410,7 +418,9 @@ export function ImageUploadField({
               .join(' ')}
           >
             {isLoading ? (
-              <span>⏳ Загрузка...</span>
+              <span>
+                <Icon name="loader" width={14} height={14} className="bb-icon--spin" /> Загрузка...
+              </span>
             ) : (
               <span>{singleDisplayValue ? changeButtonLabel : chooseButtonLabel}</span>
             )}

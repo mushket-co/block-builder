@@ -6,6 +6,51 @@
 и проект следует [Semantic Versioning](https://semver.org/lang/ru/).
 
 
+## [1.6.0] - 2026-06-20
+
+### Добавлено
+
+#### Поле `matrix-table`
+
+- Тип поля `matrix-table` — редактор таблицы: колонки (тип ячейки, заголовок, nowrap, размер текста), строки с ячейками текста/HTML и изображений
+- Vue: `MatrixTableControl`; React: `MatrixTableControl`
+- Утилиты `matrixTableHelpers` (`createDefaultMatrixTableValue`, `normalizeMatrixTableValue`, `isMatrixTableStoredValue` и др.), валидация в `universalValidation`
+- `resolveFormFieldDefaultValue` — дефолт `{ tableHead, tableBody }` для `matrix-table`
+- Примеры: блок **Таблица** (`table`) в vue3, react, nuxt3, nuxt4 — `TableBlock`, `examples/shared/tableBlockDefaults.js`, иконка `examples/static/icons/table.svg`
+
+#### SVG-спрайт иконок
+
+- Обновлён единый спрайт: `arrowUp`, `arrowDown`, `delete`, `chevronDown`, `id`, `check`, `loader`, `close`
+- Per-icon `viewBox`, классы `bb-icon--filled` / `bb-icon--stroke`; анимация `bb-icon--spin` для индикатора загрузки
+- Хелперы `iconHelpers` для pure-js (`chevronDownIconHTML`, `checkIconHTML`, `loaderIconHTML` и др.)
+
+### Изменено
+
+#### Панель управления блоками (Vue, React, Pure JS, `BlockComponent`)
+
+- Порядок кнопок: **Редактировать → Вверх → Вниз → ID → Дублировать → Видимость → Удалить**
+
+#### Repeater (Vue, React, Pure JS)
+
+- Сворачивание элемента: иконка `chevronDown` (поворот при раскрытии) вместо текстовых `▼`/`▲`
+- Кнопка collapse — последняя в ряду действий; вертикальный разделитель перед ней
+- Pure JS: `RepeaterControlRenderer` использует SVG из спрайта
+
+#### Dropdown, api-select, загрузка файлов
+
+- `CustomDropdown`, `ApiSelectField`, `SelectControlRenderer`, `ApiSelectControlRenderer`: `chevronDown` вместо `▼`, `check` вместо `✓`
+- `ImageUploadField` (Vue/React) и pure-js renderers: `loader` вместо `⏳` при загрузке и инициализации полей
+
+#### Matrix-table UX
+
+- Поле «Размер текстовой ячейки» — `CustomDropdown` вместо нативного `<select>`
+- Действия строк/колонок переиспользуют классы и стили repeater (без дублирования SCSS)
+
+### Исправлено
+
+- **Сохранение блока с `matrix-table`**: `UpdateBlockUseCase` принимает объект `{ tableHead, tableBody }` — устранена ошибка `Invalid prop value for key 'tableMatrix': must be primitive type` при изменении заголовков колонок
+- **Fill-иконки в `.bb-control-btn`**: SVG с `fill` больше не получают лишний `stroke`, из‑за которого иконки выглядели жирнее
+
 ## [1.5.5] - 2026-06-20
 
 ### Добавлено

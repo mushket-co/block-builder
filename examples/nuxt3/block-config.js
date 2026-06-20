@@ -14,6 +14,8 @@ import RichTextBlock from '~/components/blocks/RichTextBlock.vue'
 import LinkBlock from '~/components/blocks/LinkBlock.vue'
 import ToggleRepeaterBlock from '~/components/blocks/ToggleRepeaterBlock.vue'
 import NestedRepeaterBlock from '~/components/blocks/NestedRepeaterBlock.vue'
+import TableBlock from '~/components/blocks/TableBlock.vue'
+import { createTableBlockConfig } from '../../shared/tableBlockDefaults.js'
 
 const CardListBlock = defineAsyncComponent(() => import('~/components/blocks/CardListBlock.vue'))
 
@@ -1196,6 +1198,8 @@ export const blockConfigs = {
       }
     ]
   },
+
+  table: createTableBlockConfig({ component: TableBlock, framework: 'vue' }),
 
   toggleRepeater: {
     title: 'Toggle + Repeater (regression)',

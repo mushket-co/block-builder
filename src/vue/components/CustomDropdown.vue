@@ -57,7 +57,7 @@
             { [CSS_CLASSES.BB_DROPDOWN_ARROW_OPEN]: isOpen },
           ]"
         >
-          ▼
+          <Icon name="chevronDown" :width="12" :height="12" />
         </span>
       </slot>
     </div>
@@ -136,9 +136,9 @@
                   >
                     <slot name="option" :option="option" :selected="isOptionSelected(option.value)">
                       <span :class="CSS_CLASSES.BB_DROPDOWN_OPTION_LABEL">{{ option.label }}</span>
-                      <span v-if="isOptionSelected(option.value)" :class="CSS_CLASSES.BB_DROPDOWN_OPTION_CHECK"
-                        >✓</span
-                      >
+                      <span v-if="isOptionSelected(option.value)" :class="CSS_CLASSES.BB_DROPDOWN_OPTION_CHECK">
+                        <Icon name="check" :width="14" :height="14" />
+                      </span>
                     </slot>
                   </li>
                 </ul>

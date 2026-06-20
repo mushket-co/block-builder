@@ -803,7 +803,7 @@ export const CustomDropdown = forwardRef<ICustomDropdownRef, ICustomDropdownProp
             .filter(Boolean)
             .join(' ')}
         >
-          ▼
+          <Icon name="chevronDown" width={12} height={12} />
         </span>
       </>
     );
@@ -851,7 +851,9 @@ export const CustomDropdown = forwardRef<ICustomDropdownRef, ICustomDropdownProp
                     <>
                       <span className={CSS_CLASSES.BB_DROPDOWN_OPTION_LABEL}>{option.label}</span>
                       {selected ? (
-                        <span className={CSS_CLASSES.BB_DROPDOWN_OPTION_CHECK}>✓</span>
+                        <span className={CSS_CLASSES.BB_DROPDOWN_OPTION_CHECK}>
+                          <Icon name="check" width={14} height={14} />
+                        </span>
                       ) : null}
                     </>
                   )}

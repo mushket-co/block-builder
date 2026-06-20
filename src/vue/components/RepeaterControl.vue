@@ -21,15 +21,7 @@
       >
         <div :class="CSS_CLASSES.REPEATER_CONTROL_ITEM_HEADER">
           <span :class="CSS_CLASSES.REPEATER_CONTROL_ITEM_TITLE"> {{ itemTitle }} #{{ index + 1 }} </span>
-          <div :class="CSS_CLASSES.REPEATER_CONTROL_ITEM_ACTIONS">
-            <button
-              type="button"
-              :class="[CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN, CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_COLLAPSE]"
-              :title="collapsedItems[item._id] ? 'Развернуть' : 'Свернуть'"
-              @click="toggleCollapse(item._id)"
-            >
-              {{ collapsedItems[item._id] ? '▼' : '▲' }}
-            </button>
+            <div :class="CSS_CLASSES.REPEATER_CONTROL_ITEM_ACTIONS">
             <button
               v-if="index > 0"
               type="button"
@@ -37,7 +29,7 @@
               title="Переместить вверх"
               @click="moveItem(index, index - 1)"
             >
-              ↑
+              <Icon name="arrowUp" />
             </button>
             <button
               v-if="index < items.length - 1"
@@ -46,7 +38,7 @@
               title="Переместить вниз"
               @click="moveItem(index, index + 1)"
             >
-              ↓
+              <Icon name="arrowDown" />
             </button>
             <button
               type="button"
@@ -55,7 +47,19 @@
               :title="removeButtonText"
               @click="removeItem(index)"
             >
-              <Icon name="close" :width="16" :height="16" />
+              <Icon name="delete" />
+            </button>
+            <span
+              :class="CSS_CLASSES.REPEATER_CONTROL_ITEM_ACTIONS_SEPARATOR"
+              aria-hidden="true"
+            />
+            <button
+              type="button"
+              :class="[CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN, CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_COLLAPSE]"
+              :title="collapsedItems[item._id] ? 'Развернуть' : 'Свернуть'"
+              @click="toggleCollapse(item._id)"
+            >
+              <Icon name="chevronDown" />
             </button>
           </div>
         </div>

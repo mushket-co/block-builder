@@ -124,6 +124,15 @@
     width: 16px;
     height: 16px;
     display: block;
+  }
+
+  svg.bb-icon--filled {
+    fill: currentColor;
+    stroke: none;
+  }
+
+  svg.bb-icon--stroke {
+    fill: none;
     stroke: currentColor;
   }
 

@@ -64,7 +64,9 @@
             />
           </div>
 
-          <span v-if="loading" :class="CSS_CLASSES.BB_API_SELECT_LOADER">⏳</span>
+          <span v-if="loading" :class="CSS_CLASSES.BB_API_SELECT_LOADER">
+            <Icon name="loader" :width="14" :height="14" class="bb-icon--spin" />
+          </span>
           <span
             v-else-if="hasValue"
             :class="CSS_CLASSES.BB_API_SELECT_CLEAR"
@@ -81,7 +83,7 @@
             ]"
             @click.stop="actions.toggle"
           >
-            ▼
+            <Icon name="chevronDown" :width="12" :height="12" />
           </button>
         </div>
       </template>

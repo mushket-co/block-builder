@@ -17,7 +17,8 @@ export type TFieldType =
   | 'repeater'
   | 'api-select'
   | 'custom'
-  | 'block-anchor';
+  | 'block-anchor'
+  | 'matrix-table';
 export type TSpacingType = 'padding-top' | 'padding-bottom' | 'margin-top' | 'margin-bottom';
 export interface IBreakpoint {
   name: string;
@@ -47,7 +48,7 @@ export interface IBlockSpacingOptions {
 export interface IRepeaterItemFieldConfig {
   field: string;
   label: string;
-  type: Exclude<TFieldType, 'spacing'>;
+  type: Exclude<TFieldType, 'spacing' | 'matrix-table'>;
   placeholder?: string;
   defaultValue?: unknown;
   options?: { value: string | number; label: string; disabled?: boolean }[];
@@ -153,6 +154,47 @@ export interface IBlockAnchorConfig {
   /** Показывать только видимые блоки (по умолчанию true) */
   onlyVisibleBlocks?: boolean;
 }
+
+export type TMatrixTableColumnType = 'default' | 'wyz' | 'image';
+
+export interface IMatrixTableColumn {
+  id: string;
+  type: TMatrixTableColumnType;
+  name: string;
+  nowrap: boolean;
+  size: string;
+}
+
+export interface IMatrixTableCell {
+  id: string;
+  value: string;
+  image: string;
+}
+
+export interface IMatrixTableRow {
+  id: string;
+  fields: IMatrixTableCell[];
+}
+
+export interface IMatrixTableValue {
+  tableHead: IMatrixTableColumn[];
+  tableBody: IMatrixTableRow[];
+}
+
+export interface IMatrixTableFieldConfig {
+  columnTypes?: { value: TMatrixTableColumnType; label: string }[];
+  sizeOptions?: { value: string; label: string }[];
+  minColumns?: number;
+  maxColumns?: number;
+  minRows?: number;
+  maxRows?: number;
+  defaultColumn?: Partial<IMatrixTableColumn>;
+  structureTabLabel?: string;
+  contentTabLabel?: string;
+  columnItemTitle?: string;
+  rowItemTitle?: string;
+  imageUploadConfig?: IFileUploadConfig;
+}
 export interface IFormFieldConfig {
   field: string;
   label: string;
@@ -168,6 +210,7 @@ export interface IFormFieldConfig {
   customFieldConfig?: ICustomFieldConfig;
   fileUploadConfig?: IFileUploadConfig;
   blockAnchorConfig?: IBlockAnchorConfig;
+  matrixTableConfig?: IMatrixTableFieldConfig;
   /**
    * Условное отображение поля: поле показывается только если другое поле имеет определенное значение
    * Используется только в Vue версии

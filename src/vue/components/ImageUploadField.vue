@@ -86,7 +86,10 @@
           { [CSS_CLASSES.BTN_LOADING]: isLoading },
         ]"
       >
-        <template v-if="isLoading">⏳ Загрузка...</template>
+        <template v-if="isLoading">
+          <Icon name="loader" :width="14" :height="14" class="bb-icon--spin" />
+          Загрузка...
+        </template>
         <template v-else-if="isMultiple">+ {{ addButtonLabel }}</template>
         <template v-else>{{ singleDisplayValue ? changeButtonLabel : chooseButtonLabel }}</template>
       </label>
@@ -140,7 +143,10 @@
           { [CSS_CLASSES.IMAGE_UPLOAD_FIELD_FILE_LABEL_LOADING]: isLoading },
         ]"
       >
-        <span v-if="isLoading">⏳ Загрузка...</span>
+        <span v-if="isLoading">
+          <Icon name="loader" :width="14" :height="14" class="bb-icon--spin" />
+          Загрузка...
+        </span>
         <span v-else>+ {{ addButtonLabel }}</span>
       </label>
     </div>
@@ -181,7 +187,10 @@
           { [CSS_CLASSES.IMAGE_UPLOAD_FIELD_FILE_LABEL_LOADING]: isLoading },
         ]"
       >
-        <span v-if="isLoading">⏳ Загрузка...</span>
+        <span v-if="isLoading">
+          <Icon name="loader" :width="14" :height="14" class="bb-icon--spin" />
+          Загрузка...
+        </span>
         <span v-else>{{ singleDisplayValue ? changeButtonLabel : chooseButtonLabel }}</span>
       </label>
       <span v-if="fileError" :class="CSS_CLASSES.IMAGE_UPLOAD_FIELD_ERROR">{{ fileError }}</span>

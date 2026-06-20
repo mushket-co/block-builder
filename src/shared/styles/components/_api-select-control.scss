@@ -132,37 +132,19 @@
 
   &__loader {
     cursor: default;
-    animation: pulse 1.5s ease-in-out infinite;
-  }
-
-  &__clear {
-
-    svg {
-      width: 100%;
-      height: 100%;
-    }
-
-    &:hover {
-      color: var(--bb-color-danger);
-    }
-  }
-
-  @keyframes pulse {
-    0%, 100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.5;
-    }
+    width: 14px;
+    height: 14px;
   }
 
   &__toggle {
     position: absolute;
     right: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     background: none;
     border: none;
     padding: 4px 8px;
-    font-size: 12px;
     color: var(--bb-text-tertiary);
     cursor: pointer;
     user-select: none;
@@ -174,6 +156,18 @@
 
     &--open {
       transform: rotate(180deg);
+    }
+  }
+
+  &__clear {
+
+    svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    &:hover {
+      color: var(--bb-color-danger);
     }
   }
 
@@ -249,9 +243,12 @@
   }
 
   &__item-check {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
     margin-left: 8px;
     color: var(--bb-color-primary);
-    font-weight: bold;
   }
 
   &__load-more {

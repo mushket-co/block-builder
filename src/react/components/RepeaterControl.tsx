@@ -134,14 +134,6 @@ export function RepeaterControl({
                 {itemTitle} #{index + 1}
               </span>
               <div className={CSS_CLASSES.REPEATER_CONTROL_ITEM_ACTIONS}>
-                <button
-                  type="button"
-                  className={`${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN} ${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_COLLAPSE}`}
-                  title={repeater.collapsedItems[item._id] ? 'Развернуть' : 'Свернуть'}
-                  onClick={() => repeater.toggleCollapse(item._id)}
-                >
-                  {repeater.collapsedItems[item._id] ? '▼' : '▲'}
-                </button>
                 {index > 0 ? (
                   <button
                     type="button"
@@ -149,7 +141,7 @@ export function RepeaterControl({
                     title="Переместить вверх"
                     onClick={() => repeater.moveItem(index, index - 1)}
                   >
-                    ↑
+                    <Icon name="arrowUp" />
                   </button>
                 ) : null}
                 {index < repeater.items.length - 1 ? (
@@ -159,7 +151,7 @@ export function RepeaterControl({
                     title="Переместить вниз"
                     onClick={() => repeater.moveItem(index, index + 1)}
                   >
-                    ↓
+                    <Icon name="arrowDown" />
                   </button>
                 ) : null}
                 <button
@@ -169,7 +161,19 @@ export function RepeaterControl({
                   title={removeButtonText}
                   onClick={() => repeater.removeItem(index)}
                 >
-                  <Icon name="close" width={16} height={16} />
+                  <Icon name="delete" />
+                </button>
+                <span
+                  className={CSS_CLASSES.REPEATER_CONTROL_ITEM_ACTIONS_SEPARATOR}
+                  aria-hidden="true"
+                />
+                <button
+                  type="button"
+                  className={`${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN} ${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_COLLAPSE}`}
+                  title={repeater.collapsedItems[item._id] ? 'Развернуть' : 'Свернуть'}
+                  onClick={() => repeater.toggleCollapse(item._id)}
+                >
+                  <Icon name="chevronDown" />
                 </button>
               </div>
             </div>

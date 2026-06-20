@@ -1,4 +1,5 @@
 import type { IFormFieldConfig, IRepeaterItemFieldConfig } from '../core/types/form';
+import { createDefaultMatrixTableValue } from './matrixTableHelpers';
 
 type TFieldDefaultSource = Pick<
   IFormFieldConfig | IRepeaterItemFieldConfig,
@@ -24,6 +25,8 @@ export function resolveFormFieldDefaultValue(field: TFieldDefaultSource): unknow
       return field.multiple ? [] : '';
     case 'repeater':
       return [];
+    case 'matrix-table':
+      return createDefaultMatrixTableValue();
     case 'custom':
       return '';
     default:

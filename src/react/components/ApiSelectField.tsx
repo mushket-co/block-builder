@@ -426,7 +426,9 @@ export function ApiSelectField({
             </div>
 
             {loading ? (
-              <span className={CSS_CLASSES.BB_API_SELECT_LOADER}>⏳</span>
+              <span className={CSS_CLASSES.BB_API_SELECT_LOADER}>
+                <Icon name="loader" width={14} height={14} className="bb-icon--spin" />
+              </span>
             ) : hasValue ? (
               <span
                 className={CSS_CLASSES.BB_API_SELECT_CLEAR}
@@ -452,7 +454,7 @@ export function ApiSelectField({
                 actions.toggle();
               }}
             >
-              ▼
+              <Icon name="chevronDown" width={12} height={12} />
             </button>
           </div>
         )}

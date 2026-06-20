@@ -219,6 +219,23 @@ describe('UpdateBlockUseCase', () => {
     mockRepository.update.mockResolvedValue({ ...mockExistingBlock, props: updates.props! });
     await expect(useCase.execute('test-block', updates)).resolves.toBeDefined();
   });
+  test('должен принять matrix-table объект в props', async () => {
+    const updates: IUpdateBlockDto = {
+      props: {
+        tableMatrix: {
+          tableHead: [{ id: 'col-1', type: 'default', name: 'Название', nowrap: false, size: '' }],
+          tableBody: [
+            {
+              id: 'row-1',
+              fields: [{ id: 'cell-1', value: 'Demo', image: '' }],
+            },
+          ],
+        },
+      },
+    };
+    mockRepository.update.mockResolvedValue({ ...mockExistingBlock, props: updates.props! });
+    await expect(useCase.execute('test-block', updates)).resolves.toBeDefined();
+  });
   test('должен бросить ошибку для непримитивных типов в props (кроме spacing и массивов)', async () => {
     const updates: IUpdateBlockDto = {
       props: {

@@ -14,4 +14,4 @@ export function initIcons(): void {
   document.body.append(div);
 }
 
-export { generateSVGSprite, getIconHTML, ICON_SYMBOLS } from './sprite';
+export { generateSVGSprite, getIconHTML, ICON_SYMBOLS, resolveIconUsesFill, resolveIconViewBox } from './sprite';

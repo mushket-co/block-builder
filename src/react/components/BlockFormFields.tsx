@@ -1,5 +1,5 @@
 import type { ICustomFieldRendererRegistry } from '../../core/ports/CustomFieldRenderer';
-import type { IFormFieldConfig, IRepeaterItemFieldConfig } from '../../core/types/form';
+import type { IFormFieldConfig, IMatrixTableValue, IRepeaterItemFieldConfig } from '../../core/types/form';
 import type { ApiSelectUseCase } from '../../core/use-cases/ApiSelectUseCase';
 import type { IRepeaterRef } from '../../shared/services/ValidationErrorHandler';
 import { CSS_CLASSES } from '../../utils/constants';
@@ -17,10 +17,19 @@ import { FormField } from './form-fields';
 import { ImageUploadField } from './ImageUploadField';
 import { RepeaterControl } from './RepeaterControl';
 import { SpacingControl } from './SpacingControl';
+import { MatrixTableControl } from './MatrixTableControl';
 import { ToggleControl } from './ToggleControl';
 import type { IBlockType } from '../types/blockBuilder';
 
-const SPECIAL_FIELD_TYPES = new Set(['spacing', 'repeater', 'api-select', 'custom', 'image', 'file']);
+const SPECIAL_FIELD_TYPES = new Set([
+  'spacing',
+  'repeater',
+  'matrix-table',
+  'api-select',
+  'custom',
+  'image',
+  'file',
+]);
 
 interface IBlockFormFieldsProps {
   fields: IFormFieldConfig[];
@@ -95,6 +104,20 @@ export function BlockFormFields({
           }
           onChange={nextValue => onFieldChange(field.field, nextValue)}
           onRendererReady={onRepeaterReady}
+        />
+      );
+    }
+
+    if (field.type === 'matrix-table') {
+      return (
+        <MatrixTableControl
+          modelValue={value as IMatrixTableValue}
+          fieldName={field.field}
+          label={field.label}
+          matrixTableConfig={field.matrixTableConfig}
+          required={isFieldRequired(field)}
+          error={error}
+          onChange={nextValue => onFieldChange(field.field, nextValue)}
         />
       );
     }

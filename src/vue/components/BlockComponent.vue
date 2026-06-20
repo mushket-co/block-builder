@@ -20,6 +20,13 @@
 
     <div :class="CSS_CLASSES.BLOCK_COMPONENT_CONTROLS">
       <button
+        :class="[CSS_CLASSES.CONTROL_BUTTON, CSS_CLASSES.CONTROL_BUTTON_EDIT]"
+        title="Редактировать"
+        @click.stop="handleEdit"
+      >
+        <Icon name="edit" />
+      </button>
+      <button
         :class="[CSS_CLASSES.CONTROL_BUTTON, CSS_CLASSES.CONTROL_BUTTON_MOVE]"
         title="Переместить вверх"
         :disabled="isFirst"
@@ -36,13 +43,6 @@
         <Icon name="arrowDown" />
       </button>
       <button
-        :class="[CSS_CLASSES.CONTROL_BUTTON, CSS_CLASSES.CONTROL_BUTTON_EDIT]"
-        title="Редактировать"
-        @click.stop="handleEdit"
-      >
-        <Icon name="edit" />
-      </button>
-      <button
         :class="[CSS_CLASSES.CONTROL_BUTTON, CSS_CLASSES.CONTROL_BUTTON_DUPLICATE]"
         title="Дублировать"
         @click.stop="handleDuplicate"
@@ -50,18 +50,18 @@
         <Icon name="duplicate" />
       </button>
       <button
-        :class="[CSS_CLASSES.CONTROL_BUTTON, CSS_CLASSES.CONTROL_BUTTON_DELETE]"
-        title="Удалить"
-        @click.stop="handleDelete"
-      >
-        <Icon name="delete" />
-      </button>
-      <button
         :class="[CSS_CLASSES.CONTROL_BUTTON, CSS_CLASSES.CONTROL_BUTTON_VISIBILITY]"
         :title="block.visible ? 'Hide' : 'Show'"
         @click.stop="handleVisibility"
       >
         <Icon :name="block.visible ? 'eye' : 'eyeOff'" />
+      </button>
+      <button
+        :class="[CSS_CLASSES.CONTROL_BUTTON, CSS_CLASSES.CONTROL_BUTTON_DELETE]"
+        title="Удалить"
+        @click.stop="handleDelete"
+      >
+        <Icon name="delete" />
       </button>
     </div>
   </div>

@@ -235,9 +235,5 @@ export async function processUploadFile(
     return uploadFileToServer(file, config);
   }
 
-  if (variant === 'image') {
-    return readFileAsDataUrl(file);
-  }
-
-  throw new Error('uploadUrl не указан в конфигурации');
+  return readFileAsDataUrl(file);
 }

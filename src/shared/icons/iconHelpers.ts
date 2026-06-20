@@ -1,6 +1,10 @@
 import { getIconHTML } from './index';
 
-export const copyIconHTML = getIconHTML('copy');
+export const blockIdIconHTML = getIconHTML('id');
+export const copyIconHTML = blockIdIconHTML;
+export const chevronDownIconHTML = getIconHTML('chevronDown', 12);
+export const checkIconHTML = getIconHTML('check', 14);
+export const loaderIconHTML = getIconHTML('loader', 14, 'bb-icon--spin');
 export const arrowUpIconHTML = getIconHTML('arrowUp');
 export const arrowDownIconHTML = getIconHTML('arrowDown');
 export const editIconHTML = getIconHTML('edit');

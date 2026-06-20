@@ -20,6 +20,17 @@ describe('resolveFormFieldDefaultValue', () => {
     ).toEqual([]);
   });
 
+  test('matrix-table defaults to table head and body', () => {
+    const value = resolveFormFieldDefaultValue({ type: 'matrix-table' });
+    expect(value).toEqual(
+      expect.objectContaining({
+        tableHead: expect.any(Array),
+        tableBody: expect.any(Array),
+      })
+    );
+    expect(value.tableHead.length).toBeGreaterThan(0);
+  });
+
   test('select single defaults to empty string', () => {
     expect(
       resolveFormFieldDefaultValue({

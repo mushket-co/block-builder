@@ -70,11 +70,12 @@
               <div :class="[CSS_CLASSES.BLOCK_CONTROLS_CONTAINER, props.controlsContainerClass]">
                 <div :class="CSS_CLASSES.BLOCK_CONTROLS_INNER">
                   <button
+                    v-if="props.isEdit"
                     :class="CSS_CLASSES.CONTROL_BTN"
-                    title="Копировать ID: {{ block.id }}"
-                    @click="handleCopyId(block.id)"
+                    title="Редактировать"
+                    @click="openEditModal(block)"
                   >
-                    <Icon name="copy" />
+                    <Icon name="edit" />
                   </button>
                   <button
                     v-if="props.isEdit"
@@ -95,12 +96,11 @@
                     <Icon name="arrowDown" />
                   </button>
                   <button
-                    v-if="props.isEdit"
                     :class="CSS_CLASSES.CONTROL_BTN"
-                    title="Редактировать"
-                    @click="openEditModal(block)"
+                    title="Копировать ID: {{ block.id }}"
+                    @click="handleCopyId(block.id)"
                   >
-                    <Icon name="edit" />
+                    <Icon name="id" />
                   </button>
                   <button
                     v-if="props.isEdit"
@@ -279,6 +279,17 @@
                         @update:model-value="updateFormField(slotField.field, $event)"
                       />
 
+                      <MatrixTableControl
+                        v-else-if="slotField.type === 'matrix-table'"
+                        :model-value="slotModelValue"
+                        :field-name="slotField.field"
+                        :label="slotField.label"
+                        :matrix-table-config="slotField.matrixTableConfig"
+                        :required="isFieldRequired(slotField)"
+                        :error="slotError"
+                        @update:model-value="updateFormField(slotField.field, $event)"
+                      />
+
                       <div v-else-if="slotField.type === 'api-select'" :class="CSS_CLASSES.FORM_GROUP">
                         <ApiSelectField
                           v-if="isApiSelectAvailable(slotField) && props.apiSelectUseCase"
@@ -386,6 +397,17 @@
                     :custom-field-renderer-registry="props.customFieldRendererRegistry"
                     :is-custom-field-available="isCustomFieldAvailable"
                     :get-custom-field-restriction-message="getCustomFieldsRestrictionMessage"
+                    @update:model-value="updateFormField(slotField.field, $event)"
+                  />
+
+                  <MatrixTableControl
+                    v-else-if="slotField.type === 'matrix-table'"
+                    :model-value="slotModelValue"
+                    :field-name="slotField.field"
+                    :label="slotField.label"
+                    :matrix-table-config="slotField.matrixTableConfig"
+                    :required="isFieldRequired(slotField)"
+                    :error="slotError"
                     @update:model-value="updateFormField(slotField.field, $event)"
                   />
 
@@ -503,6 +525,7 @@ import CustomField from './CustomField.vue';
 import { FormField } from './form-fields';
 import RepeaterControl from './RepeaterControl.vue';
 import SpacingControl from './SpacingControl.vue';
+import MatrixTableControl from './MatrixTableControl.vue';
 import ToggleControl from './ToggleControl.vue';
 import { usePageLeaveWarning } from '../composables/usePageLeaveWarning';
 import { BLOCK_ANCHOR_CONTEXT_KEY } from '../composables/blockAnchorContext';

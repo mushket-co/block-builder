@@ -56,7 +56,7 @@ export class SelectControlRenderer extends BaseDropdownRenderer {
 
       item.innerHTML = `
         <span class="${CSS_CLASSES.BB_DROPDOWN_OPTION_LABEL}">${this.escapeHtml(option.label)}</span>
-        ${this.isOptionSelected(option.value) ? `<span class="${CSS_CLASSES.BB_DROPDOWN_OPTION_CHECK}">✓</span>` : ''}
+        ${this.isOptionSelected(option.value) ? `<span class="${CSS_CLASSES.BB_DROPDOWN_OPTION_CHECK}">${getIconHTML('check', 14)}</span>` : ''}
       `;
 
       if (!option.disabled) {
@@ -295,7 +295,7 @@ export class SelectControlRenderer extends BaseDropdownRenderer {
             ${displayValue ? `<span class="${CSS_CLASSES.BB_DROPDOWN_SINGLE}">${this.escapeHtml(displayValue)}</span>` : `<span class="${CSS_CLASSES.BB_DROPDOWN_PLACEHOLDER}">${this.escapeHtml(this.placeholder)}</span>`}
           </div>
           ${showClear ? `<button type="button" class="${CSS_CLASSES.BB_DROPDOWN_CLEAR}" data-select-clear>${getIconHTML('close', 12)}</button>` : ''}
-          <span class="${CSS_CLASSES.BB_DROPDOWN_ARROW} ${this.isDropdownOpen ? CSS_CLASSES.BB_DROPDOWN_ARROW_OPEN : ''}">▼</span>
+          <span class="${CSS_CLASSES.BB_DROPDOWN_ARROW} ${this.isDropdownOpen ? CSS_CLASSES.BB_DROPDOWN_ARROW_OPEN : ''}">${getIconHTML('chevronDown', 12)}</span>
         </div>
         ${this.multiple && hasValue ? this.renderSelectedTags() : ''}
         ${this.errors[this.fieldName] ? `<div class="${CSS_CLASSES.FORM_ERRORS}"><span class="${CSS_CLASSES.ERROR}">${this.errors[this.fieldName].join(', ')}</span></div>` : ''}

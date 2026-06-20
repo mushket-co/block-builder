@@ -1,5 +1,6 @@
 import { IFormFieldConfig } from '../../../core/types/form';
 import { CSS_CLASSES } from '../../../utils/constants';
+import { getIconHTML } from '../../../shared/icons/sprite';
 import { BaseFieldRenderer } from './BaseFieldRenderer';
 import { IRenderContext } from './IRenderContext';
 
@@ -46,7 +47,7 @@ export class ApiSelectFieldRenderer extends BaseFieldRenderer {
         data-api-select-config="${configJson}"
       >
         <div class="${CSS_CLASSES.API_SELECT_PLACEHOLDER} ${CSS_CLASSES.BB_PLACEHOLDER_BOX}">
-          ⏳ Инициализация API Select...
+          ${getIconHTML('loader', 14, 'bb-icon--spin')} Инициализация API Select...
         </div>
       </div>
     `;

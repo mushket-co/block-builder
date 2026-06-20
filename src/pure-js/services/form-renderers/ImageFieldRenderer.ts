@@ -113,7 +113,7 @@ export class ImageFieldRenderer extends BaseFieldRenderer {
         />
         <label for="${fieldId}" class="${CSS_CLASSES.IMAGE_UPLOAD_FIELD_FILE_LABEL}">
           <span class="${CSS_CLASSES.IMAGE_UPLOAD_FIELD_LABEL_TEXT}">${hasValue ? changeLabel : chooseLabel}</span>
-          <span class="${CSS_CLASSES.IMAGE_UPLOAD_FIELD_LOADING_TEXT} ${CSS_CLASSES.BB_HIDDEN}">⏳ Загрузка...</span>
+          <span class="${CSS_CLASSES.IMAGE_UPLOAD_FIELD_LOADING_TEXT} ${CSS_CLASSES.BB_HIDDEN}">${getIconHTML('loader', 14, 'bb-icon--spin')} Загрузка...</span>
         </label>
         <span class="${CSS_CLASSES.IMAGE_UPLOAD_FIELD_ERROR} ${CSS_CLASSES.BB_HIDDEN}"></span>
       </div>
@@ -220,7 +220,7 @@ export class ImageFieldRenderer extends BaseFieldRenderer {
         />
         <label for="${fieldId}" class="${CSS_CLASSES.BTN} ${CSS_CLASSES.BTN_OUTLINE}">
           <span class="${CSS_CLASSES.IMAGE_UPLOAD_FIELD_LABEL_TEXT}">${pickerLabel}</span>
-          <span class="${CSS_CLASSES.IMAGE_UPLOAD_FIELD_LOADING_TEXT} ${CSS_CLASSES.BB_HIDDEN}">⏳ Загрузка...</span>
+          <span class="${CSS_CLASSES.IMAGE_UPLOAD_FIELD_LOADING_TEXT} ${CSS_CLASSES.BB_HIDDEN}">${getIconHTML('loader', 14, 'bb-icon--spin')} Загрузка...</span>
         </label>
         <span class="${CSS_CLASSES.FILE_UPLOAD_FIELD_ERROR} ${CSS_CLASSES.BB_HIDDEN}"></span>
       </div>

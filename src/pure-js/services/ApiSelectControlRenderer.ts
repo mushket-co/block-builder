@@ -433,7 +433,7 @@ export class ApiSelectControlRenderer {
     if (this.loading) {
       const loader = document.createElement('span');
       loader.className = CSS_CLASSES.BB_API_SELECT_LOADER;
-      loader.textContent = '⏳';
+      loader.innerHTML = getIconHTML('loader', 14, 'bb-icon--spin');
       toggleButton.before(loader);
     } else if (this.hasValue()) {
       const clear = document.createElement('span');
@@ -596,7 +596,7 @@ export class ApiSelectControlRenderer {
         itemEl.dataset.itemName = item.name;
         itemEl.innerHTML = `
         <span class="${CSS_CLASSES.BB_API_SELECT_ITEM_NAME}">${item.name}</span>
-        ${this.isSelected(item.id) ? `<span class="${CSS_CLASSES.BB_API_SELECT_ITEM_CHECK}">✓</span>` : ''}
+        ${this.isSelected(item.id) ? `<span class="${CSS_CLASSES.BB_API_SELECT_ITEM_CHECK}">${getIconHTML('check', 14)}</span>` : ''}
       `;
         list.append(itemEl);
       });
@@ -756,14 +756,14 @@ export class ApiSelectControlRenderer {
               data-api-select-search
             />
           </div>
-          ${this.loading ? `<span class="${CSS_CLASSES.BB_API_SELECT_LOADER}">⏳</span>` : ''}
+          ${this.loading ? `<span class="${CSS_CLASSES.BB_API_SELECT_LOADER}">${getIconHTML('loader', 14, 'bb-icon--spin')}</span>` : ''}
           ${!this.loading && this.hasValue() ? `<span class="${CSS_CLASSES.BB_API_SELECT_CLEAR}" data-api-select-clear>${getIconHTML('close', 14)}</span>` : ''}
           <button
             type="button"
             class="${CSS_CLASSES.BB_API_SELECT_TOGGLE} ${this.isDropdownOpen ? CSS_CLASSES.BB_API_SELECT_TOGGLE_OPEN : ''}"
             data-api-select-toggle
           >
-            ▼
+            ${getIconHTML('chevronDown', 12)}
           </button>
         </div>
 
@@ -784,7 +784,7 @@ export class ApiSelectControlRenderer {
                       item => `
                     <div class="${CSS_CLASSES.BB_API_SELECT_ITEM} ${this.isSelected(item.id) ? CSS_CLASSES.BB_API_SELECT_ITEM_SELECTED : ''}" data-api-select-item data-item-id="${item.id}" data-item-name="${item.name}">
                       <span class="${CSS_CLASSES.BB_API_SELECT_ITEM_NAME}">${item.name}</span>
-                      ${this.isSelected(item.id) ? `<span class="${CSS_CLASSES.BB_API_SELECT_ITEM_CHECK}">✓</span>` : ''}
+                      ${this.isSelected(item.id) ? `<span class="${CSS_CLASSES.BB_API_SELECT_ITEM_CHECK}">${getIconHTML('check', 14)}</span>` : ''}
                     </div>
                   `
                     )

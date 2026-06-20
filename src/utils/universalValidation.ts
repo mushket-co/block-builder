@@ -5,6 +5,7 @@ import {
   IValidationResult,
   IValidationRule,
 } from '../core/types';
+import { normalizeMatrixTableValue } from './matrixTableHelpers';
 
 export type {
   IFormData,
@@ -174,6 +175,24 @@ export const UniversalValidator = {
             isFieldVisible
           );
           if (Object.keys(formErrors).some(key => key.startsWith(fieldConfig.field))) {
+            isValid = false;
+          }
+        }
+      }
+
+      if (fieldConfig.type === 'matrix-table') {
+        const hasRequired = fieldConfig.rules?.some(rule => rule.type === 'required');
+        if (hasRequired) {
+          const matrixValue = normalizeMatrixTableValue(formData[fieldConfig.field]);
+          const structureInvalid =
+            matrixValue.tableHead.length === 0 ||
+            matrixValue.tableHead.some(column => !String(column.name ?? '').trim());
+
+          if (structureInvalid) {
+            formErrors[fieldConfig.field] = [
+              ...(formErrors[fieldConfig.field] || []),
+              'Заполните поля структуры таблицы',
+            ];
             isValid = false;
           }
         }

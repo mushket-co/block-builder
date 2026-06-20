@@ -86,7 +86,10 @@
   }
 
   &__arrow {
-    font-size: 12px;
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
     color: var(--bb-text-tertiary);
     transition: transform 0.2s ease;
 
@@ -191,8 +194,11 @@
   }
 
   &__option-check {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
     color: var(--bb-color-primary);
-    font-weight: 600;
   }
 
   &--open &__control {

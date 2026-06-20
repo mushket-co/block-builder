@@ -1,0 +1,36 @@
+$b: '.bb-matrix-table-control';
+
+#{$b} {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  &__tabs {
+    display: flex;
+    gap: 8px;
+    border-bottom: 1px solid var(--bb-border-color);
+    padding-bottom: 8px;
+  }
+
+  &__tab {
+    border: none;
+    background: transparent;
+    padding: 6px 12px;
+    border-radius: var(--bb-radius-sm);
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--bb-text-tertiary);
+
+    &--active {
+      background: var(--bb-color-primary-light);
+      color: var(--bb-color-primary);
+      font-weight: 600;
+    }
+  }
+
+  &__panel {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+}

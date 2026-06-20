@@ -1,4 +1,5 @@
 import { CSS_CLASSES } from '../../../utils/constants';
+import { getIconHTML } from '../../../shared/icons/sprite';
 import { ValidationErrorHandler } from '../ValidationErrorHandler';
 
 jest.mock('../../../utils/scheduling', () => ({
@@ -65,10 +66,10 @@ describe('ValidationErrorHandler', () => {
             <div class="${CSS_CLASSES.REPEATER_CONTROL_ITEM}">
               <div data-field-name="products">
                 <div class="${CSS_CLASSES.REPEATER_CONTROL_ITEM}">
-                  <button class="${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_COLLAPSE}">▼</button>
+                  <button class="${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_COLLAPSE}">${getIconHTML('chevronDown', 12)}</button>
                 </div>
                 <div class="${CSS_CLASSES.REPEATER_CONTROL_ITEM} ${CSS_CLASSES.REPEATER_CONTROL_ITEM_COLLAPSED}">
-                  <button class="${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_COLLAPSE}">▼</button>
+                  <button class="${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_COLLAPSE}">${getIconHTML('chevronDown', 12)}</button>
                 </div>
               </div>
             </div>
