@@ -9,6 +9,7 @@ import {
 } from 'react';
 
 import type { IBlock, TBlockId } from '../../core/types';
+import type { IBlockFormHooks } from '../../core/types/formHooks';
 import type { BlockManagementUseCase } from '../../core/use-cases/BlockManagementUseCase';
 import {
   ValidationErrorHandler,
@@ -54,6 +55,7 @@ export function useBlockForm({
   const [selectedPosition, setSelectedPosition] = useState<number | undefined>(undefined);
   const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [formErrors, setFormErrors] = useState<Record<string, string[]>>({});
+  const [isFormHydrating, setIsFormHydrating] = useState(false);
   const validationTrackerRef = useRef(new ReactiveFormValidationTracker());
   const repeaterRefs = useRef<Map<string, IRepeaterRef>>(new Map());
   const validationErrorHandler = useMemo(
@@ -120,6 +122,7 @@ export function useBlockForm({
 
   const closeModal = useCallback(() => {
     setShowModal(false);
+    setIsFormHydrating(false);
     setCurrentType(null);
     setCurrentBlockId(null);
     setFormData({});
@@ -128,8 +131,80 @@ export function useBlockForm({
     repeaterRefs.current.clear();
   }, []);
 
+  const runFormOpenHook = useCallback(
+    async (
+      mode: 'create' | 'edit',
+      blockType: { formHooks?: IBlockFormHooks } | null,
+      blockProps: Record<string, unknown>,
+      initialFormData: Record<string, unknown>,
+      blockId?: TBlockId
+    ): Promise<Record<string, unknown> | null> => {
+      const hooks = blockType?.formHooks;
+      if (!hooks?.onFormOpen) {
+        return initialFormData;
+      }
+
+      setIsFormHydrating(true);
+      const mutableFormData = { ...initialFormData };
+
+      try {
+        await hooks.onFormOpen({
+          mode,
+          blockId,
+          props: blockProps,
+          formData: mutableFormData,
+          setField: (name, value) => {
+            mutableFormData[name] = value;
+          },
+        });
+        return mutableFormData;
+      } catch (error) {
+        alert(
+          `Ошибка загрузки формы: ${error instanceof Error ? error.message : String(error)}`
+        );
+        closeModal();
+        return null;
+      } finally {
+        setIsFormHydrating(false);
+      }
+    },
+    [closeModal]
+  );
+
+  const resolvePropsToSave = useCallback(
+    async (
+      mode: 'create' | 'edit',
+      blockType: { formHooks?: IBlockFormHooks } | null,
+      blockId: TBlockId | null,
+      currentFormData: Record<string, unknown>
+    ): Promise<Record<string, unknown> | null> => {
+      const hooks = blockType?.formHooks;
+      if (!hooks?.onBeforeSave) {
+        return { ...currentFormData };
+      }
+
+      try {
+        const result = await hooks.onBeforeSave({
+          mode,
+          blockId: blockId ?? undefined,
+          formData: { ...currentFormData },
+        });
+
+        if (result?.cancel) {
+          return null;
+        }
+
+        return result?.props ?? { ...currentFormData };
+      } catch (error) {
+        alert(`Ошибка сохранения: ${error instanceof Error ? error.message : String(error)}`);
+        return null;
+      }
+    },
+    []
+  );
+
   const openCreateModal = useCallback(
-    (type: string, position?: number) => {
+    async (type: string, position?: number) => {
       if (!isEdit) {
         return;
       }
@@ -145,28 +220,52 @@ export function useBlockForm({
       fields.forEach(field => {
         nextFormData[field.field] = resolveFormFieldDefaultValue(field);
       });
-      setFormData(nextFormData);
       setFormErrors({});
       validationTrackerRef.current.reset();
+      setFormData(nextFormData);
       setShowModal(true);
+
+      if (blockType?.formHooks?.onFormOpen) {
+        const hydratedFormData = await runFormOpenHook('create', blockType, {}, nextFormData);
+        if (hydratedFormData === null) {
+          return;
+        }
+        setFormData(hydratedFormData);
+      }
     },
-    [availableBlockTypes, isEdit]
+    [availableBlockTypes, isEdit, runFormOpenHook]
   );
 
   const openEditModal = useCallback(
-    (block: IBlock) => {
+    async (block: IBlock) => {
       if (!isEdit) {
         return;
       }
       setModalMode('edit');
       setCurrentType(block.type);
       setCurrentBlockId(block.id);
-      setFormData({ ...block.props });
+      const nextFormData = { ...block.props };
       setFormErrors({});
       validationTrackerRef.current.reset();
+      setFormData(nextFormData);
       setShowModal(true);
+
+      const blockType = availableBlockTypes.find(bt => bt.type === block.type) ?? null;
+      if (blockType?.formHooks?.onFormOpen) {
+        const hydratedFormData = await runFormOpenHook(
+          'edit',
+          blockType,
+          { ...block.props },
+          nextFormData,
+          block.id
+        );
+        if (hydratedFormData === null) {
+          return;
+        }
+        setFormData(hydratedFormData);
+      }
     },
-    [isEdit]
+    [availableBlockTypes, isEdit, runFormOpenHook]
   );
 
   const createBlock = useCallback(async (): Promise<IBlock | null> => {
@@ -188,9 +287,19 @@ export function useBlockForm({
     }
 
     try {
+      const propsToSave = await resolvePropsToSave(
+        'create',
+        currentBlockType,
+        null,
+        formData
+      );
+      if (!propsToSave) {
+        return null;
+      }
+
       const newBlock = await blockService.createBlock({
         type: currentType,
-        props: { ...formData },
+        props: propsToSave,
         settings: currentBlockType.defaultSettings || {},
         render: currentBlockType.render,
       } as IBlock);
@@ -222,6 +331,7 @@ export function useBlockForm({
     formData,
     handleValidationErrors,
     loadBlocks,
+    resolvePropsToSave,
     scrollToBlock,
     selectedPosition,
     setupBreakpointWatchers,
@@ -246,8 +356,18 @@ export function useBlockForm({
     }
 
     try {
+      const propsToSave = await resolvePropsToSave(
+        'edit',
+        currentBlockType,
+        currentBlockId,
+        formData
+      );
+      if (!propsToSave) {
+        return false;
+      }
+
       const updated = await blockService.updateBlock(currentBlockId, {
-        props: { ...formData },
+        props: propsToSave,
       } as Partial<IBlock>);
       let nextBlocks: IBlock[] = [];
       setBlocks(prev => {
@@ -272,6 +392,7 @@ export function useBlockForm({
     handleValidationErrors,
     onBlockPersisted,
     onBlockUpdated,
+    resolvePropsToSave,
     setBlocks,
     setupBreakpointWatchers,
   ]);
@@ -306,6 +427,7 @@ export function useBlockForm({
     currentBlockFields,
     formData,
     formErrors,
+    isFormHydrating,
     selectedPosition,
     setSelectedPosition,
     openCreateModal,

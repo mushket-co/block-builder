@@ -88,12 +88,14 @@ export function BlockBuilder(props: IBlockBuilderProps) {
           contentClassName={CSS_CLASSES.MODAL_CONTENT}
           bodyClassName={CSS_CLASSES.MODAL_BODY}
           validationErrorCount={builder.validationErrorCount}
+          isFormHydrating={builder.isFormHydrating}
           onClose={builder.closeModal}
           onSubmit={() => void builder.handleSubmit()}
           onValidationErrorNavigate={() => void builder.navigateToValidationError()}
         >
           <form
             className={CSS_CLASSES.FORM}
+            style={builder.isFormHydrating ? { display: 'none' } : undefined}
             onSubmit={event => {
               event.preventDefault();
               void builder.handleSubmit();

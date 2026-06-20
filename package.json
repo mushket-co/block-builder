@@ -1,6 +1,6 @@
 {
   "name": "@mushket-co/block-builder",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "Блочный конструктор для no-code разработки (Beta)",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
@@ -86,6 +86,7 @@
     "test:ci": "jest --ci --coverage --maxWorkers=2",
     "test:component": "vitest run",
     "test:component:watch": "vitest",
+    "test:form-hooks": "vitest run tests/component/vue/BlockBuilder/form-hooks.spec.ts tests/component/react/BlockBuilder/form-hooks.spec.tsx",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "e2e:preview:vue3": "npm run build && npm run build --workspace=examples/vue3 && npm run preview --workspace=examples/vue3",

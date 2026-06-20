@@ -6,6 +6,38 @@
 и проект следует [Semantic Versioning](https://semver.org/lang/ru/).
 
 
+## [1.7.0] - 2026-06-20
+
+### Добавлено
+
+#### Per-block modal hooks (`formHooks`)
+
+- Типы `IBlockFormHooks`, `IBlockFormOpenContext`, `IBlockFormSaveContext`, `IBlockFormSaveResult`, `IBlockTypeConfig` — `core/types/formHooks.ts`
+- **`formHooks` в конфиге типа блока** (`availableBlockTypes[]`):
+  - `onFormOpen` — после инициализации `formData` defaults/props, до редактирования; async side-effects (загрузка с API), `setField(name, value)` для гидрации полей
+  - `onBeforeSave` — после `validateForm`, до `createBlock` / `updateBlock`; возвращает финальные `props` для записи в блок или `{ cancel: true }` (модалка остаётся открытой)
+- **Scope:** Vue и React UI (`BlockBuilder`, Nuxt/Next через те же компоненты). **Pure JS не поддерживает** `formHooks` — фича не переносится в `BlockUIController` / DOM-рендереры
+- Vue `BlockBuilder`: интеграция хуков в create/edit модалку
+- React `useBlockForm` / `BlockBuilder` / `BlockFormModal`: тот же контракт
+- Экспорт типов из `core.ts`, `@mushket-co/block-builder/vue`, `@mushket-co/block-builder/react`
+- Стили `.bb-modal-hydrating` — индикатор загрузки при `onFormOpen`
+- npm-скрипт `test:form-hooks`; component-тесты Vue (4) и React (3)
+
+### Изменено
+
+#### Модалка редактирования блока (Vue, React)
+
+- Пока выполняется async `onFormOpen`, форма скрыта (`isFormHydrating`), кнопка «Сохранить» отключена
+- React: порядок открытия модалки и `setFormData` после `onFormOpen` — как во Vue (гидрация до редактирования)
+
+### Исправлено
+
+- **React `useBlockForm`:** модалка открывалась до применения данных из `onFormOpen` — repeater и другие поля могли остаться с дефолтами вместо значений хука
+
+### Документация
+
+- test-bb: блок **constructor-form** на `formHooks` + repeater + mock CRUD (вместо custom field `FormSchemaEditor`)
+
 ## [1.6.0] - 2026-06-20
 
 ### Добавлено

@@ -10,6 +10,7 @@ interface IBlockFormModalProps {
   contentClassName?: string;
   bodyClassName?: string;
   validationErrorCount?: number;
+  isFormHydrating?: boolean;
   children: ReactNode;
   onClose: () => void;
   onSubmit: () => void;
@@ -23,6 +24,7 @@ export function BlockFormModal({
   contentClassName,
   bodyClassName,
   validationErrorCount = 0,
+  isFormHydrating = false,
   children,
   onClose,
   onSubmit,
@@ -46,12 +48,19 @@ export function BlockFormModal({
             <Icon name="close" width={20} height={20} />
           </button>
         </div>
-        <div className={[CSS_CLASSES.MODAL_BODY, bodyClassName].filter(Boolean).join(' ')}>{children}</div>
+        <div className={[CSS_CLASSES.MODAL_BODY, bodyClassName].filter(Boolean).join(' ')}>
+          {isFormHydrating ? <div className="bb-modal-hydrating">Загрузка…</div> : children}
+        </div>
         <div className={CSS_CLASSES.MODAL_FOOTER}>
           <button type="button" className={`${CSS_CLASSES.BTN} ${CSS_CLASSES.BTN_SECONDARY}`} onClick={onClose}>
             {cancelLabel}
           </button>
-          <button type="submit" className={`${CSS_CLASSES.BTN} ${CSS_CLASSES.BTN_PRIMARY}`} onClick={onSubmit}>
+          <button
+            type="submit"
+            className={`${CSS_CLASSES.BTN} ${CSS_CLASSES.BTN_PRIMARY}`}
+            disabled={isFormHydrating}
+            onClick={onSubmit}
+          >
             {submitLabel}
           </button>
           {validationErrorCount > 0 ? (

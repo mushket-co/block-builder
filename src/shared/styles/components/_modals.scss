@@ -85,6 +85,15 @@
   padding: var(--bb-spacing-xl);
 }
 
+.bb-modal-hydrating {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+  color: var(--bb-text-secondary);
+  font-size: 14px;
+}
+
 .bb-modal-footer {
   position: sticky;
   bottom: 0;

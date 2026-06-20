@@ -27,6 +27,13 @@ export type {
   THttpMethod,
 } from './core/types/form';
 export type {
+  IBlockFormHooks,
+  IBlockFormOpenContext,
+  IBlockFormSaveContext,
+  IBlockFormSaveResult,
+  IBlockTypeConfig,
+} from './core/types/formHooks';
+export type {
   IValidationResult,
   IValidationRule,
   TValidationRuleType,

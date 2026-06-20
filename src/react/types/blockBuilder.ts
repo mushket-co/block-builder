@@ -1,9 +1,11 @@
 import type { ICustomFieldRendererRegistry } from '../../core/ports/CustomFieldRenderer';
 import type { IBlock, TBlockId } from '../../core/types';
 import type { IFormFieldConfig } from '../../core/types/form';
+import type { IBlockFormHooks } from '../../core/types/formHooks';
 import type { ApiSelectUseCase } from '../../core/use-cases/ApiSelectUseCase';
 import type { BlockManagementUseCase } from '../../core/use-cases/BlockManagementUseCase';
 
+/** Конфиг типа блока для React BlockBuilder (formHooks — только Vue/React UI, не Pure JS) */
 export interface IBlockType {
   type: string;
   label: string;
@@ -13,6 +15,8 @@ export interface IBlockType {
   defaultSettings?: Record<string, unknown>;
   defaultProps?: Record<string, unknown>;
   fields?: IFormFieldConfig[];
+  /** Per-block modal hooks — Vue/React BlockBuilder only */
+  formHooks?: IBlockFormHooks;
   spacingOptions?: { config?: { breakpoints?: Array<{ name: string; label: string; maxWidth?: number }> } };
 }
 

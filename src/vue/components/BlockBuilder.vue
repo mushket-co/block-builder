@@ -204,7 +204,8 @@
         </div>
 
         <div :class="CSS_CLASSES.MODAL_BODY">
-          <form :class="CSS_CLASSES.FORM" @submit.prevent="handleSubmit">
+          <div v-if="isFormHydrating" class="bb-modal-hydrating">Загрузка…</div>
+          <form v-show="!isFormHydrating" :class="CSS_CLASSES.FORM" @submit.prevent="handleSubmit">
             <template v-for="fieldGroup in groupedFields" :key="fieldGroup.key">
               <!-- Группа полей с ToggleControl (checkbox + зависимые поля) -->
               <ToggleControl
@@ -463,7 +464,12 @@
           >
             Отмена
           </button>
-          <button type="submit" :class="[CSS_CLASSES.BTN, CSS_CLASSES.BTN_PRIMARY]" @click="handleSubmit">
+          <button
+            type="submit"
+            :class="[CSS_CLASSES.BTN, CSS_CLASSES.BTN_PRIMARY]"
+            :disabled="isFormHydrating"
+            @click="handleSubmit"
+          >
             {{ modalMode === 'create' ? 'Создать' : 'Сохранить' }}
           </button>
           <button
@@ -485,6 +491,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, provide, reactive, ref, watch } from 'vue';
 
 import { IBlock, TBlockId } from '../../core/types';
+import type { IBlockFormHooks, IBlockTypeConfig } from '../../core/types/formHooks';
 import type { ApiSelectUseCase } from '../../core/use-cases/ApiSelectUseCase';
 import { BlockManagementUseCase } from '../../core/use-cases/BlockManagementUseCase';
 import {
@@ -530,15 +537,10 @@ import ToggleControl from './ToggleControl.vue';
 import { usePageLeaveWarning } from '../composables/usePageLeaveWarning';
 import { BLOCK_ANCHOR_CONTEXT_KEY } from '../composables/blockAnchorContext';
 
-interface IBlockType {
+interface IBlockType extends IBlockTypeConfig {
   type: string;
   label: string;
-  title?: string;
-  icon?: string;
-  render?: any;
-  defaultSettings?: any;
-  defaultProps?: any;
-  fields?: any[];
+  /** formHooks — только Vue/React BlockBuilder; Pure JS не поддерживает */
 }
 
 interface IProps {
@@ -588,6 +590,7 @@ const currentBlockId = ref<TBlockId | null>(null);
 const selectedPosition = ref<number | undefined>(undefined);
 const formData = reactive<Record<string, any>>({});
 const formErrors = reactive<Record<string, string[]>>({});
+const isFormHydrating = ref(false);
 const validationTracker = new ReactiveFormValidationTracker();
 const repeaterRefs = new Map<string, any>();
 const validationErrorHandler = new ValidationErrorHandler(repeaterRefs);
@@ -933,10 +936,67 @@ const closeTypeSelectionModal = () => {
 const selectBlockType = (type: string) => {
   const position = selectedPosition.value;
   closeTypeSelectionModal();
-  openCreateModal(type, position);
+  void openCreateModal(type, position);
 };
 
-const openCreateModal = (type: string, position?: number) => {
+const getCurrentFormHooks = (): IBlockFormHooks | undefined => currentBlockType.value?.formHooks;
+
+const buildFormOpenContext = (mode: 'create' | 'edit', blockProps: Record<string, unknown>) => ({
+  mode,
+  blockId: currentBlockId.value ?? undefined,
+  props: blockProps,
+  formData,
+  setField: (name: string, value: unknown) => {
+    formData[name] = value;
+  },
+});
+
+const runFormOpenHook = async (mode: 'create' | 'edit', blockProps: Record<string, unknown>) => {
+  const hooks = getCurrentFormHooks();
+  if (!hooks?.onFormOpen) {
+    return;
+  }
+
+  isFormHydrating.value = true;
+  try {
+    await hooks.onFormOpen(buildFormOpenContext(mode, blockProps));
+  } catch (error) {
+    alert(
+      `Ошибка загрузки формы: ${error instanceof Error ? error.message : String(error)}`
+    );
+    closeModal();
+  } finally {
+    isFormHydrating.value = false;
+  }
+};
+
+const resolvePropsToSave = async (): Promise<Record<string, unknown> | null> => {
+  const hooks = getCurrentFormHooks();
+  if (!hooks?.onBeforeSave) {
+    return { ...formData };
+  }
+
+  try {
+    const result = await hooks.onBeforeSave({
+      mode: modalMode.value,
+      blockId: currentBlockId.value ?? undefined,
+      formData: { ...formData },
+    });
+
+    if (result?.cancel) {
+      return null;
+    }
+
+    return result?.props ?? { ...formData };
+  } catch (error) {
+    alert(
+      `Ошибка сохранения: ${error instanceof Error ? error.message : String(error)}`
+    );
+    return null;
+  }
+};
+
+const openCreateModal = async (type: string, position?: number) => {
   if (!props.isEdit) {
     return; // Блокируем если режим редактирования выключен
   }
@@ -951,9 +1011,13 @@ const openCreateModal = (type: string, position?: number) => {
   });
 
   showModal.value = true;
+
+  if (getCurrentFormHooks()?.onFormOpen) {
+    await runFormOpenHook('create', {});
+  }
 };
 
-const openEditModal = (block: IBlock) => {
+const openEditModal = async (block: IBlock) => {
   if (!props.isEdit) {
     return; // Блокируем если режим редактирования выключен
   }
@@ -965,6 +1029,10 @@ const openEditModal = (block: IBlock) => {
   Object.assign(formData, { ...block.props });
 
   showModal.value = true;
+
+  if (getCurrentFormHooks()?.onFormOpen) {
+    await runFormOpenHook('edit', { ...block.props });
+  }
 };
 
 const handleOverlayClick = (event: MouseEvent) => {
@@ -977,6 +1045,7 @@ const handleOverlayClick = (event: MouseEvent) => {
 
 const closeModal = () => {
   showModal.value = false;
+  isFormHydrating.value = false;
   currentType.value = null;
   currentBlockId.value = null;
   Object.keys(formData).forEach(key => delete formData[key]);
@@ -1018,10 +1087,15 @@ const createBlock = async (): Promise<boolean> => {
     return false;
   }
 
+  const propsToSave = await resolvePropsToSave();
+  if (!propsToSave) {
+    return false;
+  }
+
   try {
     const newBlock = await blockService.createBlock({
       type: currentType.value,
-      props: { ...formData },
+      props: propsToSave,
       settings: blockType.defaultSettings || {},
       render: blockType.render,
     } as any);
@@ -1073,9 +1147,14 @@ const updateBlock = async (): Promise<boolean> => {
     return false;
   }
 
+  const propsToSave = await resolvePropsToSave();
+  if (!propsToSave) {
+    return false;
+  }
+
   try {
     const updated = await blockService.updateBlock(currentBlockId.value, {
-      props: { ...formData },
+      props: propsToSave,
     } as any);
 
     const index = blocks.value.findIndex((b: IBlock) => b.id === currentBlockId.value);
