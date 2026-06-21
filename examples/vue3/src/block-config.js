@@ -22,7 +22,9 @@ import LinkBlock from './components/LinkBlock.vue'
 import ToggleRepeaterBlock from './components/ToggleRepeaterBlock.vue'
 import NestedRepeaterBlock from './components/NestedRepeaterBlock.vue'
 import TableBlock from './components/TableBlock.vue'
+import FormFeaturesDemoBlock from './components/FormFeaturesDemoBlock.vue'
 import { createTableBlockConfig } from '../../shared/tableBlockDefaults.js'
+import { createFormFeaturesDemoBlockConfig } from '../../shared/formFeaturesDemoBlock.js'
 
 const CardListBlock = defineAsyncComponent(() => import('./components/CardListBlock.vue'))
 
@@ -1451,6 +1453,11 @@ export const blockConfigs = {
         }
       }
     ]
-  }
+  },
+
+  formFeaturesDemo: createFormFeaturesDemoBlockConfig({
+    component: FormFeaturesDemoBlock,
+    framework: 'vue',
+  }),
 }
 

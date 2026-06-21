@@ -229,6 +229,7 @@
                         ? `${CSS_CLASSES.FORM_GROUP} ${CSS_CLASSES.ERROR}`
                         : CSS_CLASSES.FORM_GROUP
                     "
+                    :form-data="formData"
                     @update:model-value="updateFormField(dependentField.field, $event)"
                   >
                     <template
@@ -277,6 +278,8 @@
                         :custom-field-renderer-registry="props.customFieldRendererRegistry"
                         :is-custom-field-available="isCustomFieldAvailable"
                         :get-custom-field-restriction-message="getCustomFieldsRestrictionMessage"
+                        :block-form-data="formData"
+                        :set-block-field="setBlockField"
                         @update:model-value="updateFormField(slotField.field, $event)"
                       />
 
@@ -323,12 +326,21 @@
                           :form-errors="formErrors"
                           :custom-field-renderer-registry="props.customFieldRendererRegistry"
                           :is-field-required="isFieldRequired"
+                          :form-scope="topLevelFormScope"
                           @update:model-value="updateFormField(slotField.field, $event)"
                         />
                         <div v-else :class="CSS_CLASSES.BB_WARNING_BOX">
                           ⚠️ {{ getCustomFieldsRestrictionMessage() }}
                         </div>
                       </div>
+
+                      <FileImportField
+                        v-else-if="slotField.type === 'file-import' && slotField.fileImportConfig"
+                        :label="slotField.label"
+                        :error="slotError"
+                        :file-import-config="slotField.fileImportConfig"
+                        :form-scope="topLevelFormScope"
+                      />
                     </template>
                   </FormField>
                 </template>
@@ -348,6 +360,7 @@
                     ? `${CSS_CLASSES.FORM_GROUP} ${CSS_CLASSES.ERROR}`
                     : CSS_CLASSES.FORM_GROUP
                 "
+                :form-data="formData"
                 @update:model-value="updateFormField(fieldGroup.field.field, $event)"
               >
                 <!-- Специальные поля, которые не обрабатываются FormField -->
@@ -398,6 +411,8 @@
                     :custom-field-renderer-registry="props.customFieldRendererRegistry"
                     :is-custom-field-available="isCustomFieldAvailable"
                     :get-custom-field-restriction-message="getCustomFieldsRestrictionMessage"
+                    :block-form-data="formData"
+                    :set-block-field="setBlockField"
                     @update:model-value="updateFormField(slotField.field, $event)"
                   />
 
@@ -444,12 +459,21 @@
                       :form-errors="formErrors"
                       :custom-field-renderer-registry="props.customFieldRendererRegistry"
                       :is-field-required="isFieldRequired"
+                      :form-scope="topLevelFormScope"
                       @update:model-value="updateFormField(slotField.field, $event)"
                     />
                     <div v-else :class="CSS_CLASSES.BB_WARNING_BOX">
                       ⚠️ {{ getCustomFieldsRestrictionMessage() }}
                     </div>
                   </div>
+
+                  <FileImportField
+                    v-else-if="slotField.type === 'file-import' && slotField.fileImportConfig"
+                    :label="slotField.label"
+                    :error="slotError"
+                    :file-import-config="slotField.fileImportConfig"
+                    :form-scope="topLevelFormScope"
+                  />
                 </template>
               </FormField>
             </template>
@@ -511,6 +535,8 @@ import {
 } from '../../utils/constants';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { countValidationErrors } from '../../utils/formErrorHelpers';
+import { createCustomFieldFormScope } from '../../utils/formScopeHelpers';
+import { stripNonPersistedFields } from '../../utils/stripNonPersistedFields';
 import { resolveFormFieldDefaultValue } from '../../utils/formFieldDefaults';
 import {
   applyFormErrors,
@@ -529,6 +555,7 @@ import { ValidationErrorHandler } from '../../shared/services/ValidationErrorHan
 import { updateBodyEditModeClass } from '../../shared/dom/domClassHelpers';
 import ApiSelectField from './ApiSelectField.vue';
 import CustomField from './CustomField.vue';
+import FileImportField from './FileImportField.vue';
 import { FormField } from './form-fields';
 import RepeaterControl from './RepeaterControl.vue';
 import SpacingControl from './SpacingControl.vue';
@@ -830,6 +857,13 @@ const updateFormField = (fieldName: string, value: unknown): void => {
   revalidateIfTouched();
 };
 
+const setBlockField = (name: string, value: unknown): void => {
+  formData[name] = value;
+  revalidateIfTouched();
+};
+
+const topLevelFormScope = computed(() => createCustomFieldFormScope(formData, setBlockField));
+
 const isFieldRequired = (field: any): boolean => {
   return field.rules?.some((rule: any) => rule.type === 'required') ?? false;
 };
@@ -972,8 +1006,10 @@ const runFormOpenHook = async (mode: 'create' | 'edit', blockProps: Record<strin
 
 const resolvePropsToSave = async (): Promise<Record<string, unknown> | null> => {
   const hooks = getCurrentFormHooks();
+  const fields = currentBlockFields.value;
+
   if (!hooks?.onBeforeSave) {
-    return { ...formData };
+    return stripNonPersistedFields({ ...formData }, fields);
   }
 
   try {
@@ -987,7 +1023,7 @@ const resolvePropsToSave = async (): Promise<Record<string, unknown> | null> => 
       return null;
     }
 
-    return result?.props ?? { ...formData };
+    return stripNonPersistedFields(result?.props ?? { ...formData }, fields);
   } catch (error) {
     alert(
       `Ошибка сохранения: ${error instanceof Error ? error.message : String(error)}`

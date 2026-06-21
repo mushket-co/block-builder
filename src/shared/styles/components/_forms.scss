@@ -198,3 +198,14 @@ input[type="url"].bb-form-control {
 .bb-field-hidden {
   display: none !important;
 }
+
+.bb-file-import-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bb-spacing-sm);
+}
+
+.bb-file-import-notice {
+  font-size: var(--bb-font-size-sm);
+  color: var(--bb-color-success, #15803d);
+}

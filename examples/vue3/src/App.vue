@@ -38,6 +38,7 @@ import {
 } from '@mushket-co/block-builder/vue'
 import { blockConfigs } from './block-config'
 import { WysiwygFieldRenderer } from './customFieldRenderers/WysiwygFieldRenderer'
+import { FormScopeDemoFieldRenderer } from '../../shared/formFeaturesDemoFieldRenderer.js'
 import { loadBlocksFromLocalStorage, saveBlocksToLocalStorage } from '../../shared/blockStorage'
 
 const blockManagementUseCase = createBlockManagementUseCase()
@@ -48,6 +49,7 @@ const apiSelectUseCase = new ApiSelectUseCase(httpClient)
 
 const customFieldRendererRegistry = new CustomFieldRendererRegistry()
 customFieldRendererRegistry.register(new WysiwygFieldRenderer())
+customFieldRendererRegistry.register(new FormScopeDemoFieldRenderer())
 
 const componentRegistry = blockManagementUseCase.getComponentRegistry()
 Object.entries(blockConfigs).forEach(([type, config]) => {

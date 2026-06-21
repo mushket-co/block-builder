@@ -1,12 +1,17 @@
 import type { ComponentType } from 'react';
 
-import type { ICustomFieldRendererRegistry } from '../../core/ports/CustomFieldRenderer';
+import type {
+  ICustomFieldFormScope,
+  ICustomFieldRendererRegistry,
+} from '../../core/ports/CustomFieldRenderer';
 import type { IFormFieldConfig, IRepeaterItemFieldConfig } from '../../core/types/form';
 import type { ApiSelectUseCase } from '../../core/use-cases/ApiSelectUseCase';
 import { CSS_CLASSES } from '../../utils/constants';
+import { createRepeaterFormScope } from '../../utils/formScopeHelpers';
 import type { TFormFieldGroup } from '../../utils/formFieldGrouping';
 import { ApiSelectField } from './ApiSelectField';
 import { CustomField } from './CustomField';
+import { FileImportField } from './FileImportField';
 import { FormField } from './form-fields';
 import { ToggleControl } from './ToggleControl';
 import { toRepeaterFormFieldConfig, type TRepeaterItem } from '../hooks/useRepeaterControl';
@@ -39,6 +44,8 @@ export interface INestedRepeaterControlProps {
   nestingDepth?: number;
   maxNestingDepth?: number;
   parentFieldPath?: string;
+  blockFormData?: Record<string, unknown>;
+  setBlockField?: (name: string, value: unknown) => void;
   onChange: (value: unknown[]) => void;
 }
 
@@ -69,6 +76,8 @@ interface IRepeaterItemFieldsProps {
   getRepeaterBasePath: () => string;
   isRepeaterFieldVisible: (field: IRepeaterItemFieldConfig, item: TRepeaterItem) => boolean;
   updateItemField: (index: number, fieldKey: string, value: unknown) => void;
+  blockFormData?: Record<string, unknown>;
+  setBlockField?: (name: string, value: unknown) => void;
 }
 
 function renderSingleFieldSlot(
@@ -100,7 +109,26 @@ function renderSingleFieldSlot(
     getRepeaterBasePath,
     updateItemField,
     formErrors,
+    blockFormData = {},
+    setBlockField,
   } = props;
+
+  const buildFormScopeForItem = (): ICustomFieldFormScope | undefined => {
+    if (!setBlockField) {
+      return undefined;
+    }
+
+    return createRepeaterFormScope(
+      blockFormData,
+      setBlockField,
+      repeaterFieldName,
+      itemIndex,
+      item,
+      (field, value) => updateItemField(itemIndex, field, value)
+    );
+  };
+
+  const itemFormScope = buildFormScopeForItem();
 
   if (slotField.type === 'api-select') {
     if (isApiSelectAvailable(slotField) && apiSelectUseCase) {
@@ -132,12 +160,24 @@ function renderSingleFieldSlot(
             formErrors={formErrors}
             customFieldRendererRegistry={customFieldRendererRegistry}
             isFieldRequired={isFieldRequired}
+            formScope={itemFormScope}
             onChange={value => updateItemField(itemIndex, slotField.field, value)}
           />
         ) : (
           <div className={CSS_CLASSES.BB_WARNING_BOX}>⚠️ {customFieldRestrictionMessage}</div>
         )}
       </>
+    );
+  }
+
+  if (slotField.type === 'file-import' && slotField.fileImportConfig && itemFormScope) {
+    return (
+      <FileImportField
+        label={slotField.label}
+        error={slotError}
+        fileImportConfig={slotField.fileImportConfig}
+        formScope={itemFormScope}
+      />
     );
   }
 
@@ -172,6 +212,8 @@ function renderSingleFieldSlot(
         getCustomFieldRestrictionMessage={
           getCustomFieldRestrictionMessage || (() => customFieldRestrictionMessage)
         }
+        blockFormData={blockFormData}
+        setBlockField={setBlockField}
         nestingDepth={nestingDepth + 1}
         maxNestingDepth={slotField.repeaterConfig?.maxNestingDepth ?? maxNestingDepth}
         parentFieldPath={parentPath}
@@ -228,6 +270,8 @@ export function RepeaterItemFields(props: IRepeaterItemFieldsProps) {
                       ? `${CSS_CLASSES.FORM_GROUP} ${CSS_CLASSES.ERROR}`
                       : CSS_CLASSES.FORM_GROUP
                   }
+                  formData={props.blockFormData}
+                  itemData={item}
                   onChange={value => updateItemField(itemIndex, dependentField.field, value)}
                 />
               ))}
@@ -258,6 +302,8 @@ export function RepeaterItemFields(props: IRepeaterItemFieldsProps) {
                 ? `${CSS_CLASSES.FORM_GROUP} ${CSS_CLASSES.ERROR}`
                 : CSS_CLASSES.FORM_GROUP
             }
+            formData={props.blockFormData}
+            itemData={item}
             onChange={value => updateItemField(itemIndex, field.field, value)}
           >
             {renderSingleFieldSlot(

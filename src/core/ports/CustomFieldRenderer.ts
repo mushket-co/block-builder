@@ -3,6 +3,27 @@ export interface ICustomFieldConfig {
 
   options?: Record<string, unknown>;
 }
+
+export interface ICustomFieldRepeaterScope {
+  /** Имя repeater-поля, напр. `filterOptions` или `items` */
+  fieldName: string;
+  /** Индекс item в repeater */
+  index: number;
+  /** Текущий item (reactive / live reference) */
+  item: Record<string, unknown>;
+  /** Обновить поле текущего item и синхронизировать RepeaterControl */
+  updateItemField: (field: string, value: unknown) => void;
+}
+
+export interface ICustomFieldFormScope {
+  /** Весь formData модалки (reactive / live reference) */
+  formData: Record<string, unknown>;
+  /** Обновить поле верхнего уровня формы */
+  setField: (name: string, value: unknown) => void;
+  /** Заполнено, если custom field рендерится внутри item repeater */
+  repeater?: ICustomFieldRepeaterScope;
+}
+
 export interface ICustomFieldContext {
   fieldName: string;
 
@@ -16,6 +37,9 @@ export interface ICustomFieldContext {
 
   /** Сообщение об ошибке валидации (используется кастомными renderers, напр. WYSIWYG) */
   error?: string;
+
+  /** Доступ к форме блока и (опционально) контексту repeater */
+  formScope?: ICustomFieldFormScope;
 
   onChange: (newValue: unknown) => void;
 

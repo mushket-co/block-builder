@@ -1,0 +1,67 @@
+.form-features-demo-block {
+  padding: 2rem 0;
+  background: linear-gradient(180deg, #f0f4ff 0%, #fff 100%);
+}
+
+.form-features-demo-block__title {
+  margin: 0 0 0.5rem;
+}
+
+.form-features-demo-block__hint {
+  margin: 0 0 1.5rem;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.form-features-demo-block__filters,
+.form-features-demo-block__cards {
+  margin-top: 1.25rem;
+}
+
+.form-features-demo-block__card {
+  padding: 1rem;
+  margin-top: 0.75rem;
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.form-features-demo-block__tag {
+  display: inline-block;
+  margin: 0.15rem 0.35rem 0.15rem 0;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: #dbeafe;
+  font-size: 0.85rem;
+}
+
+.form-features-demo-block__muted {
+  color: #888;
+  margin: 0;
+}
+
+.form-scope-demo-field__box {
+  padding: 0.75rem;
+  border: 1px dashed #93c5fd;
+  border-radius: 8px;
+  background: #eff6ff;
+  font-size: 0.875rem;
+}
+
+.form-scope-demo-field__box p {
+  margin: 0 0 0.5rem;
+}
+
+.form-scope-demo-field__btn {
+  padding: 0.35rem 0.75rem;
+  border: 1px solid #3b82f6;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 0.8125rem;
+}
+
+.form-scope-demo-field__warn {
+  color: #b45309;
+  font-size: 0.875rem;
+}

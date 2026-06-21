@@ -5,6 +5,9 @@ export type { IComponentRegistry } from './core/ports/ComponentRegistry';
 export type {
   ICustomFieldRenderer,
   ICustomFieldRendererRegistry,
+  ICustomFieldFormScope,
+  ICustomFieldRepeaterScope,
+  ICustomFieldContext,
 } from './core/ports/CustomFieldRenderer';
 export type { IHttpClient } from './core/ports/HttpClient';
 export type {
@@ -23,6 +26,12 @@ export type {
   IFieldValidationConfig,
   IFormFieldConfig,
   IFormGenerationConfig,
+  IFileImportConfig,
+  IFileImportMergeRule,
+  IFileImportMergeStat,
+  IFileImportOnImportContext,
+  IOptionsFromConfig,
+  IOptionsFromGroup,
   TFieldType,
   THttpMethod,
 } from './core/types/form';
@@ -66,6 +75,13 @@ export {
   validateSpacing,
 } from './utils/spacingHelpers';
 export { UniversalValidator } from './utils/universalValidation';
+export {
+  applyFileImportMergeRules,
+  formatFileImportMergeMessage,
+  getImportDataPath,
+  mergeImportedArray,
+} from './utils/fileImportMerge';
+export type { IMergeImportedArrayResult } from './utils/fileImportMerge';
 export {
   applyFormErrors,
   ReactiveFormValidationTracker,

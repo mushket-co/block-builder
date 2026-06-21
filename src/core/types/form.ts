@@ -1,4 +1,4 @@
-import { ICustomFieldConfig } from '../ports/CustomFieldRenderer';
+import { ICustomFieldConfig, ICustomFieldFormScope } from '../ports/CustomFieldRenderer';
 import { IValidationRule } from './validation';
 
 export type TFieldType =
@@ -18,7 +18,8 @@ export type TFieldType =
   | 'api-select'
   | 'custom'
   | 'block-anchor'
-  | 'matrix-table';
+  | 'matrix-table'
+  | 'file-import';
 export type TSpacingType = 'padding-top' | 'padding-bottom' | 'margin-top' | 'margin-bottom';
 export interface IBreakpoint {
   name: string;
@@ -32,6 +33,70 @@ export interface IDependsOnConfig {
   field: string;
   value: boolean | string | number;
   operator?: 'equals' | 'notEquals' | 'in' | 'notIn';
+}
+
+export interface IOptionsFromWhen {
+  field: string;
+  value: boolean | string | number | unknown[];
+  operator?: 'equals' | 'notEquals' | 'in' | 'notIn';
+}
+
+export interface IOptionsFromGroup {
+  group: string;
+  options: { value: string | number; label: string; disabled?: boolean }[];
+}
+
+export interface IOptionsFromConfig {
+  /** Поле блока-источника, напр. `filterOptions` */
+  source: string;
+  when?: IOptionsFromWhen;
+  map?: (
+    item: unknown,
+    index: number,
+    sourceArray: unknown[]
+  ) =>
+    | { value: string | number; label: string; disabled?: boolean; group?: string }
+    | IOptionsFromGroup;
+}
+
+export interface IFileImportMergeRule {
+  /** Поле formData, куда пишется результат */
+  targetField: string;
+  /** Ключ массива в ответе API (поддерживает `data.cards`) */
+  sourceKey?: string;
+  /** append — дописать; replace — полная замена (по умолчанию append) */
+  mode?: 'append' | 'replace';
+  /** Свойство item для проверки дубликатов (напр. `title`, `name`) */
+  dedupeBy?: string;
+  normalizeDedupeKey?: (value: unknown) => string;
+  mapItem?: (item: unknown, index: number, sourceArray: unknown[]) => Record<string, unknown>;
+}
+
+export interface IFileImportOnImportContext {
+  data: unknown;
+  formScope: ICustomFieldFormScope;
+  /** Статистика декларативного merge (если задан fileImportConfig.merge) */
+  mergeStats?: IFileImportMergeStat[];
+}
+
+export interface IFileImportMergeStat {
+  targetField: string;
+  mode: 'append' | 'replace';
+  added: number;
+  skipped: number;
+  total: number;
+}
+
+export interface IFileImportConfig {
+  accept?: string[];
+  uploadUrl: string;
+  formDataKey?: string;
+  maxSizeMb?: number;
+  uploadHeaders?: Record<string, string>;
+  responseMapper?: (response: unknown) => unknown;
+  /** Декларативный merge в formData до onImport */
+  merge?: IFileImportMergeRule[];
+  onImport?: (ctx: IFileImportOnImportContext) => void | Promise<void>;
 }
 export interface ISpacingFieldConfig {
   spacingTypes?: TSpacingType[];
@@ -52,13 +117,17 @@ export interface IRepeaterItemFieldConfig {
   placeholder?: string;
   defaultValue?: unknown;
   options?: { value: string | number; label: string; disabled?: boolean }[];
+  optionsFrom?: IOptionsFromConfig;
   rules?: IValidationRule[];
   multiple?: boolean;
   apiSelectConfig?: IApiSelectConfig;
   customFieldConfig?: ICustomFieldConfig;
   fileUploadConfig?: IFileUploadConfig;
+  fileImportConfig?: IFileImportConfig;
   blockAnchorConfig?: IBlockAnchorConfig;
   repeaterConfig?: IRepeaterFieldConfig;
+  /** false — поле не попадает в block.props при save (служебные поля, кнопки импорта) */
+  persist?: boolean;
   /**
    * Условное отображение поля: поле показывается только если другое поле имеет определенное значение
    * Используется только в Vue версии
@@ -202,6 +271,7 @@ export interface IFormFieldConfig {
   placeholder?: string;
   defaultValue?: unknown;
   options?: { value: string | number; label: string; disabled?: boolean }[];
+  optionsFrom?: IOptionsFromConfig;
   rules?: IValidationRule[];
   multiple?: boolean;
   spacingConfig?: ISpacingFieldConfig;
@@ -209,8 +279,11 @@ export interface IFormFieldConfig {
   apiSelectConfig?: IApiSelectConfig;
   customFieldConfig?: ICustomFieldConfig;
   fileUploadConfig?: IFileUploadConfig;
+  fileImportConfig?: IFileImportConfig;
   blockAnchorConfig?: IBlockAnchorConfig;
   matrixTableConfig?: IMatrixTableFieldConfig;
+  /** false — поле не попадает в block.props при save (служебные поля, кнопки импорта) */
+  persist?: boolean;
   /**
    * Условное отображение поля: поле показывается только если другое поле имеет определенное значение
    * Используется только в Vue версии

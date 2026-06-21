@@ -1,4 +1,4 @@
-import type { ICustomFieldRendererRegistry } from '../../core/ports/CustomFieldRenderer';
+import type { ICustomFieldFormScope, ICustomFieldRendererRegistry } from '../../core/ports/CustomFieldRenderer';
 import type { IFormFieldConfig, IMatrixTableValue, IRepeaterItemFieldConfig } from '../../core/types/form';
 import type { ApiSelectUseCase } from '../../core/use-cases/ApiSelectUseCase';
 import type { IRepeaterRef } from '../../shared/services/ValidationErrorHandler';
@@ -11,8 +11,10 @@ import {
   isFieldVisible,
 } from '../../utils/formFieldHelpers';
 import type { ISpacingData } from '../../utils/spacingHelpers';
+import { createCustomFieldFormScope } from '../../utils/formScopeHelpers';
 import { ApiSelectField } from './ApiSelectField';
 import { CustomField } from './CustomField';
+import { FileImportField } from './FileImportField';
 import { FormField } from './form-fields';
 import { ImageUploadField } from './ImageUploadField';
 import { RepeaterControl } from './RepeaterControl';
@@ -27,6 +29,7 @@ const SPECIAL_FIELD_TYPES = new Set([
   'matrix-table',
   'api-select',
   'custom',
+  'file-import',
   'image',
   'file',
 ]);
@@ -40,6 +43,7 @@ interface IBlockFormFieldsProps {
   customFieldRendererRegistry?: ICustomFieldRendererRegistry;
   onFieldChange: (fieldName: string, value: unknown) => void;
   onRepeaterReady?: (fieldName: string, renderer: IRepeaterRef) => void;
+  topLevelFormScope?: ICustomFieldFormScope;
 }
 
 export function BlockFormFields({
@@ -51,7 +55,12 @@ export function BlockFormFields({
   customFieldRendererRegistry,
   onFieldChange,
   onRepeaterReady,
+  topLevelFormScope,
 }: IBlockFormFieldsProps) {
+  const formScope =
+    topLevelFormScope ??
+    createCustomFieldFormScope(formData, (name, value) => onFieldChange(name, value));
+
   const groupedFields = groupFormFields(fields);
 
   const renderSpecialField = (field: IFormFieldConfig) => {
@@ -102,6 +111,8 @@ export function BlockFormFields({
           getCustomFieldRestrictionMessage={() =>
             'Зарегистрируйте customFieldRendererRegistry для использования кастомных полей.'
           }
+          blockFormData={formData}
+          setBlockField={(name, value) => onFieldChange(name, value)}
           onChange={nextValue => onFieldChange(field.field, nextValue)}
           onRendererReady={onRepeaterReady}
         />
@@ -157,7 +168,19 @@ export function BlockFormFields({
           formErrors={formErrors}
           customFieldRendererRegistry={customFieldRendererRegistry}
           isFieldRequired={isFieldRequired}
+          formScope={formScope}
           onChange={nextValue => onFieldChange(field.field, nextValue)}
+        />
+      );
+    }
+
+    if (field.type === 'file-import' && field.fileImportConfig) {
+      return (
+        <FileImportField
+          label={field.label}
+          error={error}
+          fileImportConfig={field.fileImportConfig}
+          formScope={formScope}
         />
       );
     }
@@ -206,6 +229,7 @@ export function BlockFormFields({
                       ? `${CSS_CLASSES.FORM_GROUP} ${CSS_CLASSES.ERROR}`
                       : CSS_CLASSES.FORM_GROUP
                   }
+                  formData={formData}
                   onChange={value => onFieldChange(dependentField.field, value)}
                 >
                   {renderSpecialField(dependentField)}
@@ -237,6 +261,7 @@ export function BlockFormFields({
                 ? `${CSS_CLASSES.FORM_GROUP} ${CSS_CLASSES.ERROR}`
                 : CSS_CLASSES.FORM_GROUP
             }
+            formData={formData}
             onChange={value => onFieldChange(field.field, value)}
           >
             {specialField}

@@ -12,7 +12,9 @@ import LinkBlock from './components/blocks/LinkBlock'
 import ToggleRepeaterBlock from './components/blocks/ToggleRepeaterBlock'
 import NestedRepeaterBlock from './components/blocks/NestedRepeaterBlock'
 import TableBlock from './components/blocks/TableBlock'
+import { FormFeaturesDemoBlock } from './components/FormFeaturesDemoBlock'
 import { createTableBlockConfig } from '../../shared/tableBlockDefaults.js'
+import { createFormFeaturesDemoBlockConfig } from '../../shared/formFeaturesDemoBlock.js'
 import NewsListBlock from './components/blocks/NewsListBlock'
 import RichCardListBlock from './components/blocks/RichCardListBlock'
 import RichTextBlock from './components/blocks/RichTextBlock'
@@ -1445,6 +1447,11 @@ export const blockConfigs = {
         }
       }
     ]
-  }
+  },
+
+  formFeaturesDemo: createFormFeaturesDemoBlockConfig({
+    component: FormFeaturesDemoBlock,
+    framework: 'react',
+  }),
 }
 

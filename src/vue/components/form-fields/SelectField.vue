@@ -24,6 +24,7 @@ interface IOption {
   value: string | number;
   label: string;
   disabled?: boolean;
+  group?: string;
 }
 
 interface Props {
@@ -60,6 +61,7 @@ const dropdownOptions = computed(() => {
     value: option.value,
     label: option.label,
     disabled: option.disabled ?? false,
+    group: option.group,
   }));
 });
 

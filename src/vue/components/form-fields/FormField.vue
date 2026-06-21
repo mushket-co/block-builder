@@ -79,7 +79,7 @@
       :placeholder="field.placeholder"
       :required="required"
       :error="error"
-      :options="field.options || []"
+      :options="resolvedSelectOptions"
       :multiple="field.multiple ?? false"
       :show-label="showLabel"
       @update:model-value="handleUpdate"
@@ -136,6 +136,8 @@
 <script setup lang="ts">
 import type { IFormFieldConfig } from '../../../core/types/form';
 import { CSS_CLASSES } from '../../../utils/constants';
+import { resolveDynamicSelectOptions } from '../../../utils/resolveDynamicSelectOptions';
+import { computed } from 'vue';
 import ImageUploadField from '../ImageUploadField.vue';
 import BlockAnchorField from '../BlockAnchorField.vue';
 import CheckboxField from './CheckboxField.vue';
@@ -155,16 +157,24 @@ interface Props {
   showLabel?: boolean;
   containerClass?: string;
   fieldPath?: string;
+  formData?: Record<string, unknown>;
+  itemData?: Record<string, unknown>;
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   modelValue: undefined,
   required: false,
   error: '',
   showLabel: true,
   containerClass: '',
   fieldPath: undefined,
+  formData: () => ({}),
+  itemData: undefined,
 });
+
+const resolvedSelectOptions = computed(() =>
+  resolveDynamicSelectOptions(props.field, props.formData || {}, props.itemData)
+);
 
 const emit = defineEmits<{
   'update:modelValue': [value: any];

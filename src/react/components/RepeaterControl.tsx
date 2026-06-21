@@ -1,6 +1,9 @@
 import { useEffect, useMemo } from 'react';
 
-import type { ICustomFieldRendererRegistry } from '../../core/ports/CustomFieldRenderer';
+import type {
+  ICustomFieldFormScope,
+  ICustomFieldRendererRegistry,
+} from '../../core/ports/CustomFieldRenderer';
 import type { IRepeaterItemFieldConfig } from '../../core/types/form';
 import type { ApiSelectUseCase } from '../../core/use-cases/ApiSelectUseCase';
 import type { IRepeaterRef } from '../../shared/services/ValidationErrorHandler';
@@ -37,6 +40,8 @@ export interface IRepeaterControlProps {
   nestingDepth?: number;
   maxNestingDepth?: number;
   parentFieldPath?: string;
+  blockFormData?: Record<string, unknown>;
+  setBlockField?: (name: string, value: unknown) => void;
   onChange: (value: unknown[]) => void;
   onRendererReady?: (fieldName: string, renderer: IRepeaterRef) => void;
 }
@@ -64,6 +69,8 @@ export function RepeaterControl({
   nestingDepth = 0,
   maxNestingDepth = 2,
   parentFieldPath = '',
+  blockFormData = {},
+  setBlockField,
   onChange,
   onRendererReady,
 }: IRepeaterControlProps) {
@@ -196,6 +203,8 @@ export function RepeaterControl({
                   getCustomFieldRestrictionMessage={getCustomFieldRestrictionMessage}
                   nestingDepth={nestingDepth}
                   maxNestingDepth={maxNestingDepth}
+                  blockFormData={blockFormData}
+                  setBlockField={setBlockField}
                   NestedRepeaterControl={RepeaterControl}
                   getFieldId={repeater.getFieldId}
                   isFieldRequired={repeater.isFieldRequired}

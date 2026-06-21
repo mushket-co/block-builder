@@ -17,6 +17,7 @@ import {
 } from '../../shared/services/ValidationErrorHandler';
 import { addSpacingFieldToFields } from '../../utils/blockSpacingHelpers';
 import { resolveFormFieldDefaultValue } from '../../utils/formFieldDefaults';
+import { stripNonPersistedFields } from '../../utils/stripNonPersistedFields';
 import { countValidationErrors } from '../../utils/formErrorHelpers';
 import { isFieldVisible } from '../../utils/formFieldHelpers';
 import { ReactiveFormValidationTracker } from '../../utils/reactiveFormValidation';
@@ -174,13 +175,14 @@ export function useBlockForm({
   const resolvePropsToSave = useCallback(
     async (
       mode: 'create' | 'edit',
-      blockType: { formHooks?: IBlockFormHooks } | null,
+      blockType: { formHooks?: IBlockFormHooks; fields?: unknown[] } | null,
       blockId: TBlockId | null,
-      currentFormData: Record<string, unknown>
+      currentFormData: Record<string, unknown>,
+      fields: ReturnType<typeof addSpacingFieldToFields>
     ): Promise<Record<string, unknown> | null> => {
       const hooks = blockType?.formHooks;
       if (!hooks?.onBeforeSave) {
-        return { ...currentFormData };
+        return stripNonPersistedFields({ ...currentFormData }, fields);
       }
 
       try {
@@ -194,7 +196,7 @@ export function useBlockForm({
           return null;
         }
 
-        return result?.props ?? { ...currentFormData };
+        return stripNonPersistedFields(result?.props ?? { ...currentFormData }, fields);
       } catch (error) {
         alert(`Ошибка сохранения: ${error instanceof Error ? error.message : String(error)}`);
         return null;
@@ -291,7 +293,8 @@ export function useBlockForm({
         'create',
         currentBlockType,
         null,
-        formData
+        formData,
+        currentBlockFields
       );
       if (!propsToSave) {
         return null;
@@ -360,7 +363,8 @@ export function useBlockForm({
         'edit',
         currentBlockType,
         currentBlockId,
-        formData
+        formData,
+        currentBlockFields
       );
       if (!propsToSave) {
         return false;

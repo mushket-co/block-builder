@@ -43,10 +43,16 @@ export function toRepeaterFormFieldConfig(field: IRepeaterItemFieldConfig): IFor
     placeholder: field.placeholder,
     defaultValue: field.defaultValue,
     options: field.options,
+    optionsFrom: field.optionsFrom,
     rules: field.rules,
     apiSelectConfig: field.apiSelectConfig,
     customFieldConfig: field.customFieldConfig,
     fileUploadConfig: field.fileUploadConfig,
+    fileImportConfig: field.fileImportConfig,
+    blockAnchorConfig: field.blockAnchorConfig,
+    repeaterConfig: field.repeaterConfig,
+    dependsOn: field.dependsOn,
+    persist: field.persist,
     multiple: field.multiple,
   };
 }

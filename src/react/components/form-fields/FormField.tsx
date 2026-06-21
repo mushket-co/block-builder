@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react';
+import { useMemo } from 'react';
 
 import type { IFormFieldConfig } from '../../../core/types/form';
 import { CSS_CLASSES } from '../../../utils/constants';
+import { resolveDynamicSelectOptions } from '../../../utils/resolveDynamicSelectOptions';
 import { ImageUploadField } from '../ImageUploadField';
 import { BlockAnchorField } from '../BlockAnchorField';
 import { CheckboxField } from './CheckboxField';
@@ -21,6 +23,8 @@ export interface IFormFieldProps {
   showLabel?: boolean;
   containerClass?: string;
   fieldPath?: string;
+  formData?: Record<string, unknown>;
+  itemData?: Record<string, unknown>;
   onChange: (value: unknown) => void;
   children?: ReactNode;
 }
@@ -34,9 +38,16 @@ export function FormField({
   showLabel = true,
   containerClass,
   fieldPath,
+  formData = {},
+  itemData,
   onChange,
   children,
 }: IFormFieldProps) {
+  const resolvedSelectOptions = useMemo(
+    () => resolveDynamicSelectOptions(field, formData, itemData),
+    [field, formData, itemData]
+  );
+
   const renderField = () => {
     switch (field.type) {
       case 'text':
@@ -132,7 +143,7 @@ export function FormField({
             placeholder={field.placeholder}
             required={required}
             error={error}
-            options={field.options || []}
+            options={resolvedSelectOptions}
             multiple={field.multiple ?? false}
             showLabel={showLabel}
             onChange={onChange}

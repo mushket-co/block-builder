@@ -9,6 +9,7 @@ import {
 import { loadBlocksFromLocalStorage, saveBlocksToLocalStorage } from '../../shared/blockStorage'
 import { blockConfigs } from './block-config'
 import { WysiwygFieldRenderer } from './customFieldRenderers/WysiwygFieldRenderer'
+import { FormScopeDemoFieldRenderer } from '../../shared/formFeaturesDemoFieldRenderer.js'
 
 export default function App() {
   const blockManagementUseCase = useMemo(() => createBlockManagementUseCase(), [])
@@ -20,6 +21,7 @@ export default function App() {
   const customFieldRendererRegistry = useMemo(() => {
     const registry = new CustomFieldRendererRegistry()
     registry.register(new WysiwygFieldRenderer())
+    registry.register(new FormScopeDemoFieldRenderer())
     return registry
   }, [])
 

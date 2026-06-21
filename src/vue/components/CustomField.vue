@@ -8,6 +8,7 @@
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
+import type { ICustomFieldFormScope } from '../../core/ports/CustomFieldRenderer';
 import type { ICustomFieldRendererRegistry } from '../../core/ports/CustomFieldRenderer';
 import { CSS_CLASSES } from '../../utils/constants';
 import { getFieldError } from '../../utils/formFieldHelpers';
@@ -18,6 +19,7 @@ interface Props {
   formErrors?: Record<string, string[]>;
   customFieldRendererRegistry?: ICustomFieldRendererRegistry;
   isFieldRequired?: (field: any) => boolean;
+  formScope?: ICustomFieldFormScope;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -25,6 +27,7 @@ const props = withDefaults(defineProps<Props>(), {
   formErrors: () => ({}),
   customFieldRendererRegistry: undefined,
   isFieldRequired: () => false,
+  formScope: undefined,
 });
 
 const emit = defineEmits<{
@@ -65,6 +68,7 @@ const initializeRenderer = async () => {
     required: props.isFieldRequired(props.field),
     options: props.field.customFieldConfig?.options,
     error: getValidationError() || undefined,
+    formScope: props.formScope,
     onChange: (newValue: any) => {
       nextTick(() => {
         emit('update:modelValue', newValue);

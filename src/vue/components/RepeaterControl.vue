@@ -88,12 +88,14 @@
                       ? getFieldErrors(index, dependentField.field)[0]
                       : ''
                   "
-                  :container-class="
-                    hasFieldError(index, dependentField.field)
-                      ? `${CSS_CLASSES.FORM_GROUP} ${CSS_CLASSES.ERROR}`
-                      : CSS_CLASSES.FORM_GROUP
-                  "
-                  @update:model-value="updateItemField(index, dependentField.field, $event)"
+              :container-class="
+                hasFieldError(index, dependentField.field)
+                  ? `${CSS_CLASSES.FORM_GROUP} ${CSS_CLASSES.ERROR}`
+                  : CSS_CLASSES.FORM_GROUP
+              "
+              :form-data="blockFormDataValue"
+              :item-data="item"
+              @update:model-value="updateItemField(index, dependentField.field, $event)"
                 >
                   <template
                     #default="{ field: slotField, modelValue: slotModelValue, error: slotError }"
@@ -135,6 +137,8 @@
                   ? `${CSS_CLASSES.FORM_GROUP} ${CSS_CLASSES.ERROR}`
                   : CSS_CLASSES.FORM_GROUP
               "
+              :form-data="blockFormDataValue"
+              :item-data="item"
               @update:model-value="updateItemField(index, fieldGroup.field.field, $event)"
             >
               <template
@@ -167,10 +171,19 @@
                     :form-errors="formErrors"
                     :custom-field-renderer-registry="customFieldRendererRegistryValue"
                     :is-field-required="isFieldRequired"
+                    :form-scope="buildFormScopeForItem(index)"
                     @update:model-value="updateItemField(index, slotField.field, $event)"
                   />
                   <div v-else :class="CSS_CLASSES.BB_WARNING_BOX">⚠️ {{ customFieldRestrictionMessage }}</div>
                 </template>
+
+                <FileImportField
+                  v-else-if="slotField.type === 'file-import' && slotField.fileImportConfig"
+                  :label="slotField.label"
+                  :error="slotError"
+                  :file-import-config="slotField.fileImportConfig"
+                  :form-scope="buildFormScopeForItem(index)"
+                />
 
                 <ImageUploadField
                   v-else-if="slotField.type === 'image' || slotField.type === 'file'"
@@ -208,6 +221,8 @@
                   :custom-field-renderer-registry="customFieldRendererRegistryValue"
                   :is-custom-field-available="isCustomFieldAvailable"
                   :get-custom-field-restriction-message="getCustomFieldRestrictionMessage"
+                  :block-form-data="blockFormDataValue"
+                  :set-block-field="setBlockFieldValue"
                   :nesting-depth="nestingDepth + 1"
                   :max-nesting-depth="slotField.repeaterConfig?.maxNestingDepth ?? maxNestingDepth"
                   :parent-field-path="
@@ -265,8 +280,10 @@ import {
   isAutoRepeaterItemIdField,
   isReadonlyRepeaterItemField,
 } from '../../utils/repeaterItemId';
+import { createRepeaterFormScope } from '../../utils/formScopeHelpers';
 import ApiSelectField from './ApiSelectField.vue';
 import CustomField from './CustomField.vue';
+import FileImportField from './FileImportField.vue';
 import { FormField } from './form-fields';
 import ImageUploadField from './ImageUploadField.vue';
 import ToggleControl from './ToggleControl.vue';
@@ -277,6 +294,7 @@ export default {
     FormField,
     ApiSelectField,
     CustomField,
+    FileImportField,
     ImageUploadField,
     ToggleControl,
     Icon,
@@ -391,6 +409,16 @@ export default {
     parentFieldPath: {
       type: String,
       default: '',
+    },
+
+    blockFormData: {
+      type: Object,
+      default: () => ({}),
+    },
+
+    setBlockField: {
+      type: Function,
+      default: null,
     },
   },
 
@@ -531,10 +559,16 @@ export default {
         placeholder: field.placeholder,
         defaultValue: field.defaultValue,
         options: field.options,
+        optionsFrom: field.optionsFrom,
         rules: field.rules,
         apiSelectConfig: field.apiSelectConfig,
         customFieldConfig: field.customFieldConfig,
         fileUploadConfig: field.fileUploadConfig,
+        fileImportConfig: field.fileImportConfig,
+        blockAnchorConfig: field.blockAnchorConfig,
+        repeaterConfig: field.repeaterConfig,
+        dependsOn: field.dependsOn,
+        persist: field.persist,
         multiple: field.multiple,
       };
     };
@@ -549,6 +583,28 @@ export default {
 
     const apiSelectUseCaseValue = computed(() => props.apiSelectUseCase);
     const customFieldRendererRegistryValue = computed(() => props.customFieldRendererRegistry);
+    const blockFormDataValue = computed(() => props.blockFormData || {});
+    const setBlockFieldValue = (name, value) => {
+      if (typeof props.setBlockField === 'function') {
+        props.setBlockField(name, value);
+      }
+    };
+
+    const buildFormScopeForItem = index => {
+      const item = items.value[index];
+      if (!item) {
+        return undefined;
+      }
+
+      return createRepeaterFormScope(
+        blockFormDataValue.value,
+        setBlockFieldValue,
+        props.fieldName,
+        index,
+        item,
+        (field, value) => updateItemField(index, field, value)
+      );
+    };
     const formErrors = computed(() => props.errors);
 
     const emitUpdate = () => {
@@ -774,6 +830,9 @@ export default {
       isRepeaterFieldVisible,
       getGroupedFieldsForItem,
       CSS_CLASSES,
+      buildFormScopeForItem,
+      blockFormDataValue,
+      setBlockFieldValue,
     };
   },
 };

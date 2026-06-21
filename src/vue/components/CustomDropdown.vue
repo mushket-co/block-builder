@@ -120,26 +120,36 @@
                 <ul :class="CSS_CLASSES.BB_DROPDOWN_LIST">
                   <li
                     v-for="(option, index) in options"
-                    :key="option.value"
-                    :class="[
-                      CSS_CLASSES.BB_DROPDOWN_OPTION,
-                      {
-                        [CSS_CLASSES.BB_DROPDOWN_OPTION_SELECTED]: isOptionSelected(option.value),
-                        [CSS_CLASSES.BB_DROPDOWN_OPTION_DISABLED]: option.disabled,
-                        [CSS_CLASSES.BB_DROPDOWN_OPTION_ACTIVE]: highlightedIndex === index,
-                      },
-                    ]"
-                    role="option"
-                    :aria-selected="isOptionSelected(option.value)"
-                    @click="onOptionClick(option)"
-                    @mouseenter="highlight(index)"
+                    :key="`${option.group || 'opt'}-${option.value}`"
+                    role="none"
                   >
-                    <slot name="option" :option="option" :selected="isOptionSelected(option.value)">
-                      <span :class="CSS_CLASSES.BB_DROPDOWN_OPTION_LABEL">{{ option.label }}</span>
-                      <span v-if="isOptionSelected(option.value)" :class="CSS_CLASSES.BB_DROPDOWN_OPTION_CHECK">
-                        <Icon name="check" :width="14" :height="14" />
-                      </span>
-                    </slot>
+                    <div
+                      v-if="option.group && (index === 0 || options[index - 1]?.group !== option.group)"
+                      :class="CSS_CLASSES.BB_DROPDOWN_GROUP"
+                    >
+                      {{ option.group }}
+                    </div>
+                    <div
+                      :class="[
+                        CSS_CLASSES.BB_DROPDOWN_OPTION,
+                        {
+                          [CSS_CLASSES.BB_DROPDOWN_OPTION_SELECTED]: isOptionSelected(option.value),
+                          [CSS_CLASSES.BB_DROPDOWN_OPTION_DISABLED]: option.disabled,
+                          [CSS_CLASSES.BB_DROPDOWN_OPTION_ACTIVE]: highlightedIndex === index,
+                        },
+                      ]"
+                      role="option"
+                      :aria-selected="isOptionSelected(option.value)"
+                      @click="onOptionClick(option)"
+                      @mouseenter="highlight(index)"
+                    >
+                      <slot name="option" :option="option" :selected="isOptionSelected(option.value)">
+                        <span :class="CSS_CLASSES.BB_DROPDOWN_OPTION_LABEL">{{ option.label }}</span>
+                        <span v-if="isOptionSelected(option.value)" :class="CSS_CLASSES.BB_DROPDOWN_OPTION_CHECK">
+                          <Icon name="check" :width="14" :height="14" />
+                        </span>
+                      </slot>
+                    </div>
                   </li>
                 </ul>
               </template>
@@ -169,6 +179,7 @@ interface IDropdownOption {
   label: string;
   disabled?: boolean;
   meta?: Record<string, unknown>;
+  group?: string;
 }
 
 export type TDropdownValue = string | number | (string | number)[] | null;

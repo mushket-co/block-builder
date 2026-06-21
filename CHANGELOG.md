@@ -6,6 +6,38 @@
 и проект следует [Semantic Versioning](https://semver.org/lang/ru/).
 
 
+## [1.8.0] - 2026-06-21
+
+### Добавлено
+
+#### `formScope` в `ICustomFieldContext` (Vue/React)
+
+- Типы `ICustomFieldFormScope`, `ICustomFieldRepeaterScope` — доступ custom field к `formData`, `setField`, контексту repeater (`updateItemField`)
+- `CustomField.vue` / `CustomField.tsx` — прокидывание `formScope` в renderer
+- `RepeaterControl` — `blockFormData` + `setBlockField` для nested custom fields и `file-import`
+
+#### Dynamic options для `select` (`optionsFrom`)
+
+- `IOptionsFromConfig` в конфиге поля: `source`, `when`, `map` с поддержкой групп (`IOptionsFromGroup`)
+- `resolveDynamicSelectOptions` — утилита резолва опций из другого поля формы
+- `CustomDropdown` (Vue/React) — заголовки групп (`group` на option)
+
+#### Поле `file-import`
+
+- Тип `file-import`, `IFileImportConfig` — UI загрузки, POST multipart, `onImport({ data, formScope, mergeStats })`
+- **`fileImportConfig.merge`** — декларативный append/replace с **`dedupeBy`** (напр. `title`, `name`)
+- Утилиты `mergeImportedArray`, `applyFileImportMergeRules`, `formatFileImportMergeMessage` — экспорт из `core`
+- `FileImportField` (Vue/React); не сохраняется в `block.props` (implicit `persist: false`); notice после импорта
+
+#### `persist: false`
+
+- Поля с `persist: false` (и `file-import`) исключаются из `block.props` при save
+- `stripNonPersistedFields` — рекурсивно для repeater; интеграция в `resolvePropsToSave` (Vue/React)
+
+### Документация
+
+- Экспорт новых типов из `core.ts`
+
 ## [1.7.0] - 2026-06-20
 
 ### Добавлено

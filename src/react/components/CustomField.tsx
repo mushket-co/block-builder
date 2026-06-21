@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 
-import type { ICustomFieldRendererRegistry } from '../../core/ports/CustomFieldRenderer';
+import type {
+  ICustomFieldFormScope,
+  ICustomFieldRendererRegistry,
+} from '../../core/ports/CustomFieldRenderer';
 import type { IFormFieldConfig } from '../../core/types/form';
 import { CSS_CLASSES } from '../../utils/constants';
 import { getFieldError } from '../../utils/formFieldHelpers';
@@ -18,6 +21,7 @@ interface ICustomFieldProps {
   formErrors?: Record<string, string[]>;
   customFieldRendererRegistry?: ICustomFieldRendererRegistry;
   isFieldRequired?: (field: IFormFieldConfig) => boolean;
+  formScope?: ICustomFieldFormScope;
   onChange: (value: unknown) => void;
 }
 
@@ -27,6 +31,7 @@ export function CustomField({
   formErrors = {},
   customFieldRendererRegistry,
   isFieldRequired,
+  formScope,
   onChange,
 }: ICustomFieldProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -83,6 +88,7 @@ export function CustomField({
         required: isFieldRequiredRef.current?.(currentField) ?? false,
         options: currentField.customFieldConfig?.options,
         error: fieldError || undefined,
+        formScope,
         onChange: (newValue: unknown) => {
           onChangeRef.current(newValue);
         },

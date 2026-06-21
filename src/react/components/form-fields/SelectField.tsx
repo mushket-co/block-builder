@@ -7,6 +7,7 @@ export interface ISelectOption {
   value: string | number;
   label: string;
   disabled?: boolean;
+  group?: string;
 }
 
 export interface ISelectFieldProps {
@@ -40,6 +41,7 @@ export function SelectField({
         value: option.value,
         label: option.label,
         disabled: option.disabled ?? false,
+        group: option.group,
       })),
     [options]
   );

@@ -201,6 +201,17 @@
     color: var(--bb-color-primary);
   }
 
+  &__group {
+    padding: 6px 12px 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--bb-text-muted);
+    user-select: none;
+    pointer-events: none;
+  }
+
   &--open &__control {
     border-color: var(--bb-color-primary);
     box-shadow: 0 0 0 2px var(--bb-color-primary-hover);

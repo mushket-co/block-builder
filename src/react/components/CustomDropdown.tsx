@@ -21,6 +21,7 @@ export interface IDropdownOption {
   label: string;
   disabled?: boolean;
   meta?: Record<string, unknown>;
+  group?: string;
 }
 
 export type TDropdownValue = string | number | (string | number)[] | null;
@@ -829,34 +830,41 @@ export const CustomDropdown = forwardRef<ICustomDropdownRef, ICustomDropdownProp
           <ul className={CSS_CLASSES.BB_DROPDOWN_LIST}>
             {options.map((option, index) => {
               const selected = isOptionSelected(option.value);
+              const showGroupHeader =
+                Boolean(option.group) &&
+                (index === 0 || options[index - 1]?.group !== option.group);
               return (
-                <li
-                  key={option.value}
-                  className={[
-                    CSS_CLASSES.BB_DROPDOWN_OPTION,
-                    selected ? CSS_CLASSES.BB_DROPDOWN_OPTION_SELECTED : '',
-                    option.disabled ? CSS_CLASSES.BB_DROPDOWN_OPTION_DISABLED : '',
-                    highlightedIndex === index ? CSS_CLASSES.BB_DROPDOWN_OPTION_ACTIVE : '',
-                  ]
-                    .filter(Boolean)
-                    .join(' ')}
-                  role="option"
-                  aria-selected={selected}
-                  onClick={() => onOptionClick(option)}
-                  onMouseEnter={() => highlight(index)}
-                >
-                  {renderOption ? (
-                    renderOption(option, selected)
-                  ) : (
-                    <>
-                      <span className={CSS_CLASSES.BB_DROPDOWN_OPTION_LABEL}>{option.label}</span>
-                      {selected ? (
-                        <span className={CSS_CLASSES.BB_DROPDOWN_OPTION_CHECK}>
-                          <Icon name="check" width={14} height={14} />
-                        </span>
-                      ) : null}
-                    </>
-                  )}
+                <li key={`${option.group || 'opt'}-${String(option.value)}`} role="none">
+                  {showGroupHeader ? (
+                    <div className={CSS_CLASSES.BB_DROPDOWN_GROUP}>{option.group}</div>
+                  ) : null}
+                  <div
+                    className={[
+                      CSS_CLASSES.BB_DROPDOWN_OPTION,
+                      selected ? CSS_CLASSES.BB_DROPDOWN_OPTION_SELECTED : '',
+                      option.disabled ? CSS_CLASSES.BB_DROPDOWN_OPTION_DISABLED : '',
+                      highlightedIndex === index ? CSS_CLASSES.BB_DROPDOWN_OPTION_ACTIVE : '',
+                    ]
+                      .filter(Boolean)
+                      .join(' ')}
+                    role="option"
+                    aria-selected={selected}
+                    onClick={() => onOptionClick(option)}
+                    onMouseEnter={() => highlight(index)}
+                  >
+                    {renderOption ? (
+                      renderOption(option, selected)
+                    ) : (
+                      <>
+                        <span className={CSS_CLASSES.BB_DROPDOWN_OPTION_LABEL}>{option.label}</span>
+                        {selected ? (
+                          <span className={CSS_CLASSES.BB_DROPDOWN_OPTION_CHECK}>
+                            <Icon name="check" width={14} height={14} />
+                          </span>
+                        ) : null}
+                      </>
+                    )}
+                  </div>
                 </li>
               );
             })}

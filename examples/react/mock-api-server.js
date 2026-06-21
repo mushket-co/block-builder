@@ -3,6 +3,8 @@
  * Эмулирует бэкенд API с новостями/статьями
  */
 
+import { handleDemoParseXlsxRequest } from '../shared/formFeaturesMockApi.js'
+
 // Моковые данные - список новостей
 const mockNews = [
   { id: 1, name: 'Новость 1: Запуск нового продукта', title: 'Запуск нового продукта', date: '2025-01-15' },
@@ -55,6 +57,13 @@ function handleNewsSearch(searchQuery, page = 1, limit = 10) {
  * Регистрация эндпоинта для dev-server Vite
  */
 export function setupMockApi(app) {
+  app.use((req, res, next) => {
+    if (!req.url.startsWith('/api/demo/parse-xlsx')) {
+      return next()
+    }
+    handleDemoParseXlsxRequest(req, res)
+  })
+
   // Vite middleware - используем обработчик для всех запросов
   app.use((req, res, next) => {
     // Обработка только API запросов (новости и статьи)
