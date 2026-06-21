@@ -136,8 +136,12 @@
 <script setup lang="ts">
 import type { IFormFieldConfig } from '../../../core/types/form';
 import { CSS_CLASSES } from '../../../utils/constants';
+import {
+  areSelectValuesEqual,
+  pruneSelectValueByOptions,
+} from '../../../utils/pruneOptionsFromDependents';
 import { resolveDynamicSelectOptions } from '../../../utils/resolveDynamicSelectOptions';
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import ImageUploadField from '../ImageUploadField.vue';
 import BlockAnchorField from '../BlockAnchorField.vue';
 import CheckboxField from './CheckboxField.vue';
@@ -174,6 +178,26 @@ const props = withDefaults(defineProps<Props>(), {
 
 const resolvedSelectOptions = computed(() =>
   resolveDynamicSelectOptions(props.field, props.formData || {}, props.itemData)
+);
+
+watch(
+  resolvedSelectOptions,
+  options => {
+    if (props.field.type !== 'select' || !props.field.optionsFrom) {
+      return;
+    }
+
+    const prunedValue = pruneSelectValueByOptions(
+      props.modelValue,
+      options,
+      props.field.multiple ?? false
+    );
+
+    if (!areSelectValuesEqual(props.modelValue, prunedValue, props.field.multiple ?? false)) {
+      emit('update:modelValue', prunedValue);
+    }
+  },
+  { deep: true, immediate: true }
 );
 
 const emit = defineEmits<{

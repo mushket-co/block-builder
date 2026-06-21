@@ -537,6 +537,7 @@ import { copyToClipboard } from '../../utils/copyToClipboard';
 import { countValidationErrors } from '../../utils/formErrorHelpers';
 import { createCustomFieldFormScope } from '../../utils/formScopeHelpers';
 import { stripNonPersistedFields } from '../../utils/stripNonPersistedFields';
+import { pruneOptionsFromDependents } from '../../utils/pruneOptionsFromDependents';
 import { resolveFormFieldDefaultValue } from '../../utils/formFieldDefaults';
 import {
   applyFormErrors,
@@ -854,11 +855,17 @@ const revalidateIfTouched = (): void => {
 
 const updateFormField = (fieldName: string, value: unknown): void => {
   formData[fieldName] = value;
+  if (currentBlockFields.value.length > 0) {
+    pruneOptionsFromDependents(formData, currentBlockFields.value, fieldName);
+  }
   revalidateIfTouched();
 };
 
 const setBlockField = (name: string, value: unknown): void => {
   formData[name] = value;
+  if (currentBlockFields.value.length > 0) {
+    pruneOptionsFromDependents(formData, currentBlockFields.value, name);
+  }
   revalidateIfTouched();
 };
 

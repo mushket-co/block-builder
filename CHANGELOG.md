@@ -6,6 +6,14 @@
 и проект следует [Semantic Versioning](https://semver.org/lang/ru/).
 
 
+## [1.8.1] - 2026-06-21
+
+### Исправлено
+
+- **RepeaterControl (Vue/React):** внутри `ToggleControl` в item repeater теперь рендерятся все типы зависимых полей (repeater, custom, api-select, file-import), а не только image/file
+- **`optionsFrom`:** при изменении поля-источника значения зависимых `select` (в т.ч. nested repeater + `multiple`) автоматически очищаются от удалённых опций
+
+
 ## [1.8.0] - 2026-06-21
 
 ### Добавлено

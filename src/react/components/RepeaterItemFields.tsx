@@ -273,7 +273,16 @@ export function RepeaterItemFields(props: IRepeaterItemFieldsProps) {
                   formData={props.blockFormData}
                   itemData={item}
                   onChange={value => updateItemField(itemIndex, dependentField.field, value)}
-                />
+                >
+                  {renderSingleFieldSlot(
+                    props,
+                    dependentField as IRepeaterItemFieldConfig,
+                    item[dependentField.field],
+                    hasFieldError(itemIndex, dependentField.field)
+                      ? getFieldErrors(itemIndex, dependentField.field)[0]
+                      : ''
+                  )}
+                </FormField>
               ))}
             </ToggleControl>
           );

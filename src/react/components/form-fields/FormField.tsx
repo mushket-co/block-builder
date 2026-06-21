@@ -1,8 +1,12 @@
 import type { ReactNode } from 'react';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 
 import type { IFormFieldConfig } from '../../../core/types/form';
 import { CSS_CLASSES } from '../../../utils/constants';
+import {
+  areSelectValuesEqual,
+  pruneSelectValueByOptions,
+} from '../../../utils/pruneOptionsFromDependents';
 import { resolveDynamicSelectOptions } from '../../../utils/resolveDynamicSelectOptions';
 import { ImageUploadField } from '../ImageUploadField';
 import { BlockAnchorField } from '../BlockAnchorField';
@@ -47,6 +51,22 @@ export function FormField({
     () => resolveDynamicSelectOptions(field, formData, itemData),
     [field, formData, itemData]
   );
+
+  useEffect(() => {
+    if (field.type !== 'select' || !field.optionsFrom) {
+      return;
+    }
+
+    const prunedValue = pruneSelectValueByOptions(
+      modelValue,
+      resolvedSelectOptions,
+      field.multiple ?? false
+    );
+
+    if (!areSelectValuesEqual(modelValue, prunedValue, field.multiple ?? false)) {
+      onChange(prunedValue);
+    }
+  }, [field, modelValue, onChange, resolvedSelectOptions]);
 
   const renderField = () => {
     switch (field.type) {

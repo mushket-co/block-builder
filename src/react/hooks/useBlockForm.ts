@@ -18,6 +18,7 @@ import {
 import { addSpacingFieldToFields } from '../../utils/blockSpacingHelpers';
 import { resolveFormFieldDefaultValue } from '../../utils/formFieldDefaults';
 import { stripNonPersistedFields } from '../../utils/stripNonPersistedFields';
+import { pruneOptionsFromDependents } from '../../utils/pruneOptionsFromDependents';
 import { countValidationErrors } from '../../utils/formErrorHelpers';
 import { isFieldVisible } from '../../utils/formFieldHelpers';
 import { ReactiveFormValidationTracker } from '../../utils/reactiveFormValidation';
@@ -82,6 +83,7 @@ export function useBlockForm({
     (fieldName: string, value: unknown) => {
       setFormData(prev => {
         const nextFormData = { ...prev, [fieldName]: value };
+        pruneOptionsFromDependents(nextFormData, currentBlockFields, fieldName);
         const nextErrors = validationTrackerRef.current.revalidateIfTouched(
           nextFormData,
           currentBlockFields,
