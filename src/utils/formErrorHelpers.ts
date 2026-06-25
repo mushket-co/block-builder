@@ -132,6 +132,22 @@ export function countValidationErrors(errors: Record<string, string[]>): number 
   return Object.values(errors).reduce((total, fieldErrors) => total + fieldErrors.length, 0);
 }
 
+function getDirectRepeaterItems(container: HTMLElement): HTMLElement[] {
+  const itemsContainer = container.querySelector(`.${CSS_CLASSES.REPEATER_CONTROL_ITEMS}`);
+
+  if (itemsContainer) {
+    return Array.from(itemsContainer.children).filter(
+      (child): child is HTMLElement =>
+        child instanceof HTMLElement && child.classList.contains(CSS_CLASSES.REPEATER_CONTROL_ITEM)
+    );
+  }
+
+  return Array.from(container.children).filter(
+    (child): child is HTMLElement =>
+      child instanceof HTMLElement && child.classList.contains(CSS_CLASSES.REPEATER_CONTROL_ITEM)
+  );
+}
+
 export function findFieldElement(
   containerElement: HTMLElement,
   errorInfo: IFirstErrorInfo
@@ -159,14 +175,14 @@ export function findFieldElement(
     return null;
   }
 
-  const repeaterItems = repeaterContainer.querySelectorAll(`.${CSS_CLASSES.REPEATER_CONTROL_ITEM}`);
+  const repeaterItems = getDirectRepeaterItems(repeaterContainer);
   const itemIndex = errorInfo.repeaterIndex || 0;
 
   if (itemIndex >= repeaterItems.length) {
     return null;
   }
 
-  const targetItem = repeaterItems[itemIndex] as HTMLElement;
+  const targetItem = repeaterItems[itemIndex];
   if (!targetItem) {
     return null;
   }
@@ -252,15 +268,13 @@ function findNestedRepeaterField(
         return null;
       }
 
-      const nestedItems = nestedRepeaterContainer.querySelectorAll(
-        `.${CSS_CLASSES.REPEATER_CONTROL_ITEM}`
-      );
+      const nestedItems = getDirectRepeaterItems(nestedRepeaterContainer);
 
       if (index >= nestedItems.length) {
         return null;
       }
 
-      currentContainer = nestedItems[index] as HTMLElement;
+      currentContainer = nestedItems[index];
     } else {
       if (currentContainer && i === pathParts.length - 1) {
         const fieldName = part;

@@ -13,6 +13,23 @@ export class ValidationErrorHandler {
 
   constructor(private repeaterRefs: Map<string, IRepeaterRef>) {}
 
+  private getDirectRepeaterItems(container: HTMLElement): HTMLElement[] {
+    const itemsContainer = container.querySelector(`.${CSS_CLASSES.REPEATER_CONTROL_ITEMS}`);
+
+    if (itemsContainer) {
+      return Array.from(itemsContainer.children).filter(
+        (child): child is HTMLElement =>
+          child instanceof HTMLElement &&
+          child.classList.contains(CSS_CLASSES.REPEATER_CONTROL_ITEM)
+      );
+    }
+
+    return Array.from(container.children).filter(
+      (child): child is HTMLElement =>
+        child instanceof HTMLElement && child.classList.contains(CSS_CLASSES.REPEATER_CONTROL_ITEM)
+    );
+  }
+
   cancelPending(): void {
     if (this.pendingTimeoutId !== null) {
       clearTimeout(this.pendingTimeoutId);
@@ -206,14 +223,12 @@ export class ValidationErrorHandler {
         return;
       }
 
-      const parentItems = parentRepeaterContainer.querySelectorAll(
-        `.${CSS_CLASSES.REPEATER_CONTROL_ITEM}`
-      );
+      const parentItems = this.getDirectRepeaterItems(parentRepeaterContainer);
       if (parentIndex >= parentItems.length) {
         return;
       }
 
-      const parentItem = parentItems[parentIndex] as HTMLElement;
+      const parentItem = parentItems[parentIndex];
       const nestedRepeaterContainer = parentItem.querySelector(
         `[data-field-name="${nestedFieldName}"]`
       ) as HTMLElement;
@@ -221,14 +236,12 @@ export class ValidationErrorHandler {
         return;
       }
 
-      const nestedItems = nestedRepeaterContainer.querySelectorAll(
-        `.${CSS_CLASSES.REPEATER_CONTROL_ITEM}`
-      );
+      const nestedItems = this.getDirectRepeaterItems(nestedRepeaterContainer);
       if (nestedIndex >= nestedItems.length) {
         return;
       }
 
-      const nestedItem = nestedItems[nestedIndex] as HTMLElement;
+      const nestedItem = nestedItems[nestedIndex];
       const isNestedCollapsed = nestedItem.classList.contains(
         CSS_CLASSES.REPEATER_CONTROL_ITEM_COLLAPSED
       );
