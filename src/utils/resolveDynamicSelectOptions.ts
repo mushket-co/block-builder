@@ -117,19 +117,3 @@ export function resolveDynamicSelectOptions(
 
   return options;
 }
-
-export function isDynamicSelectFieldVisible(
-  field: IFormFieldConfig | IRepeaterItemFieldConfig,
-  formData: Record<string, unknown>,
-  itemData?: Record<string, unknown>
-): boolean {
-  if (!isFieldVisible(field, formData, itemData)) {
-    return false;
-  }
-
-  if (!field.optionsFrom?.when) {
-    return true;
-  }
-
-  return evaluateOptionsFromWhen(field.optionsFrom.when, formData, itemData);
-}

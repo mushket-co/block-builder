@@ -4,32 +4,10 @@ import {
   extractApiSelectValueIds,
   isApiSelectStoredItem,
   isSameApiSelectModelValue,
-  normalizeApiSelectInitialValue,
   toApiSelectStoredValue,
 } from '../apiSelectValueHelpers';
 
 describe('apiSelectValueHelpers', () => {
-  test('normalizes initial value for single and multiple modes', () => {
-    expect(normalizeApiSelectInitialValue(undefined, false)).toBeNull();
-    expect(normalizeApiSelectInitialValue(undefined, true)).toEqual([]);
-    expect(normalizeApiSelectInitialValue({ id: 3, name: 'Третья' }, false)).toEqual({
-      id: 3,
-      name: 'Третья',
-    });
-    expect(
-      normalizeApiSelectInitialValue(
-        [
-          { id: 1, name: 'Первая' },
-          { id: 2, name: 'Вторая' },
-        ],
-        true
-      )
-    ).toEqual([
-      { id: 1, name: 'Первая' },
-      { id: 2, name: 'Вторая' },
-    ]);
-  });
-
   test('detects api-select stored item shape', () => {
     expect(isApiSelectStoredItem({ id: 5, name: 'News 5' })).toBe(true);
     expect(isApiSelectStoredItem({ id: 'abc' })).toBe(true);

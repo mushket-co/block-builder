@@ -10,7 +10,6 @@ import {
   partitionFilesForUpload,
   resolveUploadConfig,
   serializeUploadValue,
-  shouldShowUploadImagePreview,
   validateUploadFile,
 } from '../../src/utils/uploadFieldUtils';
 
@@ -39,12 +38,6 @@ describe('uploadFieldUtils', () => {
   it('returns default accept by variant', () => {
     expect(getDefaultAccept('image', {})).toBe('image/*');
     expect(getDefaultAccept('file', { accept: '.pdf' })).toBe('.pdf');
-  });
-
-  it('never shows image preview for file variant even with image-like url', () => {
-    expect(shouldShowUploadImagePreview('file', '/uploads/photo.jpg')).toBe(false);
-    expect(shouldShowUploadImagePreview('image', '/uploads/photo.jpg')).toBe(true);
-    expect(shouldShowUploadImagePreview('image', '/uploads/doc.pdf')).toBe(false);
   });
 
   it('extracts file name from url', () => {

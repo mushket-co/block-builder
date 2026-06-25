@@ -1,22 +1,11 @@
 import { CSS_CLASSES } from '../../utils/constants';
+import {
+  ALL_SPACING_TYPES,
+  DEFAULT_BREAKPOINTS,
+  SPACING_LABELS,
+  type ISpacingData,
+} from '../../utils/spacingHelpers';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-
-import type { ISpacingData } from '../../utils/spacingHelpers';
-
-const DEFAULT_BREAKPOINTS = [
-  { name: 'desktop', label: 'Десктоп', maxWidth: undefined as number | undefined },
-  { name: 'tablet', label: 'Таблет', maxWidth: 1199 },
-  { name: 'mobile', label: 'Моб', maxWidth: 767 },
-];
-
-const ALL_SPACING_TYPES = ['padding-top', 'padding-bottom', 'margin-top', 'margin-bottom'];
-
-const SPACING_LABELS: Record<string, string> = {
-  'padding-top': 'Внутренний верх',
-  'padding-bottom': 'Внутренний низ',
-  'margin-top': 'Внешний верх',
-  'margin-bottom': 'Внешний низ',
-};
 
 interface ISpacingBreakpoint {
   name: string;

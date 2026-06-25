@@ -5,7 +5,7 @@
  * поддерживается во всех современных браузерах, включая Safari.
  *
  * Типичный порядок после renderBlocks:
- *   innerHTML → afterRender (rAF) → init → afterPaint (2× rAF) → scroll
+ *   innerHTML → init → afterPaint (2× rAF) → scroll
  */
 
 function scheduleNextFrame(callback: FrameRequestCallback): number {
@@ -23,13 +23,6 @@ function scheduleNextFrame(callback: FrameRequestCallback): number {
 function waitNextFrame(): Promise<void> {
   return new Promise(resolve => {
     scheduleNextFrame(() => resolve());
-  });
-}
-
-/** Один rAF после синхронного изменения DOM, затем callback. */
-export function afterRender(callback: () => void | Promise<void>): void {
-  scheduleNextFrame(() => {
-    void Promise.resolve(callback());
   });
 }
 

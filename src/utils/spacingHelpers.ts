@@ -5,6 +5,20 @@ export const DEFAULT_BREAKPOINTS: IBreakpoint[] = [
   { name: 'tablet', label: 'Таблет', maxWidth: 1199 },
   { name: 'mobile', label: 'Моб', maxWidth: 767 },
 ];
+
+export const SPACING_LABELS: Record<string, string> = {
+  'padding-top': 'Внутренний верх',
+  'padding-bottom': 'Внутренний низ',
+  'margin-top': 'Внешний верх',
+  'margin-bottom': 'Внешний низ',
+};
+
+export const ALL_SPACING_TYPES = [
+  'padding-top',
+  'padding-bottom',
+  'margin-top',
+  'margin-bottom',
+];
 export interface ISpacingData {
   [breakpoint: string]: {
     [spacingType: string]: number;
@@ -68,18 +82,6 @@ export function generateSpacingCSS(
     }
   });
   return cssLines.join('\n');
-}
-export function applySpacingToElement(
-  element: HTMLElement,
-  spacing: ISpacingData,
-  fieldName: string = 'spacing',
-  breakpoints: IBreakpoint[] = DEFAULT_BREAKPOINTS
-): void {
-  const cssVariables = generateSpacingCSSVariables(spacing, fieldName, breakpoints);
-
-  Object.keys(cssVariables).forEach(varName => {
-    element.style.setProperty(varName, cssVariables[varName]);
-  });
 }
 export function getSpacingValue(
   spacing: ISpacingData,

@@ -112,27 +112,6 @@ export function isImageMimeType(mimeType: string): boolean {
   return mimeType.startsWith('image/');
 }
 
-export function isImageUploadUrl(url: string): boolean {
-  if (!url) {
-    return false;
-  }
-  if (url.startsWith('data:image/')) {
-    return true;
-  }
-  return /\.(png|jpe?g|gif|webp|svg|bmp|ico)(\?.*)?$/i.test(url);
-}
-
-export function shouldShowUploadImagePreview(
-  variant: TUploadFieldVariant,
-  url: string
-): boolean {
-  if (variant === 'file') {
-    return false;
-  }
-
-  return variant === 'image' || isImageUploadUrl(url);
-}
-
 export function getFileNameFromUrl(url: string): string {
   if (!url) {
     return '';

@@ -19,7 +19,6 @@
     "autobind-decorator": "^2.4.0",
     "jodit": "^4.7.4",
     "nuxt": "^3.16.0",
-    "swiper": "^11.1.15",
     "typograf": "^7.6.0",
     "vue": "^3.5.22"
   },

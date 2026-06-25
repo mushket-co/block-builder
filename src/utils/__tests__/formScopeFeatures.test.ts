@@ -1,8 +1,5 @@
 import { stripNonPersistedFields } from '../stripNonPersistedFields';
-import {
-  resolveDynamicSelectOptions,
-  isDynamicSelectFieldVisible,
-} from '../resolveDynamicSelectOptions';
+import { resolveDynamicSelectOptions } from '../resolveDynamicSelectOptions';
 import type { IFormFieldConfig } from '../../core/types/form';
 
 describe('stripNonPersistedFields', () => {
@@ -120,27 +117,5 @@ describe('resolveDynamicSelectOptions', () => {
     );
 
     expect(options).toEqual([]);
-  });
-});
-
-describe('isDynamicSelectFieldVisible', () => {
-  it('respects dependsOn and optionsFrom.when', () => {
-    const field: IFormFieldConfig = {
-      field: 'filters',
-      label: 'Filters',
-      type: 'select',
-      dependsOn: { field: 'enabled', value: true },
-      optionsFrom: {
-        source: 'filterOptions',
-        when: { field: 'showFilterOptions', value: true },
-      },
-    };
-
-    expect(
-      isDynamicSelectFieldVisible(field, { enabled: true, showFilterOptions: true })
-    ).toBe(true);
-    expect(
-      isDynamicSelectFieldVisible(field, { enabled: false, showFilterOptions: true })
-    ).toBe(false);
   });
 });

@@ -72,7 +72,7 @@ block-builder/
 │   ├── e2e/                      # Playwright
 │   └── fixtures/                 # Общие fixtures (E2E labels, component configs)
 ├── scripts/
-│   └── check-bundle-size.mjs
+│   └── measure-package-size.mjs
 ├── .github/workflows/            # CI, publish
 ├── jest.config.js
 ├── vitest.config.ts
@@ -163,7 +163,6 @@ E2E-тесты используют **собранные preview** этих пр
 npm run build
 npm run type-check
 npm run test:ci:full
-npm run check:bundle-size
 ```
 
 Публикация на npm — через workflow `.github/workflows/publish.yml` (release / manual dispatch). Перед publish в CI выполняется полный набор тестов + Playwright.
@@ -184,15 +183,13 @@ npm run lint
 
 В CI lint с `continue-on-error: true` — не блокирует merge, но предупреждения стоит исправлять.
 
-### Bundle size gate
-
-После `npm run build`:
+### Замер размера пакета
 
 ```bash
-npm run check:bundle-size
+npm run size
 ```
 
-Лимиты заданы в `scripts/check-bundle-size.mjs` (~160 KB JS, ~45 KB CSS). Превышение — exit code 1, CI job `quality` падает.
+Собирает `dist` и выводит реальный вес конструктора по слоям (core / vue / react / CSS) в raw / gzip / brotli через `scripts/measure-package-size.mjs`. Информационный отчёт, не блокирует CI.
 
 ---
 
@@ -421,7 +418,6 @@ test('E06 my feature works', async ({ blockForm }) => {
 - [ ] `npm run type-check`
 - [ ] `npm run lint` (по возможности без новых warnings)
 - [ ] `npm run test:ci:full`
-- [ ] Если менялся bundle — `npm run check:bundle-size`
 - [ ] Новая фича в example (для E2E) + label в `block-types.ts`
 
 ---
@@ -432,7 +428,6 @@ Workflow `.github/workflows/ci.yml`:
 
 1. **test** (Node 18 + 20): type-check → lint → Jest → component (20.x) → build
 2. **e2e**: Playwright chromium → `npm run test:e2e`
-3. **quality**: build → `npm run check:bundle-size`
 
 Publish: `.github/workflows/publish.yml` — `test:ci:full` + Playwright install.
 

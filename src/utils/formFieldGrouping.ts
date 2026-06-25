@@ -14,7 +14,11 @@ export type TFormFieldGroup =
       field: IFormFieldConfig;
     };
 
-export function groupFormFields(fields: IFormFieldConfig[]): TFormFieldGroup[] {
+export function groupFormFields(
+  fields: IFormFieldConfig[],
+  options?: { keyPrefix?: string }
+): TFormFieldGroup[] {
+  const keyPrefix = options?.keyPrefix ? `${options.keyPrefix}-` : '';
   const visibleFields = getRepeaterFormFields(fields as IRepeaterItemFieldConfig[]);
   const groups: TFormFieldGroup[] = [];
   const processedFields = new Set<string>();
@@ -36,7 +40,7 @@ export function groupFormFields(fields: IFormFieldConfig[]): TFormFieldGroup[] {
       if (dependentFields.length > 0) {
         groups.push({
           type: 'toggle-group',
-          key: `toggle-${field.field}`,
+          key: `${keyPrefix}toggle-${field.field}`,
           toggleField: field,
           dependentFields,
         });
@@ -49,7 +53,7 @@ export function groupFormFields(fields: IFormFieldConfig[]): TFormFieldGroup[] {
     if (!processedFields.has(field.field)) {
       groups.push({
         type: 'single',
-        key: `field-${field.field}`,
+        key: `${keyPrefix}field-${field.field}`,
         field,
       });
       processedFields.add(field.field);

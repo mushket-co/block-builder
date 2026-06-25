@@ -1,16 +1,5 @@
 import { CSS_CLASSES } from '../constants';
-import {
-  countValidationErrors,
-  findFieldElement,
-  getFirstErrorKey,
-  parseErrorKey,
-  scrollToFirstError,
-} from '../formErrorHelpers';
-jest.mock('../scrollHelpers', () => ({
-  scrollToElement: jest.fn(),
-}));
-
-import { scrollToElement } from '../scrollHelpers';
+import { countValidationErrors, focusElement } from '../formErrorHelpers';
 
 describe('formErrorHelpers', () => {
   afterEach(() => {
@@ -19,172 +8,52 @@ describe('formErrorHelpers', () => {
     jest.clearAllMocks();
   });
 
-  describe('parseErrorKey', () => {
-    test('returns flat field info for simple keys', () => {
-      expect(parseErrorKey('title')).toEqual({
-        fieldKey: 'title',
-        isRepeaterField: false,
-      });
-    });
-
-    test('parses top-level repeater field path', () => {
-      expect(parseErrorKey('items[0].title')).toEqual({
-        fieldKey: 'items[0].title',
-        isRepeaterField: true,
-        repeaterFieldName: 'items',
-        repeaterIndex: 0,
-        nestedFieldName: 'title',
-        nestedPath: 'title',
-      });
-    });
-
-    test('parses nested repeater field path', () => {
-      expect(parseErrorKey('categories[0].products[1].name')).toEqual({
-        fieldKey: 'categories[0].products[1].name',
-        isRepeaterField: true,
-        repeaterFieldName: 'categories',
-        repeaterIndex: 0,
-        nestedFieldName: 'products',
-        nestedPath: 'products[1].name',
-      });
-    });
-  });
-
-  describe('getFirstErrorKey', () => {
-    test('returns null for empty errors', () => {
-      expect(getFirstErrorKey({})).toBeNull();
-    });
-
-    test('prefers top-level fields over repeater fields', () => {
-      const firstKey = getFirstErrorKey({
-        'items[0].title': ['Required'],
-        title: ['Required'],
-      });
-
-      expect(firstKey).toBe('title');
-    });
-
-    test('sorts nested repeater paths deterministically', () => {
-      const firstKey = getFirstErrorKey({
-        'categories[1].products[0].name': ['Required'],
-        'categories[0].products[1].name': ['Required'],
-      });
-
-      expect(firstKey).toBe('categories[0].products[1].name');
-    });
-  });
-
-  describe('findFieldElement', () => {
-    test('finds flat field by data-field-name', () => {
-      document.body.innerHTML = `
-        <div class="container">
-          <div class="${CSS_CLASSES.FORM_GROUP}" data-field-name="title">
-            <input name="title" />
-          </div>
-        </div>
-      `;
-
-      const container = document.body.querySelector('.container') as HTMLElement;
-      const element = findFieldElement(container, parseErrorKey('title'));
-
-      expect(element?.dataset.fieldName).toBe('title');
-    });
-
-    test('finds repeater item field by full path', () => {
-      document.body.innerHTML = `
-        <div class="container">
-          <div class="${CSS_CLASSES.REPEATER_CONTROL_CONTAINER}" data-field-name="items">
-            <div class="${CSS_CLASSES.REPEATER_CONTROL_ITEM}">
-              <div class="${CSS_CLASSES.FORM_GROUP}" data-field-name="items[0].title">
-                <input name="items[0].title" />
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-
-      const container = document.body.querySelector('.container') as HTMLElement;
-      const element = findFieldElement(container, parseErrorKey('items[0].title'));
-
-      expect(element?.dataset.fieldName).toBe('items[0].title');
-    });
-
-    test('finds nested repeater field inside parent item', () => {
-      document.body.innerHTML = `
-        <div class="container">
-          <div data-field-name="categories">
-            <div class="${CSS_CLASSES.REPEATER_CONTROL_ITEM}">
-              <div class="${CSS_CLASSES.REPEATER_CONTROL_CONTAINER}" data-field-name="categories[0].products">
-                <div class="${CSS_CLASSES.REPEATER_CONTROL_ITEM}">
-                  <div class="${CSS_CLASSES.FORM_GROUP}" data-field-name="name">
-                    <input name="name" />
-                  </div>
-                </div>
-                <div class="${CSS_CLASSES.REPEATER_CONTROL_ITEM}">
-                  <div class="${CSS_CLASSES.FORM_GROUP}" data-field-name="name">
-                    <input name="name" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-
-      const container = document.body.querySelector('.container') as HTMLElement;
-      const element = findFieldElement(
-        container,
-        parseErrorKey('categories[0].products[1].name')
-      );
-
-      expect(element).toBeTruthy();
-    });
-  });
-
   describe('countValidationErrors', () => {
-    test('returns total number of validation messages', () => {
-      expect(
-        countValidationErrors({
-          title: ['Required'],
-          subtitle: ['Too short', 'Invalid format'],
-        })
-      ).toBe(3);
-    });
-
     test('returns 0 for empty errors', () => {
       expect(countValidationErrors({})).toBe(0);
     });
+
+    test('sums all field error messages', () => {
+      expect(
+        countValidationErrors({
+          title: ['Required'],
+          items: ['Too few', 'Invalid format'],
+        })
+      ).toBe(3);
+    });
   });
 
-  describe('scrollToFirstError', () => {
+  describe('focusElement', () => {
     beforeEach(() => {
       jest.useFakeTimers();
     });
 
-    test('returns parsed info for the first error key', () => {      const container = document.createElement('div');
-
-      const result = scrollToFirstError(container, { title: ['Required'] });
-
-      expect(result).toEqual(parseErrorKey('title'));
-    });
-
-    test('delegates scroll to scrollHelpers.scrollToElement', () => {
-      const container = document.createElement('div');
-      container.innerHTML = `
-        <div class="${CSS_CLASSES.FORM_GROUP} ${CSS_CLASSES.ERROR}" data-field-name="title">
-          <input name="title" />
+    test('focuses input inside form group', () => {
+      document.body.innerHTML = `
+        <div class="form-group">
+          <input type="text" />
         </div>
       `;
+      const group = document.querySelector('.form-group') as HTMLElement;
+      const input = group.querySelector('input') as HTMLInputElement;
+      const focusSpy = jest.spyOn(input, 'focus');
 
-      scrollToFirstError(
-        container,
-        { title: ['Required'] },
-        { behavior: 'auto', autoFocus: false, scrollContainer: container }
-      );
-
+      focusElement(group);
       jest.advanceTimersByTime(300);
 
-      expect(scrollToElement).toHaveBeenCalled();
+      expect(focusSpy).toHaveBeenCalled();
+      expect(input.classList.contains('field-error-highlight')).toBe(true);
+    });
+
+    test('highlights image upload field without focusing', () => {
+      document.body.innerHTML = `<div class="${CSS_CLASSES.IMAGE_UPLOAD_FIELD}"></div>`;
+      const field = document.querySelector(`.${CSS_CLASSES.IMAGE_UPLOAD_FIELD}`) as HTMLElement;
+
+      focusElement(field);
+      jest.advanceTimersByTime(300);
+
+      expect(field.classList.contains(CSS_CLASSES.ERROR)).toBe(true);
+      expect(field.classList.contains('field-error-highlight')).toBe(true);
     });
   });
 });

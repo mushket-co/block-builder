@@ -6,21 +6,49 @@
 и проект следует [Semantic Versioning](https://semver.org/lang/ru/).
 
 
-## [1.8.2] - 2026-06-21
+## [1.9.0] - 2026-06-25
 
 ### Удалено (BREAKING)
 
-## Pure JS полностью удален.
-- **Pure JS UI** —  удалены `src/pure-js/`, примеры `pure-js-vite` и `pure-js-cdn`, E2E-проект `pure-js`
-- **Встроенный DOM UI** в `@mushket-co/block-builder` — entry `.` и `./core` теперь отдают только Core API
+#### Pure JS полностью удалён
+
+- **Pure JS UI** — удалены `src/pure-js/`, примеры `pure-js-vite` и `pure-js-cdn`, E2E-проект `pure-js`
+- **Встроенный DOM UI** в `@mushket-co/block-builder` — entry `.` и `./core` отдают только Core API
 - Опции фасада: `containerId`, `onSave`, `controlsContainerClass`, `controlsFixedPosition`, `controlsOffset`, `controlsOffsetVar`, `isEdit`, `warnOnPageLeave`
 - UI-методы фасада: `showAddBlockForm`, `editBlock`, `saveAllBlocksUI`, `destroy` и др.
+
+### Добавлено
+
+- **`sideEffects`** в `package.json` — JS/TS-модули помечены как tree-shakeable; стили и `.vue` защищены от агрессивного вырезания
+- **`npm run size`** — отчёт реального веса конструктора по слоям (core / vue / react / CSS) через `scripts/measure-package-size.mjs`
+- Общие константы отступов: `SPACING_LABELS`, `ALL_SPACING_TYPES` в `spacingHelpers.ts` (используются Vue/React `SpacingControl`)
+- `groupFormFields(fields, { keyPrefix })` — поддержка префикса ключей для repeater-групп
+
+### Изменено
+
+- **Сборка `dist`:** `index.js` / `index.esm.js` / `index.d.ts` — тонкие реэкспорты `core` (без дублирования ~28 KB JS и ~27 KB d.ts в npm-tarball)
+- **Vue UI:** `BlockBuilder.vue` и `RepeaterControl.vue` используют shared-утилиты (`formFieldHelpers`, `groupFormFields`) вместо inline-дублей логики React-слоя
+- **React/Vue `SpacingControl`:** `DEFAULT_BREAKPOINTS` и подписи отступов импортируются из `spacingHelpers`
+- **Примеры** (vue3, react, nuxt3, nuxt4): убраны демо-блоки «Слайдер галереи», «Список карточек», «Изображение»; зависимость `swiper` удалена из examples
+- **CI:** job `quality` с `check:bundle-size` удалён — контроль размера заменён на информационный `npm run size`
+
+### Исправлено
+
+- **`examples/api-usage`:** синтаксическая ошибка в `hero`-блоке (`template` без закрывающей `}`), top-level `await` в `main.js` — production-сборка example снова проходит
+
+### Удалено (внутренняя чистка, без изменения публичного API)
+
+- Мёртвые Vue composables: `useBlockForm`, `useBlocks`, `useModals`, `composables/index.ts` (не использовались, `BlockBuilder.vue` держит логику inline)
+- Legacy-код в `formErrorHelpers.ts` (`scrollToFirstError`, `findFieldElement`, `parseErrorKey*` — заменён `ValidationErrorHandler`)
+- Неиспользуемые экспорты: `afterRender`, `getComponentInfo`, `applySpacingToElement`, `ERROR_RENDER_DELAY_MS`, `FORM_ID_PREFIX`, `isDynamicSelectFieldVisible`, `normalizeApiSelectInitialValue`, `isImageUploadUrl`, `shouldShowUploadImagePreview`, `createDefaultBlockAnchorContextRef`
+- `scripts/check-bundle-size.mjs` и npm-скрипт `check:bundle-size`
 
 ### Миграция
 
 - Готовый UI: `@mushket-co/block-builder/vue` или `/react` + `index.esm.css`
 - Программный API: `@mushket-co/block-builder/core` (или корневой импорт — тот же API)
 - SSR: примеры Nuxt/Next в [examples](https://github.com/mushket-co/block-builder/tree/master/examples)
+- Вместо `npm run check:bundle-size` — `npm run size` (информационный отчёт, не блокирует CI)
 
 
 ## [1.8.1] - 2026-06-21

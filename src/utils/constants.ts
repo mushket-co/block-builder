@@ -1,8 +1,6 @@
 export const HTTP_DEFAULT_TIMEOUT_MS = 30_000;
 export const NOTIFICATION_DISPLAY_DURATION_MS = 12_000;
-export const ERROR_RENDER_DELAY_MS = 100;
 export const REPEATER_ACCORDION_ANIMATION_DELAY_MS = 350;
-export const FORM_ID_PREFIX = 'block-builder-form';
 export const CSS_CLASSES = {
   MODAL_BODY: 'bb-modal-body',
   FORM_GROUP: 'bb-form-group',

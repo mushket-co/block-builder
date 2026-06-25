@@ -535,6 +535,13 @@ import {
 } from '../../utils/constants';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { countValidationErrors } from '../../utils/formErrorHelpers';
+import { groupFormFields } from '../../utils/formFieldGrouping';
+import {
+  getFieldError as getFieldErrorFromHelpers,
+  getSpacingBreakpoints as getSpacingBreakpointsFromHelpers,
+  isFieldRequired as isFieldRequiredHelper,
+  isFieldVisible as isFieldVisibleHelper,
+} from '../../utils/formFieldHelpers';
 import { createCustomFieldFormScope } from '../../utils/formScopeHelpers';
 import { stripNonPersistedFields } from '../../utils/stripNonPersistedFields';
 import { pruneOptionsFromDependents } from '../../utils/pruneOptionsFromDependents';
@@ -718,60 +725,7 @@ const currentBlockFields = computed(() => {
  * Группирует поля для автоматического использования ToggleControl.
  * Если поле типа checkbox имеет зависимые поля (через dependsOn), создает toggle-group.
  */
-const groupedFields = computed(() => {
-  const fields = currentBlockFields.value;
-  const groups: Array<{
-    type: 'toggle-group' | 'single';
-    key: string;
-    toggleField?: any;
-    dependentFields?: any[];
-    field?: any;
-  }> = [];
-  const processedFields = new Set<string>();
-
-  // Находим checkbox поля, которые имеют зависимые поля
-  for (const field of fields) {
-    if (processedFields.has(field.field)) {
-      continue;
-    }
-
-    // Если это checkbox поле, проверяем, есть ли поля, зависящие от него
-    if (field.type === 'checkbox') {
-      const dependentFields = fields.filter(
-        f =>
-          f.dependsOn?.field === field.field &&
-          f.dependsOn?.value === true &&
-          f.dependsOn?.operator !== 'notEquals' &&
-          !processedFields.has(f.field)
-      );
-
-      if (dependentFields.length > 0) {
-        // Создаем toggle-group
-        groups.push({
-          type: 'toggle-group',
-          key: `toggle-${field.field}`,
-          toggleField: field,
-          dependentFields: dependentFields,
-        });
-        processedFields.add(field.field);
-        dependentFields.forEach(f => processedFields.add(f.field));
-        continue;
-      }
-    }
-
-    // Обычное поле
-    if (!processedFields.has(field.field)) {
-      groups.push({
-        type: 'single',
-        key: `field-${field.field}`,
-        field: field,
-      });
-      processedFields.add(field.field);
-    }
-  }
-
-  return groups;
-});
+const groupedFields = computed(() => groupFormFields(currentBlockFields.value));
 
 const visibleBlocks = computed(() => filterBlocksForDisplay(blocks.value, props.isEdit));
 
@@ -822,23 +776,11 @@ const isCustomFieldAvailable = (_field: any): boolean => {
 };
 
 const getSpacingBreakpoints = (field: any): any[] | undefined => {
-  let breakpoints = field.spacingConfig?.breakpoints;
-  if ((!breakpoints || breakpoints.length === 0) && currentBlockType.value) {
-    const blockConfig = currentBlockType.value as any;
-    breakpoints = blockConfig?.spacingOptions?.config?.breakpoints;
-  }
-  if (!breakpoints || !Array.isArray(breakpoints) || breakpoints.length === 0) {
-    return undefined;
-  }
-  return breakpoints;
+  return getSpacingBreakpointsFromHelpers(field, currentBlockType.value?.spacingOptions);
 };
 
 const getFieldError = (field: any): string => {
-  const errors = formErrors[field.field];
-  if (!errors || errors.length === 0) {
-    return '';
-  }
-  return errors[0] || '';
+  return getFieldErrorFromHelpers(field, formErrors);
 };
 
 const revalidateIfTouched = (): void => {
@@ -871,42 +813,10 @@ const setBlockField = (name: string, value: unknown): void => {
 
 const topLevelFormScope = computed(() => createCustomFieldFormScope(formData, setBlockField));
 
-const isFieldRequired = (field: any): boolean => {
-  return field.rules?.some((rule: any) => rule.type === 'required') ?? false;
-};
+const isFieldRequired = (field: any): boolean => isFieldRequiredHelper(field);
 
-/**
- * Проверяет, должно ли поле быть видимым на основе dependsOn условия
- */
-const isFieldVisible = (
-  field: any,
-  itemData?: any
-): boolean => {
-  if (!field.dependsOn) {
-    return true; // Поле всегда видимо, если нет зависимости
-  }
-
-  const dependsOn = field.dependsOn;
-  // Для полей внутри репитера используем itemData, иначе formData
-  const dataSource = itemData || formData;
-  const dependentValue = dataSource[dependsOn.field];
-
-  // По умолчанию используем оператор 'equals'
-  const operator = dependsOn.operator || 'equals';
-
-  switch (operator) {
-    case 'equals':
-      return dependentValue === dependsOn.value;
-    case 'notEquals':
-      return dependentValue !== dependsOn.value;
-    case 'in':
-      return Array.isArray(dependsOn.value) && dependsOn.value.includes(dependentValue);
-    case 'notIn':
-      return Array.isArray(dependsOn.value) && !dependsOn.value.includes(dependentValue);
-    default:
-      return dependentValue === dependsOn.value;
-  }
-};
+const isFieldVisible = (field: any, itemData?: any): boolean =>
+  isFieldVisibleHelper(field, formData, itemData);
 
 const loadBlocks = async () => {
   try {

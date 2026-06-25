@@ -45,9 +45,6 @@ jobs:
       - name: Run tests
         run: npm run test:ci:full
 
-      - name: Verify build artifacts
-        run: npm run check:bundle-size
-
       - name: Determine version
         id: version
         run: |

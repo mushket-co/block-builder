@@ -7,7 +7,22 @@ const postcss = require('rollup-plugin-postcss');
 const postcssImport = require('postcss-import');
 const path = require('path');
 
-const packageJson = require('./package.json');
+const fs = require('fs');
+
+function generateIndexReexports() {
+  return {
+    name: 'generate-index-reexports',
+    writeBundle() {
+      const distDir = path.resolve('dist');
+      fs.writeFileSync(
+        path.join(distDir, 'index.js'),
+        '"use strict";module.exports=require("./core.js");\n'
+      );
+      fs.writeFileSync(path.join(distDir, 'index.esm.js'), 'export * from "./core.esm.js";\n');
+      fs.writeFileSync(path.join(distDir, 'index.d.ts'), 'export * from "./core";\n');
+    },
+  };
+}
 
 const jsPlugins = [
   resolve({
@@ -39,44 +54,6 @@ const postcssOptions = {
 
 module.exports = [
   {
-    input: 'src/index.ts',
-    output: [
-      {
-        file: packageJson.main,
-        format: 'cjs',
-        sourcemap: false,
-        inlineDynamicImports: true,
-      },
-      {
-        file: packageJson.module,
-        format: 'esm',
-        sourcemap: false,
-        inlineDynamicImports: true,
-      },
-    ],
-    plugins: [
-      ...jsPlugins,
-      terser({
-        compress: {
-          drop_console: true,
-          drop_debugger: true,
-          pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.warn'],
-          unused: true,
-          dead_code: true,
-          passes: 3,
-        },
-        format: {
-          comments: false,
-        },
-      }),
-    ],
-    external: ['vue', 'react', 'react-dom'],
-    treeshake: {
-      moduleSideEffects: false,
-      propertyReadSideEffects: false,
-    },
-  },
-  {
     input: 'src/core.ts',
     output: [
       {
@@ -107,6 +84,7 @@ module.exports = [
           comments: false,
         },
       }),
+      generateIndexReexports(),
     ],
     external: ['vue', 'react', 'react-dom'],
     treeshake: {
@@ -140,12 +118,6 @@ module.exports = [
       }),
     ],
     treeshake: false,
-  },
-  {
-    input: './dist/index.d.ts',
-    output: [{ file: 'dist/index.d.ts', format: 'esm' }],
-    plugins: [dts()],
-    external: [/\.css$/, /\.scss$/],
   },
   {
     input: './dist/core.d.ts',

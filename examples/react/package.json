@@ -13,7 +13,6 @@
     "jodit": "^4.7.4",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "swiper": "^11.1.15",
     "typograf": "^7.6.0"
   },
   "devDependencies": {

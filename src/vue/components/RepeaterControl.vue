@@ -346,11 +346,12 @@ import { computed, onMounted, ref, watch } from 'vue';
 
 import { CSS_CLASSES, UI_STRINGS } from '../../utils/constants';
 import Icon from '../../shared/icons/Icon.vue';
+import { groupFormFields } from '../../utils/formFieldGrouping';
+import { isFieldRequired, isFieldVisible } from '../../utils/formFieldHelpers';
 import { getRepeaterCountText } from '../../utils/repeaterCountText';
 import { resolveFormFieldDefaultValue } from '../../utils/formFieldDefaults';
 import {
   assignRepeaterItemId,
-  getRepeaterFormFields,
   isAutoRepeaterItemIdField,
   isReadonlyRepeaterItemField,
 } from '../../utils/repeaterItemId';
@@ -694,10 +695,6 @@ export default {
       return `repeater-${scope}-${itemId}-${fieldName}`;
     };
 
-    const isFieldRequired = field => {
-      return field.rules?.some(rule => rule.type === 'required');
-    };
-
     const getFullFieldPath = (index, fieldName) => {
       if (props.parentFieldPath) {
         return `${props.parentFieldPath}[${index}].${fieldName}`;
@@ -752,28 +749,7 @@ export default {
       return getFieldErrors(index, fieldName).length > 0;
     };
 
-    const isRepeaterFieldVisible = (field, item) => {
-      if (!field.dependsOn) {
-        return true;
-      }
-
-      const dependsOn = field.dependsOn;
-      const dependentValue = item[dependsOn.field];
-      const operator = dependsOn.operator || 'equals';
-
-      switch (operator) {
-        case 'equals':
-          return dependentValue === dependsOn.value;
-        case 'notEquals':
-          return dependentValue !== dependsOn.value;
-        case 'in':
-          return Array.isArray(dependsOn.value) && dependsOn.value.includes(dependentValue);
-        case 'notIn':
-          return Array.isArray(dependsOn.value) && !dependsOn.value.includes(dependentValue);
-        default:
-          return dependentValue === dependsOn.value;
-      }
-    };
+    const isRepeaterFieldVisible = (field, item) => isFieldVisible(field, props.blockFormData, item);
 
     const getGroupedFieldsForItem = index => {
       const item = items.value[index];
@@ -781,49 +757,7 @@ export default {
         return [];
       }
 
-      const groups = [];
-      const processedFields = new Set();
-
-      const formFields = getRepeaterFormFields(props.fields);
-
-      for (const field of formFields) {
-        if (processedFields.has(field.field)) {
-          continue;
-        }
-
-        if (field.type === 'checkbox') {
-          const dependentFields = formFields.filter(
-            f =>
-              f.dependsOn?.field === field.field &&
-              f.dependsOn?.value === true &&
-              f.dependsOn?.operator !== 'notEquals' &&
-              !processedFields.has(f.field)
-          );
-
-          if (dependentFields.length > 0) {
-            groups.push({
-              type: 'toggle-group',
-              key: `toggle-${index}-${field.field}`,
-              toggleField: field,
-              dependentFields: dependentFields,
-            });
-            processedFields.add(field.field);
-            dependentFields.forEach(f => processedFields.add(f.field));
-            continue;
-          }
-        }
-
-        if (!processedFields.has(field.field)) {
-          groups.push({
-            type: 'single',
-            key: `field-${index}-${field.field}`,
-            field: field,
-          });
-          processedFields.add(field.field);
-        }
-      }
-
-      return groups;
+      return groupFormFields(props.fields, { keyPrefix: String(index) });
     };
 
     const getCountText = count => {

@@ -169,7 +169,8 @@ const blockConfigs = {
             </p>
           </div>
         </div>
-      `
+      `;
+      }
     },
     fields: [
       {
@@ -229,8 +230,10 @@ const blockBuilder = new BlockBuilder({
 
 // Загружаем начальные блоки если есть
 const initialBlocks = loadSavedBlocks()
-for (const block of initialBlocks) {
-  await blockBuilder.createBlock(block)
+const loadInitialBlocks = async () => {
+  for (const block of initialBlocks) {
+    await blockBuilder.createBlock(block)
+  }
 }
 
 // Элементы DOM
@@ -648,7 +651,7 @@ elements.getAvailableBlockTypesBtn.addEventListener('click', async () => {
 })
 
 // Начальное отображение
-await updateDisplay()
+void loadInitialBlocks().then(updateDisplay)
 
 // Если блоков нет, добавляем примеры
 setTimeout(async () => {

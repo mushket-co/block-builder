@@ -11,23 +11,6 @@ export function getHtmlTemplate(
   }
   return null;
 }
-export function getComponentInfo(render?: TRenderRef): {
-  name?: string; // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  component?: any;
-  props?: Record<string, unknown>;
-} | null {
-  if (!render) {
-    return null;
-  }
-  if (render.kind === 'component') {
-    return {
-      name: render.name,
-      component: render.component,
-      props: render.props,
-    };
-  }
-  return null;
-}
 export function isVueComponent(render?: TRenderRef): boolean {
   return render?.kind === 'component' && render.framework === 'vue';
 }

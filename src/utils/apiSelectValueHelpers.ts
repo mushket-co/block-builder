@@ -7,34 +7,6 @@ export type TApiSelectStoredValue =
   | Array<string | number | IApiSelectItem>
   | null;
 
-export function normalizeApiSelectInitialValue(
-  value: unknown,
-  isMultiple: boolean
-): TApiSelectStoredValue {
-  if (value === undefined) {
-    return isMultiple ? [] : null;
-  }
-
-  if (isMultiple) {
-    if (!Array.isArray(value)) {
-      return [];
-    }
-
-    return extractApiSelectItemsFromValue(value).map(item => ({ ...item }));
-  }
-
-  if (value === null || value === '') {
-    return null;
-  }
-
-  if (typeof value === 'string' || typeof value === 'number') {
-    return value;
-  }
-
-  const item = extractApiSelectItemsFromValue(value)[0];
-  return item ? { ...item } : null;
-}
-
 export function isApiSelectStoredItem(value: unknown): value is IApiSelectItem {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
     return false;

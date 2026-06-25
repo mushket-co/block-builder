@@ -78,27 +78,3 @@ jobs:
       - name: Run E2E tests
         run: npm run test:e2e
 
-  quality:
-    runs-on: ubuntu-latest
-    needs: [test, e2e]
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20.x'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: |
-          # Для workspaces с file: нужно использовать npm install
-          npm install --prefer-offline --no-audit
-
-      - name: Check bundle size
-        run: |
-          npm run build
-          npm run check:bundle-size
-

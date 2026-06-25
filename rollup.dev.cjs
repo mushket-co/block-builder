@@ -3,25 +3,38 @@ const commonjs = require('@rollup/plugin-commonjs');
 const typescript = require('@rollup/plugin-typescript');
 const postcss = require('rollup-plugin-postcss');
 const postcssImport = require('postcss-import');
+const fs = require('fs');
 const path = require('path');
+
+function generateIndexReexports() {
+  return {
+    name: 'generate-index-reexports',
+    writeBundle() {
+      const distDir = path.resolve('dist');
+      fs.writeFileSync(
+        path.join(distDir, 'index.js'),
+        '"use strict";module.exports=require("./core.js");\n'
+      );
+      fs.writeFileSync(path.join(distDir, 'index.esm.js'), 'export * from "./core.esm.js";\n');
+      fs.writeFileSync(path.join(distDir, 'index.d.ts'), 'export * from "./core";\n');
+    },
+  };
+}
 
 module.exports = [
   {
-    input: {
-      index: 'src/index.ts',
-      core: 'src/core.ts',
-    },
+    input: 'src/core.ts',
     output: [
       {
         dir: 'dist',
         format: 'cjs',
-        entryFileNames: '[name].js',
+        entryFileNames: 'core.js',
         sourcemap: true,
       },
       {
         dir: 'dist',
         format: 'es',
-        entryFileNames: '[name].esm.js',
+        entryFileNames: 'core.esm.js',
         sourcemap: true,
       },
     ],
@@ -37,6 +50,7 @@ module.exports = [
         declarationDir: './dist',
         declarationMap: true,
       }),
+      generateIndexReexports(),
     ],
     external: ['vue', 'react', 'react-dom'],
     watch: {

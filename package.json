@@ -1,6 +1,6 @@
 {
   "name": "@mushket-co/block-builder",
-  "version": "1.8.2",
+  "version": "1.9.0",
   "description": "Блочный конструктор для no-code разработки (Beta)",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
@@ -90,7 +90,7 @@
     "e2e:preview:react": "npm run build && npm run build --workspace=examples/react && npm run preview --workspace=examples/react",
     "e2e:previews": "node scripts/start-e2e-previews.mjs",
     "test:ci:full": "npm run test:ci && npm run test:component && npm run test:e2e",
-    "check:bundle-size": "node scripts/check-bundle-size.mjs",
+    "size": "npm run build && node scripts/measure-package-size.mjs",
     "lint": "eslint src --ext .ts,.vue",
     "lint:fix": "eslint src --ext .ts,.vue --fix",
     "format": "prettier --write \"src/**/*.{ts,vue,scss,css}\"",
@@ -136,6 +136,12 @@
   "publishConfig": {
     "access": "public"
   },
+  "sideEffects": [
+    "**/*.scss",
+    "**/*.css",
+    "**/styles-bundle*",
+    "**/*.vue"
+  ],
   "devDependencies": {
     "@playwright/test": "^1.51.0",
     "@rollup/plugin-commonjs": "^25.0.7",

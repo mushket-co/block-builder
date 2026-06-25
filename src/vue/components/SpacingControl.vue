@@ -65,17 +65,13 @@
 </template>
 
 <script>
-import { computed, onMounted, ref, watch } from 'vue';
-
 import { CSS_CLASSES } from '../../utils/constants';
-
-const DEFAULT_BREAKPOINTS = [
-  { name: 'desktop', label: 'Десктоп', maxWidth: undefined },
-  { name: 'tablet', label: 'Таблет', maxWidth: 1199 },
-  { name: 'mobile', label: 'Моб', maxWidth: 767 },
-];
-
-const ALL_SPACING_TYPES = ['padding-top', 'padding-bottom', 'margin-top', 'margin-bottom'];
+import {
+  ALL_SPACING_TYPES,
+  DEFAULT_BREAKPOINTS,
+  SPACING_LABELS,
+} from '../../utils/spacingHelpers';
+import { computed, onMounted, ref, watch } from 'vue';
 
 export default {
   name: 'SpacingControl',
@@ -173,13 +169,7 @@ export default {
     };
 
     const getSpacingLabel = spacingType => {
-      const labels = {
-        'padding-top': 'Внутренний верх',
-        'padding-bottom': 'Внутренний низ',
-        'margin-top': 'Внешний верх',
-        'margin-bottom': 'Внешний низ',
-      };
-      return labels[spacingType] || spacingType;
+      return SPACING_LABELS[spacingType] || spacingType;
     };
 
     const getSpacingValue = spacingType => {

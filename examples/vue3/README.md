@@ -41,11 +41,8 @@ vue3-app/
 ├── src/
 │   ├── components/           # Vue SFC компоненты блоков
 │   │   ├── TextBlock.vue
-│   │   ├── ImageBlock.vue
 │   │   ├── ButtonBlock.vue
-│   │   ├── HeroBlock.vue
-│   │   ├── CardListBlock.vue
-│   │   └── GallerySliderBlock.vue
+│   │   └── ...
 │   ├── block-config.js       # Конфигурация блоков
 │   ├── App.vue               # Главный компонент
 │   ├── main.js               # Точка входа
