@@ -134,13 +134,6 @@ describe('Custom Fields Integration', () => {
     facade.unregisterCustomFieldRenderer('test-custom-field');
     expect(facade.hasCustomFieldRenderer('test-custom-field')).toBe(false);
   });
-  it('должен сохранять renderer\'ы после destroy', () => {
-    facade.registerCustomFieldRenderer(testRenderer);
-    facade.destroy();
-    expect(facade.hasCustomFieldRenderer('test-custom-field')).toBe(true);
-    const retrieved = facade.getCustomFieldRenderer('test-custom-field');
-    expect(retrieved).toBe(testRenderer);
-  });
   });
   describe('Error handling', () => {
   it('должен обрабатывать отсутствующий renderer gracefully', () => {
@@ -173,7 +166,6 @@ describe('Custom Fields Integration', () => {
     facade.registerCustomFieldRenderer(testRenderer);
     expect(facade.hasCustomFieldRenderer('test-custom-field')).toBe(true);
     expect(facade2.hasCustomFieldRenderer('test-custom-field')).toBe(false);
-    facade2.destroy();
   });
   });
 });

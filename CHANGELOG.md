@@ -6,6 +6,23 @@
 и проект следует [Semantic Versioning](https://semver.org/lang/ru/).
 
 
+## [1.8.2] - 2026-06-21
+
+### Удалено (BREAKING)
+
+## Pure JS полностью удален.
+- **Pure JS UI** —  удалены `src/pure-js/`, примеры `pure-js-vite` и `pure-js-cdn`, E2E-проект `pure-js`
+- **Встроенный DOM UI** в `@mushket-co/block-builder` — entry `.` и `./core` теперь отдают только Core API
+- Опции фасада: `containerId`, `onSave`, `controlsContainerClass`, `controlsFixedPosition`, `controlsOffset`, `controlsOffsetVar`, `isEdit`, `warnOnPageLeave`
+- UI-методы фасада: `showAddBlockForm`, `editBlock`, `saveAllBlocksUI`, `destroy` и др.
+
+### Миграция
+
+- Готовый UI: `@mushket-co/block-builder/vue` или `/react` + `index.esm.css`
+- Программный API: `@mushket-co/block-builder/core` (или корневой импорт — тот же API)
+- SSR: примеры Nuxt/Next в [examples](https://github.com/mushket-co/block-builder/tree/master/examples)
+
+
 ## [1.8.1] - 2026-06-21
 
 ### Исправлено
@@ -56,7 +73,7 @@
 - **`formHooks` в конфиге типа блока** (`availableBlockTypes[]`):
   - `onFormOpen` — после инициализации `formData` defaults/props, до редактирования; async side-effects (загрузка с API), `setField(name, value)` для гидрации полей
   - `onBeforeSave` — после `validateForm`, до `createBlock` / `updateBlock`; возвращает финальные `props` для записи в блок или `{ cancel: true }` (модалка остаётся открытой)
-- **Scope:** Vue и React UI (`BlockBuilder`, Nuxt/Next через те же компоненты). **Pure JS не поддерживает** `formHooks` — фича не переносится в `BlockUIController` / DOM-рендереры
+- **Scope:** Vue и React UI (`BlockBuilder`, Nuxt/Next через те же компоненты)
 - Vue `BlockBuilder`: интеграция хуков в create/edit модалку
 - React `useBlockForm` / `BlockBuilder` / `BlockFormModal`: тот же контракт
 - Экспорт типов из `core.ts`, `@mushket-co/block-builder/vue`, `@mushket-co/block-builder/react`

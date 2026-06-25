@@ -8,9 +8,6 @@ type TFixtures = {
 };
 
 function resolveUiMode(projectName: string): TUiMode {
-  if (projectName === 'pure-js') {
-    return 'pure-js';
-  }
   if (projectName === 'react') {
     return 'react';
   }

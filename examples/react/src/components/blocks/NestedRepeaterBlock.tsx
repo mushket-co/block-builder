@@ -1,11 +1,25 @@
 import './NestedRepeaterBlock.css'
 
+interface ITag {
+  name?: string
+}
+
 interface IProduct {
   name?: string
   description?: string
   price?: number | string
   image?: string | { src?: string }
   thumbnail?: string | { src?: string }
+  contactEmail?: string
+  productUrl?: string
+  status?: string
+  deliveryType?: string
+  inStock?: boolean
+  hasDiscount?: boolean
+  discountPrice?: number | string
+  accentColor?: string
+  tags?: Array<ITag | string>
+  customContent?: string
 }
 
 interface ICategory {
@@ -37,6 +51,24 @@ function formatPrice(price: number | string) {
   return price
 }
 
+function formatStatus(status: string) {
+  const map: Record<string, string> = {
+    draft: 'Черновик',
+    published: 'Опубликован',
+    archived: 'В архиве',
+  }
+  return map[status] || status
+}
+
+function formatDelivery(type: string) {
+  const map: Record<string, string> = {
+    pickup: 'Самовывоз',
+    courier: 'Курьер',
+    post: 'Почта',
+  }
+  return map[type] || type
+}
+
 export default function NestedRepeaterBlock({
   title = 'Каталог товаров',
   description = '',
@@ -62,7 +94,15 @@ export default function NestedRepeaterBlock({
 
               <div className="products">
                 {(category.products || []).map((product, productIndex) => (
-                  <div key={`${product.name}-${productIndex}`} className="product">
+                  <div
+                    key={`${product.name}-${productIndex}`}
+                    className="product"
+                    style={
+                      product.accentColor
+                        ? { borderLeftColor: product.accentColor, borderLeftWidth: 4, borderLeftStyle: 'solid' }
+                        : undefined
+                    }
+                  >
                     {product.image || product.thumbnail ? (
                       <div className="product-images">
                         {product.image ? (
@@ -80,15 +120,75 @@ export default function NestedRepeaterBlock({
                         ) : null}
                       </div>
                     ) : null}
+
                     <div className="product-info">
-                      <h4 className="product-name">
-                        {product.name || `Товар ${productIndex + 1}`}
-                      </h4>
+                      <div className="product-head">
+                        <h4 className="product-name">
+                          {product.name || `Товар ${productIndex + 1}`}
+                        </h4>
+                        {product.inStock === false ? (
+                          <span className="product-badge product-badge--out">Нет в наличии</span>
+                        ) : product.inStock ? (
+                          <span className="product-badge product-badge--in">В наличии</span>
+                        ) : null}
+                      </div>
+
                       {product.description ? (
                         <p className="product-description">{product.description}</p>
                       ) : null}
-                      {product.price ? (
+
+                      {product.tags?.length ? (
+                        <div className="product-tags">
+                          {product.tags.map((tag, tagIndex) => (
+                            <span key={tagIndex} className="product-tag">
+                              {typeof tag === 'string' ? tag : tag.name}
+                            </span>
+                          ))}
+                        </div>
+                      ) : null}
+
+                      <div className="product-meta">
+                        {product.status ? (
+                          <span className="product-meta-item">
+                            Статус: {formatStatus(product.status)}
+                          </span>
+                        ) : null}
+                        {product.deliveryType ? (
+                          <span className="product-meta-item">
+                            Доставка: {formatDelivery(product.deliveryType)}
+                          </span>
+                        ) : null}
+                      </div>
+
+                      {product.contactEmail || product.productUrl ? (
+                        <div className="product-links">
+                          {product.contactEmail ? (
+                            <a href={`mailto:${product.contactEmail}`}>{product.contactEmail}</a>
+                          ) : null}
+                          {product.productUrl ? (
+                            <a href={product.productUrl} target="_blank" rel="noopener noreferrer">
+                              Страница товара
+                            </a>
+                          ) : null}
+                        </div>
+                      ) : null}
+
+                      {product.hasDiscount && product.discountPrice ? (
+                        <div className="product-price-row">
+                          <span className="product-price product-price--old">
+                            {formatPrice(product.price ?? '')}
+                          </span>
+                          <span className="product-price">{formatPrice(product.discountPrice)}</span>
+                        </div>
+                      ) : product.price ? (
                         <div className="product-price">{formatPrice(product.price)}</div>
+                      ) : null}
+
+                      {product.customContent ? (
+                        <div
+                          className="product-custom"
+                          dangerouslySetInnerHTML={{ __html: product.customContent }}
+                        />
                       ) : null}
                     </div>
                   </div>

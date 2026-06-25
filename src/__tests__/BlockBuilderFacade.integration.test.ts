@@ -2,21 +2,10 @@ import { BlockBuilderFacade, IBlockBuilderOptions } from '../BlockBuilderFacade'
 import { IBlockDto, ICreateBlockDto } from '../core/types';
 describe('BlockBuilderFacade Integration Tests', () => {
   let facade: BlockBuilderFacade;
-  let container: HTMLDivElement;
-  beforeEach(() => {
-  container = document.createElement('div');
-  container.id = 'test-container';
-  document.body.appendChild(container);
-  });
-  afterEach(() => {
-  if (container.parentNode) {
-    container.parentNode.removeChild(container);
-  }
-  });
+
   describe('Инициализация', () => {
   test('должен создать фасад с минимальной конфигурацией', () => {
     const options: IBlockBuilderOptions = {
-      containerId: 'test-container',
       blockConfigs: {},
       autoInit: false
     };
@@ -26,7 +15,6 @@ describe('BlockBuilderFacade Integration Tests', () => {
   });
   test('должен использовать memory repository по умолчанию', async () => {
     const options: IBlockBuilderOptions = {
-      containerId: 'test-container',
       blockConfigs: {},
       autoInit: false
     };
@@ -66,7 +54,6 @@ describe('BlockBuilderFacade Integration Tests', () => {
       }
     ];
     const options: IBlockBuilderOptions = {
-      containerId: 'test-container',
       blockConfigs: {
         'Block1': { title: 'Block 1' },
         'Block2': { title: 'Block 2' }
@@ -81,7 +68,6 @@ describe('BlockBuilderFacade Integration Tests', () => {
   });
   test('должен установить тему', () => {
     const options: IBlockBuilderOptions = {
-      containerId: 'test-container',
       blockConfigs: {},
       theme: 'dark',
       autoInit: false
@@ -91,7 +77,6 @@ describe('BlockBuilderFacade Integration Tests', () => {
   });
   test('должен установить локаль', () => {
     const options: IBlockBuilderOptions = {
-      containerId: 'test-container',
       blockConfigs: {},
       locale: 'en',
       autoInit: false
@@ -103,7 +88,6 @@ describe('BlockBuilderFacade Integration Tests', () => {
   describe('CRUD операции с блоками', () => {
   beforeEach(() => {
     const options: IBlockBuilderOptions = {
-      containerId: 'test-container',
       blockConfigs: {},
       autoInit: false
     };
@@ -182,7 +166,6 @@ describe('BlockBuilderFacade Integration Tests', () => {
   describe('Работа с блокировкой и видимостью', () => {
   beforeEach(() => {
     const options: IBlockBuilderOptions = {
-      containerId: 'test-container',
       blockConfigs: {},
       autoInit: false
     };
@@ -210,7 +193,6 @@ describe('BlockBuilderFacade Integration Tests', () => {
   describe('Работа с иерархией блоков', () => {
   beforeEach(() => {
     const options: IBlockBuilderOptions = {
-      containerId: 'test-container',
       blockConfigs: {},
       autoInit: false
     };
@@ -275,7 +257,6 @@ describe('BlockBuilderFacade Integration Tests', () => {
   describe('Работа с компонентами', () => {
   beforeEach(() => {
     const options: IBlockBuilderOptions = {
-      containerId: 'test-container',
       blockConfigs: {},
       autoInit: false
     };
@@ -305,12 +286,9 @@ describe('BlockBuilderFacade Integration Tests', () => {
   });
   });
   describe('Сохранение данных', () => {
-  test('должен иметь onSave callback если передан', () => {
-    const onSave = jest.fn().mockResolvedValue(true);
+  test('должен создаваться с blockConfigs', () => {
     const options: IBlockBuilderOptions = {
-      containerId: 'test-container',
       blockConfigs: {},
-      onSave,
       autoInit: false
     };
     facade = new BlockBuilderFacade(options);
@@ -320,7 +298,6 @@ describe('BlockBuilderFacade Integration Tests', () => {
   describe('Управление данными', () => {
   beforeEach(() => {
     const options: IBlockBuilderOptions = {
-      containerId: 'test-container',
       blockConfigs: {},
       autoInit: false
     };
@@ -340,7 +317,6 @@ describe('BlockBuilderFacade Integration Tests', () => {
   describe('Получение всех блоков', () => {
   beforeEach(() => {
     const options: IBlockBuilderOptions = {
-      containerId: 'test-container',
       blockConfigs: {},
       autoInit: false
     };

@@ -30,14 +30,6 @@ export default defineConfig({
       },
     },
     {
-      name: 'pure-js',
-      testMatch: /pure-js\/.*\.spec\.ts/,
-      use: {
-        ...devices['Desktop Chrome'],
-        baseURL: 'http://localhost:3002',
-      },
-    },
-    {
       name: 'react',
       testMatch: /react\/.*\.spec\.ts/,
       use: {

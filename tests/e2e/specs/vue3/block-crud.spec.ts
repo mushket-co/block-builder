@@ -1,10 +1,10 @@
 import { CSS_CLASSES } from '../../../../src/utils/constants';
-import { getBlockLabel } from '../../../fixtures/block-types';
+import { getBlockLabel, type TE2EProject } from '../../../fixtures/block-types';
 import { expect, test } from '../../fixtures';
 
 test.describe('E02 block CRUD', () => {
   test('edits existing text block content', async ({ blockForm, page }, testInfo) => {
-    const blockTitle = getBlockLabel('text', testInfo.project.name as 'vue3' | 'pure-js');
+    const blockTitle = getBlockLabel('text', testInfo.project.name as TE2EProject);
     const initialContent = `Initial ${Date.now()}`;
     const updatedContent = `Updated ${Date.now()}`;
 
@@ -23,7 +23,7 @@ test.describe('E02 block CRUD', () => {
   });
 
   test('duplicates and deletes block', async ({ blockForm, page }, testInfo) => {
-    const blockTitle = getBlockLabel('text', testInfo.project.name as 'vue3' | 'pure-js');
+    const blockTitle = getBlockLabel('text', testInfo.project.name as TE2EProject);
     const content = `CRUD ${Date.now()}`;
 
     await blockForm.prepareCleanEditor();

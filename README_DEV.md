@@ -50,11 +50,11 @@ block-builder/
 │   ├── shared/                   # Общий presentation-слой (icons, styles, services)
 │   ├── vue/                      # Vue UI (components, composables)
 │   ├── react/                    # React UI (hooks, components, types)
-│   ├── pure-js/                  # Pure JS UI (controllers, DOM renderers)
 │   ├── utils/                    # Валидация, helpers, constants
-│   ├── BlockBuilderFacade.ts     # Публичный фасад
+│   ├── BlockBuilderFacade.ts     # Core API фасад
 │   ├── BlockBuilderFactory.ts
-│   ├── index.ts                  # Pure-JS entry
+│   ├── index.ts                  # Re-export core (npm main)
+│   ├── styles-bundle.ts          # SCSS → dist/index.esm.css
 │   ├── react.ts                  # React entry
 │   └── vue.ts                    # Vue3 entry
 ├── dist/                         # Сборка (не в git, генерируется npm run build)
@@ -65,10 +65,8 @@ block-builder/
 │   ├── next/                     # Next.js App Router SSR (порт 3008)
 │   ├── nuxt3/                    # Nuxt 3 SSR (порт 3006)
 │   ├── nuxt4/                    # Nuxt 4 SSR (порт 3007)
-│   ├── pure-js-vite/             # Pure JS + Vite (E2E порт 3002)
 │   ├── vue3-core-api/
-│   ├── api-usage/
-│   └── pure-js-cdn/
+│   └── api-usage/
 ├── tests/
 │   ├── component/                # Vitest: vue/ + react/, helpers/, setup.ts
 │   ├── e2e/                      # Playwright
@@ -90,7 +88,6 @@ block-builder/
 | Shared UI | `src/shared/` | Icons, SCSS, `ValidationErrorHandler`, `BlockScrollService`, `NotificationService` |
 | Vue UI | `src/vue/components/`, `src/vue/composables/` | Vue-компоненты форм и BlockBuilder |
 | React UI | `src/react/components/`, `src/react/hooks/` | React-компоненты (зеркало Vue); peer: React 19+ |
-| Pure JS UI | `src/pure-js/services/*Renderer.ts`, `src/pure-js/controllers/` | DOM-рендереры и `BlockUIController` |
 | Scroll / layout | `src/shared/services/BlockScrollService.ts`, `src/utils/scheduling.ts`, `src/utils/scrollHelpers.ts` | Скролл к блоку, rAF, restore scroll |
 | Form errors | `src/utils/formErrorHelpers.ts` | Parse/find/scroll к ошибкам (не scroll блоков) |
 | Public API | `BlockBuilderFacade`, `vue.ts`, `react.ts`, `index.ts` | Точки входа npm-пакета |
@@ -102,7 +99,7 @@ block-builder/
 Проект следует **Clean Architecture**:
 
 ```
-UI (vue / react / pure-js → shared)
+UI (vue / react → shared)
         ↓
 Use Cases (BlockManagement, ApiSelect, …)
         ↓
@@ -111,9 +108,9 @@ Entities + Ports
 Infrastructure (MemoryBlockRepository, FetchHttpClient, …)
 ```
 
-- **Vue3** — основной путь развития (v1.1+): `BlockBuilder.vue`, composables, field components.
-- **Pure JS** — `BlockUIController` + DOM renderers; в E2E тестируется отдельно (другие селекторы).
-- **Core API** — `@mushket-co/block-builder/core` без UI.
+- **Vue3** — основной путь развития: `BlockBuilder.vue`, composables, field components.
+- **React** — зеркало Vue API на React 19+.
+- **Core API** — `@mushket-co/block-builder/core` (и корневой `.`) без UI пакета.
 
 ---
 
@@ -128,19 +125,21 @@ npm run dev
 ### Примеры (рекомендуется при работе над UI)
 
 ```bash
-npm run example:vue3       # Vue3 example, dev server (:3001)
-npm run example:react      # React + Vite (:3004)
-npm run example:pure-js    # Pure JS + Vite (:3002)
-npm run example:api-usage
+npm run example:vue3       # Vue3 (:3001)
+npm run example:react      # React (:3004)
+npm run example:nuxt3      # Nuxt 3 SSR (:3006)
+npm run example:nuxt4      # Nuxt 4 SSR (:3007)
+npm run example:next       # Next.js SSR (:3008)
+npm run example:api-usage  # Core API (:3003)
 npm run example:vue3-core-api
-npm run example:cdn
 ```
 
 Конфиги блоков для примеров:
 
 - `examples/vue3/src/block-config.js`
 - `examples/react/src/block-config.js`
-- `examples/pure-js-vite/src/block-config.js`
+- `examples/nuxt3/block-config.js`
+- `examples/nuxt4/app/block-config.js`
 
 E2E-тесты используют **собранные preview** этих примеров, а не synthetic fixtures.
 
@@ -213,9 +212,9 @@ npm run check:bundle-size
 
 | Слой | Tool | Каталог | Что покрывает |
 |------|------|---------|---------------|
-| Unit | Jest + jsdom | `src/**/__tests__/` | Use cases, validators, pure-JS renderers, controllers |
+| Unit | Jest + jsdom | `src/**/__tests__/` | Use cases, validators, facade |
 | Component | Vitest + happy-dom | `tests/component/vue/`, `tests/component/react/` | Vue (`mountBlockBuilder`) и React (`renderBlockBuilder`) |
-| E2E | Playwright | `tests/e2e/specs/` | vue3 :3001, pure-js :3002 (react :3004 — спеки готовы, проект отключён) |
+| E2E | Playwright | `tests/e2e/specs/` | vue3 :3001, react :3004 |
 
 **Важно:** Jest **не** запускает `tests/component` и `tests/e2e`. Vue-файлы (`.vue`) в Jest coverage часто **0%** — это нормально, их покрывают Vitest и Playwright.
 
@@ -229,7 +228,7 @@ npm run test:coverage          # таблица coverage в консоли
 npm run test:ci                # CI: coverage + пороги
 
 # Один файл Jest
-npx jest src/pure-js/services/__tests__/FormBuilder.test.ts
+npx jest src/utils/__tests__/universalValidation.test.ts
 
 # Component (Vitest)
 npm run test:component
@@ -253,7 +252,6 @@ Preview-серверы для E2E (если нужно вручную):
 
 ```bash
 npm run e2e:preview:vue3         # http://localhost:3001
-npm run e2e:preview:pure-js      # http://localhost:3002
 npm run e2e:preview:react        # http://localhost:3004
 ```
 
@@ -275,7 +273,7 @@ npm run e2e:preview:react        # http://localhost:3004
 | E04 | `nested-repeater.spec.ts` — вложенные репитеры |
 | E05 | `validation-ux.spec.ts` — accordion при ошибках валидации |
 
-Новая группа → `E06-...spec.ts` в `vue3/` и `pure-js/`.
+Новая группа → `E06-...spec.ts` в `vue3/` и `react/`.
 
 ### Fixtures
 
@@ -284,7 +282,7 @@ npm run e2e:preview:react        # http://localhost:3004
 | `tests/fixtures/block-types.ts` | Labels блоков для E2E (`getBlockLabel('cardList', 'vue3')`) |
 | `tests/fixtures/minimal-block-configs.ts` | Synthetic block types для **component**-тестов |
 | `tests/e2e/fixtures/index.ts` | Playwright fixture `blockForm` (page object) |
-| `scripts/start-e2e-previews.mjs` | Сборка `dist/` + preview vue3/pure-js для Playwright |
+| `scripts/start-e2e-previews.mjs` | Сборка `dist/` + preview vue3/react для Playwright |
 
 ### Page objects (E2E)
 
@@ -296,8 +294,7 @@ npm run e2e:preview:react        # http://localhost:3004
 ### Селекторы в тестах
 
 - Используем **BEM-классы** пакета: `.bb-add-block-btn`, `.bb-repeater-control__item`, `.bb-modal-footer`.
-- Vue-поля: `#field-{fieldName}`.
-- Pure-JS: `[name="..."]`, `[data-field-name="..."]`.
+- Vue/React-поля: `#field-{fieldName}`.
 - **`data-testid` в пакете не добавляем** — только существующие классы и атрибуты.
 
 ### Component-тесты — паттерн
@@ -326,12 +323,11 @@ wrapper.unmount();
 
 | Шаг | Где | Что |
 |-----|-----|-----|
-| 1 | `src/pure-js/services/__tests__/` | Тест renderer (render, onChange, destroy) |
-| 2 | `src/__tests__/CustomFields.integration.test.ts` | Регистрация через Facade + блок с `type: 'custom'` |
-| 3 | `tests/fixtures/minimal-block-configs.ts` | Synthetic block type |
-| 4 | `tests/component/vue/` | Изолированный Vue wrapper + сценарий через `mountBlockBuilder` |
-| 5 | `examples/vue3/src/block-config.js` | Блок для E2E |
-| 6 | `tests/e2e/specs/vue3/` + `pure-js/` | Один сквозной сценарий |
+| 1 | `src/__tests__/CustomFields.integration.test.ts` | Регистрация через Facade + блок с `type: 'custom'` |
+| 2 | `tests/fixtures/minimal-block-configs.ts` | Synthetic block type |
+| 3 | `tests/component/vue/` + `tests/component/react/` | Component-тесты |
+| 4 | `examples/vue3/src/block-config.js` | Блок для E2E |
+| 5 | `tests/e2e/specs/vue3/` + `react/` | Сквозной сценарий |
 
 ### Api-select
 
@@ -339,9 +335,7 @@ wrapper.unmount();
 |-----|-----|-----|
 | 1 | `src/core/use-cases/__tests__/ApiSelectUseCase.test.ts` | Логика fetch/validate |
 | 2 | `src/utils/__tests__/apiSelectSearchDebounce.test.ts` | Debounce поиска (`debounceMs`) |
-| 3 | `src/pure-js/services/__tests__/ApiSelectControlRenderer.test.ts` | DOM + mock `fetchItems` |
-| 4 | `tests/component/vue/` | `ApiSelectField.vue` / BlockBuilder flow |
-| 5 | E2E | Example + mock API (без реальной сети) |
+| 3 | `tests/component/vue/` + `tests/component/react/` | ApiSelectField / BlockBuilder flow |
 
 **Реализации UI (держать в синхроне):**
 
@@ -349,7 +343,6 @@ wrapper.unmount();
 |------|------|
 | Vue | `src/vue/components/ApiSelectField.vue` |
 | React | `src/react/components/ApiSelectField.tsx` |
-| Pure JS | `src/pure-js/services/ApiSelectControlRenderer.ts` |
 | Core | `src/core/use-cases/ApiSelectUseCase.ts` |
 | Debounce | `src/utils/apiSelectSearchDebounce.ts` |
 
@@ -387,7 +380,6 @@ wrapper.unmount();
 | Unit | `src/utils/__tests__/universalValidation.test.ts` |
 | Vue UX | `tests/component/vue/BlockBuilder/depends-on-validation.spec.ts` |
 | React UX | `tests/component/react/BlockBuilder/` |
-| Pure JS | `src/pure-js/controllers/__tests__/FormController.test.ts`, `BlockUIController.validation.test.ts` |
 | Scroll / accordion | `ValidationErrorHandler.test.ts`, `formErrorHelpers.test.ts`, `BlockScrollService.test.ts`, `scrollHelpers.test.ts` |
 | E2E | `validation-ux.spec.ts` |
 
@@ -422,7 +414,7 @@ test('E06 my feature works', async ({ blockForm }) => {
 });
 ```
 
-Дублируйте spec в `pure-js/` с `'pure-js'` в `getBlockLabel`, если фича есть в обоих examples.
+Дублируйте spec в `react/` с `getBlockLabel(..., 'react')`, если фича есть в обоих UI.
 
 ### Чеклист перед PR
 
@@ -467,7 +459,7 @@ Publish: `.github/workflows/publish.yml` — `test:ci:full` + Playwright install
 
 ### Предупреждение при уходе со страницы (с 1.3.1)
 
-- Опция `warnOnPageLeave` у `BlockBuilder` (Vue/React/Pure JS facade)
+- Опция `warnOnPageLeave` у Vue/React `BlockBuilder`
 - Core: `haveBlocksChanged`, `attachPageLeaveWarning`, `createUnsavedChangesTracker`
 - Кастомный UI: `usePageLeaveWarning` в `src/vue/composables/` и `src/react/hooks/`
 
@@ -484,17 +476,13 @@ Publish: `.github/workflows/publish.yml` — `test:ci:full` + Playwright install
 - Component/E2E — на **английском** в describe/it (исторически); Jest в `src/` — часто на русском
 - Не глотайте ошибки в page objects через `.catch(() => undefined)` без комментария — в Playwright report будет красный крестик на шаге
 
-### Pure JS vs Vue
+### Vue vs React (E2E)
 
-| Аспект | Vue3 | Pure JS |
-|--------|------|---------|
-| Entry | `src/vue.ts` | `src/index.ts` + `BlockUIController` |
-| Toggle / dependsOn | `ToggleControl.vue` | flat checkbox в FormBuilder |
-| E2E селекторы | `#field-*` | `[name]`, `[data-field-name]` |
-| E2E project | `vue3` (port 3001) | `pure-js` (port 3002) |
-| Scroll после create/move | `BlockScrollService` + `nextTick` | `BlockScrollService` + `afterRender` |
-
-Не все E2E-сценарии имеют смысл для pure-js (например link toggle) — используйте `test.skip` с комментарием почему.
+| Аспект | Vue3 | React |
+|--------|------|-------|
+| Entry | `src/vue.ts` | `src/react.ts` |
+| E2E project | `vue3` (port 3001) | `react` (port 3004) |
+| Селекторы полей | `#field-*` | `#field-*` |
 
 ---
 
@@ -537,7 +525,7 @@ npx playwright test vue3/block-crud.spec.ts --debug
 | `jest.config.js` | Jest roots, coverage thresholds |
 | `jest.setup.js` | Global setup Jest |
 | `vitest.config.ts` | Component tests, happy-dom, Vue plugin |
-| `playwright.config.ts` | Projects vue3/pure-js, webServer, globalSetup |
+| `playwright.config.ts` | Projects vue3/react, webServer |
 | `rollup.config.cjs` | Production build |
 | `rollup.dev.cjs` | Dev watch build |
 | `tsconfig.json` | TypeScript |

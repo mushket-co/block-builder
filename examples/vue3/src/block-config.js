@@ -25,6 +25,7 @@ import TableBlock from './components/TableBlock.vue'
 import FormFeaturesDemoBlock from './components/FormFeaturesDemoBlock.vue'
 import { createTableBlockConfig } from '../../shared/tableBlockDefaults.js'
 import { createFormFeaturesDemoBlockConfig } from '../../shared/formFeaturesDemoBlock.js'
+import { createNestedRepeaterBlockConfig } from '../../shared/nestedRepeaterBlockConfig.js'
 
 const CardListBlock = defineAsyncComponent(() => import('./components/CardListBlock.vue'))
 
@@ -1292,168 +1293,10 @@ export const blockConfigs = {
     ]
   },
 
-  nestedRepeater: {
-    title: 'Каталог с вложенными репитерами',
-    icon: '/icons/card.svg',
-    description: 'Демонстрация вложенных репитеров: категории (1-й уровень) → товары (2-й уровень)',
-    render: {
-      kind: 'component',
-      framework: 'vue',
-      component: NestedRepeaterBlock
-    },
-    fields: [
-      {
-        field: 'title',
-        label: 'Заголовок каталога',
-        type: 'text',
-        placeholder: 'Каталог товаров',
-        rules: [],
-        defaultValue: 'Каталог товаров'
-      },
-      {
-        field: 'description',
-        label: 'Описание каталога',
-        type: 'textarea',
-        placeholder: 'Описание каталога товаров',
-        rules: [],
-        defaultValue: ''
-      },
-      {
-        field: 'categories',
-        label: 'Категории',
-        type: 'repeater',
-        rules: [
-          { type: 'required', message: 'Необходима хотя бы одна категория' }
-        ],
-        defaultValue: [
-          {
-            name: 'Электроника',
-            description: 'Современные гаджеты и устройства',
-            products: [
-              {
-                name: 'Смартфон',
-                description: 'Современный смартфон с отличной камерой',
-                price: 29999,
-                image: ''
-              },
-              {
-                name: 'Ноутбук',
-                description: 'Мощный ноутбук для работы и игр',
-                price: 59999,
-                image: ''
-              }
-            ]
-          }
-        ],
-        repeaterConfig: {
-          itemTitle: 'Категория',
-          addButtonText: 'Добавить категорию',
-          removeButtonText: 'Удалить категорию',
-          min: 1,
-          max: 10,
-          maxNestingDepth: 2,
-          fields: [
-            {
-              field: 'name',
-              label: 'Название категории',
-              type: 'text',
-              placeholder: 'Название категории',
-              rules: [
-                { type: 'required', message: 'Название категории обязательно' },
-                { type: 'minLength', value: 2, message: 'Минимум 2 символа' }
-              ],
-              defaultValue: ''
-            },
-            {
-              field: 'description',
-              label: 'Описание категории',
-              type: 'textarea',
-              placeholder: 'Описание категории',
-              rules: [],
-              defaultValue: ''
-            },
-            {
-              field: 'products',
-              label: 'Товары',
-              type: 'repeater',
-              rules: [
-                { type: 'required', message: 'Необходим хотя бы один товар' }
-              ],
-              defaultValue: [],
-              repeaterConfig: {
-                itemTitle: 'Товар',
-                addButtonText: 'Добавить товар',
-                removeButtonText: 'Удалить товар',
-                min: 1,
-                max: 20,
-                maxNestingDepth: 2,
-                fields: [
-                  {
-                    field: 'name',
-                    label: 'Название товара',
-                    type: 'text',
-                    placeholder: 'Название товара',
-                    rules: [
-                      { type: 'required', message: 'Название товара обязательно' },
-                      { type: 'minLength', value: 2, message: 'Минимум 2 символа' }
-                    ],
-                    defaultValue: ''
-                  },
-                  {
-                    field: 'description',
-                    label: 'Описание товара',
-                    type: 'textarea',
-                    placeholder: 'Описание товара',
-                    rules: [],
-                    defaultValue: ''
-                  },
-                  {
-                    field: 'price',
-                    label: 'Цена',
-                    type: 'number',
-                    placeholder: '0',
-                    rules: [
-                      { type: 'required', message: 'Цена обязательна' },
-                      { type: 'min', value: 0, message: 'Цена не может быть отрицательной' }
-                    ],
-                    defaultValue: 0
-                  },
-                  {
-                    field: 'image',
-                    label: 'Изображение товара',
-                    type: 'image',
-                    rules: [],
-                    defaultValue: ''
-                  },
-                  {
-                    field: 'thumbnail',
-                    label: 'Миниатюра товара',
-                    type: 'image',
-                    rules: [],
-                    defaultValue: '',
-                    fileUploadConfig: {
-                      uploadUrl: '/api/upload',
-                      fileParamName: 'file',
-                      maxFileSize: 5 * 1024 * 1024,
-                      uploadHeaders: {
-                        'Authorization': 'Bearer token'
-                      },
-                      responseMapper: (response) => {
-                        return response.data?.url || response.url || '';
-                      },
-                      onUploadError: (error) => {
-                        console.error('Ошибка загрузки миниатюры:', error);
-                      }
-                    }
-                  }
-                ]
-              }
-            }
-          ]
-        }
-      }
-    ]
-  },
+  nestedRepeater: createNestedRepeaterBlockConfig({
+    component: NestedRepeaterBlock,
+    framework: 'vue',
+  }),
 
   formFeaturesDemo: createFormFeaturesDemoBlockConfig({
     component: FormFeaturesDemoBlock,

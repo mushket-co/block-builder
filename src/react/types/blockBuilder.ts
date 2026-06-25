@@ -5,7 +5,7 @@ import type { IBlockFormHooks } from '../../core/types/formHooks';
 import type { ApiSelectUseCase } from '../../core/use-cases/ApiSelectUseCase';
 import type { BlockManagementUseCase } from '../../core/use-cases/BlockManagementUseCase';
 
-/** Конфиг типа блока для React BlockBuilder (formHooks — только Vue/React UI, не Pure JS) */
+/** Конфиг типа блока для React BlockBuilder (formHooks — Vue/React UI) */
 export interface IBlockType {
   type: string;
   label: string;

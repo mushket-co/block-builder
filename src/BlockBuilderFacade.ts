@@ -7,12 +7,10 @@ import {
 } from './core/ports/CustomFieldRenderer';
 import { IHttpClient } from './core/ports/HttpClient';
 import { IBlockDto, ICreateBlockDto, IUpdateBlockDto } from './core/types';
-import { ApiSelectUseCase } from './core/use-cases/ApiSelectUseCase';
 import { BlockManagementUseCase } from './core/use-cases/BlockManagementUseCase';
 import { ERROR_MESSAGES } from './utils/constants';
 
 export interface IBlockBuilderOptions {
-  containerId?: string;
   blockConfigs: Record<
     string,
     { fields?: unknown[]; spacingOptions?: unknown; [key: string]: unknown }
@@ -24,36 +22,17 @@ export interface IBlockBuilderOptions {
   theme?: 'light' | 'dark';
   locale?: string;
   autoInit?: boolean;
-  onSave?: (blocks: IBlockDto[]) => Promise<boolean> | boolean;
   initialBlocks?: IBlockDto[];
-  controlsContainerClass?: string;
-  controlsFixedPosition?: 'top' | 'bottom';
-  controlsOffset?: number;
-  controlsOffsetVar?: string;
-  isEdit?: boolean;
-  warnOnPageLeave?: boolean;
 }
 
 export class BlockBuilderFacade {
   private useCase: BlockManagementUseCase;
   private repository: IBlockRepository;
-  private componentRegistry: IComponentRegistry;
   private customFieldRendererRegistry: ICustomFieldRendererRegistry;
-  private httpClient: IHttpClient;
-  private apiSelectUseCase: ApiSelectUseCase;
   private blockConfigs: Record<
     string,
     { fields?: unknown[]; spacingOptions?: unknown; [key: string]: unknown }
   >;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private uiController?: any;
-  private onSave?: (blocks: IBlockDto[]) => Promise<boolean> | boolean;
-  private controlsContainerClass?: string;
-  private controlsFixedPosition?: 'top' | 'bottom';
-  private controlsOffset?: number;
-  private controlsOffsetVar?: string;
-  private isEdit: boolean;
-  private warnOnPageLeave: boolean;
 
   public readonly theme: string;
   public readonly locale: string;
@@ -62,13 +41,6 @@ export class BlockBuilderFacade {
     this.blockConfigs = options.blockConfigs;
     this.theme = options.theme || 'light';
     this.locale = options.locale || 'ru';
-    this.onSave = options.onSave;
-    this.controlsContainerClass = options.controlsContainerClass;
-    this.controlsFixedPosition = options.controlsFixedPosition;
-    this.controlsOffset = options.controlsOffset;
-    this.controlsOffsetVar = options.controlsOffsetVar;
-    this.isEdit = options.isEdit !== undefined ? options.isEdit : true;
-    this.warnOnPageLeave = options.warnOnPageLeave === true;
 
     const dependencies = BlockBuilderFactory.createDependencies({
       repository: options.repository,
@@ -78,48 +50,20 @@ export class BlockBuilderFacade {
     });
 
     this.repository = dependencies.repository;
-    this.componentRegistry = dependencies.componentRegistry;
     this.customFieldRendererRegistry = dependencies.customFieldRendererRegistry;
-    this.httpClient = dependencies.httpClient;
     this.useCase = dependencies.useCase;
-    this.apiSelectUseCase = dependencies.apiSelectUseCase;
 
     this.registerComponentsFromConfig();
 
     if (options.autoInit !== false) {
-      this.initialize(options.containerId, options.initialBlocks);
+      void this.initialize(options.initialBlocks);
     }
   }
 
-  private async initialize(containerId?: string, initialBlocks?: IBlockDto[]): Promise<void> {
+  private async initialize(initialBlocks?: IBlockDto[]): Promise<void> {
     if (initialBlocks && initialBlocks.length > 0) {
       await this.loadInitialBlocks(initialBlocks);
     }
-
-    if (containerId) {
-      await this.initUI(containerId);
-    }
-  }
-
-  private async initUI(containerId: string): Promise<void> {
-    const { BlockUIController } = await import('./pure-js/controllers/BlockUIController');
-
-    this.uiController = new BlockUIController({
-      containerId,
-      blockConfigs: this.blockConfigs,
-      useCase: this.useCase,
-      apiSelectUseCase: this.apiSelectUseCase,
-      customFieldRendererRegistry: this.customFieldRendererRegistry,
-      onSave: this.onSave,
-      controlsContainerClass: this.controlsContainerClass,
-      controlsFixedPosition: this.controlsFixedPosition,
-      controlsOffset: this.controlsOffset,
-      controlsOffsetVar: this.controlsOffsetVar,
-      isEdit: this.isEdit,
-      warnOnPageLeave: this.warnOnPageLeave,
-    });
-
-    await this.uiController.init();
   }
 
   private registerComponentsFromConfig(): void {
@@ -323,66 +267,6 @@ export class BlockBuilderFacade {
     }
   }
 
-  showBlockTypeSelectionModal(position?: number): void {
-    this.uiController?.showBlockTypeSelectionModal(position);
-  }
-
-  showAddBlockFormAtPosition(type: string, position?: number): void {
-    this.uiController?.showAddBlockFormAtPosition(type, position);
-  }
-
-  showAddBlockForm(type: string): void {
-    this.uiController?.showAddBlockForm(type);
-  }
-
-  editBlock(blockId: string): void {
-    this.uiController?.editBlock(blockId);
-  }
-
-  async toggleBlockLock(blockId: string): Promise<void> {
-    await this.uiController?.toggleBlockLock(blockId);
-  }
-
-  async toggleBlockVisibility(blockId: string): Promise<void> {
-    await this.uiController?.toggleBlockVisibility(blockId);
-  }
-
-  async deleteBlockUI(blockId: string): Promise<void> {
-    await this.uiController?.deleteBlockUI(blockId);
-  }
-
-  async duplicateBlockUI(blockId: string): Promise<void> {
-    await this.uiController?.duplicateBlockUI(blockId);
-  }
-
-  async clearAllBlocksUI(): Promise<void> {
-    await this.uiController?.clearAllBlocksUI();
-  }
-
-  async saveAllBlocksUI(): Promise<void> {
-    await this.uiController?.saveAllBlocksUI();
-  }
-
-  async moveBlockUp(blockId: string): Promise<void> {
-    await this.uiController?.moveBlockUp(blockId);
-  }
-
-  async moveBlockDown(blockId: string): Promise<void> {
-    await this.uiController?.moveBlockDown(blockId);
-  }
-
-  async copyBlockId(blockId: string): Promise<void> {
-    await this.uiController?.copyBlockId(blockId);
-  }
-
-  closeModal(): void {
-    this.uiController?.closeModal();
-  }
-
-  submitModal(): void {
-    this.uiController?.submitModal();
-  }
-
   registerCustomFieldRenderer(renderer: ICustomFieldRenderer): void {
     this.customFieldRendererRegistry.register(renderer);
   }
@@ -407,22 +291,5 @@ export class BlockBuilderFacade {
 
   getAllCustomFieldRenderers(): Map<string, ICustomFieldRenderer> {
     return this.customFieldRendererRegistry.getAll();
-  }
-
-  setIsEdit(isEdit: boolean): void {
-    this.isEdit = isEdit;
-    if (this.uiController) {
-      this.uiController.setIsEdit(isEdit);
-    }
-  }
-
-  getIsEdit(): boolean {
-    return this.isEdit;
-  }
-
-  destroy(): void {
-    this.uiController?.destroy();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    delete (window as any).blockBuilder;
   }
 }

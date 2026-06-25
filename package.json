@@ -1,6 +1,6 @@
 {
   "name": "@mushket-co/block-builder",
-  "version": "1.8.1",
+  "version": "1.8.2",
   "description": "Блочный конструктор для no-code разработки (Beta)",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
@@ -44,9 +44,7 @@
     "examples/nuxt4",
     "examples/react",
     "examples/next",
-    "examples/pure-js-vite",
-    "examples/api-usage",
-    "examples/pure-js-cdn"
+    "examples/api-usage"
   ],
   "files": [
     "dist",
@@ -60,7 +58,6 @@
     "src/vue/**/*.ts",
     "src/shared/**/*.ts",
     "src/shared/**/*.vue",
-    "src/pure-js/**/*.ts",
     "src/core/**/*.ts",
     "src/infrastructure/**/*.ts",
     "src/utils/**/*.ts",
@@ -90,7 +87,6 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "e2e:preview:vue3": "npm run build && npm run build --workspace=examples/vue3 && npm run preview --workspace=examples/vue3",
-    "e2e:preview:pure-js": "npm run build && npm run build --workspace=examples/pure-js-vite && npm run preview --workspace=examples/pure-js-vite",
     "e2e:preview:react": "npm run build && npm run build --workspace=examples/react && npm run preview --workspace=examples/react",
     "e2e:previews": "node scripts/start-e2e-previews.mjs",
     "test:ci:full": "npm run test:ci && npm run test:component && npm run test:e2e",
@@ -105,9 +101,7 @@
     "pretest": "npm run type-check",
     "prepublishOnly": "npm run build && npm run type-check",
     "example:vue3": "npm run dev --workspace=examples/vue3",
-    "example:pure-js": "npm run dev --workspace=examples/pure-js-vite",
     "example:api-usage": "npm run dev --workspace=examples/api-usage",
-    "example:cdn": "npm run dev --workspace=examples/pure-js-cdn",
     "example:vue3-core-api": "npm run dev --workspace=examples/vue3-core-api",
     "example:nuxt3": "npm run dev --workspace=examples/nuxt3",
     "example:nuxt4": "npm run dev --workspace=examples/nuxt4",

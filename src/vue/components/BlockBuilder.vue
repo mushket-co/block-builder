@@ -568,7 +568,7 @@ import { BLOCK_ANCHOR_CONTEXT_KEY } from '../composables/blockAnchorContext';
 interface IBlockType extends IBlockTypeConfig {
   type: string;
   label: string;
-  /** formHooks — только Vue/React BlockBuilder; Pure JS не поддерживает */
+  /** formHooks — только Vue/React BlockBuilder */
 }
 
 interface IProps {

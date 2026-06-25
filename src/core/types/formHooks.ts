@@ -3,8 +3,7 @@ import type { TBlockId } from './common';
 /**
  * Lifecycle-хуки модалки редактирования блока.
  *
- * **Scope:** только UI-слой Vue и React (`BlockBuilder`, Nuxt/Next через те же компоненты).
- * В **Pure JS** (`BlockUIController`, DOM-рендереры) не поддерживается и не планируется.
+ * **Scope:** UI-слой Vue и React (`BlockBuilder`, Nuxt/Next через те же компоненты).
  */
 export interface IBlockFormOpenContext {
   mode: 'create' | 'edit';

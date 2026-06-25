@@ -1,4 +1,4 @@
-import { getBlockLabel } from '../../../fixtures/block-types';
+import { getBlockLabel, type TE2EProject } from '../../../fixtures/block-types';
 import { expect, test } from '../../fixtures';
 
 test.describe('E01 smoke', () => {
@@ -8,7 +8,7 @@ test.describe('E01 smoke', () => {
   });
 
   test('creates text block and saves to localStorage', async ({ blockForm }, testInfo) => {
-    const blockTitle = getBlockLabel('text', testInfo.project.name as 'vue3' | 'pure-js');
+    const blockTitle = getBlockLabel('text', testInfo.project.name as TE2EProject);
     const content = `E2E smoke ${Date.now()}`;
 
     await blockForm.prepareCleanEditor();
