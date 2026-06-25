@@ -2,7 +2,7 @@ import { build } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import react from '@vitejs/plugin-react';
 import { gzipSync, brotliCompressSync } from 'node:zlib';
-import { mkdirSync, writeFileSync, readFileSync, rmSync, readdirSync, statSync } from 'node:fs';
+import { mkdirSync, writeFileSync, readFileSync, rmSync, readdirSync } from 'node:fs';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -44,6 +44,7 @@ for (const [name, cfg] of Object.entries(entries)) {
   const entryFile = join(tmp, `entry-${name.replace(/[^a-z]/gi, '')}.${cfg.ext}`);
   writeFileSync(entryFile, cfg.code);
   const outDir = join(tmp, `out-${name.replace(/[^a-z]/gi, '')}`);
+  const chunkGraph = new Map();
 
   await build({
     root,
@@ -61,20 +62,54 @@ for (const [name, cfg] of Object.entries(entries)) {
       },
       rollupOptions: {
         external: cfg.external,
+        plugins: [
+          {
+            name: 'collect-size-chunk-graph',
+            generateBundle(_options, bundle) {
+              chunkGraph.clear();
+              for (const item of Object.values(bundle)) {
+                if (item.type !== 'chunk') {
+                  continue;
+                }
+                chunkGraph.set(item.fileName, {
+                  isEntry: item.isEntry,
+                  imports: item.imports,
+                });
+              }
+            },
+          },
+        ],
       },
     },
   });
 
-  let raw = 0;
-  for (const f of readdirSync(outDir)) {
-    if (f.endsWith('.js') || f.endsWith('.mjs')) {
-      raw += statSync(join(outDir, f)).size;
+  const jsFiles = readdirSync(outDir).filter(f => f.endsWith('.js') || f.endsWith('.mjs'));
+  const initialJsFiles = new Set();
+  const visitInitialChunk = fileName => {
+    const chunk = chunkGraph.get(fileName);
+    if (!chunk || initialJsFiles.has(fileName)) {
+      return;
+    }
+    initialJsFiles.add(fileName);
+    chunk.imports.forEach(visitInitialChunk);
+  };
+
+  for (const [fileName, chunk] of chunkGraph.entries()) {
+    if (chunk.isEntry) {
+      visitInitialChunk(fileName);
     }
   }
-  const jsFiles = readdirSync(outDir).filter(f => f.endsWith('.js') || f.endsWith('.mjs'));
+
+  const asyncJsFiles = jsFiles.filter(f => !initialJsFiles.has(f));
   const buf = Buffer.concat(jsFiles.map(f => readFileSync(join(outDir, f))));
+  const initialBuf = Buffer.concat([...initialJsFiles].map(f => readFileSync(join(outDir, f))));
+  const asyncBuf = Buffer.concat(asyncJsFiles.map(f => readFileSync(join(outDir, f))));
   results.push({
     name,
+    initialRaw: initialBuf.length,
+    initialGzip: gzipSync(initialBuf).length,
+    initialBrotli: brotliCompressSync(initialBuf).length,
+    asyncRaw: asyncBuf.length,
     raw: buf.length,
     gzip: gzipSync(buf).length,
     brotli: brotliCompressSync(buf).length,
@@ -85,6 +120,10 @@ for (const [name, cfg] of Object.entries(entries)) {
 const css = readFileSync(resolve(root, 'dist/index.esm.css'));
 results.push({
   name: 'CSS (vue/react)',
+  initialRaw: css.length,
+  initialGzip: gzipSync(css).length,
+  initialBrotli: brotliCompressSync(css).length,
+  asyncRaw: 0,
   raw: css.length,
   gzip: gzipSync(css).length,
   brotli: brotliCompressSync(css).length,
@@ -93,16 +132,22 @@ results.push({
 console.log('\nРеальный вес самого пакета (только конструктор, framework во external):\n');
 console.log(
   'layer'.padEnd(20),
-  'raw'.padStart(11),
-  'gzip'.padStart(11),
-  'brotli'.padStart(11)
+  'initial raw'.padStart(13),
+  'initial gzip'.padStart(13),
+  'async raw'.padStart(11),
+  'total raw'.padStart(11),
+  'total gzip'.padStart(12),
+  'total br'.padStart(11)
 );
-console.log('-'.repeat(56));
+console.log('-'.repeat(96));
 for (const r of results) {
   console.log(
     r.name.padEnd(20),
+    fmt(r.initialRaw).padStart(13),
+    fmt(r.initialGzip).padStart(13),
+    fmt(r.asyncRaw).padStart(11),
     fmt(r.raw).padStart(11),
-    fmt(r.gzip).padStart(11),
+    fmt(r.gzip).padStart(12),
     fmt(r.brotli).padStart(11)
   );
 }

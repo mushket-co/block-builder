@@ -17,12 +17,22 @@ describe('BlockBuilder repeater validation UX (React)', () => {
     fireEvent.click(host.querySelector(`.${CSS_CLASSES.ADD_BLOCK_BTN}`)!);
     await waitFor(() => host.querySelector(`.${CSS_CLASSES.BLOCK_TYPE_CARD}`));
     fireEvent.click(host.querySelector(`.${CSS_CLASSES.BLOCK_TYPE_CARD}`)!);
-    await waitFor(() => host.querySelector(`.${CSS_CLASSES.REPEATER_CONTROL_ADD_BTN}`));
 
-    fireEvent.click(host.querySelector(`.${CSS_CLASSES.REPEATER_CONTROL_ADD_BTN}`)!);
+    const getCardsRepeater = () =>
+      host.querySelector(
+        `.${CSS_CLASSES.REPEATER_CONTROL}[data-field-name="cards"]`
+      ) as HTMLElement | null;
 
-    const items = host.querySelectorAll(`.${CSS_CLASSES.REPEATER_CONTROL_ITEM}`);
-    expect(items).toHaveLength(2);
+    await waitFor(() =>
+      expect(getCardsRepeater()).toBeTruthy()
+    );
+
+    fireEvent.click(getCardsRepeater()!.querySelector(`.${CSS_CLASSES.REPEATER_CONTROL_ADD_BTN}`)!);
+
+    await waitFor(() =>
+      expect(getCardsRepeater()!.querySelectorAll(`.${CSS_CLASSES.REPEATER_CONTROL_ITEM}`)).toHaveLength(2)
+    );
+    const items = getCardsRepeater()!.querySelectorAll(`.${CSS_CLASSES.REPEATER_CONTROL_ITEM}`);
 
     fireEvent.click(items[1].querySelector(`.${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_COLLAPSE}`)!);
     expect(items[1].classList.contains(CSS_CLASSES.REPEATER_CONTROL_ITEM_COLLAPSED)).toBe(true);

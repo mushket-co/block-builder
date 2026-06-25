@@ -19,8 +19,10 @@
 
 ### Добавлено
 
-- **`sideEffects`** в `package.json` — JS/TS-модули помечены как tree-shakeable; стили и `.vue` защищены от агрессивного вырезания
-- **`npm run size`** — отчёт реального веса конструктора по слоям (core / vue / react / CSS) через `scripts/measure-package-size.mjs`
+- **`sideEffects`** в `package.json` — стили помечены как side-effect; JS/TS-модули можно tree-shake'ить без blanket `**/*.vue`
+- **`npm run size`** — отчёт реального веса конструктора по слоям (core / vue / react / CSS) через `scripts/measure-package-size.mjs`, с разбивкой **initial** и **async** chunks
+- **Code-splitting UI:** тяжёлые Vue/React form controls (repeater, matrix-table, api-select, image upload, custom fields и др.) грузятся через `defineAsyncComponent` / `React.lazy`
+- **Примеры vue3/react:** лёгкий блок `cardList` («Список карточек») для e2e и проверки repeater UX без heavy required-полей
 - Общие константы отступов: `SPACING_LABELS`, `ALL_SPACING_TYPES` в `spacingHelpers.ts` (используются Vue/React `SpacingControl`)
 - `groupFormFields(fields, { keyPrefix })` — поддержка префикса ключей для repeater-групп
 
@@ -28,8 +30,10 @@
 
 - **Сборка `dist`:** `index.js` / `index.esm.js` / `index.d.ts` — тонкие реэкспорты `core` (без дублирования ~28 KB JS и ~27 KB d.ts в npm-tarball)
 - **Vue UI:** `BlockBuilder.vue` и `RepeaterControl.vue` используют shared-утилиты (`formFieldHelpers`, `groupFormFields`) вместо inline-дублей логики React-слоя
+- **React UI:** `BlockFormFields` вынесен в отдельный async chunk; modal shell остаётся в initial bundle
+- **Initial bundle UI:** ~−50% raw (Vue ~380→~192 KB, React ~262→~122 KB); тяжёлые controls подгружаются при открытии формы
 - **React/Vue `SpacingControl`:** `DEFAULT_BREAKPOINTS` и подписи отступов импортируются из `spacingHelpers`
-- **Примеры** (vue3, react, nuxt3, nuxt4): убраны демо-блоки «Слайдер галереи», «Список карточек», «Изображение»; зависимость `swiper` удалена из examples
+- **Примеры** (vue3, react, nuxt3, nuxt4): убраны демо-блоки «Слайдер галереи» и «Изображение»; зависимость `swiper` удалена; heavy showcase «Богатые карточки» сохранён отдельно
 - **CI:** job `quality` с `check:bundle-size` удалён — контроль размера заменён на информационный `npm run size`
 
 ### Исправлено

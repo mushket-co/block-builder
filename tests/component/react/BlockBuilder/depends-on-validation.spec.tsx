@@ -39,7 +39,9 @@ describe('BlockBuilder dependsOn (React)', () => {
     fireEvent.click(host.querySelector(`.${CSS_CLASSES.ADD_BLOCK_BTN}`)!);
     await waitFor(() => host.querySelector(`.${CSS_CLASSES.BLOCK_TYPE_CARD}`));
     fireEvent.click(host.querySelector(`.${CSS_CLASSES.BLOCK_TYPE_CARD}`)!);
-    await waitFor(() => host.querySelector(`.${CSS_CLASSES.TOGGLE_CONTROL_BUTTON}`));
+    await waitFor(() =>
+      expect(host.querySelector(`.${CSS_CLASSES.TOGGLE_CONTROL_BUTTON}`)).toBeTruthy()
+    );
 
     fireEvent.click(host.querySelector(`.${CSS_CLASSES.TOGGLE_CONTROL_BUTTON}`)!);
     fireEvent.click(host.querySelector(`.${CSS_CLASSES.MODAL_FOOTER} .${CSS_CLASSES.BTN_PRIMARY}`)!);

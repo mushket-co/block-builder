@@ -225,6 +225,81 @@ export const blockConfigs = {
     }
   },
 
+  cardList: {
+    title: 'Список карточек',
+    icon: '/icons/card.svg',
+    description: 'Простой блок для проверки repeater UX',
+    render: {
+      kind: 'component',
+      framework: 'vue',
+      component: RichCardListBlock
+    },
+    fields: [
+      {
+        field: 'cards',
+        label: 'Карточки',
+        type: 'repeater',
+        defaultValue: [
+          {
+            title: 'Первая карточка',
+            text: 'Описание первой карточки',
+            link: 'https://example.com/card-1',
+            buttonText: 'Подробнее'
+          },
+          {
+            title: 'Вторая карточка',
+            text: 'Описание второй карточки',
+            link: 'https://example.com/card-2',
+            buttonText: 'Подробнее'
+          },
+          {
+            title: 'Третья карточка',
+            text: 'Описание третьей карточки',
+            link: 'https://example.com/card-3',
+            buttonText: 'Подробнее'
+          }
+        ],
+        repeaterConfig: {
+          itemTitle: 'Карточка',
+          addButtonText: 'Добавить карточку',
+          removeButtonText: 'Удалить',
+          fields: [
+            {
+              field: 'title',
+              label: 'Заголовок',
+              type: 'text',
+              placeholder: 'Название карточки',
+              rules: [{ type: 'required', message: 'Заголовок обязателен' }],
+              defaultValue: ''
+            },
+            {
+              field: 'text',
+              label: 'Описание',
+              type: 'textarea',
+              placeholder: 'Описание карточки',
+              rules: [{ type: 'required', message: 'Описание обязательно' }],
+              defaultValue: ''
+            },
+            {
+              field: 'link',
+              label: 'Ссылка',
+              type: 'text',
+              placeholder: 'https://example.com',
+              rules: [{ type: 'required', message: 'Ссылка обязательна' }],
+              defaultValue: ''
+            },
+            {
+              field: 'buttonText',
+              label: 'Текст кнопки',
+              type: 'text',
+              defaultValue: 'Подробнее'
+            }
+          ]
+        }
+      }
+    ]
+  },
+
   richCardList: {
     title: 'Богатые карточки',
     icon: '/icons/card.svg',

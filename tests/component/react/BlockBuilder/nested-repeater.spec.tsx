@@ -39,15 +39,19 @@ describe('BlockBuilder nested repeater (React)', () => {
     fireEvent.click(host.querySelector(`.${CSS_CLASSES.ADD_BLOCK_BTN}`)!);
     await waitFor(() => host.querySelector(`.${CSS_CLASSES.BLOCK_TYPE_CARD}`));
     fireEvent.click(host.querySelector(`.${CSS_CLASSES.BLOCK_TYPE_CARD}`)!);
-    await waitFor(() => getTopLevelRepeaterItems(host, 'categories').length > 0);
+    await waitFor(() => expect(getTopLevelRepeaterItems(host, 'categories').length).toBeGreaterThan(0));
 
     const categoryItem = getTopLevelRepeaterItems(host, 'categories')[0];
     const products = categoryItem.querySelector('[data-field-name="products"]');
 
     expect(products).toBeTruthy();
-    expect(
-      products!.querySelectorAll(`.${CSS_CLASSES.REPEATER_CONTROL_ITEMS} > .${CSS_CLASSES.REPEATER_CONTROL_ITEM}`)
-    ).toHaveLength(1);
+    await waitFor(() =>
+      expect(
+        products!.querySelectorAll(
+          `.${CSS_CLASSES.REPEATER_CONTROL_ITEMS} > .${CSS_CLASSES.REPEATER_CONTROL_ITEM}`
+        )
+      ).toHaveLength(1)
+    );
   });
 
   it('adds product inside nested repeater', async () => {
@@ -56,7 +60,7 @@ describe('BlockBuilder nested repeater (React)', () => {
     fireEvent.click(host.querySelector(`.${CSS_CLASSES.ADD_BLOCK_BTN}`)!);
     await waitFor(() => host.querySelector(`.${CSS_CLASSES.BLOCK_TYPE_CARD}`));
     fireEvent.click(host.querySelector(`.${CSS_CLASSES.BLOCK_TYPE_CARD}`)!);
-    await waitFor(() => getTopLevelRepeaterItems(host, 'categories').length > 0);
+    await waitFor(() => expect(getTopLevelRepeaterItems(host, 'categories').length).toBeGreaterThan(0));
 
     const categoryItem = getTopLevelRepeaterItems(host, 'categories')[0];
     const products = categoryItem.querySelector('[data-field-name="products"]')!;
@@ -76,7 +80,7 @@ describe('BlockBuilder nested repeater (React)', () => {
     fireEvent.click(host.querySelector(`.${CSS_CLASSES.ADD_BLOCK_BTN}`)!);
     await waitFor(() => host.querySelector(`.${CSS_CLASSES.BLOCK_TYPE_CARD}`));
     fireEvent.click(host.querySelector(`.${CSS_CLASSES.BLOCK_TYPE_CARD}`)!);
-    await waitFor(() => getTopLevelRepeaterItems(host, 'categories').length > 0);
+    await waitFor(() => expect(getTopLevelRepeaterItems(host, 'categories').length).toBeGreaterThan(0));
 
     const categoryItem = getTopLevelRepeaterItems(host, 'categories')[0];
     const products = categoryItem.querySelector('[data-field-name="products"]')!;
@@ -96,7 +100,7 @@ describe('BlockBuilder nested repeater (React)', () => {
     fireEvent.click(host.querySelector(`.${CSS_CLASSES.ADD_BLOCK_BTN}`)!);
     await waitFor(() => host.querySelector(`.${CSS_CLASSES.BLOCK_TYPE_CARD}`));
     fireEvent.click(host.querySelector(`.${CSS_CLASSES.BLOCK_TYPE_CARD}`)!);
-    await waitFor(() => getTopLevelRepeaterItems(host, 'categories').length > 0);
+    await waitFor(() => expect(getTopLevelRepeaterItems(host, 'categories').length).toBeGreaterThan(0));
 
     clickRepeaterAddButton(host, 'categories');
 
@@ -114,7 +118,7 @@ describe('BlockBuilder nested repeater (React)', () => {
     fireEvent.click(host.querySelector(`.${CSS_CLASSES.ADD_BLOCK_BTN}`)!);
     await waitFor(() => host.querySelector(`.${CSS_CLASSES.BLOCK_TYPE_CARD}`));
     fireEvent.click(host.querySelector(`.${CSS_CLASSES.BLOCK_TYPE_CARD}`)!);
-    await waitFor(() => getTopLevelRepeaterItems(host, 'categories').length > 0);
+    await waitFor(() => expect(getTopLevelRepeaterItems(host, 'categories').length).toBeGreaterThan(0));
 
     const categoryItem = getTopLevelRepeaterItems(host, 'categories')[0];
     const products = categoryItem.querySelector('[data-field-name="products"]')!;

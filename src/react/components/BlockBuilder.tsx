@@ -1,15 +1,18 @@
 import { CSS_CLASSES } from '../../utils/constants';
-import { useMemo } from 'react';
+import { lazy, Suspense, useMemo } from 'react';
 import { useBlockBuilder } from '../hooks/useBlockBuilder';
 import type { IBlockBuilderProps } from '../types/blockBuilder';
 import { BlockAnchorContext } from '../context/blockAnchorContext';
 import { BlockControlsBar } from './BlockControlsBar';
-import { BlockFormFields } from './BlockFormFields';
 import { BlockFormModal } from './BlockFormModal';
 import { BlockTypeSelectionModal } from './BlockTypeSelectionModal';
 import { BlocksPanel } from './BlocksPanel';
 
 export type { IBlockBuilderProps } from '../types/blockBuilder';
+
+const BlockFormFields = lazy(() =>
+  import('./BlockFormFields').then(module => ({ default: module.BlockFormFields }))
+);
 
 export function BlockBuilder(props: IBlockBuilderProps) {
   const {
@@ -102,16 +105,18 @@ export function BlockBuilder(props: IBlockBuilderProps) {
             }}
           >
             <BlockAnchorContext.Provider value={blockAnchorContext}>
-              <BlockFormFields
-                fields={builder.currentBlockFields}
-                currentBlockType={builder.currentBlockType}
-                formData={builder.formData}
-                formErrors={builder.formErrors}
-                apiSelectUseCase={apiSelectUseCase}
-                customFieldRendererRegistry={customFieldRendererRegistry}
-                onFieldChange={builder.updateFormField}
-                onRepeaterReady={builder.registerRepeaterRef}
-              />
+              <Suspense fallback={null}>
+                <BlockFormFields
+                  fields={builder.currentBlockFields}
+                  currentBlockType={builder.currentBlockType}
+                  formData={builder.formData}
+                  formErrors={builder.formErrors}
+                  apiSelectUseCase={apiSelectUseCase}
+                  customFieldRendererRegistry={customFieldRendererRegistry}
+                  onFieldChange={builder.updateFormField}
+                  onRepeaterReady={builder.registerRepeaterRef}
+                />
+              </Suspense>
             </BlockAnchorContext.Provider>
           </form>
         </BlockFormModal>

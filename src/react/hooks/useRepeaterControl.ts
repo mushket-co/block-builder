@@ -73,10 +73,6 @@ export function useRepeaterControl({
   onChange,
 }: IUseRepeaterControlProps) {
   const idCounterRef = useRef(0);
-  const [items, setItems] = useState<TRepeaterItem[]>([]);
-  const [collapsedItems, setCollapsedItems] = useState<Record<string, boolean>>({});
-  const itemsRef = useRef(items);
-  itemsRef.current = items;
 
   const isRequired = useMemo(
     () => rules?.some(rule => rule.type === 'required') ?? false,
@@ -113,6 +109,36 @@ export function useRepeaterControl({
     return assignRepeaterItemId(newItem, fields, { forceNew: true }) as TRepeaterItem;
   }, [defaultItemValue, fields]);
 
+  const createInitialItems = useCallback((): TRepeaterItem[] => {
+    if (modelValue && modelValue.length > 0) {
+      return modelValue.map(item => {
+        const withId = assignRepeaterItemId(
+          { ...(item as Record<string, unknown>) },
+          fields
+        );
+        return {
+          _id: `item-${idCounterRef.current++}`,
+          ...withId,
+        } as TRepeaterItem;
+      });
+    }
+
+    if (effectiveMin > 0) {
+      const initialItems: TRepeaterItem[] = [];
+      for (let i = 0; i < effectiveMin; i++) {
+        initialItems.push(createNewItem());
+      }
+      return initialItems;
+    }
+
+    return [];
+  }, [createNewItem, effectiveMin, fields, modelValue]);
+
+  const [items, setItems] = useState<TRepeaterItem[]>(createInitialItems);
+  const [collapsedItems, setCollapsedItems] = useState<Record<string, boolean>>({});
+  const itemsRef = useRef(items);
+  itemsRef.current = items;
+
   const emitUpdate = useCallback(
     (nextItems: TRepeaterItem[]) => {
       const cleanItems = nextItems.map(item => {
@@ -124,38 +150,10 @@ export function useRepeaterControl({
     [onChange]
   );
 
-  const initializeItems = useCallback(() => {
-    if (modelValue && modelValue.length > 0) {
-      setItems(
-        modelValue.map(item => {
-          const withId = assignRepeaterItemId(
-            { ...(item as Record<string, unknown>) },
-            fields
-          );
-          return {
-            _id: `item-${idCounterRef.current++}`,
-            ...withId,
-          } as TRepeaterItem;
-        })
-      );
-      return;
-    }
-
-    if (effectiveMin > 0) {
-      const initialItems: TRepeaterItem[] = [];
-      for (let i = 0; i < effectiveMin; i++) {
-        initialItems.push(createNewItem());
-      }
-      setItems(initialItems);
-      queueMicrotask(() => emitUpdate(initialItems));
-    } else {
-      setItems([]);
-    }
-  }, [createNewItem, effectiveMin, emitUpdate, fields, modelValue]);
-
   useEffect(() => {
-    initializeItems();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only init mirrors Vue onMounted
+    if ((!modelValue || modelValue.length === 0) && effectiveMin > 0) {
+      emitUpdate(itemsRef.current);
+    }
   }, []);
 
   const itemCount = items.length;

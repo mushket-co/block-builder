@@ -21,7 +21,9 @@ describe('BlockBuilder link toggle (React)', () => {
     fireEvent.click(host.querySelector(`.${CSS_CLASSES.ADD_BLOCK_BTN}`)!);
     await waitFor(() => host.querySelector(`.${CSS_CLASSES.BLOCK_TYPE_CARD}`));
     fireEvent.click(host.querySelector(`.${CSS_CLASSES.BLOCK_TYPE_CARD}`)!);
-    await waitFor(() => host.querySelector(`.${CSS_CLASSES.TOGGLE_CONTROL_BUTTON}`));
+    await waitFor(() =>
+      expect(host.querySelector(`.${CSS_CLASSES.TOGGLE_CONTROL_BUTTON}`)).toBeTruthy()
+    );
 
     expect(host.querySelector('#field-backgroundColor')).toBeNull();
 
@@ -38,7 +40,7 @@ describe('BlockBuilder link toggle (React)', () => {
     fireEvent.click(host.querySelector(`.${CSS_CLASSES.ADD_BLOCK_BTN}`)!);
     await waitFor(() => host.querySelector(`.${CSS_CLASSES.BLOCK_TYPE_CARD}`));
     fireEvent.click(host.querySelector(`.${CSS_CLASSES.BLOCK_TYPE_CARD}`)!);
-    await waitFor(() => host.querySelector('#field-url'));
+    await waitFor(() => expect(host.querySelector('#field-url')).toBeTruthy());
 
     fireEvent.change(host.querySelector('#field-url') as HTMLInputElement, {
       target: { value: 'https://example.com' },
@@ -62,7 +64,7 @@ describe('BlockBuilder repeater (React)', () => {
     fireEvent.click(host.querySelector(`.${CSS_CLASSES.ADD_BLOCK_BTN}`)!);
     await waitFor(() => host.querySelector(`.${CSS_CLASSES.BLOCK_TYPE_CARD}`));
     fireEvent.click(host.querySelector(`.${CSS_CLASSES.BLOCK_TYPE_CARD}`)!);
-    await waitFor(() => host.querySelector('[data-field-name="cards"]'));
+    await waitFor(() => expect(host.querySelector('[data-field-name="cards"]')).toBeTruthy());
 
     const repeater = host.querySelector('[data-field-name="cards"]')!;
     fireEvent.click(repeater.querySelector(`.${CSS_CLASSES.REPEATER_CONTROL_ADD_BTN}`)!);
@@ -85,7 +87,7 @@ describe('BlockBuilder repeater (React)', () => {
     fireEvent.click(host.querySelector(`.${CSS_CLASSES.ADD_BLOCK_BTN}`)!);
     await waitFor(() => host.querySelector(`.${CSS_CLASSES.BLOCK_TYPE_CARD}`));
     fireEvent.click(host.querySelector(`.${CSS_CLASSES.BLOCK_TYPE_CARD}`)!);
-    await waitFor(() => host.querySelector('[data-field-name="slides"]'));
+    await waitFor(() => expect(host.querySelector('[data-field-name="slides"]')).toBeTruthy());
 
     const repeater = host.querySelector('[data-field-name="slides"]')!;
     fireEvent.click(repeater.querySelector(`.${CSS_CLASSES.TOGGLE_CONTROL_BUTTON}`)!);

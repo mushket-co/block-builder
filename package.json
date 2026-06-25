@@ -139,8 +139,7 @@
   "sideEffects": [
     "**/*.scss",
     "**/*.css",
-    "**/styles-bundle*",
-    "**/*.vue"
+    "**/styles-bundle*"
   ],
   "devDependencies": {
     "@playwright/test": "^1.51.0",

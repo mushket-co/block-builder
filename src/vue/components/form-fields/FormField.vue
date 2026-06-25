@@ -141,16 +141,17 @@ import {
   pruneSelectValueByOptions,
 } from '../../../utils/pruneOptionsFromDependents';
 import { resolveDynamicSelectOptions } from '../../../utils/resolveDynamicSelectOptions';
-import { computed, watch } from 'vue';
-import ImageUploadField from '../ImageUploadField.vue';
-import BlockAnchorField from '../BlockAnchorField.vue';
+import { computed, defineAsyncComponent, watch } from 'vue';
 import CheckboxField from './CheckboxField.vue';
 import ColorField from './ColorField.vue';
 import NumberField from './NumberField.vue';
 import RadioField from './RadioField.vue';
-import SelectField from './SelectField.vue';
 import TextareaField from './TextareaField.vue';
 import TextField from './TextField.vue';
+
+const BlockAnchorField = defineAsyncComponent(() => import('../BlockAnchorField.vue'));
+const ImageUploadField = defineAsyncComponent(() => import('../ImageUploadField.vue'));
+const SelectField = defineAsyncComponent(() => import('./SelectField.vue'));
 
 interface Props {
   field: IFormFieldConfig;

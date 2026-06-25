@@ -512,7 +512,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, provide, reactive, ref, watch } from 'vue';
+import {
+  computed,
+  defineAsyncComponent,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  provide,
+  reactive,
+  ref,
+  watch,
+} from 'vue';
 
 import { IBlock, TBlockId } from '../../core/types';
 import type { IBlockFormHooks, IBlockTypeConfig } from '../../core/types/formHooks';
@@ -561,16 +571,17 @@ import { notificationService } from '../../shared/services/NotificationService';
 import { blockScrollService } from '../../shared/services/BlockScrollService';
 import { ValidationErrorHandler } from '../../shared/services/ValidationErrorHandler';
 import { updateBodyEditModeClass } from '../../shared/dom/domClassHelpers';
-import ApiSelectField from './ApiSelectField.vue';
-import CustomField from './CustomField.vue';
-import FileImportField from './FileImportField.vue';
-import { FormField } from './form-fields';
-import RepeaterControl from './RepeaterControl.vue';
-import SpacingControl from './SpacingControl.vue';
-import MatrixTableControl from './MatrixTableControl.vue';
+import FormField from './form-fields/FormField.vue';
 import ToggleControl from './ToggleControl.vue';
 import { usePageLeaveWarning } from '../composables/usePageLeaveWarning';
 import { BLOCK_ANCHOR_CONTEXT_KEY } from '../composables/blockAnchorContext';
+
+const ApiSelectField = defineAsyncComponent(() => import('./ApiSelectField.vue'));
+const CustomField = defineAsyncComponent(() => import('./CustomField.vue'));
+const FileImportField = defineAsyncComponent(() => import('./FileImportField.vue'));
+const MatrixTableControl = defineAsyncComponent(() => import('./MatrixTableControl.vue'));
+const RepeaterControl = defineAsyncComponent(() => import('./RepeaterControl.vue'));
+const SpacingControl = defineAsyncComponent(() => import('./SpacingControl.vue'));
 
 interface IBlockType extends IBlockTypeConfig {
   type: string;

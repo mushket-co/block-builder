@@ -342,7 +342,7 @@
 </template>
 
 <script>
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue';
 
 import { CSS_CLASSES, UI_STRINGS } from '../../utils/constants';
 import Icon from '../../shared/icons/Icon.vue';
@@ -356,21 +356,16 @@ import {
   isReadonlyRepeaterItemField,
 } from '../../utils/repeaterItemId';
 import { createRepeaterFormScope } from '../../utils/formScopeHelpers';
-import ApiSelectField from './ApiSelectField.vue';
-import CustomField from './CustomField.vue';
-import FileImportField from './FileImportField.vue';
-import { FormField } from './form-fields';
-import ImageUploadField from './ImageUploadField.vue';
 import ToggleControl from './ToggleControl.vue';
 
 export default {
   name: 'RepeaterControl',
   components: {
-    FormField,
-    ApiSelectField,
-    CustomField,
-    FileImportField,
-    ImageUploadField,
+    FormField: defineAsyncComponent(() => import('./form-fields/FormField.vue')),
+    ApiSelectField: defineAsyncComponent(() => import('./ApiSelectField.vue')),
+    CustomField: defineAsyncComponent(() => import('./CustomField.vue')),
+    FileImportField: defineAsyncComponent(() => import('./FileImportField.vue')),
+    ImageUploadField: defineAsyncComponent(() => import('./ImageUploadField.vue')),
     ToggleControl,
     Icon,
   },
