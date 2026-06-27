@@ -1,6 +1,6 @@
 /**
  * E2E preview servers for Playwright.
- * Builds the package once, then starts vue3 (:3001) and react (:3004) previews.
+ * Builds the package once, then starts vue3 (:3001), react19 (:3004) and react18 (:3005) previews.
  */
 import { execSync, spawn } from 'child_process';
 import http from 'http';
@@ -59,15 +59,18 @@ run('npm', ['run', 'build']);
 
 console.log('[e2e] Building examples…');
 run('npm', ['run', 'build', '--workspace=examples/vue3']);
-run('npm', ['run', 'build', '--workspace=examples/react']);
+run('npm', ['run', 'build', '--workspace=examples/react19']);
+run('npm', ['run', 'build', '--workspace=examples/react18']);
 
 console.log('[e2e] Starting preview servers…');
 const vue3 = startPreview('examples/vue3');
-const react = startPreview('examples/react');
+const react19 = startPreview('examples/react19');
+const react18 = startPreview('examples/react18');
 
 const shutdown = () => {
   vue3.kill('SIGTERM');
-  react.kill('SIGTERM');
+  react19.kill('SIGTERM');
+  react18.kill('SIGTERM');
 };
 
 process.on('SIGINT', shutdown);
@@ -78,7 +81,14 @@ vue3.on('exit', code => {
     process.exit(code);
   }
 });
-react.on('exit', code => {
+react19.on('exit', code => {
+  if (code && code !== 0) {
+    shutdown();
+    process.exit(code);
+  }
+});
+
+react18.on('exit', code => {
   if (code && code !== 0) {
     shutdown();
     process.exit(code);
@@ -88,8 +98,9 @@ react.on('exit', code => {
 await Promise.all([
   waitForUrl('http://localhost:3001'),
   waitForUrl('http://localhost:3004'),
+  waitForUrl('http://localhost:3005'),
 ]);
 
-console.log('[e2e] Preview servers ready on :3001 and :3004');
+console.log('[e2e] Preview servers ready on :3001, :3004 and :3005');
 
 await new Promise(() => {});

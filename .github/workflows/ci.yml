@@ -49,6 +49,9 @@ jobs:
       - name: Run component tests
         run: npm run test:component
 
+      - name: Run React 18/19 component matrix
+        run: npm run test:component:react
+
       - name: Build
         run: npm run build
 

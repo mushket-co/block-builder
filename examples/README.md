@@ -32,7 +32,7 @@ npm run example:vue3
 
 ---
 
-### ⚛️ React + Vite (`react/`)
+### ⚛️ React 19 + Vite (`react19/`)
 Полноценное React приложение с Vite сборкой.
 
 **Особенности:**
@@ -43,12 +43,23 @@ npm run example:vue3
 
 **Запуск:**
 ```bash
-npm run example:react
+npm run example:react19
 ```
 
 Порт: `http://localhost:3004`
 
-[Подробная документация →](./react/README.md)
+[Подробная документация →](./react19/README.md)
+
+---
+
+### ⚛️ React 18 + Vite (`react18/`)
+Тот же `src/`, что у `react19`, зависимости на **React 18**. Порт **3005** — для параллельного dev и E2E.
+
+```bash
+npm run example:react18
+```
+
+[Подробная документация →](./react18/README.md)
 
 ---
 
@@ -59,7 +70,7 @@ Next.js App Router с серверным рендерингом контента
 - ✅ Server Component загружает блоки из `data/blocks.json`
 - ✅ `enrichBlocksForSsr` для api-select (newsList)
 - ✅ Client boundary для `BlockBuilderComponent`
-- ✅ Блоки из `examples/react` через alias `@react-example`
+- ✅ Блоки из `examples/react19` через alias `@react-example`
 
 **Запуск:**
 ```bash
@@ -152,7 +163,7 @@ npm install
 npm run example:vue3
 
 # React пример
-npm run example:react
+npm run example:react19
 
 # API Usage пример
 npm run example:api-usage
@@ -217,7 +228,7 @@ npm run preview
 {
   "workspaces": [
     "examples/vue3",
-    "examples/react",
+    "examples/react19",
     "examples/vue3-core-api",
     "examples/api-usage"
   ]

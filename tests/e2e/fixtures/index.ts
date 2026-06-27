@@ -8,7 +8,7 @@ type TFixtures = {
 };
 
 function resolveUiMode(projectName: string): TUiMode {
-  if (projectName === 'react') {
+  if (projectName === 'react19' || projectName === 'react18') {
     return 'react';
   }
   return 'vue';

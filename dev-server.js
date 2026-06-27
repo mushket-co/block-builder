@@ -8,7 +8,7 @@ function startServer(port) {
     console.log(`🚀 Сервер разработки запущен на http://localhost:${port}`);
     console.log(`📋 Доступные примеры:`);
     console.log(`   - http://localhost:${port}/examples/vue3/index.html`);
-    console.log(`   - http://localhost:${port}/examples/react/index.html`);
+    console.log(`   - http://localhost:${port}/examples/react19/index.html`);
     console.log(`   - http://localhost:${port}/examples/api-usage/index.html`);
   });
 
@@ -101,7 +101,7 @@ app.get('/', (req, res) => {
                     <p>Готовый UI с Vue-компонентами блоков.</p>
                 </a>
 
-                <a href="/examples/react/index.html" class="example-card react-card">
+                <a href="/examples/react19/index.html" class="example-card react-card">
                     <h3>⚛️ React Demo</h3>
                     <p>Готовый UI с React-компонентами блоков.</p>
                 </a>

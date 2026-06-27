@@ -30,11 +30,19 @@ export default defineConfig({
       },
     },
     {
-      name: 'react',
+      name: 'react19',
       testMatch: /react\/.*\.spec\.ts/,
       use: {
         ...devices['Desktop Chrome'],
         baseURL: 'http://localhost:3004',
+      },
+    },
+    {
+      name: 'react18',
+      testMatch: /react\/.*\.spec\.ts/,
+      use: {
+        ...devices['Desktop Chrome'],
+        baseURL: 'http://localhost:3005',
       },
     },
   ],

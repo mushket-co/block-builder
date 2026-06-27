@@ -42,7 +42,8 @@
     "examples/vue3-core-api",
     "examples/nuxt3",
     "examples/nuxt4",
-    "examples/react",
+    "examples/react19",
+    "examples/react18",
     "examples/next",
     "examples/api-usage"
   ],
@@ -82,12 +83,14 @@
     "test:integration": "jest --testPathPattern=\".*\\.integration\\.test\\.ts$\"",
     "test:ci": "jest --ci --coverage --maxWorkers=2",
     "test:component": "vitest run",
+    "test:component:react": "node scripts/run-react-component-tests.mjs",
     "test:component:watch": "vitest",
     "test:form-hooks": "vitest run tests/component/vue/BlockBuilder/form-hooks.spec.ts tests/component/react/BlockBuilder/form-hooks.spec.tsx",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "e2e:preview:vue3": "npm run build && npm run build --workspace=examples/vue3 && npm run preview --workspace=examples/vue3",
-    "e2e:preview:react": "npm run build && npm run build --workspace=examples/react && npm run preview --workspace=examples/react",
+    "e2e:preview:react19": "npm run build && npm run build --workspace=examples/react19 && npm run preview --workspace=examples/react19",
+    "e2e:preview:react18": "npm run build && npm run build --workspace=examples/react18 && npm run preview --workspace=examples/react18",
     "e2e:previews": "node scripts/start-e2e-previews.mjs",
     "test:ci:full": "npm run test:ci && npm run test:component && npm run test:e2e",
     "size": "npm run build && node scripts/measure-package-size.mjs",
@@ -105,7 +108,8 @@
     "example:vue3-core-api": "npm run dev --workspace=examples/vue3-core-api",
     "example:nuxt3": "npm run dev --workspace=examples/nuxt3",
     "example:nuxt4": "npm run dev --workspace=examples/nuxt4",
-    "example:react": "npm run dev --workspace=examples/react",
+    "example:react19": "npm run dev --workspace=examples/react19",
+    "example:react18": "npm run dev --workspace=examples/react18",
     "example:next": "npm run dev --workspace=examples/next",
     "examples:install": "npm install"
   },
@@ -188,8 +192,8 @@
     "vue-eslint-parser": "^9.4.2"
   },
   "peerDependencies": {
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0",
     "vue": "^3.0.0"
   },
   "peerDependenciesMeta": {

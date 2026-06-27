@@ -1,6 +1,8 @@
-# BlockBuilder — React + Vite Example
+# BlockBuilder — React 19 + Vite Example
 
-Пример интеграции `@mushket-co/block-builder` в React-приложение с Vite.
+Пример интеграции `@mushket-co/block-builder` в React-приложение с Vite (**React 19**, порт **3004**).
+
+Для **React 18** — [`examples/react18`](../react18): тот же `src/`, порт **3005**.
 
 ## Что нужно для работы
 
@@ -27,10 +29,10 @@ npm install
 
 ```bash
 # Из корня
-npm run example:react
+npm run example:react19
 
 # Или из папки примера
-cd examples/react
+cd examples/react19
 npm run dev
 ```
 
@@ -39,7 +41,7 @@ npm run dev
 ## Структура
 
 ```
-react/
+react19/
 ├── src/
 │   ├── App.tsx
 │   ├── block-config.js

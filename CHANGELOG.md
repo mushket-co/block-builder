@@ -5,6 +5,34 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/),
 и проект следует [Semantic Versioning](https://semver.org/lang/ru/).
 
+## [1.10.0] - 2026-06-27
+
+### Добавлено
+
+#### Поддержка React 18
+
+- **`peerDependencies`:** `react` / `react-dom` — `^18.0.0 || ^19.0.0` (ранее только `^19.0.0`)
+- **Пример `examples/react18`** — тот же `src/`, что у `react19`, зависимости на React 18, порт **3005** (параллельный dev и E2E)
+- **`npm run example:react18`**, **`npm run e2e:preview:react18`**
+- **`npm run test:component:react`** — component-тесты React UI на matrix React 18 и 19 (`scripts/run-react-component-tests.mjs`)
+- **Playwright:** проект **`react18`** (:3005); проект React 19 переименован в **`react19`** (:3004)
+- **CI:** шаг `test:component:react` (matrix 18/19)
+
+#### demo-bb
+
+- **`npm run verify:react`** — сборка demo-bb на React 18 и 19 (`scripts/verify-react-matrix.mjs`)
+
+### Изменено
+
+- **`examples/react` → `examples/react19`** — явное имя workspace и npm-скриптов (`example:react19`, `e2e:preview:react19`)
+- **`examples/next`:** alias `@react-example` → `../react19/src`
+- **Vite `resolve.dedupe`:** `react`, `react-dom` в `examples/react19` и demo-bb — меньше риска «двух копий React» в runtime (Vue + React в одном приложении)
+
+### Миграция
+
+- React **18** и **19** поддерживаются; для dev/CI используйте `examples/react19` и `examples/react18`
+- Было `npm run example:react` → **`npm run example:react19`**
+- Было `examples/react` в ссылках/alias → **`examples/react19`**
 
 ## [1.9.0] - 2026-06-25
 

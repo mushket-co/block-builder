@@ -11,7 +11,7 @@
 | Client boundary | `BlockBuilderEditor.tsx` с `'use client'` — редактор и формы |
 | SSR страница | `app/page.tsx` (Server Component) читает `data/blocks.json` и вызывает `enrichBlocksForSsr` |
 | API | Route Handlers `/api/blocks`, `/api/news`, `/api/articles`, `/api/upload` |
-| Блоки | Переиспользуются из `examples/react/src` через alias `@react-example` |
+| Блоки | Переиспользуются из `examples/react19/src` через alias `@react-example` |
 
 Логика enrich/serialize/strip — как в `examples/nuxt4/shared/utils/`.
 

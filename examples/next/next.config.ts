@@ -11,7 +11,7 @@ const blockBuilderAliases = {
   '@mushket-co/block-builder/index.esm.css': path.join(packageRoot, 'dist/index.esm.css'),
   '@mushket-co/block-builder/index.css': path.join(packageRoot, 'dist/index.esm.css'),
   '@mushket-co/block-builder': path.join(packageRoot, 'dist/index.esm.js'),
-  '@react-example': path.resolve(rootDir, '../react/src'),
+  '@react-example': path.resolve(rootDir, '../react19/src'),
 }
 
 const nextConfig: NextConfig = {

@@ -87,7 +87,7 @@ block-builder/
 | Infrastructure | `src/infrastructure/` | Реализации портов (memory repo, fetch) |
 | Shared UI | `src/shared/` | Icons, SCSS, `ValidationErrorHandler`, `BlockScrollService`, `NotificationService` |
 | Vue UI | `src/vue/components/`, `src/vue/composables/` | Vue-компоненты форм и BlockBuilder |
-| React UI | `src/react/components/`, `src/react/hooks/` | React-компоненты (зеркало Vue); peer: React 19+ |
+| React UI | `src/react/components/`, `src/react/hooks/` | React-компоненты (зеркало Vue); peer: React 18+ / 19 |
 | Scroll / layout | `src/shared/services/BlockScrollService.ts`, `src/utils/scheduling.ts`, `src/utils/scrollHelpers.ts` | Скролл к блоку, rAF, restore scroll |
 | Form errors | `src/utils/formErrorHelpers.ts` | Parse/find/scroll к ошибкам (не scroll блоков) |
 | Public API | `BlockBuilderFacade`, `vue.ts`, `react.ts`, `index.ts` | Точки входа npm-пакета |
@@ -109,7 +109,7 @@ Infrastructure (MemoryBlockRepository, FetchHttpClient, …)
 ```
 
 - **Vue3** — основной путь развития: `BlockBuilder.vue`, composables, field components.
-- **React** — зеркало Vue API на React 19+.
+- **React** — зеркало Vue API; peer `^18.0.0 || ^19.0.0`. Примеры: `examples/react19` (19, :3004), `examples/react18` (18, :3005).
 - **Core API** — `@mushket-co/block-builder/core` (и корневой `.`) без UI пакета.
 
 ---
@@ -126,7 +126,8 @@ npm run dev
 
 ```bash
 npm run example:vue3       # Vue3 (:3001)
-npm run example:react      # React (:3004)
+npm run example:react19   # React 19 (:3004)
+npm run example:react18   # React 18 (:3005)
 npm run example:nuxt3      # Nuxt 3 SSR (:3006)
 npm run example:nuxt4      # Nuxt 4 SSR (:3007)
 npm run example:next       # Next.js SSR (:3008)
@@ -137,7 +138,7 @@ npm run example:vue3-core-api
 Конфиги блоков для примеров:
 
 - `examples/vue3/src/block-config.js`
-- `examples/react/src/block-config.js`
+- `examples/react19/src/block-config.js`
 - `examples/nuxt3/block-config.js`
 - `examples/nuxt4/app/block-config.js`
 

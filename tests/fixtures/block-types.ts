@@ -26,11 +26,11 @@ export const TEXT_BLOCK_FIELD = {
 
 export const LOCAL_STORAGE_KEY = 'saved-blocks';
 
-export type TE2EProject = 'vue3' | 'react';
+export type TE2EProject = 'vue3' | 'react19' | 'react18';
 export type TBlockTypeKey = keyof typeof BLOCK_TYPE_LABELS;
 
 export function getBlockLabel(block: TBlockTypeKey, project: TE2EProject): string {
-  if (project === 'react') {
+  if (project === 'react19' || project === 'react18') {
     return BLOCK_TYPE_LABELS[block].react;
   }
   return BLOCK_TYPE_LABELS[block].vue3;
