@@ -7,24 +7,55 @@ $b: '.bb-matrix-table-control';
 
   &__tabs {
     display: flex;
-    gap: 8px;
-    border-bottom: 1px solid var(--bb-color-neutral-3);
-    padding-bottom: 8px;
+    gap: 3px;
+    width: 100%;
+    padding: 3px;
+    background: var(--bb-color-neutral-1);
+    border: 1px solid var(--bb-color-neutral-2);
+    border-radius: var(--bb-radius-md);
   }
 
   &__tab {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 34px;
     border: none;
     background: transparent;
-    padding: 6px 12px;
-    border-radius: var(--bb-radius-sm);
+    padding: 7px 14px;
+    border-radius: calc(var(--bb-radius-md) - 3px);
     cursor: pointer;
-    font-size: 13px;
+    font-family: var(--bb-font-family);
+    font-size: var(--bb-font-size-sm);
+    font-weight: 500;
+    line-height: 1.25;
     color: var(--bb-color-neutral-6);
+    white-space: nowrap;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      background-color var(--bb-transition-base),
+      color var(--bb-transition-base),
+      box-shadow var(--bb-transition-base);
+
+    &:hover:not(&--active) {
+      color: var(--bb-color-neutral-8);
+      background: var(--bb-color-overlay-alpha-10);
+    }
+
+    &:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 2px var(--bb-color-primary-alpha-20);
+    }
 
     &--active {
-      background: var(--bb-color-primary-light);
+      background: var(--bb-color-surface);
       color: var(--bb-color-primary);
       font-weight: 600;
+      box-shadow:
+        0 1px 2px var(--bb-color-overlay-alpha-10),
+        0 0 0 1px var(--bb-color-neutral-3);
     }
   }
 
