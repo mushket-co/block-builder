@@ -2,6 +2,7 @@ import type { CSSProperties, ReactNode } from 'react';
 
 import type { IBlock, TBlockId } from '../../core/types';
 import { CSS_CLASSES } from '../../utils/constants';
+import { useUiStrings } from '../context/uiStringsContext';
 import { Icon } from './icons/Icon';
 
 interface IBlockItemProps {
@@ -37,6 +38,8 @@ export function BlockItem({
   onToggleVisibility,
   onDelete,
 }: IBlockItemProps) {
+  const uiStrings = useUiStrings();
+
   return (
     <div
       className={[CSS_CLASSES.BLOCK, isEdit && block.visible === false ? CSS_CLASSES.OPACITY_HIDDEN : '']
@@ -54,7 +57,7 @@ export function BlockItem({
               <button
                 type="button"
                 className={CSS_CLASSES.CONTROL_BTN}
-                title="Редактировать"
+                title={uiStrings.edit}
                 onClick={() => onEdit(block)}
               >
                 <Icon name="edit" />
@@ -62,7 +65,7 @@ export function BlockItem({
               <button
                 type="button"
                 className={CSS_CLASSES.CONTROL_BTN}
-                title="Переместить вверх"
+                title={uiStrings.moveUp}
                 disabled={index === 0}
                 onClick={() => onMoveUp(block.id)}
               >
@@ -71,7 +74,7 @@ export function BlockItem({
               <button
                 type="button"
                 className={CSS_CLASSES.CONTROL_BTN}
-                title="Переместить вниз"
+                title={uiStrings.moveDown}
                 disabled={index === total - 1}
                 onClick={() => onMoveDown(block.id)}
               >
@@ -80,7 +83,7 @@ export function BlockItem({
               <button
                 type="button"
                 className={CSS_CLASSES.CONTROL_BTN}
-                title={`Копировать ID: ${block.id}`}
+                title={`${uiStrings.copyIdTitle} ${block.id}`}
                 onClick={() => onCopyId(block.id)}
               >
                 <Icon name="id" />
@@ -88,7 +91,7 @@ export function BlockItem({
               <button
                 type="button"
                 className={CSS_CLASSES.CONTROL_BTN}
-                title="Дублировать"
+                title={uiStrings.duplicate}
                 onClick={() => onDuplicate(block.id)}
               >
                 <Icon name="duplicate" />
@@ -96,7 +99,7 @@ export function BlockItem({
               <button
                 type="button"
                 className={CSS_CLASSES.CONTROL_BTN}
-                title={block.visible ? 'Скрыть' : 'Показать'}
+                title={block.visible ? uiStrings.hide : uiStrings.show}
                 onClick={() => onToggleVisibility(block.id)}
               >
                 <Icon name={block.visible ? 'eye' : 'eyeOff'} />
@@ -104,7 +107,7 @@ export function BlockItem({
               <button
                 type="button"
                 className={CSS_CLASSES.CONTROL_BTN}
-                title="Удалить"
+                title={uiStrings.delete}
                 onClick={() => onDelete(block.id)}
               >
                 <Icon name="delete" />

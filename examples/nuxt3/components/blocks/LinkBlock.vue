@@ -20,7 +20,7 @@ import { computed } from 'vue'
 const props = defineProps({
   text: {
     type: String,
-    default: 'Ссылка'
+    default: 'Link'
   },
   url: {
     type: String,

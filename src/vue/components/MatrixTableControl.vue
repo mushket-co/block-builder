@@ -46,7 +46,7 @@
                 type="button"
                 :class="[CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN, CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_MOVE]"
                 :disabled="index === 0"
-                title="Переместить вверх"
+                :title="uiStrings.moveUp"
                 @click="moveColumn(index, index - 1)"
               >
                 <Icon name="arrowUp" />
@@ -55,7 +55,7 @@
                 type="button"
                 :class="[CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN, CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_MOVE]"
                 :disabled="index >= tableValue.tableHead.length - 1"
-                title="Переместить вниз"
+                :title="uiStrings.moveDown"
                 @click="moveColumn(index, index + 1)"
               >
                 <Icon name="arrowDown" />
@@ -64,7 +64,7 @@
                 type="button"
                 :class="[CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN, CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_REMOVE]"
                 :disabled="tableValue.tableHead.length <= 1"
-                title="Удалить столбец"
+                :title="uiStrings.matrixDeleteColumn"
                 @click="removeColumn(index)"
               >
                 <Icon name="delete" />
@@ -119,7 +119,7 @@
               <CustomDropdown
                 :model-value="column.size"
                 :options="sizeOptions"
-                placeholder="Выберите..."
+                :placeholder="uiStrings.selectPlaceholder"
                 :clearable="false"
                 @update:model-value="
                   updateColumn(index, { size: String($event ?? '') })
@@ -161,7 +161,7 @@
                 type="button"
                 :class="[CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN, CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_MOVE]"
                 :disabled="rowIndex === 0"
-                title="Переместить вверх"
+                :title="uiStrings.moveUp"
                 @click="moveRow(rowIndex, rowIndex - 1)"
               >
                 <Icon name="arrowUp" />
@@ -170,7 +170,7 @@
                 type="button"
                 :class="[CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN, CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_MOVE]"
                 :disabled="rowIndex >= tableValue.tableBody.length - 1"
-                title="Переместить вниз"
+                :title="uiStrings.moveDown"
                 @click="moveRow(rowIndex, rowIndex + 1)"
               >
                 <Icon name="arrowDown" />
@@ -178,7 +178,7 @@
               <button
                 type="button"
                 :class="[CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN, CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_REMOVE]"
-                title="Удалить строку"
+                :title="uiStrings.matrixDeleteRow"
                 @click="removeRow(rowIndex)"
               >
                 <Icon name="delete" />
@@ -267,9 +267,12 @@ import {
   updateMatrixTableColumn,
 } from '../../utils/matrixTableHelpers';
 import Icon from '../../shared/icons/Icon.vue';
+import { useUiStrings } from '../composables/useUiStrings';
 import CustomDropdown from './CustomDropdown.vue';
 import ImageUploadField from './ImageUploadField.vue';
 import { computed, onMounted, ref } from 'vue';
+
+const uiStrings = useUiStrings();
 
 interface Props {
   modelValue?: IMatrixTableValue | null;
@@ -306,18 +309,18 @@ const sizeOptions = computed(
 );
 
 const structureTabLabel = computed(
-  () => props.matrixTableConfig?.structureTabLabel ?? 'Структура таблицы'
+  () => props.matrixTableConfig?.structureTabLabel ?? uiStrings.value.matrixStructureTab
 );
 
 const contentTabLabel = computed(
-  () => props.matrixTableConfig?.contentTabLabel ?? 'Контент'
+  () => props.matrixTableConfig?.contentTabLabel ?? uiStrings.value.matrixContentTab
 );
 
 const columnItemTitle = computed(
-  () => props.matrixTableConfig?.columnItemTitle ?? 'Столбец'
+  () => props.matrixTableConfig?.columnItemTitle ?? uiStrings.value.matrixColumn
 );
 
-const rowItemTitle = computed(() => props.matrixTableConfig?.rowItemTitle ?? 'Строка');
+const rowItemTitle = computed(() => props.matrixTableConfig?.rowItemTitle ?? uiStrings.value.matrixRow);
 
 const maxColumns = computed(() => props.matrixTableConfig?.maxColumns);
 const maxRows = computed(() => props.matrixTableConfig?.maxRows);

@@ -12,6 +12,9 @@ import type { ICustomFieldFormScope } from '../../core/ports/CustomFieldRenderer
 import type { ICustomFieldRendererRegistry } from '../../core/ports/CustomFieldRenderer';
 import { CSS_CLASSES } from '../../utils/constants';
 import { getFieldError } from '../../utils/formFieldHelpers';
+import { useUiStrings } from '../composables/useUiStrings';
+
+const uiStrings = useUiStrings();
 
 interface Props {
   field: any;
@@ -83,7 +86,7 @@ const initializeRenderer = async () => {
     rendererInstance = await renderer.render(containerRef.value, context);
     lastSyncedValidationError = getValidationError() || null;
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Ошибка инициализации кастомного поля';
+    const message = error instanceof Error ? error.message : uiStrings.value.customFieldInitError;
     initError.value = message;
     console.error(`[CustomField] ${props.field.field}:`, error);
   }

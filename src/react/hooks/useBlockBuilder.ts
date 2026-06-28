@@ -20,6 +20,7 @@ import {
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { enableViewportBreakpointDetection, isClient } from '../../utils/ssr';
 import { unlockBodyScroll } from '../../utils/scrollLock';
+import { useUiStrings } from '../context/uiStringsContext';
 import type { IBlockBuilderProps } from '../types/blockBuilder';
 import { useBlockForm } from './useBlockForm';
 import { useBlocks } from './useBlocks';
@@ -40,6 +41,7 @@ export function useBlockBuilder({
   onBlockUpdated,
   onBlockDeleted,
 }: IBlockBuilderProps) {
+  const uiStrings = useUiStrings();
   const blockService = blockManagementUseCase;
   const componentRegistry = blockService.getComponentRegistry();
 
@@ -155,9 +157,7 @@ export function useBlockBuilder({
 
   const handleSave = useCallback(async () => {
     if (!onSave) {
-      notificationService.error(
-        'Функция сохранения не настроена. Передайте onSave в пропсы компонента.'
-      );
+      notificationService.error(uiStrings.saveNotEnabled);
       return;
     }
     try {
@@ -165,25 +165,25 @@ export function useBlockBuilder({
       if (result === true) {
         markBlocksAsSaved(blocks);
         setSavedBaselineBlocks([...blocks]);
-        notificationService.success('Данные успешно сохранены');
+        notificationService.success(uiStrings.successSaved);
       } else {
-        notificationService.error('Произошла ошибка при сохранении');
+        notificationService.error(uiStrings.errorSaveFailed);
       }
     } catch {
-      notificationService.error('Произошла ошибка при сохранении');
+      notificationService.error(uiStrings.errorSaveFailed);
     }
-  }, [blocks, markBlocksAsSaved, onSave]);
+  }, [blocks, markBlocksAsSaved, onSave, uiStrings]);
 
   const handleCopyId = useCallback(async (blockId: TBlockId) => {
     try {
       const success = await copyToClipboard(blockId as string);
       if (success !== false) {
-        notificationService.success(`ID скопирован: ${blockId}`);
+        notificationService.success(`${uiStrings.blockIdCopied} ${blockId}`);
       }
     } catch {
-      notificationService.error('Ошибка копирования ID');
+      notificationService.error(uiStrings.copyIdError);
     }
-  }, []);
+  }, [uiStrings]);
 
   const renderBlockContent = useCallback(
     (block: IBlock) => {

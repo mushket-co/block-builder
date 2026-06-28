@@ -11,7 +11,7 @@
           class="category"
         >
           <div class="category-header">
-            <h3 class="category-title">{{ category.name || `Категория ${categoryIndex + 1}` }}</h3>
+            <h3 class="category-title">{{ category.name || `Category ${categoryIndex + 1}` }}</h3>
             <p v-if="category.description" class="category-description">
               {{ category.description }}
             </p>
@@ -29,18 +29,18 @@
                   <img :src="getImageUrl(product.image)" :alt="product.name" />
                 </div>
                 <div v-if="product.thumbnail" class="product-thumbnail">
-                  <img :src="getImageUrl(product.thumbnail)" :alt="`${product.name} - миниатюра`" />
+                  <img :src="getImageUrl(product.thumbnail)" :alt="`${product.name} - thumbnail`" />
                 </div>
               </div>
 
               <div class="product-info">
                 <div class="product-head">
-                  <h4 class="product-name">{{ product.name || `Товар ${productIndex + 1}` }}</h4>
+                  <h4 class="product-name">{{ product.name || `Product ${productIndex + 1}` }}</h4>
                   <span v-if="product.inStock === false" class="product-badge product-badge--out">
-                    Нет в наличии
+                    Out of stock
                   </span>
                   <span v-else-if="product.inStock" class="product-badge product-badge--in">
-                    В наличии
+                    In stock
                   </span>
                 </div>
 
@@ -60,10 +60,10 @@
 
                 <div class="product-meta">
                   <span v-if="product.status" class="product-meta-item">
-                    Статус: {{ formatStatus(product.status) }}
+                    Status: {{ formatStatus(product.status) }}
                   </span>
                   <span v-if="product.deliveryType" class="product-meta-item">
-                    Доставка: {{ formatDelivery(product.deliveryType) }}
+                    Delivery: {{ formatDelivery(product.deliveryType) }}
                   </span>
                 </div>
 
@@ -77,7 +77,7 @@
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    Страница товара
+                    Product page
                   </a>
                 </div>
 
@@ -109,7 +109,7 @@ import { computed } from 'vue'
 const props = defineProps({
   title: {
     type: String,
-    default: 'Каталог товаров',
+    default: 'Product catalog',
   },
   description: {
     type: String,
@@ -134,9 +134,9 @@ function getImageUrl(img) {
 
 function formatPrice(price) {
   if (typeof price === 'number') {
-    return new Intl.NumberFormat('ru-RU', {
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'RUB',
+      currency: 'USD',
     }).format(price)
   }
   return price
@@ -144,18 +144,18 @@ function formatPrice(price) {
 
 function formatStatus(status) {
   const map = {
-    draft: 'Черновик',
-    published: 'Опубликован',
-    archived: 'В архиве',
+    draft: 'Draft',
+    published: 'Published',
+    archived: 'Archived',
   }
   return map[status] || status
 }
 
 function formatDelivery(type) {
   const map = {
-    pickup: 'Самовывоз',
-    courier: 'Курьер',
-    post: 'Почта',
+    pickup: 'Pickup',
+    courier: 'Courier',
+    post: 'Mail',
   }
   return map[type] || type
 }

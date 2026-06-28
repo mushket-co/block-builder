@@ -4,6 +4,7 @@ import type { IFormFieldConfig } from '../../core/types/form';
 import type { IBlockFormHooks } from '../../core/types/formHooks';
 import type { ApiSelectUseCase } from '../../core/use-cases/ApiSelectUseCase';
 import type { BlockManagementUseCase } from '../../core/use-cases/BlockManagementUseCase';
+import type { IUiStrings, TUiLocale } from '../../shared/i18n/uiStrings';
 
 /** Конфиг типа блока для React BlockBuilder (formHooks — Vue/React UI) */
 export interface IBlockType {
@@ -38,4 +39,8 @@ export interface IBlockBuilderProps {
   onBlockAdded?: (block: IBlock) => void;
   onBlockUpdated?: (block: IBlock) => void;
   onBlockDeleted?: (blockId: TBlockId) => void;
+  /** UI locale preset (`ru` default) */
+  locale?: TUiLocale;
+  /** Override built-in UI strings */
+  uiStrings?: Partial<IUiStrings>;
 }

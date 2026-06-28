@@ -34,10 +34,10 @@
         <button
           type="button"
           :class="CSS_CLASSES.FILE_UPLOAD_FIELD_REMOVE"
-          title="Удалить"
+          :title="uiStrings.remove"
           @click="removeItem(index)"
         >
-          Удалить
+          {{ uiStrings.remove }}
         </button>
       </li>
     </ul>
@@ -60,10 +60,10 @@
       <button
         type="button"
         :class="CSS_CLASSES.FILE_UPLOAD_FIELD_REMOVE"
-        title="Удалить файл"
+        :title="uiStrings.removeFile"
         @click="clearValue"
       >
-        Удалить
+        {{ uiStrings.remove }}
       </button>
     </div>
 
@@ -88,7 +88,7 @@
       >
         <template v-if="isLoading">
           <Icon name="loader" :width="14" :height="14" class="bb-icon--spin" />
-          Загрузка...
+          {{ uiStrings.loading }}
         </template>
         <template v-else-if="isMultiple">+ {{ addButtonLabel }}</template>
         <template v-else>{{ singleDisplayValue ? changeButtonLabel : chooseButtonLabel }}</template>
@@ -122,13 +122,13 @@
       >
         <img
           :src="itemUrl"
-          :alt="label || 'Изображение'"
+          :alt="label || uiStrings.imageAlt"
           :class="CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW_IMG"
         />
         <button
           type="button"
           :class="CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW_CLEAR"
-          title="Удалить"
+          :title="uiStrings.remove"
           @click="removeItem(index)"
         >
           <Icon name="close" :width="14" :height="14" />
@@ -145,7 +145,7 @@
       >
         <span v-if="isLoading">
           <Icon name="loader" :width="14" :height="14" class="bb-icon--spin" />
-          Загрузка...
+          {{ uiStrings.loading }}
         </span>
         <span v-else>+ {{ addButtonLabel }}</span>
       </label>
@@ -155,13 +155,13 @@
       <div v-if="singleDisplayValue" :class="CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW">
         <img
           :src="singleDisplayValue"
-          :alt="label || 'Изображение'"
+          :alt="label || uiStrings.imageAlt"
           :class="CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW_IMG"
         />
         <button
           type="button"
           :class="CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW_CLEAR"
-          title="Удалить изображение"
+          :title="uiStrings.removeImage"
           @click="clearValue"
         >
           <Icon name="close" :width="14" :height="14" />
@@ -189,7 +189,7 @@
       >
         <span v-if="isLoading">
           <Icon name="loader" :width="14" :height="14" class="bb-icon--spin" />
-          Загрузка...
+          {{ uiStrings.loading }}
         </span>
         <span v-else>{{ singleDisplayValue ? changeButtonLabel : chooseButtonLabel }}</span>
       </label>
@@ -204,6 +204,7 @@ import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import type { IFileUploadConfig } from '../../core/types/form';
 import { CSS_CLASSES } from '../../utils/constants';
 import Icon from '../../shared/icons/Icon.vue';
+import { useUiStrings } from '../composables/useUiStrings';
 import {
   canAddUploadItems,
   getDefaultAccept,
@@ -251,6 +252,8 @@ const emit = defineEmits<{
   'update:modelValue': [value: unknown];
 }>();
 
+const uiStrings = useUiStrings();
+
 const containerRef = ref<HTMLElement | null>(null);
 const fileInputRef = ref<HTMLInputElement | null>(null);
 const fileError = ref('');
@@ -272,13 +275,15 @@ const chooseButtonLabel = computed(() => {
   if (props.placeholder) {
     return props.placeholder;
   }
-  return isFileVariant.value ? 'Выберите файл' : 'Выберите изображение';
+  return isFileVariant.value ? uiStrings.value.chooseFile : uiStrings.value.chooseImage;
 });
 
 const changeButtonLabel = computed(() =>
-  isFileVariant.value ? 'Заменить файл' : 'Изменить изображение'
+  isFileVariant.value ? uiStrings.value.replaceFile : uiStrings.value.changeImage
 );
-const addButtonLabel = computed(() => (isFileVariant.value ? 'Добавить файл' : 'Добавить'));
+const addButtonLabel = computed(() =>
+  isFileVariant.value ? uiStrings.value.addFile : uiStrings.value.add
+);
 
 const dataRepeaterField = computed(() => {
   const value = props.dataRepeaterField;
@@ -428,9 +433,9 @@ const handleFileChange = async (event: Event) => {
     }
   } catch (error) {
     if (error instanceof TypeError && error.message === 'Failed to fetch') {
-      fileError.value = 'Не удалось подключиться к серверу загрузки. Проверьте, что API доступен.';
+      fileError.value = uiStrings.value.uploadServerError;
     } else {
-      fileError.value = error instanceof Error ? error.message : 'Ошибка при загрузке файла';
+      fileError.value = error instanceof Error ? error.message : uiStrings.value.uploadFileError;
     }
     if (uploadConfig.value.onUploadError && error instanceof Error) {
       uploadConfig.value.onUploadError(error);

@@ -66,24 +66,6 @@ describe('BlockBuilderFacade Integration Tests', () => {
     const allBlocks = await facade.getAllBlocks();
     expect(allBlocks.length).toBeGreaterThanOrEqual(2);
   });
-  test('должен установить тему', () => {
-    const options: IBlockBuilderOptions = {
-      blockConfigs: {},
-      theme: 'dark',
-      autoInit: false
-    };
-    facade = new BlockBuilderFacade(options);
-    expect(facade.theme).toBe('dark');
-  });
-  test('должен установить локаль', () => {
-    const options: IBlockBuilderOptions = {
-      blockConfigs: {},
-      locale: 'en',
-      autoInit: false
-    };
-    facade = new BlockBuilderFacade(options);
-    expect(facade.locale).toBe('en');
-  });
   });
   describe('CRUD операции с блоками', () => {
   beforeEach(() => {

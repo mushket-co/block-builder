@@ -1,6 +1,7 @@
 import type { MouseEvent } from 'react';
 
 import { CSS_CLASSES } from '../../utils/constants';
+import { useUiStrings } from '../context/uiStringsContext';
 import { Icon } from './icons/Icon';
 
 export interface IBlockTypeOption {
@@ -20,6 +21,8 @@ export function BlockTypeSelectionModal({
   onSelect,
   onClose,
 }: IBlockTypeSelectionModalProps) {
+  const uiStrings = useUiStrings();
+
   const handleOverlayMouseDown = (event: MouseEvent<HTMLDivElement>) => {
     if ((event.target as HTMLElement).classList.contains(CSS_CLASSES.MODAL)) {
       onClose();
@@ -30,7 +33,7 @@ export function BlockTypeSelectionModal({
     <div className={CSS_CLASSES.MODAL} onMouseDown={handleOverlayMouseDown}>
       <div className={CSS_CLASSES.MODAL_CONTENT} onMouseDown={event => event.stopPropagation()}>
         <div className={CSS_CLASSES.MODAL_HEADER}>
-          <h3>Выберите тип блока</h3>
+          <h3>{uiStrings.blockTypeSelectionTitle}</h3>
           <button type="button" className={CSS_CLASSES.MODAL_CLOSE} onClick={onClose}>
             <Icon name="close" width={20} height={20} />
           </button>

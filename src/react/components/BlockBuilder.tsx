@@ -3,6 +3,7 @@ import { lazy, Suspense, useMemo } from 'react';
 import { useBlockBuilder } from '../hooks/useBlockBuilder';
 import type { IBlockBuilderProps } from '../types/blockBuilder';
 import { BlockAnchorContext } from '../context/blockAnchorContext';
+import { UiStringsProvider, useUiStrings } from '../context/uiStringsContext';
 import { BlockControlsBar } from './BlockControlsBar';
 import { BlockFormModal } from './BlockFormModal';
 import { BlockTypeSelectionModal } from './BlockTypeSelectionModal';
@@ -14,7 +15,7 @@ const BlockFormFields = lazy(() =>
   import('./BlockFormFields').then(module => ({ default: module.BlockFormFields }))
 );
 
-export function BlockBuilder(props: IBlockBuilderProps) {
+function BlockBuilderContent(props: IBlockBuilderProps) {
   const {
     apiSelectUseCase,
     customFieldRendererRegistry,
@@ -25,6 +26,7 @@ export function BlockBuilder(props: IBlockBuilderProps) {
     isEdit = true,
   } = props;
 
+  const uiStrings = useUiStrings();
   const builder = useBlockBuilder(props);
 
   const blockAnchorContext = useMemo(() => {
@@ -45,6 +47,10 @@ export function BlockBuilder(props: IBlockBuilderProps) {
       blockTypeLabels,
     };
   }, [builder.availableBlockTypes, builder.blocks, builder.currentBlockId]);
+
+  const modalTitle = builder.currentBlockType
+    ? `${builder.modalMode === 'create' ? uiStrings.createBlock : uiStrings.editBlock} ${builder.currentBlockType.label}`
+    : '';
 
   return (
     <div className={builder.appClassName}>
@@ -86,8 +92,8 @@ export function BlockBuilder(props: IBlockBuilderProps) {
 
       {builder.showModal && builder.currentBlockType ? (
         <BlockFormModal
-          title={`${builder.modalMode === 'create' ? 'Создать' : 'Редактировать'} ${builder.currentBlockType.label}`}
-          submitLabel={builder.modalMode === 'create' ? 'Создать' : 'Сохранить'}
+          title={modalTitle}
+          submitLabel={builder.modalMode === 'create' ? uiStrings.submitCreate : uiStrings.submitSave}
           contentClassName={CSS_CLASSES.MODAL_CONTENT}
           bodyClassName={CSS_CLASSES.MODAL_BODY}
           validationErrorCount={builder.validationErrorCount}
@@ -122,6 +128,16 @@ export function BlockBuilder(props: IBlockBuilderProps) {
         </BlockFormModal>
       ) : null}
     </div>
+  );
+}
+
+export function BlockBuilder(props: IBlockBuilderProps) {
+  const { locale, uiStrings, ...rest } = props;
+
+  return (
+    <UiStringsProvider locale={locale} uiStrings={uiStrings}>
+      <BlockBuilderContent {...rest} />
+    </UiStringsProvider>
   );
 }
 

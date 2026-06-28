@@ -1,6 +1,6 @@
 <template>
-  <div 
-    class="wyz-editor u-base-wyz-content" 
+  <div
+    class="wyz-editor u-base-wyz-content"
     :class="[{ 'wyz-editor--is-error': isError }, `wyz-editor--mode-${mode}`]"
   >
     <div ref="editor" @change="onChange" v-html="localModelValue" />
@@ -37,18 +37,12 @@ export default {
       editor: null,
       localModelValue: this.modelValue,
       typograf: new Typograf({
-        locale: ['ru', 'en-US'],
+        locale: ['en-US'],
         enableRule: [
-          'ru/quote/main',
-          'ru/quote/second',
-          'ru/dash/main',
-          'ru/nbsp/afterShortWord',
-          'ru/nbsp/afterParagraphMark',
+          'en-US/dash/main',
           'common/nbsp/afterCurrency',
-          'common/space/delBeforePunctuation'
+          'common/space/delBeforePunctuation',
         ],
-
-        disableRule: ['ru/phone-number/main']
       })
     }
   },
@@ -77,8 +71,8 @@ export default {
       // Кастомная кнопка плагина типографики
       Jodit.defaultOptions.controls.typography = {
         name: 'typography',
-        text: 'Типографика',
-        tooltip: 'Применить типографику',
+        text: 'Typography',
+        tooltip: 'Apply typography',
         exec: editor => {
           editor.value = this.typograf.execute(editor.value)
           editor.events.fire('change')
@@ -86,7 +80,7 @@ export default {
       }
 
       this.editor = Jodit.make(this.$refs.editor, {
-        language: 'ru',
+        language: 'en',
         showCharsCounter: false,
         showXPathInStatusbar: false,
 

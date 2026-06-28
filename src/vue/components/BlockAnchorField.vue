@@ -34,7 +34,10 @@ import {
 import { computed, inject } from 'vue';
 
 import { BLOCK_ANCHOR_CONTEXT_KEY } from '../composables/blockAnchorContext';
+import { useUiStrings } from '../composables/useUiStrings';
 import CustomDropdown from './CustomDropdown.vue';
+
+const uiStrings = useUiStrings();
 
 interface Props {
   fieldId: string;
@@ -94,10 +97,10 @@ const customUrlValue = computed(() => {
 });
 
 const dropdownPlaceholder = computed(
-  () => props.blockAnchorConfig?.placeholder || 'Выберите блок на странице'
+  () => props.blockAnchorConfig?.placeholder || uiStrings.value.blockAnchorPlaceholder
 );
 
-const customUrlPlaceholder = computed(() => 'или введите URL');
+const customUrlPlaceholder = computed(() => uiStrings.value.blockAnchorCustomUrlPlaceholder);
 
 const showError = computed(() => Boolean(props.error));
 

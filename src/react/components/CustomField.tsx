@@ -7,6 +7,7 @@ import type {
 import type { IFormFieldConfig } from '../../core/types/form';
 import { CSS_CLASSES } from '../../utils/constants';
 import { getFieldError } from '../../utils/formFieldHelpers';
+import { useUiStrings } from '../context/uiStringsContext';
 
 interface ICustomFieldRendererInstance {
   destroy?: () => void;
@@ -34,6 +35,7 @@ export function CustomField({
   formScope,
   onChange,
 }: ICustomFieldProps) {
+  const uiStrings = useUiStrings();
   const containerRef = useRef<HTMLDivElement>(null);
   const rendererInstanceRef = useRef<ICustomFieldRendererInstance | null>(null);
   const onChangeRef = useRef(onChange);
@@ -111,7 +113,7 @@ export function CustomField({
         lastSyncedValidationErrorRef.current = fieldError || null;
       } catch (error) {
         const message =
-          error instanceof Error ? error.message : 'Ошибка инициализации кастомного поля';
+          error instanceof Error ? error.message : uiStrings.customFieldInitError;
         setInitError(message);
         console.error(`[CustomField] ${fieldName}:`, error);
       }

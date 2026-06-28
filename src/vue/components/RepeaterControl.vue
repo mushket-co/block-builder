@@ -20,13 +20,13 @@
         ]"
       >
         <div :class="CSS_CLASSES.REPEATER_CONTROL_ITEM_HEADER">
-          <span :class="CSS_CLASSES.REPEATER_CONTROL_ITEM_TITLE"> {{ itemTitle }} #{{ index + 1 }} </span>
+          <span :class="CSS_CLASSES.REPEATER_CONTROL_ITEM_TITLE"> {{ itemTitleResolved }} #{{ index + 1 }} </span>
             <div :class="CSS_CLASSES.REPEATER_CONTROL_ITEM_ACTIONS">
             <button
               v-if="index > 0"
               type="button"
               :class="[CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN, CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_MOVE]"
-              title="Переместить вверх"
+              :title="uiStrings.moveUp"
               @click="moveItem(index, index - 1)"
             >
               <Icon name="arrowUp" />
@@ -35,7 +35,7 @@
               v-if="index < items.length - 1"
               type="button"
               :class="[CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN, CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_MOVE]"
-              title="Переместить вниз"
+              :title="uiStrings.moveDown"
               @click="moveItem(index, index + 1)"
             >
               <Icon name="arrowDown" />
@@ -44,7 +44,7 @@
               type="button"
               :class="[CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN, CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_REMOVE]"
               :disabled="!canRemove"
-              :title="removeButtonText"
+              :title="removeButtonTextResolved"
               @click="removeItem(index)"
             >
               <Icon name="delete" />
@@ -56,7 +56,7 @@
             <button
               type="button"
               :class="[CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN, CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_COLLAPSE]"
-              :title="collapsedItems[item._id] ? 'Развернуть' : 'Свернуть'"
+              :title="collapsedItems[item._id] ? uiStrings.expand : uiStrings.collapse"
               @click="toggleCollapse(item._id)"
             >
               <Icon name="chevronDown" />
@@ -324,7 +324,7 @@
       :disabled="!canAdd"
       @click="addItem"
     >
-      + {{ addButtonText }}
+      + {{ addButtonTextResolved }}
     </button>
 
     <div v-if="effectiveMin || max" :class="CSS_CLASSES.REPEATER_CONTROL_HINT">
@@ -344,8 +344,9 @@
 <script>
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue';
 
-import { CSS_CLASSES, UI_STRINGS } from '../../utils/constants';
+import { CSS_CLASSES } from '../../utils/constants';
 import Icon from '../../shared/icons/Icon.vue';
+import { useUiStrings } from '../composables/useUiStrings';
 import { groupFormFields } from '../../utils/formFieldGrouping';
 import { isFieldRequired, isFieldVisible } from '../../utils/formFieldHelpers';
 import { getRepeaterCountText } from '../../utils/repeaterCountText';
@@ -403,17 +404,17 @@ export default {
 
     addButtonText: {
       type: String,
-      default: UI_STRINGS.repeaterAdd,
+      default: undefined,
     },
 
     removeButtonText: {
       type: String,
-      default: UI_STRINGS.repeaterRemove,
+      default: undefined,
     },
 
     itemTitle: {
       type: String,
-      default: UI_STRINGS.repeaterItem,
+      default: undefined,
     },
 
     countLabelVariants: {
@@ -448,7 +449,7 @@ export default {
 
     getApiSelectRestrictionMessage: {
       type: Function,
-      default: () => 'API Select поля недоступны.',
+      default: undefined,
     },
 
     customFieldRendererRegistry: {
@@ -463,7 +464,7 @@ export default {
 
     getCustomFieldRestrictionMessage: {
       type: Function,
-      default: () => 'Кастомные поля недоступны.',
+      default: undefined,
     },
 
     nestingDepth: {
@@ -494,22 +495,27 @@ export default {
 
   emits: ['update:modelValue'],
   setup(props, { emit }) {
+    const uiStrings = useUiStrings();
     const items = ref([]);
     const collapsedItems = ref({});
     let idCounter = 0;
 
+    const addButtonTextResolved = computed(() => props.addButtonText ?? uiStrings.value.repeaterAdd);
+    const removeButtonTextResolved = computed(() => props.removeButtonText ?? uiStrings.value.repeaterRemove);
+    const itemTitleResolved = computed(() => props.itemTitle ?? uiStrings.value.repeaterItem);
+
     const apiSelectRestrictionMessage = computed(() => {
-      const message = props.getApiSelectRestrictionMessage();
+      const message = props.getApiSelectRestrictionMessage?.();
       return typeof message === 'string' && message.trim().length > 0
         ? message
-        : 'API Select поля недоступны.';
+        : uiStrings.value.apiSelectUnavailable;
     });
 
     const customFieldRestrictionMessage = computed(() => {
-      const message = props.getCustomFieldRestrictionMessage();
+      const message = props.getCustomFieldRestrictionMessage?.();
       return typeof message === 'string' && message.trim().length > 0
         ? message
-        : 'Кастомные поля недоступны.';
+        : uiStrings.value.customFieldsUnavailable;
     });
 
     const isRequired = computed(() => {
@@ -759,13 +765,9 @@ export default {
       return getRepeaterCountText(count, props.countLabelVariants || undefined);
     };
 
-    const repeaterMinText = computed(() => {
-      return UI_STRINGS?.repeaterMin || 'Минимум:';
-    });
+    const repeaterMinText = computed(() => uiStrings.value.repeaterMin);
 
-    const repeaterMaxText = computed(() => {
-      return UI_STRINGS?.repeaterMax || 'Максимум:';
-    });
+    const repeaterMaxText = computed(() => uiStrings.value.repeaterMax);
 
     watch(
       () => props.modelValue,
@@ -817,6 +819,10 @@ export default {
       updateItemField,
       repeaterMinText,
       repeaterMaxText,
+      addButtonTextResolved,
+      removeButtonTextResolved,
+      itemTitleResolved,
+      uiStrings,
       apiSelectRestrictionMessage,
       customFieldRestrictionMessage,
       toFormFieldConfig,

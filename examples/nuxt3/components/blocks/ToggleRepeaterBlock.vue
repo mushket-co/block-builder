@@ -2,25 +2,25 @@
   <div class="toggle-repeater-block">
     <div class="container">
       <p class="toggle-repeater-block__hint">
-        Regression: включите «Основные логотипы» или «Ссылки» — в форме должен появиться repeater внутри toggle-group.
+        Regression: enable "Main logos" or "Links" — a repeater should appear inside the toggle-group in the form.
       </p>
 
       <section v-if="showLogos && logos?.length" class="toggle-repeater-block__section">
-        <h3 class="toggle-repeater-block__title">Логотипы</h3>
+        <h3 class="toggle-repeater-block__title">Logos</h3>
         <ul class="toggle-repeater-block__list">
           <li v-for="(item, index) in logos" :key="`logo-${index}`">
-            <strong>{{ item.name || `Логотип ${index + 1}` }}</strong>
+            <strong>{{ item.name || `Logo ${index + 1}` }}</strong>
             <span v-if="item.url"> — {{ item.url }}</span>
           </li>
         </ul>
       </section>
 
       <section v-if="showLinks && links?.length" class="toggle-repeater-block__section">
-        <h3 class="toggle-repeater-block__title">Ссылки</h3>
+        <h3 class="toggle-repeater-block__title">Links</h3>
         <ul class="toggle-repeater-block__list">
           <li v-for="(item, index) in links" :key="`link-${index}`">
             <a v-if="item.url" :href="item.url" class="toggle-repeater-block__link">{{ item.name || item.url }}</a>
-            <span v-else>{{ item.name || `Ссылка ${index + 1}` }}</span>
+            <span v-else>{{ item.name || `Link ${index + 1}` }}</span>
           </li>
         </ul>
       </section>

@@ -14,6 +14,7 @@ import {
 import { createPortal } from 'react-dom';
 
 import { CSS_CLASSES } from '../../utils/constants';
+import { useUiStrings } from '../context/uiStringsContext';
 import { Icon } from './icons/Icon';
 
 export interface IDropdownOption {
@@ -108,10 +109,6 @@ export interface ICustomDropdownProps {
 
 type TScrollAncestor = HTMLElement | Window;
 
-const DEFAULT_PLACEHOLDER = 'Выберите значение';
-const DEFAULT_LOADING_TEXT = 'Загрузка...';
-const DEFAULT_EMPTY_TEXT = 'Нет данных';
-
 function nextTick(callback: () => void): void {
   queueMicrotask(() => {
     requestAnimationFrame(callback);
@@ -163,13 +160,13 @@ export const CustomDropdown = forwardRef<ICustomDropdownRef, ICustomDropdownProp
       modelValue,
       onChange,
       options = [],
-      placeholder = DEFAULT_PLACEHOLDER,
+      placeholder,
       multiple = false,
       disabled = false,
       clearable = false,
       loading = false,
-      loadingText = DEFAULT_LOADING_TEXT,
-      emptyText = DEFAULT_EMPTY_TEXT,
+      loadingText,
+      emptyText,
       errorText = null,
       invalid = false,
       teleportTo = 'body',
@@ -192,6 +189,11 @@ export const CustomDropdown = forwardRef<ICustomDropdownRef, ICustomDropdownProp
     },
     ref
   ) {
+    const uiStrings = useUiStrings();
+    const resolvedPlaceholder = placeholder ?? uiStrings.dropdownPlaceholder;
+    const resolvedLoadingText = loadingText ?? uiStrings.dropdownLoading;
+    const resolvedEmptyText = emptyText ?? uiStrings.dropdownEmpty;
+
     const rootRef = useRef<HTMLDivElement>(null);
     const triggerRef = useRef<HTMLDivElement>(null);
     const panelRef = useRef<HTMLDivElement>(null);
@@ -774,12 +776,12 @@ export const CustomDropdown = forwardRef<ICustomDropdownRef, ICustomDropdownProp
             multipleSummary ? (
               <span className={CSS_CLASSES.BB_DROPDOWN_SINGLE}>{multipleSummary}</span>
             ) : (
-              <span className={CSS_CLASSES.BB_DROPDOWN_PLACEHOLDER}>{placeholder}</span>
+              <span className={CSS_CLASSES.BB_DROPDOWN_PLACEHOLDER}>{resolvedPlaceholder}</span>
             )
           ) : displayValue ? (
             <span className={CSS_CLASSES.BB_DROPDOWN_SINGLE}>{displayValue}</span>
           ) : (
-            <span className={CSS_CLASSES.BB_DROPDOWN_PLACEHOLDER}>{placeholder}</span>
+            <span className={CSS_CLASSES.BB_DROPDOWN_PLACEHOLDER}>{resolvedPlaceholder}</span>
           )}
         </div>
 
@@ -871,15 +873,15 @@ export const CustomDropdown = forwardRef<ICustomDropdownRef, ICustomDropdownProp
           </ul>
         ) : loading ? (
           <div className={CSS_CLASSES.BB_DROPDOWN_MESSAGE}>
-            {renderLoading ?? loadingText}
+            {renderLoading ?? resolvedLoadingText}
           </div>
         ) : errorText ? null : (
-          <div className={CSS_CLASSES.BB_DROPDOWN_MESSAGE}>{renderEmpty ?? emptyText}</div>
+          <div className={CSS_CLASSES.BB_DROPDOWN_MESSAGE}>{renderEmpty ?? resolvedEmptyText}</div>
         )}
 
         {loading && options.length > 0 ? (
           <div className={CSS_CLASSES.BB_DROPDOWN_MESSAGE}>
-            {renderLoading ?? loadingText}
+            {renderLoading ?? resolvedLoadingText}
           </div>
         ) : null}
 

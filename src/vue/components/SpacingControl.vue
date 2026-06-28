@@ -2,7 +2,7 @@
   <div :class="CSS_CLASSES.SPACING_CONTROL">
     <div :class="CSS_CLASSES.SPACING_CONTROL_HEADER">
       <label :class="CSS_CLASSES.SPACING_CONTROL_LABEL">
-        {{ label }}
+        {{ resolvedLabel }}
         <span v-if="required" :class="CSS_CLASSES.REQUIRED">*</span>
       </label>
     </div>
@@ -58,7 +58,7 @@
     </div>
 
     <div v-if="showPreview" :class="CSS_CLASSES.SPACING_CONTROL_PREVIEW">
-      <div :class="CSS_CLASSES.SPACING_CONTROL_PREVIEW_TITLE">CSS переменные:</div>
+      <div :class="CSS_CLASSES.SPACING_CONTROL_PREVIEW_TITLE">{{ spacingCssVariablesPreviewLabel }}</div>
       <pre :class="CSS_CLASSES.SPACING_CONTROL_PREVIEW_CODE">{{ getCSSVariablesPreview() }}</pre>
     </div>
   </div>
@@ -68,9 +68,10 @@
 import { CSS_CLASSES } from '../../utils/constants';
 import {
   ALL_SPACING_TYPES,
-  DEFAULT_BREAKPOINTS,
-  SPACING_LABELS,
+  getDefaultBreakpointsFromUi,
+  getSpacingLabelsFromUi,
 } from '../../utils/spacingHelpers';
+import { useUiStrings } from '../composables/useUiStrings';
 import { computed, onMounted, ref, watch } from 'vue';
 
 export default {
@@ -78,7 +79,7 @@ export default {
   props: {
     label: {
       type: String,
-      default: 'Отступы',
+      default: undefined,
     },
 
     fieldName: {
@@ -129,13 +130,18 @@ export default {
 
   emits: ['update:modelValue'],
   setup(props, { emit }) {
+    const uiStrings = useUiStrings();
     const spacingData = ref({});
+
+    const resolvedLabel = computed(() => props.label ?? uiStrings.value.spacingDefaultLabel);
+    const spacingLabels = computed(() => getSpacingLabelsFromUi(uiStrings.value));
+    const spacingCssVariablesPreviewLabel = computed(() => uiStrings.value.spacingCssVariablesPreview);
 
     const allBreakpoints = computed(() => {
       if (props.breakpoints && props.breakpoints.length > 0) {
         return Array.isArray(props.breakpoints) ? [...props.breakpoints] : props.breakpoints;
       }
-      return DEFAULT_BREAKPOINTS;
+      return getDefaultBreakpointsFromUi(uiStrings.value);
     });
 
     const currentBreakpoint = ref('');
@@ -169,7 +175,7 @@ export default {
     };
 
     const getSpacingLabel = spacingType => {
-      return SPACING_LABELS[spacingType] || spacingType;
+      return spacingLabels.value[spacingType] || spacingType;
     };
 
     const getSpacingValue = spacingType => {
@@ -265,6 +271,8 @@ export default {
 
     return {
       CSS_CLASSES,
+      resolvedLabel,
+      spacingCssVariablesPreviewLabel,
       currentBreakpoint,
       spacingData,
       allBreakpoints,

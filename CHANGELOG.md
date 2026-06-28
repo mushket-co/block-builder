@@ -5,6 +5,43 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/),
 и проект следует [Semantic Versioning](https://semver.org/lang/ru/).
 
+## [1.11.0] - 2026-06-28
+
+### Добавлено
+
+#### Локализация UI (без внешних i18n-библиотек)
+
+- **`src/shared/i18n/uiStrings.ts`** — тип `IUiStrings`, пресеты `UI_STRINGS_RU` / `UI_STRINGS_EN`, `resolveUiStrings(locale?, overrides?)`, хелперы `getSpacingLabelsFromUi()` и `getDefaultBreakpointsFromUi()`
+- **Vue/React `BlockBuilder`:** props `locale?: 'ru' | 'en'` (по умолчанию `ru`) и `uiStrings?: Partial<IUiStrings>` для точечных переопределений
+- **React:** `UiStringsProvider`, хук `useUiStrings()` — строки UI в контексте
+- **Vue:** `useUiStrings()`, provide/inject через `BB_UI_STRINGS_KEY`
+- **Экспорт** из `@mushket-co/block-builder/vue` и `/react`: `IUiStrings`, `TUiLocale`, `UI_STRINGS_RU`, `UI_STRINGS_EN`, `resolveUiStrings`
+- **Тесты:** `src/utils/__tests__/uiStrings.test.ts`
+
+### Изменено
+
+- **Vue/React UI** (`BlockBuilder`, `RepeaterControl`, `SpacingControl`, `ImageUploadField`, `MatrixTableControl`, `ApiSelectField`, `CustomFieldRenderer` и др.) — встроенные подписи, сообщения и confirm-тексты берутся из контекста локали, а не из захардкоженного объекта
+- **`SpacingControl`:** подписи отступов и breakpoint-лейблы зависят от активной локали
+- **`examples/nuxt3`:** `locale="en"` на `BlockBuilderComponent`; демо-тексты, mock news API и конфиг блоков на английском; table/nested repeater встроены в `block-config.js`; Jodit/Typograf в `WysiwygEditor.vue` — `en` / `en-US`
+
+### Удалено (BREAKING)
+
+- **`UI_STRINGS`** из `src/utils/constants.ts` — используйте `UI_STRINGS_RU`, `UI_STRINGS_EN` или `resolveUiStrings()` из entry `@mushket-co/block-builder/vue` / `/react`
+- **Мёртвые опции фасада** `theme` и `locale` в `BlockBuilderFacade` (Core API не локализует UI)
+
+### Миграция
+
+```vue
+<BlockBuilderComponent locale="en" :ui-strings="{ save: 'Publish' }" ... />
+```
+
+```tsx
+<BlockBuilder locale="en" uiStrings={{ save: 'Publish' }} ... />
+```
+
+- Было `import { UI_STRINGS } from '.../constants'` → **`UI_STRINGS_RU`** / **`resolveUiStrings('en')`**
+- Подписи полей блоков (`label`, `placeholder` в `block-config`) по-прежнему задаёт приложение — пакет локализует только свой UI
+
 ## [1.10.0] - 2026-06-27
 
 ### Добавлено

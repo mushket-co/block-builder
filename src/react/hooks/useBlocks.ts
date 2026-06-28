@@ -6,14 +6,14 @@ import type { BlockManagementUseCase } from '../../core/use-cases/BlockManagemen
 import { blockScrollService } from '../../shared/services/BlockScrollService';
 import { prepareBlocksForDisplay, type IBlockTypeRenderConfig } from '../../utils/blockDisplayHelpers';
 import { filterBlocksForDisplay } from '../../utils/blockHelpers';
-import type { IBlockType } from '../types/blockBuilder';
 import { seedRepositoryFromBlocks } from '../../utils/blockRepositorySync';
 import { getBlockInlineStyles, watchBreakpointChanges } from '../../utils/breakpointHelpers';
-import { ERROR_MESSAGES } from '../../utils/constants';
 import { getBlockScrollMargins } from '../../utils/scrollHelpers';
 import { afterPaint } from '../../utils/scheduling';
 import { isClient } from '../../utils/ssr';
 import type { ISpacingData } from '../../utils/spacingHelpers';
+import { useUiStrings } from '../context/uiStringsContext';
+import type { IBlockType } from '../types/blockBuilder';
 
 interface IUseBlocksParams {
   blockService: BlockManagementUseCase;
@@ -36,6 +36,7 @@ export function useBlocks({
   onBlockAdded,
   onBlockDeleted,
 }: IUseBlocksParams) {
+  const uiStrings = useUiStrings();
   const [blocks, setBlocks] = useState<IBlock[]>(() =>
     prepareBlocksForDisplay(initialBlocks, getBlockTypeConfig)
   );
@@ -128,13 +129,13 @@ export function useBlocks({
     } catch (error) {
       if (isClient()) {
         alert(
-          `Ошибка загрузки начальных блоков: ${error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR}`
+          `${uiStrings.initialBlocksLoadError}: ${error instanceof Error ? error.message : uiStrings.unknownError}`
         );
       } else {
         console.error('Ошибка синхронизации блоков с репозиторием:', error);
       }
     }
-  }, [blockService, blocks, getBlockTypeConfig]);
+  }, [blockService, blocks, getBlockTypeConfig, uiStrings]);
 
   const handleDuplicateBlock = useCallback(
     async (id: TBlockId) => {
@@ -154,16 +155,16 @@ export function useBlocks({
         onBlockAdded?.(duplicated as IBlock);
       } catch (error) {
         alert(
-          `Ошибка дублирования блока: ${error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR}`
+          `${uiStrings.blockDuplicateError}: ${error instanceof Error ? error.message : uiStrings.unknownError}`
         );
       }
     },
-    [blockService, isEdit, onBlockAdded, scrollToBlock, setupBreakpointWatchers]
+    [blockService, isEdit, onBlockAdded, scrollToBlock, setupBreakpointWatchers, uiStrings]
   );
 
   const handleDeleteBlock = useCallback(
     async (id: TBlockId) => {
-      if (!isEdit || !confirm('Удалить блок?')) {
+      if (!isEdit || !confirm(uiStrings.deleteBlockSimpleConfirm)) {
         return;
       }
       try {
@@ -174,11 +175,11 @@ export function useBlocks({
         onBlockDeleted?.(id);
       } catch (error) {
         alert(
-          `Ошибка удаления блока: ${error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR}`
+          `${uiStrings.blockDeleteError}: ${error instanceof Error ? error.message : uiStrings.unknownError}`
         );
       }
     },
-    [blockService, isEdit, onBlockDeleted]
+    [blockService, isEdit, onBlockDeleted, uiStrings]
   );
 
   const reorderBlock = useCallback(
@@ -218,7 +219,7 @@ export function useBlocks({
   );
 
   const handleClearAll = useCallback(async () => {
-    if (!isEdit || !confirm('Удалить все блоки?')) {
+    if (!isEdit || !confirm(uiStrings.clearAllSimpleConfirm)) {
       return;
     }
     try {
@@ -227,10 +228,10 @@ export function useBlocks({
       cleanupBreakpointWatchers();
     } catch (error) {
       alert(
-        `Ошибка очистки блоков: ${error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR}`
+        `${uiStrings.blocksClearError}: ${error instanceof Error ? error.message : uiStrings.unknownError}`
       );
     }
-  }, [blockService, cleanupBreakpointWatchers, isEdit]);
+  }, [blockService, cleanupBreakpointWatchers, isEdit, uiStrings]);
 
   return {
     blocks,

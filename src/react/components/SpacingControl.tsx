@@ -1,11 +1,12 @@
 import { CSS_CLASSES } from '../../utils/constants';
 import {
   ALL_SPACING_TYPES,
-  DEFAULT_BREAKPOINTS,
-  SPACING_LABELS,
+  getDefaultBreakpointsFromUi,
+  getSpacingLabelsFromUi,
   type ISpacingData,
 } from '../../utils/spacingHelpers';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useUiStrings } from '../context/uiStringsContext';
 
 interface ISpacingBreakpoint {
   name: string;
@@ -47,7 +48,7 @@ function buildInitialSpacingData(
 
 export function SpacingControl({
   modelValue,
-  label = 'Отступы',
+  label,
   fieldName,
   spacingTypes,
   min = 0,
@@ -58,12 +59,16 @@ export function SpacingControl({
   showPreview = true,
   onChange,
 }: ISpacingControlProps) {
+  const uiStrings = useUiStrings();
+  const resolvedLabel = label ?? uiStrings.spacingDefaultLabel;
+  const spacingLabels = useMemo(() => getSpacingLabelsFromUi(uiStrings), [uiStrings]);
+
   const allBreakpoints = useMemo(() => {
     if (breakpoints && breakpoints.length > 0) {
       return [...breakpoints];
     }
-    return DEFAULT_BREAKPOINTS;
-  }, [breakpoints]);
+    return getDefaultBreakpointsFromUi(uiStrings);
+  }, [breakpoints, uiStrings]);
 
   const availableSpacingTypes = useMemo(() => {
     return spacingTypes && spacingTypes.length > 0 ? spacingTypes : ALL_SPACING_TYPES;
@@ -97,7 +102,7 @@ export function SpacingControl({
   };
 
   const getSpacingLabel = (spacingType: string) => {
-    return SPACING_LABELS[spacingType] || spacingType;
+    return spacingLabels[spacingType] || spacingType;
   };
 
   const getSpacingValue = (spacingType: string) => {
@@ -178,7 +183,7 @@ export function SpacingControl({
     <div className={CSS_CLASSES.SPACING_CONTROL}>
       <div className={CSS_CLASSES.SPACING_CONTROL_HEADER}>
         <label className={CSS_CLASSES.SPACING_CONTROL_LABEL}>
-          {label}
+          {resolvedLabel}
           {required ? <span className={CSS_CLASSES.REQUIRED}>*</span> : null}
         </label>
       </div>
@@ -236,7 +241,7 @@ export function SpacingControl({
 
       {showPreview ? (
         <div className={CSS_CLASSES.SPACING_CONTROL_PREVIEW}>
-          <div className={CSS_CLASSES.SPACING_CONTROL_PREVIEW_TITLE}>CSS переменные:</div>
+          <div className={CSS_CLASSES.SPACING_CONTROL_PREVIEW_TITLE}>{uiStrings.spacingCssVariablesPreview}</div>
           <pre className={CSS_CLASSES.SPACING_CONTROL_PREVIEW_CODE}>{getCSSVariablesPreview()}</pre>
         </div>
       ) : null}

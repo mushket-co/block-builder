@@ -1,6 +1,9 @@
+import { UI_STRINGS_RU } from '../shared/i18n/uiStrings';
+
 export const HTTP_DEFAULT_TIMEOUT_MS = 30_000;
 export const NOTIFICATION_DISPLAY_DURATION_MS = 12_000;
 export const REPEATER_ACCORDION_ANIMATION_DELAY_MS = 350;
+
 export const CSS_CLASSES = {
   MODAL_BODY: 'bb-modal-body',
   FORM_GROUP: 'bb-form-group',
@@ -256,27 +259,5 @@ export function getControlsFixedClass(position?: TControlsFixedPosition | null):
 }
 
 export const ERROR_MESSAGES = {
-  UNKNOWN_ERROR: 'Неизвестная ошибка',
+  UNKNOWN_ERROR: UI_STRINGS_RU.unknownError,
 } as const;
-export const UI_STRINGS = {
-  saveNotEnabled: 'Функция сохранения не настроена. Передайте onSave в конфигурацию BlockBuilder.',
-  errorSaveFailed: 'Произошла ошибка при сохранении',
-  successSaved: 'Данные успешно сохранены',
-  repeaterAdd: 'Добавить',
-  repeaterRemove: 'Удалить',
-  repeaterItem: 'Элемент',
-  repeaterMin: 'Минимум:',
-  repeaterMax: 'Максимум:',
-  blockTypeSelectionTitle: 'Выберите тип блока',
-  cancelButtonText: 'Отмена',
-  blockConfigNotFound: 'Конфигурация для типа блока не найдена',
-  addBlockTitle: 'Добавление',
-  blockCreationError: 'Ошибка создания блока',
-  editBlockTitle: 'Редактирование',
-  blockUpdateError: 'Ошибка обновления блока',
-  deleteBlockConfirmTitle: 'Удалить блок?',
-  deleteBlockConfirmMessage: 'Вы действительно хотите удалить блок?',
-  clearAllBlocksConfirmTitle: 'Очистить все блоки?',
-  clearAllBlocksConfirmMessage: 'Это действие удалит все блоки. Продолжить?',
-  blockIdCopied: 'ID скопирован',
-};

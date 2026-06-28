@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import type { IFormFieldConfig, IRepeaterItemFieldConfig } from '../../core/types/form';
-import { UI_STRINGS } from '../../utils/constants';
+import { useUiStrings } from '../context/uiStringsContext';
 import { groupFormFields, type TFormFieldGroup } from '../../utils/formFieldGrouping';
 import { isFieldRequired, isFieldVisible } from '../../utils/formFieldHelpers';
 import { getRepeaterCountText } from '../../utils/repeaterCountText';
@@ -72,6 +72,7 @@ export function useRepeaterControl({
   maxNestingDepth = 2,
   onChange,
 }: IUseRepeaterControlProps) {
+  const uiStrings = useUiStrings();
   const idCounterRef = useRef(0);
 
   const isRequired = useMemo(
@@ -376,8 +377,8 @@ export function useRepeaterControl({
     expandItem,
     isItemCollapsed,
     updateItemField,
-    repeaterMinText: UI_STRINGS.repeaterMin || 'Минимум:',
-    repeaterMaxText: UI_STRINGS.repeaterMax || 'Максимум:',
+    repeaterMinText: uiStrings.repeaterMin,
+    repeaterMaxText: uiStrings.repeaterMax,
     getFullFieldPath,
     getNestedErrors,
     canNestRepeater,

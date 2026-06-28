@@ -7,6 +7,7 @@ import {
 import { useMemo } from 'react';
 
 import { useBlockAnchorContext } from '../context/blockAnchorContext';
+import { useUiStrings } from '../context/uiStringsContext';
 import { CustomDropdown } from './CustomDropdown';
 
 interface IBlockAnchorFieldProps {
@@ -30,6 +31,7 @@ export function BlockAnchorField({
   blockAnchorConfig,
   onChange,
 }: IBlockAnchorFieldProps) {
+  const uiStrings = useUiStrings();
   const anchorContext = useBlockAnchorContext();
   const allowCustomUrl = blockAnchorConfig?.allowCustomUrl === true;
 
@@ -52,7 +54,7 @@ export function BlockAnchorField({
   const selectedBlockValue = isBlockAnchorHash(value, knownBlockIds) ? value : null;
   const customUrlValue = !value || isBlockAnchorHash(value, knownBlockIds) ? '' : value;
 
-  const dropdownPlaceholder = blockAnchorConfig?.placeholder || 'Выберите блок на странице';
+  const dropdownPlaceholder = blockAnchorConfig?.placeholder || uiStrings.blockAnchorPlaceholder;
 
   return (
     <>
@@ -84,7 +86,7 @@ export function BlockAnchorField({
           type="text"
           className={`${CSS_CLASSES.FORM_CONTROL} ${CSS_CLASSES.BLOCK_ANCHOR_CUSTOM}`}
           value={customUrlValue}
-          placeholder="или введите URL"
+          placeholder={uiStrings.blockAnchorCustomUrlPlaceholder}
           onChange={event => onChange(event.target.value)}
         />
       ) : null}

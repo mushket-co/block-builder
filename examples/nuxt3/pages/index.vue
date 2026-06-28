@@ -3,18 +3,19 @@
     <header class="page-header">
       <h1>BlockBuilder + Nuxt 3 (SSR)</h1>
       <p>
-        Контент блоков рендерится на сервере. Режим:
-        <strong>{{ isEdit ? 'редактирование' : 'просмотр' }}</strong>
+        Block content is rendered on the server. Mode:
+        <strong>{{ isEdit ? 'edit' : 'view' }}</strong>
       </p>
       <div class="page-header__actions">
         <button type="button" class="mode-btn" @click="isEdit = !isEdit">
-          Переключить режим
+          Toggle mode
         </button>
       </div>
     </header>
 
     <main class="page-content">
       <BlockBuilderComponent
+        locale="en"
         :config="{ availableBlockTypes }"
         :block-management-use-case="blockManagementUseCase"
         :api-select-use-case="apiSelectUseCase"

@@ -7,9 +7,10 @@ import type {
 import type { IRepeaterItemFieldConfig } from '../../core/types/form';
 import type { ApiSelectUseCase } from '../../core/use-cases/ApiSelectUseCase';
 import type { IRepeaterRef } from '../../shared/services/ValidationErrorHandler';
-import { CSS_CLASSES, UI_STRINGS } from '../../utils/constants';
+import { CSS_CLASSES } from '../../utils/constants';
 import { Icon } from './icons/Icon';
 import { useRepeaterControl } from '../hooks/useRepeaterControl';
+import { useUiStrings } from '../context/uiStringsContext';
 import { RepeaterItemFields } from './RepeaterItemFields';
 
 export interface IRepeaterControlProps {
@@ -53,19 +54,19 @@ export function RepeaterControl({
   fields,
   rules,
   errors,
-  addButtonText = UI_STRINGS.repeaterAdd,
-  removeButtonText = UI_STRINGS.repeaterRemove,
-  itemTitle = UI_STRINGS.repeaterItem,
+  addButtonText,
+  removeButtonText,
+  itemTitle,
   countLabelVariants,
   min,
   max,
   defaultItemValue,
   apiSelectUseCase,
   isApiSelectAvailable = () => false,
-  getApiSelectRestrictionMessage = () => 'API Select поля недоступны.',
+  getApiSelectRestrictionMessage,
   customFieldRendererRegistry,
   isCustomFieldAvailable = () => false,
-  getCustomFieldRestrictionMessage = () => 'Кастомные поля недоступны.',
+  getCustomFieldRestrictionMessage,
   nestingDepth = 0,
   maxNestingDepth = 2,
   parentFieldPath = '',
@@ -74,6 +75,15 @@ export function RepeaterControl({
   onChange,
   onRendererReady,
 }: IRepeaterControlProps) {
+  const uiStrings = useUiStrings();
+  const resolvedAddButtonText = addButtonText ?? uiStrings.repeaterAdd;
+  const resolvedRemoveButtonText = removeButtonText ?? uiStrings.repeaterRemove;
+  const resolvedItemTitle = itemTitle ?? uiStrings.repeaterItem;
+  const resolveApiSelectRestrictionMessage =
+    getApiSelectRestrictionMessage ?? (() => uiStrings.apiSelectUnavailable);
+  const resolveCustomFieldRestrictionMessage =
+    getCustomFieldRestrictionMessage ?? (() => uiStrings.customFieldsUnavailable);
+
   const repeater = useRepeaterControl({
     fieldName,
     modelValue,
@@ -91,18 +101,18 @@ export function RepeaterControl({
   });
 
   const apiSelectRestrictionMessage = useMemo(() => {
-    const message = getApiSelectRestrictionMessage();
+    const message = resolveApiSelectRestrictionMessage();
     return typeof message === 'string' && message.trim().length > 0
       ? message
-      : 'API Select поля недоступны.';
-  }, [getApiSelectRestrictionMessage]);
+      : uiStrings.apiSelectUnavailable;
+  }, [resolveApiSelectRestrictionMessage, uiStrings.apiSelectUnavailable]);
 
   const customFieldRestrictionMessage = useMemo(() => {
-    const message = getCustomFieldRestrictionMessage();
+    const message = resolveCustomFieldRestrictionMessage();
     return typeof message === 'string' && message.trim().length > 0
       ? message
-      : 'Кастомные поля недоступны.';
-  }, [getCustomFieldRestrictionMessage]);
+      : uiStrings.customFieldsUnavailable;
+  }, [resolveCustomFieldRestrictionMessage, uiStrings.customFieldsUnavailable]);
 
   useEffect(() => {
     onRendererReady?.(fieldName, {
@@ -138,14 +148,14 @@ export function RepeaterControl({
           >
             <div className={CSS_CLASSES.REPEATER_CONTROL_ITEM_HEADER}>
               <span className={CSS_CLASSES.REPEATER_CONTROL_ITEM_TITLE}>
-                {itemTitle} #{index + 1}
+                {resolvedItemTitle} #{index + 1}
               </span>
               <div className={CSS_CLASSES.REPEATER_CONTROL_ITEM_ACTIONS}>
                 {index > 0 ? (
                   <button
                     type="button"
                     className={`${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN} ${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_MOVE}`}
-                    title="Переместить вверх"
+                    title={uiStrings.moveUp}
                     onClick={() => repeater.moveItem(index, index - 1)}
                   >
                     <Icon name="arrowUp" />
@@ -155,7 +165,7 @@ export function RepeaterControl({
                   <button
                     type="button"
                     className={`${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN} ${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_MOVE}`}
-                    title="Переместить вниз"
+                    title={uiStrings.moveDown}
                     onClick={() => repeater.moveItem(index, index + 1)}
                   >
                     <Icon name="arrowDown" />
@@ -165,7 +175,7 @@ export function RepeaterControl({
                   type="button"
                   className={`${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN} ${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_REMOVE}`}
                   disabled={!repeater.canRemove}
-                  title={removeButtonText}
+                  title={resolvedRemoveButtonText}
                   onClick={() => repeater.removeItem(index)}
                 >
                   <Icon name="delete" />
@@ -177,7 +187,7 @@ export function RepeaterControl({
                 <button
                   type="button"
                   className={`${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN} ${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_COLLAPSE}`}
-                  title={repeater.collapsedItems[item._id] ? 'Развернуть' : 'Свернуть'}
+                  title={repeater.collapsedItems[item._id] ? uiStrings.expand : uiStrings.collapse}
                   onClick={() => repeater.toggleCollapse(item._id)}
                 >
                   <Icon name="chevronDown" />
@@ -229,7 +239,7 @@ export function RepeaterControl({
         disabled={!repeater.canAdd}
         onClick={repeater.addItem}
       >
-        + {addButtonText}
+        + {resolvedAddButtonText}
       </button>
 
       {repeater.effectiveMin || max ? (

@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 
 import { CSS_CLASSES } from '../../../utils/constants';
+import { useUiStrings } from '../../context/uiStringsContext';
 import { CustomDropdown, type TDropdownValue } from '../CustomDropdown';
 
 export interface ISelectOption {
@@ -35,6 +36,7 @@ export function SelectField({
   multiple = false,
   onChange,
 }: ISelectFieldProps) {
+  const uiStrings = useUiStrings();
   const dropdownOptions = useMemo(
     () =>
       options.map(option => ({
@@ -96,7 +98,7 @@ export function SelectField({
       <CustomDropdown
         modelValue={dropdownValue}
         options={dropdownOptions}
-        placeholder={placeholder || 'Выберите...'}
+        placeholder={placeholder || uiStrings.selectPlaceholder}
         multiple={multiple}
         clearable={isClearable}
         invalid={showError}

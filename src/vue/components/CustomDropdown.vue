@@ -28,7 +28,7 @@
               {{ multipleSummary }}
             </span>
             <span v-else :class="CSS_CLASSES.BB_DROPDOWN_PLACEHOLDER">
-              {{ placeholder }}
+              {{ resolvedPlaceholder }}
             </span>
           </template>
 
@@ -37,7 +37,7 @@
               {{ displayValue }}
             </span>
             <span v-else :class="CSS_CLASSES.BB_DROPDOWN_PLACEHOLDER">
-              {{ placeholder }}
+              {{ resolvedPlaceholder }}
             </span>
           </template>
         </div>
@@ -103,7 +103,7 @@
 
               <div v-if="loading" :class="CSS_CLASSES.BB_DROPDOWN_MESSAGE">
                 <slot name="loading">
-                  {{ loadingText }}
+                  {{ resolvedLoadingText }}
                 </slot>
               </div>
 
@@ -156,7 +156,7 @@
 
               <div v-else :class="CSS_CLASSES.BB_DROPDOWN_MESSAGE">
                 <slot name="empty">
-                  {{ emptyText }}
+                  {{ resolvedEmptyText }}
                 </slot>
               </div>
 
@@ -172,7 +172,10 @@
 <script setup lang="ts">
 import { CSS_CLASSES } from '../../utils/constants';
 import Icon from '../../shared/icons/Icon.vue';
+import { useUiStrings } from '../composables/useUiStrings';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, useSlots, watch } from 'vue';
+
+const uiStrings = useUiStrings();
 
 interface IDropdownOption {
   value: string | number;
@@ -204,13 +207,13 @@ const props = withDefaults(
   }>(),
   {
     options: () => [],
-    placeholder: 'Выберите значение',
+    placeholder: undefined,
     multiple: false,
     disabled: false,
     clearable: false,
     loading: false,
-    loadingText: 'Загрузка...',
-    emptyText: 'Нет данных',
+    loadingText: undefined,
+    emptyText: undefined,
     errorText: null,
     invalid: false,
     teleportTo: 'body',
@@ -240,6 +243,10 @@ const highlightedIndex = ref(-1);
 const panelStyle = ref<Record<string, string>>({});
 
 const options = computed(() => props.options ?? []);
+
+const resolvedPlaceholder = computed(() => props.placeholder ?? uiStrings.value.dropdownPlaceholder);
+const resolvedLoadingText = computed(() => props.loadingText ?? uiStrings.value.dropdownLoading);
+const resolvedEmptyText = computed(() => props.emptyText ?? uiStrings.value.dropdownEmpty);
 
 type TScrollAncestor = HTMLElement | (Window & typeof globalThis);
 let scrollableAncestors: TScrollAncestor[] = [];

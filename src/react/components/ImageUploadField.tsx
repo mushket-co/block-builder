@@ -2,6 +2,7 @@ import { useEffect, useId, useMemo, useRef, useState } from 'react';
 
 import type { IFileUploadConfig } from '../../core/types/form';
 import { CSS_CLASSES } from '../../utils/constants';
+import { useUiStrings } from '../context/uiStringsContext';
 import { Icon } from './icons/Icon';
 import {
   canAddUploadItems,
@@ -49,6 +50,7 @@ export function ImageUploadField({
   dataRepeaterItemField,
   onChange,
 }: IImageUploadFieldProps) {
+  const uiStrings = useUiStrings();
   const containerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [fileError, setFileError] = useState('');
@@ -64,9 +66,10 @@ export function ImageUploadField({
   const singleDisplayValue = items[0] || '';
   const canAddMore = canAddUploadItems(items, uploadConfig, isMultiple);
 
-  const chooseButtonLabel = placeholder || (isFileVariant ? 'Выберите файл' : 'Выберите изображение');
-  const changeButtonLabel = isFileVariant ? 'Заменить файл' : 'Изменить изображение';
-  const addButtonLabel = isFileVariant ? 'Добавить файл' : 'Добавить';
+  const chooseButtonLabel =
+    placeholder || (isFileVariant ? uiStrings.chooseFile : uiStrings.chooseImage);
+  const changeButtonLabel = isFileVariant ? uiStrings.replaceFile : uiStrings.changeImage;
+  const addButtonLabel = isFileVariant ? uiStrings.addFile : uiStrings.add;
 
   const fieldNamePath = useMemo(() => {
     if (fieldNamePathProp) {
@@ -185,10 +188,10 @@ export function ImageUploadField({
       }
     } catch (uploadError) {
       if (uploadError instanceof TypeError && uploadError.message === 'Failed to fetch') {
-        setFileError('Не удалось подключиться к серверу загрузки. Проверьте, что API доступен.');
+        setFileError(uiStrings.uploadServerError);
       } else {
         setFileError(
-          uploadError instanceof Error ? uploadError.message : 'Ошибка при загрузке файла'
+          uploadError instanceof Error ? uploadError.message : uiStrings.uploadFileError
         );
       }
       if (uploadConfig.onUploadError && uploadError instanceof Error) {
@@ -242,10 +245,10 @@ export function ImageUploadField({
                 <button
                   type="button"
                   className={CSS_CLASSES.FILE_UPLOAD_FIELD_REMOVE}
-                  title="Удалить"
+                  title={uiStrings.remove}
                   onClick={() => removeItem(index)}
                 >
-                  Удалить
+                  {uiStrings.remove}
                 </button>
               </li>
             ))}
@@ -268,7 +271,7 @@ export function ImageUploadField({
             <button
               type="button"
               className={CSS_CLASSES.FILE_UPLOAD_FIELD_REMOVE}
-              title="Удалить файл"
+              title={uiStrings.removeFile}
               onClick={clearValue}
             >
               Удалить
@@ -299,7 +302,7 @@ export function ImageUploadField({
             >
               {isLoading ? (
                 <span>
-                  <Icon name="loader" width={14} height={14} className="bb-icon--spin" /> Загрузка...
+                  <Icon name="loader" width={14} height={14} className="bb-icon--spin" /> {uiStrings.loading}
                 </span>
               ) : isMultiple ? (
                 `+ ${addButtonLabel}`
@@ -343,13 +346,13 @@ export function ImageUploadField({
             <div key={`${itemUrl}-${index}`} className={CSS_CLASSES.IMAGE_UPLOAD_FIELD_GALLERY_ITEM}>
               <img
                 src={itemUrl}
-                alt={label || 'Изображение'}
+                alt={label || uiStrings.imageAlt}
                 className={CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW_IMG}
               />
               <button
                 type="button"
                 className={CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW_CLEAR}
-                title="Удалить"
+                title={uiStrings.remove}
                 onClick={() => removeItem(index)}
               >
                 <Icon name="close" width={14} height={14} />
@@ -369,7 +372,7 @@ export function ImageUploadField({
             >
               {isLoading ? (
                 <span>
-                  <Icon name="loader" width={14} height={14} className="bb-icon--spin" /> Загрузка...
+                  <Icon name="loader" width={14} height={14} className="bb-icon--spin" /> {uiStrings.loading}
                 </span>
               ) : (
                 <span>+ {addButtonLabel}</span>
@@ -383,13 +386,13 @@ export function ImageUploadField({
         <div className={CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW}>
           <img
             src={singleDisplayValue}
-            alt={label || 'Изображение'}
+            alt={label || uiStrings.imageAlt}
             className={CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW_IMG}
           />
           <button
             type="button"
             className={CSS_CLASSES.IMAGE_UPLOAD_FIELD_PREVIEW_CLEAR}
-            title="Удалить изображение"
+            title={uiStrings.removeImage}
             onClick={clearValue}
           >
             <Icon name="close" width={14} height={14} />
@@ -419,7 +422,7 @@ export function ImageUploadField({
           >
             {isLoading ? (
               <span>
-                <Icon name="loader" width={14} height={14} className="bb-icon--spin" /> Загрузка...
+                <Icon name="loader" width={14} height={14} className="bb-icon--spin" /> {uiStrings.loading}
               </span>
             ) : (
               <span>{singleDisplayValue ? changeButtonLabel : chooseButtonLabel}</span>

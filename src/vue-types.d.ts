@@ -24,6 +24,9 @@ declare module 'vue' {
     callback: (value: T, oldValue: T) => void,
     options?: { immediate?: boolean }
   ): void
+  export function inject<T>(key: symbol, defaultValue?: T): T
+  export function provide<T>(key: symbol, value: unknown): void
+  export function unref<T>(value: T | Ref<T>): T
 
   export type DefineComponent<
     Props = Record<string, never>,

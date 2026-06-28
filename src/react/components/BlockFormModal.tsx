@@ -1,6 +1,7 @@
 import type { MouseEvent, ReactNode } from 'react';
 
 import { CSS_CLASSES } from '../../utils/constants';
+import { useUiStrings } from '../context/uiStringsContext';
 import { Icon } from './icons/Icon';
 
 interface IBlockFormModalProps {
@@ -20,7 +21,7 @@ interface IBlockFormModalProps {
 export function BlockFormModal({
   title,
   submitLabel,
-  cancelLabel = 'Отмена',
+  cancelLabel,
   contentClassName,
   bodyClassName,
   validationErrorCount = 0,
@@ -30,6 +31,9 @@ export function BlockFormModal({
   onSubmit,
   onValidationErrorNavigate,
 }: IBlockFormModalProps) {
+  const uiStrings = useUiStrings();
+  const resolvedCancelLabel = cancelLabel ?? uiStrings.cancelButtonText;
+
   const handleOverlayMouseDown = (event: MouseEvent<HTMLDivElement>) => {
     if ((event.target as HTMLElement).classList.contains(CSS_CLASSES.MODAL)) {
       onClose();
@@ -49,11 +53,11 @@ export function BlockFormModal({
           </button>
         </div>
         <div className={[CSS_CLASSES.MODAL_BODY, bodyClassName].filter(Boolean).join(' ')}>
-          {isFormHydrating ? <div className="bb-modal-hydrating">Загрузка…</div> : children}
+          {isFormHydrating ? <div className="bb-modal-hydrating">{uiStrings.loading}</div> : children}
         </div>
         <div className={CSS_CLASSES.MODAL_FOOTER}>
           <button type="button" className={`${CSS_CLASSES.BTN} ${CSS_CLASSES.BTN_SECONDARY}`} onClick={onClose}>
-            {cancelLabel}
+            {resolvedCancelLabel}
           </button>
           <button
             type="submit"
@@ -67,7 +71,7 @@ export function BlockFormModal({
             <button
               type="button"
               className={CSS_CLASSES.VALIDATION_ERROR_INDICATOR}
-              aria-label={`Ошибки валидации: ${validationErrorCount}`}
+              aria-label={`${uiStrings.validationErrorsAriaLabel} ${validationErrorCount}`}
               onClick={onValidationErrorNavigate}
             >
               {validationErrorCount}

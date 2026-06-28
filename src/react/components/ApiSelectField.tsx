@@ -24,6 +24,7 @@ import {
   scheduleApiSelectSearch,
 } from '../../utils/apiSelectSearchDebounce';
 import { CSS_CLASSES } from '../../utils/constants';
+import { useUiStrings } from '../context/uiStringsContext';
 import { Icon } from './icons/Icon';
 import {
   CustomDropdown,
@@ -53,6 +54,7 @@ export function ApiSelectField({
   apiSelectUseCase,
   onChange,
 }: IApiSelectFieldProps) {
+  const uiStrings = useUiStrings();
   const dropdownRef = useRef<ICustomDropdownRef>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -84,10 +86,10 @@ export function ApiSelectField({
     [modelValue, isMultiple]
   );
 
-  const placeholder = apiConfig?.placeholder ?? 'Начните вводить для поиска...';
-  const loadingText = apiConfig?.loadingText ?? 'Загрузка...';
-  const noResultsText = apiConfig?.noResultsText ?? 'Ничего не найдено';
-  const errorText = apiConfig?.errorText ?? 'Ошибка загрузки данных';
+  const placeholder = apiConfig?.placeholder ?? uiStrings.apiSelectPlaceholder;
+  const loadingText = apiConfig?.loadingText ?? uiStrings.apiSelectLoading;
+  const noResultsText = apiConfig?.noResultsText ?? uiStrings.apiSelectNoResults;
+  const errorText = apiConfig?.errorText ?? uiStrings.apiSelectError;
   const debounceMs = resolveApiSelectDebounceMs(apiConfig?.debounceMs);
   const minSearchLength = apiConfig?.minSearchLength ?? 0;
 
@@ -130,7 +132,7 @@ export function ApiSelectField({
   const fetchData = useCallback(
     async (reset = false, explicitPage?: number, searchOverride?: string) => {
       if (!apiConfig) {
-        setError('Конфигурация API не указана');
+        setError(uiStrings.apiSelectConfigMissing);
         return;
       }
 
@@ -465,7 +467,7 @@ export function ApiSelectField({
               onClick={loadMore}
               style={loading ? { opacity: 0.6, pointerEvents: 'none' } : undefined}
             >
-              {loading && items.length > 0 ? loadingText : 'Загрузить ещё...'}
+              {loading && items.length > 0 ? loadingText : uiStrings.apiSelectLoadMore}
             </div>
           ) : null
         }

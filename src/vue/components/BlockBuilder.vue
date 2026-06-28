@@ -12,19 +12,19 @@
             :class="[CSS_CLASSES.BTN, CSS_CLASSES.BTN_SUCCESS]"
             @click="handleSave"
           >
-            <span :class="CSS_CLASSES.BB_ICON_WRAPPER" v-html="saveIconHTML" /> Сохранить
+            <span :class="CSS_CLASSES.BB_ICON_WRAPPER" v-html="saveIconHTML" /> {{ uiStrings.save }}
           </button>
           <button
             v-if="props.isEdit"
             :class="[CSS_CLASSES.BTN, CSS_CLASSES.BTN_DANGER]"
             @click="handleClearAll"
           >
-            <span :class="CSS_CLASSES.BB_ICON_WRAPPER" v-html="deleteIconHTML" /> Очистить все
+            <span :class="CSS_CLASSES.BB_ICON_WRAPPER" v-html="deleteIconHTML" /> {{ uiStrings.clearAll }}
           </button>
 
           <div :class="CSS_CLASSES.STATS">
             <span>
-              Всего блоков: <span>{{ props.isEdit ? blocks.length : visibleBlocks.length }}</span>
+              {{ uiStrings.blocksTotal }} <span>{{ props.isEdit ? blocks.length : visibleBlocks.length }}</span>
             </span>
           </div>
         </div>
@@ -36,11 +36,11 @@
         <div v-if="props.isEdit" :class="CSS_CLASSES.ADD_BLOCK_SEPARATOR">
           <button
             :class="CSS_CLASSES.ADD_BLOCK_BTN"
-            title="Добавить блок"
+            :title="uiStrings.addBlock"
             @click="openBlockTypeSelectionModal(0)"
           >
             <span :class="CSS_CLASSES.ADD_BLOCK_BTN_ICON">+</span>
-            <span :class="CSS_CLASSES.ADD_BLOCK_BTN_TEXT">Добавить блок</span>
+            <span :class="CSS_CLASSES.ADD_BLOCK_BTN_TEXT">{{ uiStrings.addBlock }}</span>
           </button>
         </div>
       </div>
@@ -49,11 +49,11 @@
         <div v-if="props.isEdit" :class="CSS_CLASSES.ADD_BLOCK_SEPARATOR">
           <button
             :class="CSS_CLASSES.ADD_BLOCK_BTN"
-            title="Добавить блок"
+            :title="uiStrings.addBlock"
             @click="openBlockTypeSelectionModal(0)"
           >
             <span :class="CSS_CLASSES.ADD_BLOCK_BTN_ICON">+</span>
-            <span :class="CSS_CLASSES.ADD_BLOCK_BTN_TEXT">Добавить блок</span>
+            <span :class="CSS_CLASSES.ADD_BLOCK_BTN_TEXT">{{ uiStrings.addBlock }}</span>
           </button>
         </div>
 
@@ -72,7 +72,7 @@
                   <button
                     v-if="props.isEdit"
                     :class="CSS_CLASSES.CONTROL_BTN"
-                    title="Редактировать"
+                    :title="uiStrings.edit"
                     @click="openEditModal(block)"
                   >
                     <Icon name="edit" />
@@ -80,7 +80,7 @@
                   <button
                     v-if="props.isEdit"
                     :class="CSS_CLASSES.CONTROL_BTN"
-                    title="Переместить вверх"
+                    :title="uiStrings.moveUp"
                     :disabled="index === 0"
                     @click="handleMoveUp(block.id)"
                   >
@@ -89,7 +89,7 @@
                   <button
                     v-if="props.isEdit"
                     :class="CSS_CLASSES.CONTROL_BTN"
-                    title="Переместить вниз"
+                    :title="uiStrings.moveDown"
                     :disabled="index === visibleBlocks.length - 1"
                     @click="handleMoveDown(block.id)"
                   >
@@ -97,7 +97,7 @@
                   </button>
                   <button
                     :class="CSS_CLASSES.CONTROL_BTN"
-                    title="Копировать ID: {{ block.id }}"
+                    :title="`${uiStrings.copyIdTitle} ${block.id}`"
                     @click="handleCopyId(block.id)"
                   >
                     <Icon name="id" />
@@ -105,7 +105,7 @@
                   <button
                     v-if="props.isEdit"
                     :class="CSS_CLASSES.CONTROL_BTN"
-                    title="Дублировать"
+                    :title="uiStrings.duplicate"
                     @click="handleDuplicateBlock(block.id)"
                   >
                     <Icon name="duplicate" />
@@ -121,7 +121,7 @@
                   <button
                     v-if="props.isEdit"
                     :class="CSS_CLASSES.CONTROL_BTN"
-                    title="Удалить"
+                    :title="uiStrings.delete"
                     @click="handleDeleteBlock(block.id)"
                   >
                     <Icon name="delete" />
@@ -146,11 +146,11 @@
           <div v-if="props.isEdit" :class="CSS_CLASSES.ADD_BLOCK_SEPARATOR">
             <button
               :class="CSS_CLASSES.ADD_BLOCK_BTN"
-              title="Добавить блок"
+              :title="uiStrings.addBlock"
               @click="openBlockTypeSelectionModal(index + 1)"
             >
               <span :class="CSS_CLASSES.ADD_BLOCK_BTN_ICON">+</span>
-              <span :class="CSS_CLASSES.ADD_BLOCK_BTN_TEXT">Добавить блок</span>
+              <span :class="CSS_CLASSES.ADD_BLOCK_BTN_TEXT">{{ uiStrings.addBlock }}</span>
             </button>
           </div>
         </template>
@@ -160,7 +160,7 @@
     <div v-if="showTypeSelectionModal" :class="CSS_CLASSES.MODAL" @mousedown="closeTypeSelectionModal">
       <div :class="CSS_CLASSES.MODAL_CONTENT" @mousedown.stop>
         <div :class="CSS_CLASSES.MODAL_HEADER">
-          <h3>Выберите тип блока</h3>
+          <h3>{{ uiStrings.blockTypeSelectionTitle }}</h3>
           <button :class="CSS_CLASSES.MODAL_CLOSE" @click="closeTypeSelectionModal">
             <Icon name="close" :width="20" :height="20" />
           </button>
@@ -196,7 +196,7 @@
       <div :class="CSS_CLASSES.MODAL_CONTENT" @mousedown.stop>
         <div :class="CSS_CLASSES.MODAL_HEADER">
           <h3>
-            {{ modalMode === 'create' ? 'Создать' : 'Редактировать' }} {{ currentBlockType?.label }}
+            {{ modalMode === 'create' ? uiStrings.createBlock : uiStrings.editBlock }} {{ currentBlockType?.label }}
           </h3>
           <button :class="CSS_CLASSES.MODAL_CLOSE" @click="closeModal">
             <Icon name="close" :width="20" :height="20" />
@@ -204,7 +204,7 @@
         </div>
 
         <div :class="CSS_CLASSES.MODAL_BODY">
-          <div v-if="isFormHydrating" class="bb-modal-hydrating">Загрузка…</div>
+          <div v-if="isFormHydrating" class="bb-modal-hydrating">{{ uiStrings.loading }}</div>
           <form v-show="!isFormHydrating" :class="CSS_CLASSES.FORM" @submit.prevent="handleSubmit">
             <template v-for="fieldGroup in groupedFields" :key="fieldGroup.key">
               <!-- Группа полей с ToggleControl (checkbox + зависимые поля) -->
@@ -486,7 +486,7 @@
             :class="[CSS_CLASSES.BTN, CSS_CLASSES.BTN_SECONDARY]"
             @click="closeModal"
           >
-            Отмена
+            {{ uiStrings.cancelButtonText }}
           </button>
           <button
             type="submit"
@@ -494,13 +494,13 @@
             :disabled="isFormHydrating"
             @click="handleSubmit"
           >
-            {{ modalMode === 'create' ? 'Создать' : 'Сохранить' }}
+            {{ modalMode === 'create' ? uiStrings.submitCreate : uiStrings.submitSave }}
           </button>
           <button
             v-if="validationErrorCount > 0"
             type="button"
             :class="CSS_CLASSES.VALIDATION_ERROR_INDICATOR"
-            :aria-label="`Ошибки валидации: ${validationErrorCount}`"
+            :aria-label="`${uiStrings.validationErrorsAriaLabel} ${validationErrorCount}`"
             @click="navigateToValidationError"
           >
             {{ validationErrorCount }}
@@ -527,6 +527,8 @@ import {
 import { IBlock, TBlockId } from '../../core/types';
 import type { IBlockFormHooks, IBlockTypeConfig } from '../../core/types/formHooks';
 import type { ApiSelectUseCase } from '../../core/use-cases/ApiSelectUseCase';
+import { BB_UI_STRINGS_KEY } from '../../shared/i18n/injectionKey';
+import { resolveUiStrings, type IUiStrings, type TUiLocale } from '../../shared/i18n/uiStrings';
 import { BlockManagementUseCase } from '../../core/use-cases/BlockManagementUseCase';
 import {
   canRenderVueBlock,
@@ -604,12 +606,17 @@ interface IProps {
   controlsOffsetVar?: string; // CSS переменная для учета высоты шапки/футера
   isEdit?: boolean; // Режим редактирования (по умолчанию true)
   warnOnPageLeave?: boolean;
+  locale?: TUiLocale;
+  uiStrings?: Partial<IUiStrings>;
 }
 
 const props = withDefaults(defineProps<IProps>(), {
   config: () => ({ availableBlockTypes: [] }),
   isEdit: true, // По умолчанию режим редактирования включен
 });
+
+const uiStrings = computed(() => resolveUiStrings(props.locale, props.uiStrings));
+provide(BB_UI_STRINGS_KEY, uiStrings);
 
 const emit = defineEmits<{
   'block-added': [block: IBlock];
@@ -767,15 +774,15 @@ const getBlockTitle = (block: IBlock): string => {
 };
 
 const getBlockVisibilityTooltip = (block: IBlock): string => {
-  return block.visible ? 'Скрыть' : 'Показать';
+  return block.visible ? uiStrings.value.hide : uiStrings.value.show;
 };
 
 const getApiSelectRestrictionMessage = (): string => {
-  return 'Передайте apiSelectUseCase для использования API Select полей.';
+  return uiStrings.value.apiSelectRequired;
 };
 
 const getCustomFieldsRestrictionMessage = (): string => {
-  return 'Зарегистрируйте customFieldRendererRegistry для использования кастомных полей.';
+  return uiStrings.value.customFieldRequired;
 };
 
 const isApiSelectAvailable = (_field: any): boolean => {
@@ -836,7 +843,7 @@ const loadBlocks = async () => {
       getBlockTypeConfig
     );
   } catch (error) {
-    alert(`Ошибка загрузки блоков: ${error}`);
+    alert(`${uiStrings.value.initialBlocksLoadError}: ${error}`);
   }
 };
 
@@ -866,7 +873,7 @@ const syncBlocksWithRepository = async () => {
   } catch (error) {
     if (isClient()) {
       alert(
-        `Ошибка загрузки начальных блоков: ${error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR}`
+        `${uiStrings.value.initialBlocksLoadError}: ${error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR}`
       );
     } else {
       console.error('Ошибка синхронизации блоков с репозиторием:', error);
@@ -924,7 +931,7 @@ const runFormOpenHook = async (mode: 'create' | 'edit', blockProps: Record<strin
     await hooks.onFormOpen(buildFormOpenContext(mode, blockProps));
   } catch (error) {
     alert(
-      `Ошибка загрузки формы: ${error instanceof Error ? error.message : String(error)}`
+      `${uiStrings.value.formLoadError}: ${error instanceof Error ? error.message : String(error)}`
     );
     closeModal();
   } finally {
@@ -954,7 +961,7 @@ const resolvePropsToSave = async (): Promise<Record<string, unknown> | null> => 
     return stripNonPersistedFields(result?.props ?? { ...formData }, fields);
   } catch (error) {
     alert(
-      `Ошибка сохранения: ${error instanceof Error ? error.message : String(error)}`
+      `${uiStrings.value.formSaveError}: ${error instanceof Error ? error.message : String(error)}`
     );
     return null;
   }
@@ -1088,7 +1095,7 @@ const createBlock = async (): Promise<boolean> => {
     (emit as any)('block-added', newBlock as any);
     return true;
   } catch (error) {
-    alert('Ошибка создания блока: ' + (error as Error).message);
+    alert(`${uiStrings.value.blockCreationError}: ${(error as Error).message}`);
     return false;
   }
 };
@@ -1131,7 +1138,7 @@ const updateBlock = async (): Promise<boolean> => {
     (emit as any)('block-updated', updated as any);
     return true;
   } catch (error) {
-    alert('Ошибка обновления блока: ' + (error as Error).message);
+    alert(`${uiStrings.value.blockUpdateError}: ${(error as Error).message}`);
     return false;
   }
 };
@@ -1151,8 +1158,7 @@ const handleDuplicateBlock = async (id: TBlockId) => {
     (emit as any)('block-added', duplicated as any);
   } catch (error) {
     alert(
-      'Ошибка дублирования блока: ' +
-        (error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR)
+      `${uiStrings.value.blockDuplicateError}: ${error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR}`
     );
   }
 };
@@ -1161,7 +1167,7 @@ const handleDeleteBlock = async (id: TBlockId) => {
   if (!props.isEdit) {
     return; // Блокируем если режим редактирования выключен
   }
-  if (confirm('Удалить блок?')) {
+  if (confirm(uiStrings.value.deleteBlockSimpleConfirm)) {
     try {
       const unsubscribe = breakpointUnsubscribers.get(id);
       if (unsubscribe) {
@@ -1174,8 +1180,7 @@ const handleDeleteBlock = async (id: TBlockId) => {
       (emit as any)('block-deleted', id);
     } catch (error) {
       alert(
-        'Ошибка удаления блока: ' +
-          (error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR)
+        `${uiStrings.value.blockDeleteError}: ${error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR}`
       );
     }
   }
@@ -1243,18 +1248,16 @@ const handleCopyId = async (blockId: TBlockId) => {
   try {
     const success = await copyToClipboard(blockId as string);
     if (success !== false) {
-      notificationService.success(`ID скопирован: ${blockId}`);
+      notificationService.success(`${uiStrings.value.blockIdCopied} ${blockId}`);
     }
   } catch {
-    notificationService.error('Ошибка копирования ID');
+    notificationService.error(uiStrings.value.copyIdError);
   }
 };
 
 const handleSave = async () => {
   if (!props.onSave) {
-    notificationService.error(
-      'Функция сохранения не настроена. Передайте onSave в пропсы компонента.'
-    );
+    notificationService.error(uiStrings.value.saveNotEnabled);
     return;
   }
 
@@ -1263,12 +1266,12 @@ const handleSave = async () => {
 
     if (result === true) {
       markBlocksAsSaved();
-      notificationService.success('Данные успешно сохранены');
+      notificationService.success(uiStrings.value.successSaved);
     } else {
-      notificationService.error('Произошла ошибка при сохранении');
+      notificationService.error(uiStrings.value.errorSaveFailed);
     }
   } catch {
-    notificationService.error('Произошла ошибка при сохранении');
+    notificationService.error(uiStrings.value.errorSaveFailed);
   }
 };
 
@@ -1276,13 +1279,13 @@ const handleClearAll = async () => {
   if (!props.isEdit) {
     return; // Блокируем если режим редактирования выключен
   }
-  if (confirm('Удалить все блоки?')) {
+  if (confirm(uiStrings.value.clearAllSimpleConfirm)) {
     try {
       await blockService.clearAllBlocks();
       blocks.value = [];
     } catch (error) {
       alert(
-        `Ошибка очистки блоков: ${error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR}`
+        `${uiStrings.value.blocksClearError}: ${error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR}`
       );
     }
   }

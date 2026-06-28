@@ -12,6 +12,7 @@ import {
 } from '../../utils/formFieldHelpers';
 import type { ISpacingData } from '../../utils/spacingHelpers';
 import { createCustomFieldFormScope } from '../../utils/formScopeHelpers';
+import { useUiStrings } from '../context/uiStringsContext';
 import { ApiSelectField } from './ApiSelectField';
 import { CustomField } from './CustomField';
 import { FileImportField } from './FileImportField';
@@ -57,6 +58,7 @@ export function BlockFormFields({
   onRepeaterReady,
   topLevelFormScope,
 }: IBlockFormFieldsProps) {
+  const uiStrings = useUiStrings();
   const formScope =
     topLevelFormScope ??
     createCustomFieldFormScope(formData, (name, value) => onFieldChange(name, value));
@@ -103,14 +105,10 @@ export function BlockFormFields({
           maxNestingDepth={field.repeaterConfig?.maxNestingDepth ?? 2}
           apiSelectUseCase={apiSelectUseCase}
           isApiSelectAvailable={() => !!apiSelectUseCase}
-          getApiSelectRestrictionMessage={() =>
-            'Передайте apiSelectUseCase для использования API Select полей.'
-          }
+          getApiSelectRestrictionMessage={() => uiStrings.apiSelectRequired}
           customFieldRendererRegistry={customFieldRendererRegistry}
           isCustomFieldAvailable={() => !!customFieldRendererRegistry}
-          getCustomFieldRestrictionMessage={() =>
-            'Зарегистрируйте customFieldRendererRegistry для использования кастомных полей.'
-          }
+          getCustomFieldRestrictionMessage={() => uiStrings.customFieldRequired}
           blockFormData={formData}
           setBlockField={(name, value) => onFieldChange(name, value)}
           onChange={nextValue => onFieldChange(field.field, nextValue)}

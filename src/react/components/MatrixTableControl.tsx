@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import type { IFileUploadConfig, IMatrixTableFieldConfig, IMatrixTableValue } from '../../core/types/form';
 import { CSS_CLASSES } from '../../utils/constants';
+import { useUiStrings } from '../context/uiStringsContext';
 import {
   DEFAULT_MATRIX_TABLE_COLUMN_TYPES,
   DEFAULT_MATRIX_TABLE_SIZE_OPTIONS,
@@ -38,6 +39,7 @@ export function MatrixTableControl({
   error = '',
   onChange,
 }: IMatrixTableControlProps) {
+  const uiStrings = useUiStrings();
   const [activeTab, setActiveTab] = useState<'structure' | 'content'>('structure');
 
   const tableValue = useMemo(
@@ -47,10 +49,10 @@ export function MatrixTableControl({
 
   const columnTypeOptions = matrixTableConfig?.columnTypes ?? [...DEFAULT_MATRIX_TABLE_COLUMN_TYPES];
   const sizeOptions = matrixTableConfig?.sizeOptions ?? [...DEFAULT_MATRIX_TABLE_SIZE_OPTIONS];
-  const structureTabLabel = matrixTableConfig?.structureTabLabel ?? 'Структура таблицы';
-  const contentTabLabel = matrixTableConfig?.contentTabLabel ?? 'Контент';
-  const columnItemTitle = matrixTableConfig?.columnItemTitle ?? 'Столбец';
-  const rowItemTitle = matrixTableConfig?.rowItemTitle ?? 'Строка';
+  const structureTabLabel = matrixTableConfig?.structureTabLabel ?? uiStrings.matrixStructureTab;
+  const contentTabLabel = matrixTableConfig?.contentTabLabel ?? uiStrings.matrixContentTab;
+  const columnItemTitle = matrixTableConfig?.columnItemTitle ?? uiStrings.matrixColumn;
+  const rowItemTitle = matrixTableConfig?.rowItemTitle ?? uiStrings.matrixRow;
   const maxColumns = matrixTableConfig?.maxColumns;
   const maxRows = matrixTableConfig?.maxRows;
   const imageUploadConfig = matrixTableConfig?.imageUploadConfig as IFileUploadConfig | undefined;
@@ -104,7 +106,7 @@ export function MatrixTableControl({
                       type="button"
                       className={`${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN} ${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_MOVE}`}
                       disabled={index === 0}
-                      title="Переместить вверх"
+                      title={uiStrings.moveUp}
                       onClick={() => onChange(moveMatrixTableColumn(tableValue, index, index - 1))}
                     >
                       <Icon name="arrowUp" />
@@ -113,7 +115,7 @@ export function MatrixTableControl({
                       type="button"
                       className={`${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN} ${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_MOVE}`}
                       disabled={index >= tableValue.tableHead.length - 1}
-                      title="Переместить вниз"
+                      title={uiStrings.moveDown}
                       onClick={() => onChange(moveMatrixTableColumn(tableValue, index, index + 1))}
                     >
                       <Icon name="arrowDown" />
@@ -122,7 +124,7 @@ export function MatrixTableControl({
                       type="button"
                       className={`${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN} ${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_REMOVE}`}
                       disabled={tableValue.tableHead.length <= 1}
-                      title="Удалить столбец"
+                      title={uiStrings.matrixDeleteColumn}
                       onClick={() => onChange(removeMatrixTableColumn(tableValue, index))}
                     >
                       <Icon name="delete" />
@@ -184,7 +186,7 @@ export function MatrixTableControl({
                       <CustomDropdown
                         modelValue={column.size}
                         options={sizeOptions}
-                        placeholder="Выберите..."
+                        placeholder={uiStrings.selectPlaceholder}
                         clearable={false}
                         onChange={value =>
                           onChange(
@@ -226,7 +228,7 @@ export function MatrixTableControl({
                       type="button"
                       className={`${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN} ${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_MOVE}`}
                       disabled={rowIndex === 0}
-                      title="Переместить вверх"
+                      title={uiStrings.moveUp}
                       onClick={() => onChange(moveMatrixTableRow(tableValue, rowIndex, rowIndex - 1))}
                     >
                       <Icon name="arrowUp" />
@@ -235,7 +237,7 @@ export function MatrixTableControl({
                       type="button"
                       className={`${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN} ${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_MOVE}`}
                       disabled={rowIndex >= tableValue.tableBody.length - 1}
-                      title="Переместить вниз"
+                      title={uiStrings.moveDown}
                       onClick={() => onChange(moveMatrixTableRow(tableValue, rowIndex, rowIndex + 1))}
                     >
                       <Icon name="arrowDown" />
@@ -243,7 +245,7 @@ export function MatrixTableControl({
                     <button
                       type="button"
                       className={`${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN} ${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_REMOVE}`}
-                      title="Удалить строку"
+                      title={uiStrings.matrixDeleteRow}
                       onClick={() => onChange(removeMatrixTableRow(tableValue, rowIndex))}
                     >
                       <Icon name="delete" />

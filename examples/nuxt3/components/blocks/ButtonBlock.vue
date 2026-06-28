@@ -8,7 +8,7 @@
         :disabled="isLoading"
       >
         <span v-if="!isLoading">{{ text }}</span>
-        <span v-else>Загрузка...</span>
+        <span v-else>Loading...</span>
       </button>
     </div>
   </div>

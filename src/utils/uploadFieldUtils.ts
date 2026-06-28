@@ -1,4 +1,8 @@
 import type { IFileUploadConfig } from '../core/types/form';
+import {
+  UI_STRINGS_RU,
+  type IUiStrings,
+} from '../shared/i18n/uiStrings';
 
 export type TUploadFieldVariant = 'image' | 'file';
 
@@ -142,12 +146,13 @@ export function getFileExtensionBadge(url: string): string {
 export function validateUploadFile(
   file: File,
   config: IFileUploadConfig,
-  variant: TUploadFieldVariant
+  variant: TUploadFieldVariant,
+  uiStrings: IUiStrings = UI_STRINGS_RU
 ): string | null {
   const maxFileSize = config.maxFileSize || 10 * 1024 * 1024;
 
   if (variant === 'image' && !isImageMimeType(file.type)) {
-    return 'Пожалуйста, выберите файл изображения';
+    return uiStrings.invalidImageFile;
   }
 
   if (file.size > maxFileSize) {
@@ -195,7 +200,7 @@ export async function readFileAsDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.addEventListener('load', event => resolve(String(event.target?.result || '')));
-    reader.addEventListener('error', () => reject(new Error('Ошибка при чтении файла')));
+    reader.addEventListener('error', () => reject(new Error(UI_STRINGS_RU.fileReadError)));
     reader.readAsDataURL(file);
   });
 }

@@ -6,7 +6,7 @@
   <CustomDropdown
     :model-value="dropdownValue"
     :options="dropdownOptions"
-    :placeholder="placeholder || 'Выберите...'"
+    :placeholder="placeholder || uiStrings.selectPlaceholder"
     :multiple="multiple"
     :clearable="isClearable"
     :invalid="showError"
@@ -18,7 +18,10 @@
 import { CSS_CLASSES } from '../../../utils/constants';
 import { computed } from 'vue';
 
+import { useUiStrings } from '../../composables/useUiStrings';
 import CustomDropdown from '../CustomDropdown.vue';
+
+const uiStrings = useUiStrings();
 
 interface IOption {
   value: string | number;

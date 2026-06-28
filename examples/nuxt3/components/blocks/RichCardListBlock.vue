@@ -73,7 +73,7 @@
 
           <!-- Связанная статья -->
           <div v-if="card.relatedArticle" class="rich-card__related-article">
-            <span class="rich-card__related-label">📰 Связанная статья:</span>
+            <span class="rich-card__related-label">📰 Related article:</span>
             <span class="rich-card__related-value">
               {{
                 typeof card.relatedArticle === 'object' && card.relatedArticle !== null
@@ -86,15 +86,15 @@
           <!-- Информация о встрече -->
           <div v-if="card.meetingPlace || card.meetingTime || card.participantsCount" class="rich-card__meeting-info">
             <div v-if="card.meetingPlace" class="rich-card__meeting-item">
-              <span class="rich-card__meeting-label">📍 Место:</span>
+              <span class="rich-card__meeting-label">📍 Location:</span>
               <span class="rich-card__meeting-value">{{ card.meetingPlace }}</span>
             </div>
             <div v-if="card.meetingTime" class="rich-card__meeting-item">
-              <span class="rich-card__meeting-label">🕐 Время:</span>
+              <span class="rich-card__meeting-label">🕐 Time:</span>
               <span class="rich-card__meeting-value">{{ card.meetingTime }}</span>
             </div>
             <div v-if="card.participantsCount" class="rich-card__meeting-item">
-              <span class="rich-card__meeting-label">👥 Участников:</span>
+              <span class="rich-card__meeting-label">👥 Participants:</span>
               <span class="rich-card__meeting-value">{{ card.participantsCount }}</span>
             </div>
           </div>

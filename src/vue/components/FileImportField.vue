@@ -8,7 +8,7 @@
       @click="openFileDialog"
     >
       <Icon v-if="isLoading" name="loader" class="bb-icon--spin" :width="14" :height="14" />
-      <span>{{ isLoading ? 'Загрузка…' : 'Выберите файл' }}</span>
+      <span>{{ isLoading ? uiStrings.loading : uiStrings.chooseFile }}</span>
     </button>
     <input
       ref="fileInputRef"
@@ -36,6 +36,9 @@ import {
   formatFileImportMergeMessage,
 } from '../../utils/fileImportMerge';
 import Icon from '../../shared/icons/Icon.vue';
+import { useUiStrings } from '../composables/useUiStrings';
+
+const uiStrings = useUiStrings();
 
 interface Props {
   label?: string;
@@ -154,7 +157,7 @@ const handleFileChange = async (event: Event) => {
     }
   } catch (uploadError) {
     localError.value =
-      uploadError instanceof Error ? uploadError.message : 'Ошибка импорта файла';
+      uploadError instanceof Error ? uploadError.message : uiStrings.value.fileImportError;
   } finally {
     isLoading.value = false;
   }

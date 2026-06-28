@@ -23,6 +23,7 @@ import { countValidationErrors } from '../../utils/formErrorHelpers';
 import { isFieldVisible } from '../../utils/formFieldHelpers';
 import { ReactiveFormValidationTracker } from '../../utils/reactiveFormValidation';
 import { UniversalValidator } from '../../utils/universalValidation';
+import { useUiStrings } from '../context/uiStringsContext';
 import type { IBlockType } from '../types/blockBuilder';
 
 interface IUseBlockFormParams {
@@ -50,6 +51,7 @@ export function useBlockForm({
   onBlockAdded,
   onBlockUpdated,
 }: IUseBlockFormParams) {
+  const uiStrings = useUiStrings();
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
   const [currentType, setCurrentType] = useState<string | null>(null);
@@ -163,7 +165,7 @@ export function useBlockForm({
         return mutableFormData;
       } catch (error) {
         alert(
-          `Ошибка загрузки формы: ${error instanceof Error ? error.message : String(error)}`
+          `${uiStrings.formLoadError}: ${error instanceof Error ? error.message : String(error)}`
         );
         closeModal();
         return null;
@@ -200,7 +202,7 @@ export function useBlockForm({
 
         return stripNonPersistedFields(result?.props ?? { ...currentFormData }, fields);
       } catch (error) {
-        alert(`Ошибка сохранения: ${error instanceof Error ? error.message : String(error)}`);
+        alert(`${uiStrings.formSaveError}: ${error instanceof Error ? error.message : String(error)}`);
         return null;
       }
     },
@@ -325,7 +327,7 @@ export function useBlockForm({
       await scrollToBlock(newBlock.id, 'smooth');
       return newBlock as IBlock;
     } catch (error) {
-      alert(`Ошибка создания блока: ${(error as Error).message}`);
+      alert(`${uiStrings.blockCreationError}: ${(error as Error).message}`);
       return null;
     }
   }, [
@@ -387,7 +389,7 @@ export function useBlockForm({
       onBlockUpdated?.(updated as IBlock);
       return true;
     } catch (error) {
-      alert(`Ошибка обновления блока: ${(error as Error).message}`);
+      alert(`${uiStrings.blockUpdateError}: ${(error as Error).message}`);
       return false;
     }
   }, [

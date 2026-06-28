@@ -19,8 +19,6 @@ export interface IBlockBuilderOptions {
   componentRegistry?: IComponentRegistry;
   httpClient?: IHttpClient;
   customFieldRendererRegistry?: ICustomFieldRendererRegistry;
-  theme?: 'light' | 'dark';
-  locale?: string;
   autoInit?: boolean;
   initialBlocks?: IBlockDto[];
 }
@@ -34,13 +32,8 @@ export class BlockBuilderFacade {
     { fields?: unknown[]; spacingOptions?: unknown; [key: string]: unknown }
   >;
 
-  public readonly theme: string;
-  public readonly locale: string;
-
   constructor(options: IBlockBuilderOptions) {
     this.blockConfigs = options.blockConfigs;
-    this.theme = options.theme || 'light';
-    this.locale = options.locale || 'ru';
 
     const dependencies = BlockBuilderFactory.createDependencies({
       repository: options.repository,

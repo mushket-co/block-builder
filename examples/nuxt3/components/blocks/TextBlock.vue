@@ -4,7 +4,7 @@
       <p class="text-block__content">{{ content }}</p>
 
       <div v-if="topicLabels.length" class="text-block__media">
-        <p class="text-block__media-label">Темы (select, multiple)</p>
+        <p class="text-block__media-label">Topics (select, multiple)</p>
         <div class="text-block__topics">
           <span
             v-for="label in topicLabels"
@@ -17,12 +17,12 @@
       </div>
 
       <div v-if="imageUrl" class="text-block__media">
-        <p class="text-block__media-label">Изображение</p>
+        <p class="text-block__media-label">Image</p>
         <img :src="imageUrl" alt="" class="text-block__image" />
       </div>
 
       <div v-if="imageUrls.length" class="text-block__media">
-        <p class="text-block__media-label">Изображения</p>
+        <p class="text-block__media-label">Images</p>
         <div class="text-block__gallery">
           <img
             v-for="(url, index) in imageUrls"
@@ -35,19 +35,19 @@
       </div>
 
       <div v-if="fileUrl" class="text-block__media">
-        <p class="text-block__media-label">Файл</p>
+        <p class="text-block__media-label">File</p>
         <a
           :href="fileUrl"
           class="text-block__file-link"
           target="_blank"
           rel="noopener noreferrer"
         >
-          Скачать файл
+          Download file
         </a>
       </div>
 
       <div v-if="fileUrls.length" class="text-block__media">
-        <p class="text-block__media-label">Файлы</p>
+        <p class="text-block__media-label">Files</p>
         <ul class="text-block__file-list">
           <li v-for="(url, index) in fileUrls" :key="`file-${index}`">
             <a
@@ -56,7 +56,7 @@
               target="_blank"
               rel="noopener noreferrer"
             >
-              Файл {{ index + 1 }}
+              File {{ index + 1 }}
             </a>
           </li>
         </ul>
@@ -69,10 +69,10 @@
 import { computed } from 'vue'
 
 const TOPIC_LABELS = {
-  dev: 'Разработка',
-  design: 'Дизайн',
-  marketing: 'Маркетинг',
-  analytics: 'Аналитика'
+  dev: 'Development',
+  design: 'Design',
+  marketing: 'Marketing',
+  analytics: 'Analytics'
 }
 
 function resolveUploadUrl(value) {

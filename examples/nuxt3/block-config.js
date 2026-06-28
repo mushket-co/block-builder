@@ -1,5 +1,5 @@
 /**
- * Конфигурация блоков — полный набор как в examples/vue3
+ * Block configuration — full set as in examples/vue3
  */
 
 
@@ -12,16 +12,520 @@ import LinkBlock from '~/components/blocks/LinkBlock.vue'
 import ToggleRepeaterBlock from '~/components/blocks/ToggleRepeaterBlock.vue'
 import NestedRepeaterBlock from '~/components/blocks/NestedRepeaterBlock.vue'
 import TableBlock from '~/components/blocks/TableBlock.vue'
-import { createTableBlockConfig } from '../../shared/tableBlockDefaults.js'
-import { createNestedRepeaterBlockConfig } from '../../shared/nestedRepeaterBlockConfig.js'
 
+const TABLE_MATRIX_UPLOAD_CONFIG = {
+  uploadUrl: '/api/upload',
+  fileParamName: 'file',
+  maxFileSize: 5 * 1024 * 1024,
+  responseMapper: response => response.data?.url || response.url || '',
+}
 
+const DEFAULT_TABLE_MATRIX = {
+  tableHead: [
+    { id: 'col-name', type: 'default', name: 'Name', nowrap: false, size: '' },
+    { id: 'col-desc', type: 'wyz', name: 'Description', nowrap: false, size: 'normal' },
+    { id: 'col-status', type: 'default', name: 'Status', nowrap: true, size: 'small' },
+  ],
+  tableBody: [
+    {
+      id: 'row-1',
+      fields: [
+        { id: 'c-1-1', value: 'Block Builder', image: '' },
+        { id: 'c-1-2', value: '<p>Demo of the <strong>matrix-table</strong> field</p>', image: '' },
+        { id: 'c-1-3', value: 'Demo', image: '' },
+      ],
+    },
+    {
+      id: 'row-2',
+      fields: [
+        { id: 'c-2-1', value: 'Vue / React', image: '' },
+        { id: 'c-2-2', value: '<p>Cell type is defined by the column, not the row</p>', image: '' },
+        { id: 'c-2-3', value: 'OK', image: '' },
+      ],
+    },
+  ],
+}
+
+function createTableBlockFields() {
+  return [
+    {
+      field: 'title',
+      label: 'Block title',
+      type: 'text',
+      defaultValue: 'Table (matrix-table)',
+    },
+    {
+      field: 'showTableHead',
+      label: 'Show table header',
+      type: 'checkbox',
+      defaultValue: true,
+    },
+    {
+      field: 'gapSize',
+      label: 'Cell padding',
+      type: 'radio',
+      options: [
+        { value: 'small', label: 'Small' },
+        { value: 'big', label: 'Large' },
+      ],
+      defaultValue: 'small',
+    },
+    {
+      field: 'tableMatrix',
+      label: 'Table',
+      type: 'matrix-table',
+      rules: [{ type: 'required', message: 'Fill in the table structure' }],
+      defaultValue: DEFAULT_TABLE_MATRIX,
+      matrixTableConfig: {
+        imageUploadConfig: TABLE_MATRIX_UPLOAD_CONFIG,
+      },
+    },
+  ]
+}
+
+function createTableBlockConfig({ component, framework }) {
+  return {
+    title: 'Table (matrix-table)',
+    icon: '/icons/table.svg',
+    description: 'Table: columns and rows are edited via the matrix-table field',
+    render: {
+      kind: 'component',
+      framework,
+      component,
+    },
+    fields: createTableBlockFields(),
+  }
+}
+
+const PRODUCT_IMAGE_UPLOAD = {
+  uploadUrl: '/api/upload',
+  fileParamName: 'file',
+  maxFileSize: 5 * 1024 * 1024,
+  uploadHeaders: {
+    Authorization: 'Bearer token',
+  },
+  responseMapper: response => response.data?.url || response.url || '',
+  onUploadError: error => {
+    console.error('Image upload error:', error)
+  },
+}
+
+const COMPACT_TABLE_MATRIX = {
+  tableHead: DEFAULT_TABLE_MATRIX.tableHead.slice(0, 2),
+  tableBody: DEFAULT_TABLE_MATRIX.tableBody.map(row => ({
+    ...row,
+    fields: row.fields.slice(0, 2),
+  })),
+}
+
+const DEFAULT_PRODUCT_SPACING = {
+  desktop: {
+    'padding-top': 8,
+    'padding-bottom': 8,
+    'margin-top': 0,
+    'margin-bottom': 0,
+  },
+  tablet: {
+    'padding-top': 6,
+    'padding-bottom': 6,
+    'margin-top': 0,
+    'margin-bottom': 0,
+  },
+  mobile: {
+    'padding-top': 4,
+    'padding-bottom': 4,
+    'margin-top': 0,
+    'margin-bottom': 0,
+  },
+}
+
+function createNestedRepeaterProductFields() {
+  return [
+    {
+      field: 'name',
+      label: 'Product name',
+      type: 'text',
+      placeholder: 'Product name',
+      rules: [
+        { type: 'required', message: 'Product name is required' },
+        { type: 'minLength', value: 2, message: 'Minimum 2 characters' },
+      ],
+      defaultValue: '',
+    },
+    {
+      field: 'description',
+      label: 'Product description',
+      type: 'textarea',
+      placeholder: 'Product description',
+      rules: [],
+      defaultValue: '',
+    },
+    {
+      field: 'price',
+      label: 'Price',
+      type: 'number',
+      placeholder: '0',
+      rules: [
+        { type: 'required', message: 'Price is required' },
+        { type: 'min', value: 0, message: 'Price cannot be negative' },
+      ],
+      defaultValue: 0,
+    },
+    {
+      field: 'contactEmail',
+      label: 'Order email',
+      type: 'email',
+      placeholder: 'shop@example.com',
+      rules: [{ type: 'email', message: 'Invalid email' }],
+      defaultValue: '',
+    },
+    {
+      field: 'productUrl',
+      label: 'Product page',
+      type: 'url',
+      placeholder: 'https://example.com/product',
+      rules: [],
+      defaultValue: '',
+    },
+    {
+      field: 'status',
+      label: 'Status',
+      type: 'select',
+      options: [
+        { value: 'draft', label: 'Draft' },
+        { value: 'published', label: 'Published' },
+        { value: 'archived', label: 'Archived' },
+      ],
+      rules: [],
+      defaultValue: 'published',
+    },
+    {
+      field: 'zones',
+      label: 'Delivery zones (select, multiple)',
+      type: 'select',
+      multiple: true,
+      options: [
+        { value: 'msk', label: 'Moscow' },
+        { value: 'spb', label: 'Saint Petersburg' },
+        { value: 'remote', label: 'Remote regions' },
+      ],
+      defaultValue: ['msk'],
+    },
+    {
+      field: 'inStock',
+      label: 'In stock',
+      type: 'checkbox',
+      defaultValue: true,
+    },
+    {
+      field: 'hasDiscount',
+      label: 'Discount',
+      type: 'checkbox',
+      defaultValue: false,
+    },
+    {
+      field: 'discountPrice',
+      label: 'Discounted price',
+      type: 'number',
+      dependsOn: { field: 'hasDiscount', value: true },
+      rules: [{ type: 'min', value: 0, message: 'Minimum: 0' }],
+      defaultValue: 0,
+    },
+    {
+      field: 'deliveryType',
+      label: 'Delivery',
+      type: 'radio',
+      options: [
+        { value: 'pickup', label: 'Pickup' },
+        { value: 'courier', label: 'Courier' },
+        { value: 'post', label: 'Mail' },
+      ],
+      defaultValue: 'courier',
+    },
+    {
+      field: 'accentColor',
+      label: 'Card accent color',
+      type: 'color',
+      defaultValue: '#007bff',
+    },
+    {
+      field: 'image',
+      label: 'Product image',
+      type: 'image',
+      rules: [],
+      defaultValue: '',
+    },
+    {
+      field: 'thumbnail',
+      label: 'Thumbnail (image + upload)',
+      type: 'image',
+      rules: [],
+      defaultValue: '',
+      fileUploadConfig: PRODUCT_IMAGE_UPLOAD,
+    },
+    {
+      field: 'datasheet',
+      label: 'Manual (file)',
+      type: 'file',
+      rules: [],
+      defaultValue: '',
+      fileUploadConfig: {
+        ...PRODUCT_IMAGE_UPLOAD,
+        accept: ['.pdf', '.doc', '.docx'],
+      },
+    },
+    {
+      field: 'detailAnchor',
+      label: 'Anchor / URL (block-anchor)',
+      type: 'block-anchor',
+      blockAnchorConfig: {
+        placeholder: 'Block on page or URL',
+        allowCustomUrl: true,
+      },
+      defaultValue: '',
+    },
+    {
+      field: 'featuredNews',
+      label: 'Related news (api-select)',
+      type: 'api-select',
+      rules: [],
+      defaultValue: null,
+      apiSelectConfig: {
+        url: '/api/news',
+        searchParam: 'search',
+        pageParam: 'page',
+        limitParam: 'limit',
+        placeholder: 'Select news',
+        noResultsText: 'Nothing found',
+        loadingText: 'Loading...',
+        errorText: 'Failed to load news',
+        limit: 10,
+      },
+    },
+    {
+      field: 'customContent',
+      label: 'Additional description (custom / WYSIWYG)',
+      type: 'custom',
+      rules: [],
+      defaultValue: '',
+      customFieldConfig: {
+        rendererId: 'wysiwyg-editor',
+        options: { mode: 'simple' },
+      },
+    },
+    {
+      field: 'specsTable',
+      label: 'Specifications (matrix-table)',
+      type: 'matrix-table',
+      defaultValue: COMPACT_TABLE_MATRIX,
+      matrixTableConfig: {
+        imageUploadConfig: TABLE_MATRIX_UPLOAD_CONFIG,
+      },
+    },
+    {
+      field: 'productSpacing',
+      label: 'Card spacing',
+      type: 'spacing',
+      spacingConfig: {
+        spacingTypes: ['padding-top', 'padding-bottom', 'margin-top', 'margin-bottom'],
+        min: 0,
+        max: 48,
+        step: 4,
+      },
+      defaultValue: DEFAULT_PRODUCT_SPACING,
+    },
+    {
+      field: 'tags',
+      label: 'Tags (repeater)',
+      type: 'repeater',
+      repeaterConfig: {
+        itemTitle: 'Tag',
+        addButtonText: 'Add tag',
+        removeButtonText: 'Remove tag',
+        min: 0,
+        max: 10,
+        fields: [
+          {
+            field: 'name',
+            label: 'Tag name',
+            type: 'text',
+            rules: [{ type: 'required', message: 'Name is required' }],
+            defaultValue: '',
+          },
+        ],
+        defaultItemValue: { name: '' },
+      },
+      defaultValue: [{ name: 'New' }],
+    },
+    {
+      field: '_importTags',
+      label: 'Import tags (file-import)',
+      type: 'file-import',
+      persist: false,
+      fileImportConfig: {
+        accept: ['.xlsx', '.xls'],
+        uploadUrl: '/api/demo/parse-xlsx',
+        formDataKey: 'file',
+        maxSizeMb: 5,
+        responseMapper: response => response,
+        merge: [
+          {
+            targetField: 'tags',
+            sourceKey: 'data.cards',
+            mode: 'append',
+            dedupeBy: 'name',
+            mapItem: card => ({ name: card.title || 'Import' }),
+          },
+        ],
+        onImport: ({ mergeStats }) => {
+          if (mergeStats?.length) {
+            console.info('[nestedRepeater] import tags', mergeStats)
+          }
+        },
+      },
+    },
+  ]
+}
+
+function createNestedRepeaterDefaultProduct(overrides = {}) {
+  return {
+    name: 'Smartphone',
+    description: 'Modern smartphone with an excellent camera',
+    price: 29999,
+    contactEmail: 'orders@example.com',
+    productUrl: 'https://example.com/smartphone',
+    status: 'published',
+    zones: ['msk', 'spb'],
+    inStock: true,
+    hasDiscount: false,
+    discountPrice: 0,
+    deliveryType: 'courier',
+    accentColor: '#007bff',
+    image: '',
+    thumbnail: '',
+    datasheet: '',
+    detailAnchor: '',
+    featuredNews: null,
+    customContent: '',
+    specsTable: COMPACT_TABLE_MATRIX,
+    productSpacing: DEFAULT_PRODUCT_SPACING,
+    tags: [{ name: 'New' }, { name: 'Best seller' }],
+    ...overrides,
+  }
+}
+
+function createNestedRepeaterDefaultCategory(overrides = {}) {
+  return {
+    name: 'Electronics',
+    description: 'Modern gadgets and devices',
+    products: [
+      createNestedRepeaterDefaultProduct(),
+      createNestedRepeaterDefaultProduct({
+        name: 'Laptop',
+        description: 'Powerful laptop for work and gaming',
+        price: 59999,
+        tags: [{ name: 'Work' }],
+      }),
+    ],
+    ...overrides,
+  }
+}
+
+function createNestedRepeaterBlockConfig({ component, framework }) {
+  return {
+    title: 'Catalog with nested repeaters',
+    icon: '/icons/card.svg',
+    description:
+      'Nested repeaters: categories → products. The nested repeater includes all BlockBuilder field types.',
+    render: {
+      kind: 'component',
+      framework,
+      component,
+    },
+    fields: [
+      {
+        field: 'title',
+        label: 'Catalog title',
+        type: 'text',
+        placeholder: 'Product catalog',
+        rules: [],
+        defaultValue: 'Product catalog',
+      },
+      {
+        field: 'description',
+        label: 'Catalog description',
+        type: 'textarea',
+        placeholder: 'Product catalog description',
+        rules: [],
+        defaultValue: '',
+      },
+      {
+        field: 'categories',
+        label: 'Categories',
+        type: 'repeater',
+        rules: [{ type: 'required', message: 'At least one category is required' }],
+        defaultValue: [createNestedRepeaterDefaultCategory()],
+        repeaterConfig: {
+          itemTitle: 'Category',
+          addButtonText: 'Add category',
+          removeButtonText: 'Remove category',
+          min: 1,
+          max: 10,
+          maxNestingDepth: 3,
+          fields: [
+            {
+              field: 'name',
+              label: 'Category name',
+              type: 'text',
+              placeholder: 'Category name',
+              rules: [
+                { type: 'required', message: 'Category name is required' },
+                { type: 'minLength', value: 2, message: 'Minimum 2 characters' },
+              ],
+              defaultValue: '',
+            },
+            {
+              field: 'description',
+              label: 'Category description',
+              type: 'textarea',
+              placeholder: 'Category description',
+              rules: [],
+              defaultValue: '',
+            },
+            {
+              field: 'products',
+              label: 'Products',
+              type: 'repeater',
+              rules: [{ type: 'required', message: 'At least one product is required' }],
+              defaultValue: [],
+              repeaterConfig: {
+                itemTitle: 'Product',
+                addButtonText: 'Add product',
+                removeButtonText: 'Remove product',
+                min: 1,
+                max: 20,
+                maxNestingDepth: 3,
+                fields: createNestedRepeaterProductFields(),
+                defaultItemValue: createNestedRepeaterDefaultProduct({
+                  name: '',
+                  description: '',
+                  price: 0,
+                  tags: [],
+                }),
+              },
+            },
+          ],
+        },
+      },
+    ],
+  }
+}
 
 export const blockConfigs = {
   richText: {
-    title: 'Rich Text (с визуальным редактором)',
+    title: 'Rich Text (with visual editor)',
     icon: '/icons/rich-text.svg',
-    description: 'Блок с визуальным редактором Jodit для форматированного текста',
+    description: 'Block with Jodit visual editor for formatted text',
     render: {
       kind: 'component',
       framework: 'vue',
@@ -30,57 +534,57 @@ export const blockConfigs = {
     fields: [
       {
         field: 'content',
-        label: 'Содержимое',
-        type: 'custom', // ✅ Используем кастомный тип поля
+        label: 'Content',
+        type: 'custom', // ✅ Using custom field type
         customFieldConfig: {
-          rendererId: 'wysiwyg-editor', // ID зарегистрированного рендерера
+          rendererId: 'wysiwyg-editor', // ID of registered renderer
           options: {
-            mode: 'default' // Опции для редактора
+            mode: 'default' // Editor options
           }
         },
         rules: [
-          { type: 'required', message: 'Содержимое обязательно' }
+          { type: 'required', message: 'Content is required' }
         ],
-        defaultValue: '<p>Введите ваш текст здесь...</p>'
+        defaultValue: '<p>Enter your text here...</p>'
       },
       {
         field: 'fontSize',
-        label: 'Размер шрифта',
+        label: 'Font size',
         type: 'number',
         rules: [
-          { type: 'required', message: 'Размер шрифта обязателен' },
-          { type: 'min', value: 12, message: 'Минимальный размер: 12px' },
-          { type: 'max', value: 48, message: 'Максимальный размер: 48px' }
+          { type: 'required', message: 'Font size is required' },
+          { type: 'min', value: 12, message: 'Minimum size: 12px' },
+          { type: 'max', value: 48, message: 'Maximum size: 48px' }
         ],
         defaultValue: 16
       },
       {
         field: 'textColor',
-        label: 'Цвет текста',
+        label: 'Text color',
         type: 'color',
-        rules: [{ type: 'required', message: 'Цвет обязателен' }],
+        rules: [{ type: 'required', message: 'Color is required' }],
         defaultValue: '#333333'
       },
       {
         field: 'textAlign',
-        label: 'Выравнивание',
+        label: 'Alignment',
         type: 'select',
         options: [
-          { value: 'left', label: 'По левому краю' },
-          { value: 'center', label: 'По центру' },
-          { value: 'right', label: 'По правому краю' },
-          { value: 'justify', label: 'По ширине' }
+          { value: 'left', label: 'Left' },
+          { value: 'center', label: 'Center' },
+          { value: 'right', label: 'Right' },
+          { value: 'justify', label: 'Justify' }
         ],
-        rules: [{ type: 'required', message: 'Выравнивание обязательно' }],
+        rules: [{ type: 'required', message: 'Alignment is required' }],
         defaultValue: 'left'
       }
     ]
   },
 
   text: {
-    title: 'Текстовый блок (простой)',
+    title: 'Text block (simple)',
     icon: '/icons/text.svg',
-    description: 'Добавьте текстовый контент на страницу',
+    description: 'Add text content to the page',
     render: {
       kind: 'component',
       framework: 'vue',
@@ -89,61 +593,61 @@ export const blockConfigs = {
     fields: [
       {
         field: 'content',
-        label: 'Текст',
+        label: 'Text',
         type: 'textarea',
-        placeholder: 'Введите ваш текст...',
+        placeholder: 'Enter your text...',
         rules: [
-          { type: 'required', message: 'Текст обязателен' }
+          { type: 'required', message: 'Text is required' }
         ],
         defaultValue: ''
       },
       {
         field: 'fontSize',
-        label: 'Размер шрифта',
+        label: 'Font size',
         type: 'number',
         rules: [
-          { type: 'required', message: 'Размер шрифта обязателен' },
-          { type: 'min', value: 8, message: 'Минимальный размер: 8px' },
-          { type: 'max', value: 72, message: 'Максимальный размер: 72px' }
+          { type: 'required', message: 'Font size is required' },
+          { type: 'min', value: 8, message: 'Minimum size: 8px' },
+          { type: 'max', value: 72, message: 'Maximum size: 72px' }
         ],
         defaultValue: 16
       },
       {
         field: 'color',
-        label: 'Цвет текста',
+        label: 'Text color',
         type: 'color',
-        rules: [{ type: 'required', message: 'Цвет обязателен' }],
+        rules: [{ type: 'required', message: 'Color is required' }],
         defaultValue: '#333333'
       },
       {
         field: 'textAlign',
-        label: 'Выравнивание',
+        label: 'Alignment',
         type: 'select',
         options: [
-          { value: 'left', label: 'По левому краю' },
-          { value: 'center', label: 'По центру' },
-          { value: 'right', label: 'По правому краю' }
+          { value: 'left', label: 'Left' },
+          { value: 'center', label: 'Center' },
+          { value: 'right', label: 'Right' }
         ],
-        rules: [{ type: 'required', message: 'Выравнивание обязательно' }],
+        rules: [{ type: 'required', message: 'Alignment is required' }],
         defaultValue: 'left'
       },
       {
         field: 'topics',
-        label: 'Темы (select, множественный выбор)',
+        label: 'Topics (select, multiple)',
         type: 'select',
         multiple: true,
         options: [
-          { value: 'dev', label: 'Разработка' },
-          { value: 'design', label: 'Дизайн' },
-          { value: 'marketing', label: 'Маркетинг' },
-          { value: 'analytics', label: 'Аналитика' }
+          { value: 'dev', label: 'Development' },
+          { value: 'design', label: 'Design' },
+          { value: 'marketing', label: 'Marketing' },
+          { value: 'analytics', label: 'Analytics' }
         ],
         rules: [],
         defaultValue: ['dev', 'design']
       },
       {
         field: 'image',
-        label: 'Изображение (одно)',
+        label: 'Image (single)',
         type: 'image',
         rules: [],
         defaultValue: '',
@@ -156,7 +660,7 @@ export const blockConfigs = {
       },
       {
         field: 'images',
-        label: 'Изображения (несколько)',
+        label: 'Images (multiple)',
         type: 'image',
         multiple: true,
         rules: [],
@@ -171,7 +675,7 @@ export const blockConfigs = {
       },
       {
         field: 'file',
-        label: 'Файл (один)',
+        label: 'File (single)',
         type: 'file',
         rules: [],
         defaultValue: '',
@@ -185,7 +689,7 @@ export const blockConfigs = {
       },
       {
         field: 'files',
-        label: 'Файлы (несколько)',
+        label: 'Files (multiple)',
         type: 'file',
         multiple: true,
         rules: [],
@@ -200,15 +704,15 @@ export const blockConfigs = {
         }
       }
     ],
-    // 🧪 Кастомные брекпоинты для тестирования
+    // 🧪 Custom breakpoints for testing
     spacingOptions: {
       config: {
         min: 0,
         max: 120,
         step: 8,
-        // Кастомные брекпоинты (когда указаны, заменяют дефолтные)
+        // Custom breakpoints (when specified, replace defaults)
         breakpoints: [
-          { name: 'xlarge', label: 'XL (Desktop)', maxWidth: undefined }, // Desktop без ограничения
+          { name: 'xlarge', label: 'XL (Desktop)', maxWidth: undefined }, // Desktop without limit
           { name: 'large', label: 'L (Laptop)', maxWidth: 1440 },
           { name: 'medium', label: 'M (Tablet)', maxWidth: 1024 },
           { name: 'small', label: 'S (Mobile)', maxWidth: 640 }
@@ -218,9 +722,9 @@ export const blockConfigs = {
   },
 
   richCardList: {
-    title: 'Богатые карточки',
+    title: 'Rich cards',
     icon: '/icons/card.svg',
-    description: 'Тестовый блок с множеством полей в каждой карточке',
+    description: 'Test block with many fields in each card',
     render: {
       kind: 'component',
       framework: 'vue',
@@ -229,157 +733,157 @@ export const blockConfigs = {
     fields: [
       {
         field: 'sectionTitle',
-        label: 'Заголовок секции',
+        label: 'Section title',
         type: 'text',
-        placeholder: 'Наши продукты',
+        placeholder: 'Our products',
         rules: [
-          { type: 'required', message: 'Заголовок секции обязателен' },
-          { type: 'minLength', value: 3, message: 'Минимальная длина: 3 символа' },
-          { type: 'maxLength', value: 100, message: 'Максимальная длина: 100 символов' }
+          { type: 'required', message: 'Section title is required' },
+          { type: 'minLength', value: 3, message: 'Minimum length: 3 characters' },
+          { type: 'maxLength', value: 100, message: 'Maximum length: 100 characters' }
         ],
-        defaultValue: 'Наши продукты'
+        defaultValue: 'Our products'
       },
       {
         field: 'titleColor',
-        label: 'Цвет заголовка секции',
+        label: 'Section title color',
         type: 'color',
-        rules: [{ type: 'required', message: 'Цвет заголовка обязателен' }],
+        rules: [{ type: 'required', message: 'Title color is required' }],
         defaultValue: '#333333'
       },
       {
         field: 'titleSize',
-        label: 'Размер заголовка секции (px)',
+        label: 'Section title size (px)',
         type: 'number',
         rules: [
-          { type: 'required', message: 'Размер заголовка обязателен' },
-          { type: 'min', value: 16, message: 'Минимум: 16px' },
-          { type: 'max', value: 72, message: 'Максимум: 72px' }
+          { type: 'required', message: 'Title size is required' },
+          { type: 'min', value: 16, message: 'Minimum: 16px' },
+          { type: 'max', value: 72, message: 'Maximum: 72px' }
         ],
         defaultValue: 32
       },
       {
         field: 'titleAlign',
-        label: 'Выравнивание заголовка',
+        label: 'Title alignment',
         type: 'select',
         options: [
-          { value: 'left', label: 'По левому краю' },
-          { value: 'center', label: 'По центру' },
-          { value: 'right', label: 'По правому краю' }
+          { value: 'left', label: 'Left' },
+          { value: 'center', label: 'Center' },
+          { value: 'right', label: 'Right' }
         ],
-        rules: [{ type: 'required', message: 'Выравнивание заголовка обязательно' }],
+        rules: [{ type: 'required', message: 'Title alignment is required' }],
         defaultValue: 'center'
       },
 
       {
         field: 'cards',
-        label: 'Карточки',
+        label: 'Cards',
         type: 'repeater',
         defaultValue: [
           {
-            title: 'Премиум продукт',
-            subtitle: 'Лучшее решение 2024',
-            text: 'Инновационный продукт с передовыми технологиями для вашего бизнеса',
-            detailedText: 'Полное описание включает все особенности и преимущества данного продукта. Идеально подходит для малого и среднего бизнеса.',
+            title: 'Premium product',
+            subtitle: 'Best solution 2024',
+            text: 'Innovative product with cutting-edge technology for your business',
+            detailedText: 'Full description includes all features and benefits of this product. Ideal for small and medium businesses.',
             link: 'https://example.com/product-1',
             linkTarget: '_blank',
-            buttonText: 'Узнать подробнее',
+            buttonText: 'Learn more',
             image: '',
             imageMobile: '',
-            imageAlt: 'Премиум продукт',
+            imageAlt: 'Premium product',
             backgroundColor: '#ffffff',
             textColor: '#333333',
-            meetingPlace: 'Конференц-зал "Альфа", БЦ "Столица"',
-            meetingTime: '15:00, 25 октября 2024',
+            meetingPlace: 'Conference room "Alpha", Business Center "Capital"',
+            meetingTime: '3:00 PM, October 25, 2024',
             participantsCount: '50',
             relatedArticle: null
           },
           {
-            title: 'Стандарт версия',
-            subtitle: 'Оптимальный выбор',
-            text: 'Проверенное решение для ежедневных задач с отличным соотношением цены и качества',
-            detailedText: 'Включает базовый функционал, необходимый для эффективной работы. Легко масштабируется при росте вашего бизнеса.',
+            title: 'Standard edition',
+            subtitle: 'Optimal choice',
+            text: 'Proven solution for everyday tasks with excellent value for money',
+            detailedText: 'Includes essential functionality for efficient work. Easily scales as your business grows.',
             link: 'https://example.com/product-2',
             linkTarget: '_self',
-            buttonText: 'Подробности',
+            buttonText: 'Details',
             image: '',
             imageMobile: '',
-            imageAlt: 'Стандарт версия',
+            imageAlt: 'Standard edition',
             backgroundColor: '#f8f9fa',
             textColor: '#212529',
-            meetingPlace: 'Офис компании, 3 этаж',
-            meetingTime: '10:30, 26 октября 2024',
+            meetingPlace: 'Company office, 3rd floor',
+            meetingTime: '10:30 AM, October 26, 2024',
             participantsCount: '25',
             relatedArticle: null
           },
           {
-            title: 'Корпоративное решение',
-            subtitle: 'Для крупного бизнеса',
-            text: 'Масштабируемое решение с расширенными возможностями для корпоративного уровня',
-            detailedText: 'Полная кастомизация, интеграция с существующими системами, приоритетная техническая поддержка 24/7.',
+            title: 'Enterprise solution',
+            subtitle: 'For large businesses',
+            text: 'Scalable solution with advanced features for enterprise level',
+            detailedText: 'Full customization, integration with existing systems, priority 24/7 technical support.',
             link: 'https://example.com/product-3',
             linkTarget: '_blank',
-            buttonText: 'Связаться с нами',
+            buttonText: 'Contact us',
             image: '',
             imageMobile: '',
-            imageAlt: 'Корпоративное решение',
+            imageAlt: 'Enterprise solution',
             backgroundColor: '#e7f3ff',
             textColor: '#004085',
-            meetingPlace: 'Гостиница "Метрополь", зал "Премьер"',
-            meetingTime: '14:00, 27 октября 2024',
+            meetingPlace: 'Metropol Hotel, Premier Hall',
+            meetingTime: '2:00 PM, October 27, 2024',
             participantsCount: '100',
             relatedArticle: null
           }
         ],
         repeaterConfig: {
-          itemTitle: 'Карточка',
-          addButtonText: 'Добавить карточку',
-          removeButtonText: 'Удалить',
+          itemTitle: 'Card',
+          addButtonText: 'Add card',
+          removeButtonText: 'Remove',
           min: 2,
           max: 20,
           fields: [
             {
               field: 'title',
-              label: 'Заголовок',
+              label: 'Title',
               type: 'text',
-              placeholder: 'Название продукта',
+              placeholder: 'Product name',
               rules: [
-                { type: 'required', message: 'Заголовок обязателен' },
-                { type: 'minLength', value: 3, message: 'Минимальная длина: 3 символа' },
-                { type: 'maxLength', value: 100, message: 'Максимальная длина: 100 символов' }
+                { type: 'required', message: 'Title is required' },
+                { type: 'minLength', value: 3, message: 'Minimum length: 3 characters' },
+                { type: 'maxLength', value: 100, message: 'Maximum length: 100 characters' }
               ],
               defaultValue: ''
             },
             {
               field: 'subtitle',
-              label: 'Подзаголовок',
+              label: 'Subtitle',
               type: 'text',
-              placeholder: 'Краткое описание',
+              placeholder: 'Short description',
               rules: [
-                { type: 'required', message: 'Подзаголовок обязателен' },
-                { type: 'minLength', value: 5, message: 'Минимальная длина: 5 символов' },
-                { type: 'maxLength', value: 150, message: 'Максимальная длина: 150 символов' }
+                { type: 'required', message: 'Subtitle is required' },
+                { type: 'minLength', value: 5, message: 'Minimum length: 5 characters' },
+                { type: 'maxLength', value: 150, message: 'Maximum length: 150 characters' }
               ],
               defaultValue: ''
             },
             {
               field: 'text',
-              label: 'Основной текст',
+              label: 'Main text',
               type: 'textarea',
-              placeholder: 'Основное описание продукта...',
+              placeholder: 'Main product description...',
               rules: [
-                { type: 'required', message: 'Основной текст обязателен' },
-                { type: 'minLength', value: 10, message: 'Минимальная длина: 10 символов' },
-                { type: 'maxLength', value: 500, message: 'Максимальная длина: 500 символов' }
+                { type: 'required', message: 'Main text is required' },
+                { type: 'minLength', value: 10, message: 'Minimum length: 10 characters' },
+                { type: 'maxLength', value: 500, message: 'Maximum length: 500 characters' }
               ],
               defaultValue: ''
             },
             {
               field: 'detailedText',
-              label: 'Детальное описание',
+              label: 'Detailed description',
               type: 'custom',
               rules: [
-                { type: 'required', message: 'Детальное описание обязательно' },
-                { type: 'minLength', value: 20, message: 'Минимальная длина: 20 символов' }
+                { type: 'required', message: 'Detailed description is required' },
+                { type: 'minLength', value: 20, message: 'Minimum length: 20 characters' }
               ],
               defaultValue: '',
               customFieldConfig: {
@@ -391,129 +895,129 @@ export const blockConfigs = {
             },
             {
               field: 'link',
-              label: 'Ссылка',
+              label: 'Link',
               type: 'text',
-              placeholder: '/news/123/ или https://example.com',
+              placeholder: '/news/123/ or https://example.com',
               rules: [
-                { type: 'required', message: 'Ссылка обязательна' },
-                { type: 'minLength', value: 1, message: 'Ссылка не может быть пустой' }
+                { type: 'required', message: 'Link is required' },
+                { type: 'minLength', value: 1, message: 'Link cannot be empty' }
               ],
               defaultValue: ''
             },
             {
               field: 'linkTarget',
-              label: 'Открытие ссылки',
+              label: 'Link target',
               type: 'select',
               options: [
-                { value: '_self', label: 'В текущей вкладке' },
-                { value: '_blank', label: 'В новой вкладке' }
+                { value: '_self', label: 'Same tab' },
+                { value: '_blank', label: 'New tab' }
               ],
-              rules: [{ type: 'required', message: 'Выбор открытия ссылки обязателен' }],
+              rules: [{ type: 'required', message: 'Link target is required' }],
               defaultValue: '_blank'
             },
             {
               field: 'buttonText',
-              label: 'Текст кнопки',
+              label: 'Button text',
               type: 'text',
-              placeholder: 'Подробнее',
+              placeholder: 'Learn more',
               rules: [
-                { type: 'required', message: 'Текст кнопки обязателен' },
-                { type: 'minLength', value: 2, message: 'Минимальная длина: 2 символа' },
-                { type: 'maxLength', value: 50, message: 'Максимальная длина: 50 символов' }
+                { type: 'required', message: 'Button text is required' },
+                { type: 'minLength', value: 2, message: 'Minimum length: 2 characters' },
+                { type: 'maxLength', value: 50, message: 'Maximum length: 50 characters' }
               ],
-              defaultValue: 'Подробнее'
+              defaultValue: 'Learn more'
             },
             {
               field: 'image',
-              label: 'Изображение (десктоп)',
+              label: 'Image (desktop)',
               type: 'image',
-              rules: [{ type: 'required', message: 'Изображение для десктопа обязательно' }],
+              rules: [{ type: 'required', message: 'Desktop image is required' }],
               defaultValue: ''
             },
             {
               field: 'imageMobile',
-              label: 'Изображение (мобильное)',
+              label: 'Image (mobile)',
               type: 'image',
-              rules: [{ type: 'required', message: 'Изображение для мобильного обязательно' }],
+              rules: [{ type: 'required', message: 'Mobile image is required' }],
               defaultValue: ''
             },
             {
               field: 'imageAlt',
-              label: 'Альтернативный текст изображения',
+              label: 'Image alt text',
               type: 'text',
-              placeholder: 'Описание изображения для доступности',
+              placeholder: 'Image description for accessibility',
               rules: [
-                { type: 'required', message: 'Альтернативный текст обязателен' },
-                { type: 'minLength', value: 3, message: 'Минимальная длина: 3 символа' },
-                { type: 'maxLength', value: 200, message: 'Максимальная длина: 200 символов' }
+                { type: 'required', message: 'Alt text is required' },
+                { type: 'minLength', value: 3, message: 'Minimum length: 3 characters' },
+                { type: 'maxLength', value: 200, message: 'Maximum length: 200 characters' }
               ],
               defaultValue: ''
             },
             {
               field: 'backgroundColor',
-              label: 'Цвет фона карточки',
+              label: 'Card background color',
               type: 'color',
-              rules: [{ type: 'required', message: 'Цвет фона обязателен' }],
+              rules: [{ type: 'required', message: 'Background color is required' }],
               defaultValue: '#ffffff'
             },
             {
               field: 'textColor',
-              label: 'Цвет текста карточки',
+              label: 'Card text color',
               type: 'color',
-              rules: [{ type: 'required', message: 'Цвет текста обязателен' }],
+              rules: [{ type: 'required', message: 'Text color is required' }],
               defaultValue: '#333333'
             },
             {
               field: 'meetingPlace',
-              label: 'Место встречи',
+              label: 'Meeting place',
               type: 'text',
-              placeholder: 'Конференц-зал, офис...',
+              placeholder: 'Conference room, office...',
               rules: [
-                { type: 'required', message: 'Место встречи обязательно' },
-                { type: 'minLength', value: 5, message: 'Минимальная длина: 5 символов' },
-                { type: 'maxLength', value: 200, message: 'Максимальная длина: 200 символов' }
+                { type: 'required', message: 'Meeting place is required' },
+                { type: 'minLength', value: 5, message: 'Minimum length: 5 characters' },
+                { type: 'maxLength', value: 200, message: 'Maximum length: 200 characters' }
               ],
               defaultValue: ''
             },
             {
               field: 'meetingTime',
-              label: 'Время встречи',
+              label: 'Meeting time',
               type: 'text',
-              placeholder: '15:00, 25 октября 2024',
+              placeholder: '3:00 PM, October 25, 2024',
               rules: [
-                { type: 'required', message: 'Время встречи обязательно' },
-                { type: 'minLength', value: 5, message: 'Минимальная длина: 5 символов' },
-                { type: 'maxLength', value: 100, message: 'Максимальная длина: 100 символов' }
+                { type: 'required', message: 'Meeting time is required' },
+                { type: 'minLength', value: 5, message: 'Minimum length: 5 characters' },
+                { type: 'maxLength', value: 100, message: 'Maximum length: 100 characters' }
               ],
               defaultValue: ''
             },
             {
               field: 'participantsCount',
-              label: 'Количество участников',
+              label: 'Number of participants',
               type: 'number',
               placeholder: '50',
               rules: [
-                { type: 'required', message: 'Количество участников обязательно' },
-                { type: 'min', value: 1, message: 'Минимум 1 участник' },
-                { type: 'max', value: 10000, message: 'Максимум 10000 участников' }
+                { type: 'required', message: 'Number of participants is required' },
+                { type: 'min', value: 1, message: 'Minimum 1 participant' },
+                { type: 'max', value: 10000, message: 'Maximum 10000 participants' }
               ],
               defaultValue: ''
             },
             {
               field: 'relatedArticle',
-              label: 'Связанная статья',
+              label: 'Related article',
               type: 'api-select',
-              rules: [{ type: 'required', message: 'Связанная статья обязательна' }],
+              rules: [{ type: 'required', message: 'Related article is required' }],
               defaultValue: null,
               apiSelectConfig: {
                 url: '/api/articles',
                 searchParam: 'search',
                 pageParam: 'page',
                 limitParam: 'limit',
-                placeholder: 'Выберите статью',
-                noResultsText: 'Статьи не найдены',
-                loadingText: 'Загрузка статей...',
-                errorText: 'Ошибка загрузки статей',
+                placeholder: 'Select article',
+                noResultsText: 'No articles found',
+                loadingText: 'Loading articles...',
+                errorText: 'Failed to load articles',
                 limit: 10,
                 multiple: false
               }
@@ -522,85 +1026,85 @@ export const blockConfigs = {
         }
       },
 
-      // Общие настройки отображения
+      // General display settings
       {
         field: 'cardMinWidth',
-        label: 'Минимальная ширина карточки (px)',
+        label: 'Minimum card width (px)',
         type: 'number',
         rules: [
-          { type: 'min', value: 200, message: 'Минимум: 200px' },
-          { type: 'max', value: 600, message: 'Максимум: 600px' }
+          { type: 'min', value: 200, message: 'Minimum: 200px' },
+          { type: 'max', value: 600, message: 'Maximum: 600px' }
         ],
         defaultValue: 300
       },
       {
         field: 'gap',
-        label: 'Отступ между карточками (px)',
+        label: 'Gap between cards (px)',
         type: 'number',
         rules: [
-          { type: 'min', value: 0, message: 'Минимум: 0px' },
-          { type: 'max', value: 100, message: 'Максимум: 100px' }
+          { type: 'min', value: 0, message: 'Minimum: 0px' },
+          { type: 'max', value: 100, message: 'Maximum: 100px' }
         ],
         defaultValue: 24
       },
       {
         field: 'cardDefaultBg',
-        label: 'Цвет фона карточек по умолчанию',
+        label: 'Default card background color',
         type: 'color',
         rules: [],
         defaultValue: '#ffffff'
       },
       {
         field: 'cardDefaultTextColor',
-        label: 'Цвет текста карточек по умолчанию',
+        label: 'Default card text color',
         type: 'color',
         rules: [],
         defaultValue: '#333333'
       },
       {
         field: 'cardBorderRadius',
-        label: 'Скругление углов карточек (px)',
+        label: 'Card border radius (px)',
         type: 'number',
         rules: [
-          { type: 'min', value: 0, message: 'Минимум: 0px' },
-          { type: 'max', value: 50, message: 'Максимум: 50px' }
+          { type: 'min', value: 0, message: 'Minimum: 0px' },
+          { type: 'max', value: 50, message: 'Maximum: 50px' }
         ],
         defaultValue: 12
       },
       {
         field: 'cardShadow',
-        label: 'Тень карточек',
+        label: 'Card shadow',
         type: 'select',
         options: [
-          { value: 'none', label: 'Без тени' },
-          { value: '0 2px 8px rgba(0, 0, 0, 0.08)', label: 'Легкая' },
-          { value: '0 4px 12px rgba(0, 0, 0, 0.1)', label: 'Средняя' },
-          { value: '0 8px 24px rgba(0, 0, 0, 0.15)', label: 'Сильная' }
+          { value: 'none', label: 'None' },
+          { value: '0 2px 8px rgba(0, 0, 0, 0.08)', label: 'Light' },
+          { value: '0 4px 12px rgba(0, 0, 0, 0.1)', label: 'Medium' },
+          { value: '0 8px 24px rgba(0, 0, 0, 0.15)', label: 'Strong' }
         ],
         rules: [],
         defaultValue: '0 4px 12px rgba(0, 0, 0, 0.1)'
       },
       {
         field: 'buttonColor',
-        label: 'Цвет кнопок',
+        label: 'Button color',
         type: 'color',
         rules: [],
         defaultValue: '#667eea'
       },
       {
         field: 'buttonTextColor',
-        label: 'Цвет текста кнопок',
+        label: 'Button text color',
         type: 'color',
         rules: [],
         defaultValue: '#ffffff'
       },
       {
         field: 'buttonBorderRadius',
-        label: 'Скругление кнопок (px)',
+        label: 'Button border radius (px)',
         type: 'number',
         rules: [
-          { type: 'min', value: 0, message: 'Минимум: 0px' },
-          { type: 'max', value: 50, message: 'Максимум: 50px' }
+          { type: 'min', value: 0, message: 'Minimum: 0px' },
+          { type: 'max', value: 50, message: 'Maximum: 50px' }
         ],
         defaultValue: 6
       }
@@ -616,9 +1120,9 @@ export const blockConfigs = {
   },
 
   newsList: {
-    title: 'Список новостей из API',
+    title: 'News list from API',
     icon: '/icons/text.svg',
-    description: 'Блок отображения новостей, выбранных через API',
+    description: 'Block displaying news selected via API',
     render: {
       kind: 'component',
       framework: 'vue',
@@ -627,24 +1131,24 @@ export const blockConfigs = {
     fields: [
       {
         field: 'title',
-        label: 'Заголовок секции',
+        label: 'Section title',
         type: 'text',
-        placeholder: 'Последние новости',
-        rules: [{ type: 'required', message: 'Заголовок обязателен' }],
-        defaultValue: 'Последние новости'
+        placeholder: 'Latest news',
+        rules: [{ type: 'required', message: 'Title is required' }],
+        defaultValue: 'Latest news'
       },
-      // ✅ ПРИМЕР: API-SELECT с одиночным выбором
+      // ✅ EXAMPLE: API-SELECT with single selection
       {
         field: 'featuredNewsId',
-        label: 'Главная новость',
+        label: 'Featured news',
         type: 'api-select',
-        rules: [{ type: 'required', message: 'Выберите главную новость' }],
+        rules: [{ type: 'required', message: 'Select featured news' }],
         defaultValue: null,
         apiSelectConfig: {
           url: '/api/news',
           method: 'GET',
-          multiple: false, // Одиночный выбор
-          placeholder: 'Начните вводить для поиска новости...',
+          multiple: false, // Single selection
+          placeholder: 'Start typing to search news...',
           searchParam: 'search',
           pageParam: 'page',
           limitParam: 'limit',
@@ -653,60 +1157,60 @@ export const blockConfigs = {
           idField: 'id',
           nameField: 'name',
           minSearchLength: 0,
-          loadingText: 'Загрузка новостей...',
-          noResultsText: 'Новости не найдены',
-          errorText: 'Ошибка загрузки новостей'
+          loadingText: 'Loading news...',
+          noResultsText: 'No news found',
+          errorText: 'Failed to load news'
         }
       },
-      // ✅ ПРИМЕР: API-SELECT с множественным выбором
+      // ✅ EXAMPLE: API-SELECT with multiple selection
       {
         field: 'newsIds',
-        label: 'Список новостей для отображения',
+        label: 'News list to display',
         type: 'api-select',
-        rules: [{ type: 'required', message: 'Выберите хотя бы одну новость' }],
+        rules: [{ type: 'required', message: 'Select at least one news item' }],
         defaultValue: [],
         apiSelectConfig: {
           url: '/api/news',
           method: 'GET',
-          multiple: true, // Множественный выбор
-          placeholder: 'Выберите новости...',
+          multiple: true, // Multiple selection
+          placeholder: 'Select news...',
           limit: 10,
           debounceMs: 1500,
-          loadingText: 'Загрузка...',
-          noResultsText: 'Ничего не найдено',
-          errorText: 'Ошибка загрузки'
+          loadingText: 'Loading...',
+          noResultsText: 'Nothing found',
+          errorText: 'Failed to load'
         }
       },
-      // Настройки отображения
+      // Display settings
       {
         field: 'showDate',
-        label: 'Показывать дату',
+        label: 'Show date',
         type: 'checkbox',
         rules: [],
         defaultValue: true
       },
       {
         field: 'columns',
-        label: 'Количество колонок',
+        label: 'Number of columns',
         type: 'select',
         options: [
-          { value: '1', label: '1 колонка' },
-          { value: '2', label: '2 колонки' },
-          { value: '3', label: '3 колонки' }
+          { value: '1', label: '1 column' },
+          { value: '2', label: '2 columns' },
+          { value: '3', label: '3 columns' }
         ],
         rules: [],
         defaultValue: '2'
       },
       {
         field: 'backgroundColor',
-        label: 'Цвет фона',
+        label: 'Background color',
         type: 'color',
         rules: [],
         defaultValue: '#f8f9fa'
       },
       {
         field: 'textColor',
-        label: 'Цвет текста',
+        label: 'Text color',
         type: 'color',
         rules: [],
         defaultValue: '#333333'
@@ -723,9 +1227,9 @@ export const blockConfigs = {
   },
 
   link: {
-    title: 'Блок ссылки',
+    title: 'Link block',
     icon: '/icons/button.svg',
-    description: 'Блок с ссылкой, выбором открытия и фоном',
+    description: 'Block with link, open target, and background',
     render: {
       kind: 'component',
       framework: 'vue',
@@ -734,49 +1238,49 @@ export const blockConfigs = {
     fields: [
       {
         field: 'text',
-        label: 'Текст ссылки',
+        label: 'Link text',
         type: 'text',
-        placeholder: 'Введите текст ссылки',
+        placeholder: 'Enter link text',
         rules: [
-          { type: 'required', message: 'Текст ссылки обязателен' }
+          { type: 'required', message: 'Link text is required' }
         ],
-        defaultValue: 'Перейти'
+        defaultValue: 'Go'
       },
       {
         field: 'url',
-        label: 'Якорь или URL',
+        label: 'Anchor or URL',
         type: 'block-anchor',
         blockAnchorConfig: {
-          placeholder: 'Выберите блок на странице',
+          placeholder: 'Select block on page',
           allowCustomUrl: true
         },
         rules: [
-          { type: 'required', message: 'Укажите якорь или URL' }
+          { type: 'required', message: 'Specify anchor or URL' }
         ],
         defaultValue: ''
       },
       {
         field: 'linkTarget',
-        label: 'Как открывать ссылку',
+        label: 'How to open link',
         type: 'radio',
         options: [
-          { value: '_self', label: 'В текущей вкладке' },
-          { value: '_blank', label: 'В новой вкладке' }
+          { value: '_self', label: 'Same tab' },
+          { value: '_blank', label: 'New tab' }
         ],
         rules: [
-          { type: 'required', message: 'Выберите способ открытия' }
+          { type: 'required', message: 'Select open method' }
         ],
         defaultValue: '_self'
       },
       {
         field: 'hasBackground',
-        label: 'Добавить фон блока',
+        label: 'Add block background',
         type: 'checkbox',
         defaultValue: false
       },
       {
         field: 'backgroundColor',
-        label: 'Цвет фона',
+        label: 'Background color',
         type: 'color',
         defaultValue: '#f0f0f0',
         dependsOn: {
@@ -793,7 +1297,7 @@ export const blockConfigs = {
   toggleRepeater: {
     title: 'Toggle + Repeater (regression)',
     icon: '/icons/button.svg',
-    description: 'Проверка фикса: repeater внутри toggle-group (checkbox + dependsOn)',
+    description: 'Regression test: repeater inside toggle-group (checkbox + dependsOn)',
     render: {
       kind: 'component',
       framework: 'vue',
@@ -802,26 +1306,26 @@ export const blockConfigs = {
     fields: [
       {
         field: 'showLogos',
-        label: 'Основные логотипы',
+        label: 'Main logos',
         type: 'checkbox',
         defaultValue: false
       },
       {
         field: 'logos',
-        label: 'Логотипы',
+        label: 'Logos',
         type: 'repeater',
         dependsOn: { field: 'showLogos', value: true },
         repeaterConfig: {
-          itemTitle: 'Логотип',
-          addButtonText: 'Добавить логотип',
+          itemTitle: 'Logo',
+          addButtonText: 'Add logo',
           min: 1,
           fields: [
             {
               field: 'name',
-              label: 'Название',
+              label: 'Name',
               type: 'text',
               defaultValue: '',
-              rules: [{ type: 'required', message: 'Название обязательно' }]
+              rules: [{ type: 'required', message: 'Name is required' }]
             },
             {
               field: 'url',
@@ -836,33 +1340,33 @@ export const blockConfigs = {
       },
       {
         field: 'showLinks',
-        label: 'Ссылки',
+        label: 'Links',
         type: 'checkbox',
         defaultValue: false
       },
       {
         field: 'links',
-        label: 'Ссылки',
+        label: 'Links',
         type: 'repeater',
         dependsOn: { field: 'showLinks', value: true },
         repeaterConfig: {
-          itemTitle: 'Ссылка',
-          addButtonText: 'Добавить ссылку',
+          itemTitle: 'Link',
+          addButtonText: 'Add link',
           min: 1,
           fields: [
             {
               field: 'name',
-              label: 'Текст',
+              label: 'Text',
               type: 'text',
               defaultValue: '',
-              rules: [{ type: 'required', message: 'Текст обязателен' }]
+              rules: [{ type: 'required', message: 'Text is required' }]
             },
             {
               field: 'url',
               label: 'URL',
               type: 'url',
               defaultValue: '',
-              rules: [{ type: 'required', message: 'URL обязателен' }]
+              rules: [{ type: 'required', message: 'URL is required' }]
             }
           ],
           defaultItemValue: { name: '', url: '' }
@@ -877,4 +1381,3 @@ export const blockConfigs = {
     framework: 'vue',
   }),
 }
-

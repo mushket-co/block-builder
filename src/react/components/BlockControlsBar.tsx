@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 
 import { deleteIconHTML, saveIconHTML } from '../../shared/icons/iconHelpers';
 import { CSS_CLASSES, getControlsFixedClass } from '../../utils/constants';
+import { useUiStrings } from '../context/uiStringsContext';
 
 interface IBlockControlsBarProps {
   isEdit: boolean;
@@ -26,6 +27,8 @@ export function BlockControlsBar({
   onSave,
   onClearAll,
 }: IBlockControlsBarProps) {
+  const uiStrings = useUiStrings();
+
   const controlsInlineStyles = useMemo(() => {
     if (!controlsFixedPosition) {
       return {};
@@ -59,14 +62,16 @@ export function BlockControlsBar({
       <div className={[CSS_CLASSES.CONTROLS_CONTAINER, controlsContainerClass].filter(Boolean).join(' ')}>
         <div className={CSS_CLASSES.CONTROLS_INNER}>
           <button type="button" className={`${CSS_CLASSES.BTN} ${CSS_CLASSES.BTN_SUCCESS}`} onClick={onSave}>
-            <span className={CSS_CLASSES.BB_ICON_WRAPPER} dangerouslySetInnerHTML={{ __html: saveIconHTML }} /> Сохранить
+            <span className={CSS_CLASSES.BB_ICON_WRAPPER} dangerouslySetInnerHTML={{ __html: saveIconHTML }} />{' '}
+            {uiStrings.save}
           </button>
           <button type="button" className={`${CSS_CLASSES.BTN} ${CSS_CLASSES.BTN_DANGER}`} onClick={onClearAll}>
-            <span className={CSS_CLASSES.BB_ICON_WRAPPER} dangerouslySetInnerHTML={{ __html: deleteIconHTML }} /> Очистить все
+            <span className={CSS_CLASSES.BB_ICON_WRAPPER} dangerouslySetInnerHTML={{ __html: deleteIconHTML }} />{' '}
+            {uiStrings.clearAll}
           </button>
           <div className={CSS_CLASSES.STATS}>
             <span>
-              Всего блоков: <span>{isEdit ? blocksCount : visibleCount}</span>
+              {uiStrings.blocksTotal} <span>{isEdit ? blocksCount : visibleCount}</span>
             </span>
           </div>
         </div>

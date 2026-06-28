@@ -10,7 +10,7 @@
       <h2 class="news-list-block__title">{{ props.title }}</h2>
 
       <div v-if="displayFeaturedNews" class="news-list-block__featured">
-        <h3>🌟 Главная новость:</h3>
+        <h3>🌟 Featured news:</h3>
         <div class="news-card news-card--featured">
           <h4>{{ displayFeaturedNews.title }}</h4>
           <p v-if="props.showDate" class="news-date">{{ displayFeaturedNews.date }}</p>
@@ -30,15 +30,15 @@
         </div>
       </div>
 
-      <div v-if="loading" class="news-list-block__loading">Загрузка новостей...</div>
+      <div v-if="loading" class="news-list-block__loading">Loading news...</div>
 
-      <div v-if="error" class="news-list-block__error">Ошибка загрузки: {{ error }}</div>
+      <div v-if="error" class="news-list-block__error">Load error: {{ error }}</div>
 
       <div
         v-if="!loading && !error && !displayFeaturedNews && displayNewsList.length === 0"
         class="news-list-block__empty"
       >
-        Новости не выбраны. Настройте блок в редакторе.
+        No news selected. Configure the block in the editor.
       </div>
     </div>
   </div>
@@ -90,7 +90,7 @@ interface IProps {
 }
 
 const props = withDefaults(defineProps<IProps>(), {
-  title: 'Последние новости',
+  title: 'Latest news',
   featuredNewsId: null,
   newsIds: () => [],
   showDate: true,
@@ -176,8 +176,8 @@ async function loadNewsData(): Promise<void> {
       fetchedNewsList.value = []
     }
   } catch (err: unknown) {
-    error.value = err instanceof Error ? err.message : 'Неизвестная ошибка'
-    console.error('Ошибка загрузки новостей:', err)
+    error.value = err instanceof Error ? err.message : 'Unknown error'
+    console.error('Failed to load news:', err)
   } finally {
     loading.value = false
   }

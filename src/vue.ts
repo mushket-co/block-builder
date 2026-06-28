@@ -31,3 +31,5 @@ export {
   isViewportBreakpointDetectionEnabled,
   resetViewportBreakpointDetection,
 } from './utils/ssr';
+export type { IUiStrings, TUiLocale } from './shared/i18n/uiStrings';
+export { UI_STRINGS_RU, UI_STRINGS_EN, resolveUiStrings } from './shared/i18n/uiStrings';

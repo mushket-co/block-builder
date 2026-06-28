@@ -21,14 +21,14 @@
     <div :class="CSS_CLASSES.BLOCK_COMPONENT_CONTROLS">
       <button
         :class="[CSS_CLASSES.CONTROL_BUTTON, CSS_CLASSES.CONTROL_BUTTON_EDIT]"
-        title="Редактировать"
+        :title="uiStrings.edit"
         @click.stop="handleEdit"
       >
         <Icon name="edit" />
       </button>
       <button
         :class="[CSS_CLASSES.CONTROL_BUTTON, CSS_CLASSES.CONTROL_BUTTON_MOVE]"
-        title="Переместить вверх"
+        :title="uiStrings.moveUp"
         :disabled="isFirst"
         @click.stop="handleMoveUp"
       >
@@ -36,7 +36,7 @@
       </button>
       <button
         :class="[CSS_CLASSES.CONTROL_BUTTON, CSS_CLASSES.CONTROL_BUTTON_MOVE]"
-        title="Переместить вниз"
+        :title="uiStrings.moveDown"
         :disabled="isLast"
         @click.stop="handleMoveDown"
       >
@@ -44,21 +44,21 @@
       </button>
       <button
         :class="[CSS_CLASSES.CONTROL_BUTTON, CSS_CLASSES.CONTROL_BUTTON_DUPLICATE]"
-        title="Дублировать"
+        :title="uiStrings.duplicate"
         @click.stop="handleDuplicate"
       >
         <Icon name="duplicate" />
       </button>
       <button
         :class="[CSS_CLASSES.CONTROL_BUTTON, CSS_CLASSES.CONTROL_BUTTON_VISIBILITY]"
-        :title="block.visible ? 'Hide' : 'Show'"
+        :title="block.visible ? uiStrings.hide : uiStrings.show"
         @click.stop="handleVisibility"
       >
         <Icon :name="block.visible ? 'eye' : 'eyeOff'" />
       </button>
       <button
         :class="[CSS_CLASSES.CONTROL_BUTTON, CSS_CLASSES.CONTROL_BUTTON_DELETE]"
-        title="Удалить"
+        :title="uiStrings.delete"
         @click.stop="handleDelete"
       >
         <Icon name="delete" />
@@ -74,6 +74,9 @@ import { IBlock, TBlockId } from '../../core/types';
 import { CSS_CLASSES } from '../../utils/constants';
 import { getHtmlTemplate, isVueComponent } from '../../utils/renderHelpers';
 import Icon from '../../shared/icons/Icon.vue';
+import { useUiStrings } from '../composables/useUiStrings';
+
+const uiStrings = useUiStrings();
 
 const getVueComponent = (render?: any) => {
   if (!render || render.kind !== 'component') {

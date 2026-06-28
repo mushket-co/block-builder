@@ -83,7 +83,7 @@ export function useBlockBuilder(initialBlocks: Ref<unknown[]>) {
 
       return true
     } catch (error) {
-      console.error('Ошибка сохранения:', error)
+      console.error('Save error:', error)
       return false
     }
   }

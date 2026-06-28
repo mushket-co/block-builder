@@ -130,7 +130,6 @@ export interface IRepeaterItemFieldConfig {
   persist?: boolean;
   /**
    * Условное отображение поля: поле показывается только если другое поле имеет определенное значение
-   * Используется только в Vue версии
    */
   dependsOn?: IDependsOnConfig;
 }
@@ -286,7 +285,6 @@ export interface IFormFieldConfig {
   persist?: boolean;
   /**
    * Условное отображение поля: поле показывается только если другое поле имеет определенное значение
-   * Используется только в Vue версии
    */
   dependsOn?: IDependsOnConfig;
 }

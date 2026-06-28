@@ -94,7 +94,7 @@
           :class="CSS_CLASSES.BB_API_SELECT_LOAD_MORE"
           @click.stop="loadMore"
         >
-          Загрузить ещё...
+          {{ uiStrings.apiSelectLoadMore }}
         </div>
       </template>
     </CustomDropdown>
@@ -132,6 +132,9 @@ import {
   toApiSelectDropdownValue,
   toApiSelectStoredValue,
 } from '../../utils/apiSelectValueHelpers';
+import { useUiStrings } from '../composables/useUiStrings';
+
+const uiStrings = useUiStrings();
 
 const CustomDropdown = defineAsyncComponent(
   () => import('./CustomDropdown.vue') as unknown as Promise<any>
@@ -189,13 +192,13 @@ const isRequired = computed(() => {
 
 const isMultiple = computed(() => apiConfig.value?.multiple ?? false);
 
-const placeholder = computed(() => apiConfig.value?.placeholder ?? 'Начните вводить для поиска...');
+const placeholder = computed(() => apiConfig.value?.placeholder ?? uiStrings.value.apiSelectPlaceholder);
 
-const loadingText = computed(() => apiConfig.value?.loadingText ?? 'Загрузка...');
+const loadingText = computed(() => apiConfig.value?.loadingText ?? uiStrings.value.apiSelectLoading);
 
-const noResultsText = computed(() => apiConfig.value?.noResultsText ?? 'Ничего не найдено');
+const noResultsText = computed(() => apiConfig.value?.noResultsText ?? uiStrings.value.apiSelectNoResults);
 
-const errorText = computed(() => apiConfig.value?.errorText ?? 'Ошибка загрузки данных');
+const errorText = computed(() => apiConfig.value?.errorText ?? uiStrings.value.apiSelectError);
 
 const debounceMs = computed(() => resolveApiSelectDebounceMs(apiConfig.value?.debounceMs));
 
@@ -263,7 +266,7 @@ const hydrateSelectedItemsFromValue = (value: unknown) => {
 
 const fetchData = async (reset = false, searchOverride?: string) => {
   if (!apiConfig.value) {
-    error.value = 'Конфигурация API не указана';
+    error.value = uiStrings.value.apiSelectConfigMissing;
     return;
   }
 

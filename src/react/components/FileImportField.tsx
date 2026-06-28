@@ -7,6 +7,7 @@ import {
   formatFileImportMergeMessage,
 } from '../../utils/fileImportMerge';
 import { CSS_CLASSES } from '../../utils/constants';
+import { useUiStrings } from '../context/uiStringsContext';
 import { Icon } from './icons/Icon';
 
 interface IFileImportFieldProps {
@@ -66,6 +67,7 @@ export function FileImportField({
   fileImportConfig,
   formScope,
 }: IFileImportFieldProps) {
+  const uiStrings = useUiStrings();
   const inputRef = useRef<HTMLInputElement>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [localError, setLocalError] = useState('');
@@ -112,7 +114,7 @@ export function FileImportField({
       }
     } catch (uploadError) {
       setLocalError(
-        uploadError instanceof Error ? uploadError.message : 'Ошибка импорта файла'
+        uploadError instanceof Error ? uploadError.message : uiStrings.fileImportError
       );
     } finally {
       setIsLoading(false);
@@ -131,7 +133,7 @@ export function FileImportField({
         {isLoading ? (
           <Icon name="loader" width={14} height={14} className="bb-icon--spin" />
         ) : null}
-        <span>{isLoading ? 'Загрузка…' : 'Выберите файл'}</span>
+        <span>{isLoading ? uiStrings.loading : uiStrings.chooseFile}</span>
       </button>
       <input
         ref={inputRef}

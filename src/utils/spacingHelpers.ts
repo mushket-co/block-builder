@@ -1,17 +1,16 @@
 import { IBreakpoint, TSpacingType } from '../core/types/form';
+import {
+  getDefaultBreakpointsFromUi,
+  getSpacingLabelsFromUi,
+  UI_STRINGS_RU,
+  type IUiStrings,
+} from '../shared/i18n/uiStrings';
 
-export const DEFAULT_BREAKPOINTS: IBreakpoint[] = [
-  { name: 'desktop', label: 'Десктоп', maxWidth: undefined },
-  { name: 'tablet', label: 'Таблет', maxWidth: 1199 },
-  { name: 'mobile', label: 'Моб', maxWidth: 767 },
-];
+export const DEFAULT_BREAKPOINTS: IBreakpoint[] = getDefaultBreakpointsFromUi(UI_STRINGS_RU);
 
-export const SPACING_LABELS: Record<string, string> = {
-  'padding-top': 'Внутренний верх',
-  'padding-bottom': 'Внутренний низ',
-  'margin-top': 'Внешний верх',
-  'margin-bottom': 'Внешний низ',
-};
+export const SPACING_LABELS: Record<string, string> = getSpacingLabelsFromUi(UI_STRINGS_RU);
+
+export { getDefaultBreakpointsFromUi, getSpacingLabelsFromUi };
 
 export const ALL_SPACING_TYPES = [
   'padding-top',
