@@ -45,6 +45,9 @@ test.describe('E04 nested repeater catalog', () => {
     await expect(blockForm.nestedRepeaterItems(products)).toHaveCount(1);
 
     await blockForm.fieldInRepeaterItem(newCategory, 'name').fill('Одежда');
+    await blockForm
+      .fieldInRepeaterItem(newCategory, 'description')
+      .fill('Одежда и аксессуары для всей семьи');
     await blockForm.fieldInRepeaterItem(blockForm.nestedRepeaterItems(products).first(), 'name').fill('Футболка');
     await blockForm
       .numberInRepeaterItem(blockForm.nestedRepeaterItems(products).first(), 'price')

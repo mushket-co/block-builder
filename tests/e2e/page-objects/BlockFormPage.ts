@@ -130,12 +130,18 @@ export class BlockFormPage extends BlockBuilderPage {
 
   async collapseRepeaterItem(fieldName: string, itemIndex: number): Promise<void> {
     const item = this.repeaterItem(fieldName, itemIndex);
-    await item.locator(`.${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_COLLAPSE}`).click();
+    await item
+      .locator(`:scope > .${CSS_CLASSES.REPEATER_CONTROL_ITEM_HEADER}`)
+      .locator(`.${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_COLLAPSE}`)
+      .click();
     await item.waitFor({ state: 'attached' });
   }
 
   async collapseRepeaterItemLocator(item: Locator): Promise<void> {
-    await item.locator(`.${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_COLLAPSE}`).click();
+    await item
+      .locator(`:scope > .${CSS_CLASSES.REPEATER_CONTROL_ITEM_HEADER}`)
+      .locator(`.${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_COLLAPSE}`)
+      .click();
     await item.waitFor({ state: 'attached' });
   }
 

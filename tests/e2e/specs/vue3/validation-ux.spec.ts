@@ -44,6 +44,7 @@ test.describe('E05 validation UX — collapsed nested repeater', () => {
     await expect(blockForm.nestedRepeaterItems(products)).toHaveCount(3);
 
     const invalidProduct = blockForm.nestedRepeaterItems(products).nth(2);
+    await blockForm.fieldInRepeaterItem(invalidProduct, 'name').clear();
     await blockForm.collapseRepeaterItemLocator(invalidProduct);
     await expect(invalidProduct).toHaveClass(new RegExp(CSS_CLASSES.REPEATER_CONTROL_ITEM_COLLAPSED));
 
