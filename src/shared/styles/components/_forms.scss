@@ -1,14 +1,14 @@
 @mixin form-control-base {
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid var(--bb-border-color);
+  border: 1px solid var(--bb-color-neutral-3);
   border-radius: var(--bb-radius-md);
   font-size: var(--bb-font-size-md);
   transition: border-color var(--bb-transition-base);
 
   &:focus {
     outline: none;
-    border-color: var(--bb-border-color-focus);
+    border-color: var(--bb-color-primary);
   }
 }
 
@@ -25,8 +25,8 @@
 }
 
 .bb-form-label {
-  font-weight: 500;
-  font-size: var(--bb-font-size-sm);
+  font-weight: var(--bb-form-label-font-weight);
+  font-size: var(--bb-form-label-font-size);
 
   .bb-required {
     color: var(--bb-color-danger);
@@ -36,18 +36,24 @@
 
 .bb-form-control {
   height: var(--bb-form-control-height);
-  padding: 0 12px;
-  border: 2px solid var(--bb-border-color-light);
-  border-radius: var(--bb-radius-md);
-  font-size: var(--bb-font-size-sm);
+  padding: 0 var(--bb-form-control-padding-x);
+  border: var(--bb-form-control-border-width) solid var(--bb-color-neutral-2);
+  border-radius: var(--bb-form-control-radius);
+  font-size: var(--bb-form-control-font-size);
+  background: var(--bb-color-surface);
+  color: var(--bb-color-neutral-8);
   transition: border-color var(--bb-transition-base);
   font-family: var(--bb-font-family);
   line-height: calc(var(--bb-form-control-height) - 4px);
 
+  &::placeholder {
+    color: var(--bb-color-neutral-5);
+  }
+
   &:focus {
     outline: none;
-    border-color: var(--bb-border-color-focus);
-      box-shadow: 0 0 0 3px var(--bb-color-primary-hover);
+    border-color: var(--bb-color-primary);
+      box-shadow: 0 0 0 3px var(--bb-color-primary-alpha-10);
   }
 
   &:invalid {
@@ -59,14 +65,14 @@
 
     &:focus {
       border-color: var(--bb-color-danger);
-      box-shadow: 0 0 0 3px var(--bb-color-error-shadow);
+      box-shadow: 0 0 0 3px var(--bb-color-danger-alpha-10);
     }
   }
 }
 
 .bb-form-errors {
-  margin-top: 4px;
-  font-size: 12px;
+  margin-top: var(--bb-spacing-xs);
+  font-size: var(--bb-form-error-font-size);
 
   .bb-error,
   .error {
@@ -82,7 +88,7 @@
 
   &:focus {
     border-color: var(--bb-color-danger);
-    box-shadow: 0 0 0 3px var(--bb-color-error-shadow);
+    box-shadow: 0 0 0 3px var(--bb-color-danger-alpha-10);
   }
 }
 
@@ -113,7 +119,7 @@
 
   &-label {
     font-size: var(--bb-font-size-sm);
-    color: var(--bb-text-primary);
+    color: var(--bb-color-neutral-8);
     cursor: pointer;
   }
 }
@@ -138,7 +144,7 @@
 
   &-label {
     font-size: var(--bb-font-size-sm);
-    color: var(--bb-text-primary);
+    color: var(--bb-color-neutral-8);
     cursor: pointer;
   }
 }
@@ -171,7 +177,7 @@ input[type="url"].bb-form-control {
 }
 
 .array-item {
-  border: 1px solid var(--bb-border-color);
+  border: 1px solid var(--bb-color-neutral-3);
   border-radius: var(--bb-radius-md);
   padding: 1rem;
   margin-bottom: 1rem;
@@ -183,14 +189,14 @@ input[type="url"].bb-form-control {
 }
 
 .object-field {
-  background: var(--bb-bg-secondary);
+  background: var(--bb-color-neutral-1);
   padding: 1rem;
   border-radius: var(--bb-radius-md);
   margin-top: 0.5rem;
 
   h4 {
     margin: 0 0 1rem 0;
-    color: var(--bb-text-primary);
+    color: var(--bb-color-neutral-8);
     font-size: var(--bb-font-size-sm);
   }
 }

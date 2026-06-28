@@ -1,48 +1,70 @@
-:root {
-  /* Цвета бренда */
+.bb-app {
+  /* Brand */
   --bb-color-primary: #2d2079;
   --bb-color-primary-dark: #120c39;
   --bb-color-primary-light: #e0f0ff;
+  --bb-color-primary-alpha-10: rgba(45, 32, 121, 0.1);
+  --bb-color-primary-alpha-15: rgba(45, 32, 121, 0.15);
+  --bb-color-primary-alpha-20: rgba(45, 32, 121, 0.2);
+  --bb-color-primary-alpha-30: rgba(45, 32, 121, 0.3);
 
-  /* Цвета состояний */
+  /* Neutrals & surfaces */
+  --bb-color-white: #ffffff;
+  --bb-color-surface: #ffffff;
+  --bb-color-black: #000000;
+  --bb-color-neutral-1: #f8f9fa;
+  --bb-color-neutral-2: #e9ecef;
+  --bb-color-neutral-3: #dddddd;
+  --bb-color-neutral-4: #ced4da;
+  --bb-color-neutral-5: #999999;
+  --bb-color-neutral-6: #666666;
+  --bb-color-neutral-7: #495057;
+  --bb-color-neutral-8: #0e2133;
+  --bb-color-neutral-8-rgb: 44, 62, 80;
+  --bb-color-neutral-alpha-30: rgba(153, 153, 153, 0.3);
+  --bb-color-neutral-alpha-50: rgba(153, 153, 153, 0.5);
+
+  /* Accent */
   --bb-color-dark: #111243;
+  --bb-color-dark-alpha-20: rgba(17, 18, 67, 0.2);
   --bb-color-secondary: #6c757d;
   --bb-color-secondary-dark: #5a6268;
+
+  /* Status */
   --bb-color-danger: #dc3545;
   --bb-color-danger-dark: #c82333;
-  --bb-color-danger-light: #fee;
+  --bb-color-danger-light: #feeeee;
   --bb-color-danger-border: #f5c6cb;
   --bb-color-danger-bg: #fff5f5;
+  --bb-color-danger-alpha-10: rgba(220, 53, 69, 0.1);
+
   --bb-color-success: #28a745;
   --bb-color-success-dark: #218838;
+  --bb-color-success-alpha-30: rgba(40, 167, 69, 0.3);
+  --bb-color-success-alpha-40: rgba(16, 185, 129, 0.4);
+
   --bb-color-warning: #ffc107;
   --bb-color-warning-border: #ff9800;
   --bb-color-warning-bg: #fff3cd;
   --bb-color-warning-text: #856404;
+
   --bb-color-info: #17a2b8;
 
-  /* Цвета фона */
-  --bb-bg-primary: #ffffff;
-  --bb-bg-primary-revert: #000000;
-  --bb-bg-secondary: #f8f9fa;
-  --bb-bg-tertiary: #e9ecef;
-  --bb-bg-overlay: rgba(0, 0, 0, 0.5);
+  /* Overlays */
+  --bb-color-overlay: rgba(0, 0, 0, 0.5);
+  --bb-color-overlay-medium: rgba(0, 0, 0, 0.7);
+  --bb-color-overlay-dark: rgba(0, 0, 0, 0.9);
+  --bb-color-overlay-alpha-10: rgba(0, 0, 0, 0.1);
 
-  /* Цвета текста */
-  --bb-text-primary: #0e2133;
-  --bb-text-primary-rgb: 44, 62, 80;
-  --bb-text-secondary: #495057;
-  --bb-text-tertiary: #666;
-  --bb-text-muted: #999;
-  --bb-text-white: #ffffff;
+  /* Utility */
+  --bb-color-code-1: #282c34;
+  --bb-color-code-2: #abb2bf;
+  --bb-color-gradient-1: #667eea;
+  --bb-color-gradient-2: #764ba2;
+  --bb-color-gradient-success-1: #10b981;
+  --bb-color-gradient-success-2: #059669;
 
-  /* Цвета границ */
-  --bb-border-color: #ddd;
-  --bb-border-color-light: #e9ecef;
-  --bb-border-color-focus: var(--bb-color-primary);
-  --bb-border-color-dashed: #ced4da;
-
-  /* Размеры */
+  /* Spacing */
   --bb-spacing-xs: 4px;
   --bb-spacing-sm: 8px;
   --bb-spacing-md: 12px;
@@ -50,12 +72,12 @@
   --bb-spacing-xl: 20px;
   --bb-spacing-2xl: 24px;
 
-  /* Border radius */
+  /* Radius */
   --bb-radius-sm: 4px;
   --bb-radius-md: 8px;
   --bb-radius-lg: 16px;
 
-  /* Шрифты */
+  /* Typography */
   --bb-font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --bb-font-size-xs: 12px;
   --bb-font-size-sm: 14px;
@@ -63,14 +85,14 @@
   --bb-font-size-lg: 18px;
   --bb-font-size-xl: 20px;
 
-  /* Тени */
+  /* Shadows */
   --bb-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
   --bb-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
   --bb-shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.3);
   --bb-shadow-sm-light: 0 2px 8px rgba(0, 0, 0, 0.08);
   --bb-shadow-primary: 0 4px 12px rgba(102, 126, 234, 0.4);
 
-  /* Transitions */
+  /* Motion */
   --bb-transition-fast: 0.15s ease;
   --bb-transition-base: 0.2s ease;
   --bb-transition-slow: 0.3s ease;
@@ -80,27 +102,17 @@
   --bb-z-index-modal: 1000;
   --bb-z-index-tooltip: 1100;
 
-  /* Дополнительные цвета для специфических случаев */
-  --bb-color-primary-hover: rgba(102, 126, 234, 0.1);
-  --bb-color-primary-hover-dark: rgba(102, 126, 234, 0.15);
-  --bb-color-primary-shadow: rgba(102, 126, 234, 0.3);
-  --bb-color-primary-shadow-light: rgba(102, 126, 234, 0.1);
-  --bb-color-primary-shadow-medium: rgba(102, 126, 234, 0.2);
-  --bb-color-success-shadow: rgba(40, 167, 69, 0.3);
-  --bb-color-success-shadow-dark: rgba(16, 185, 129, 0.4);
-  --bb-color-error-shadow: rgba(220, 53, 69, 0.1);
-  --bb-color-dark-overlay: rgba(0, 0, 0, 0.7);
-  --bb-color-dark-overlay-hover: rgba(0, 0, 0, 0.9);
-  --bb-color-dark-overlay-light: rgba(0, 0, 0, 0.1);
-  --bb-color-code-bg: #282c34;
-  --bb-color-code-text: #abb2bf;
-  --bb-color-scrollbar: rgba(153, 153, 153, 0.3);
-  --bb-color-scrollbar-hover: rgba(153, 153, 153, 0.5);
-  --bb-color-gradient-start: #667eea;
-  --bb-color-gradient-end: #764ba2;
-  --bb-color-gradient-success-start: #10b981;
-  --bb-color-gradient-success-end: #059669;
-  /* Controls */
+  /* Form & modal (semantic, non-color) */
   --bb-form-control-height: 40px;
+  --bb-form-control-border-width: 2px;
+  --bb-form-control-padding-x: 12px;
+  --bb-form-control-radius: var(--bb-radius-md);
+  --bb-form-control-font-size: var(--bb-font-size-sm);
+  --bb-form-label-font-size: var(--bb-font-size-sm);
+  --bb-form-label-font-weight: 500;
+  --bb-form-error-font-size: var(--bb-font-size-xs);
+  --bb-modal-max-width: 650px;
+  --bb-modal-radius: var(--bb-radius-lg);
+  --bb-btn-padding-y: 10px;
+  --bb-btn-padding-x: 20px;
 }
-

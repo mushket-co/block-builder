@@ -13,6 +13,7 @@ import {
 } from 'react';
 import { createPortal } from 'react-dom';
 
+import { readBbThemeVarsFromClosestApp } from '../../shared/theme/bbThemeContext';
 import { CSS_CLASSES } from '../../utils/constants';
 import { useUiStrings } from '../context/uiStringsContext';
 import { Icon } from './icons/Icon';
@@ -293,6 +294,7 @@ export const CustomDropdown = forwardRef<ICustomDropdownRef, ICustomDropdownProp
       top = Math.max(minTop, Math.min(maxTop, top));
 
       setPanelStyle({
+        ...readBbThemeVarsFromClosestApp(triggerRef.current),
         left: `${rect.left}px`,
         width: `${rect.width}px`,
         top: `${top}px`,

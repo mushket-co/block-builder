@@ -4,6 +4,7 @@ import type { IFormFieldConfig } from '../../core/types/form';
 import type { IBlockFormHooks } from '../../core/types/formHooks';
 import type { ApiSelectUseCase } from '../../core/use-cases/ApiSelectUseCase';
 import type { BlockManagementUseCase } from '../../core/use-cases/BlockManagementUseCase';
+import type { IUiThemeVars, TUiTheme } from '../../shared/theme/uiTheme';
 import type { IUiStrings, TUiLocale } from '../../shared/i18n/uiStrings';
 
 /** Конфиг типа блока для React BlockBuilder (formHooks — Vue/React UI) */
@@ -43,4 +44,8 @@ export interface IBlockBuilderProps {
   locale?: TUiLocale;
   /** Override built-in UI strings */
   uiStrings?: Partial<IUiStrings>;
+  /** UI theme preset (`default` when omitted) */
+  theme?: TUiTheme;
+  /** Override CSS custom properties on `.bb-app` root */
+  themeVars?: IUiThemeVars;
 }

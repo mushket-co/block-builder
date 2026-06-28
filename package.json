@@ -39,6 +39,7 @@
   },
   "workspaces": [
     "examples/vue3",
+    "examples/vue3-theme",
     "examples/vue3-core-api",
     "examples/nuxt3",
     "examples/nuxt4",
@@ -104,6 +105,7 @@
     "pretest": "npm run type-check",
     "prepublishOnly": "npm run build && npm run type-check",
     "example:vue3": "npm run dev --workspace=examples/vue3",
+    "example:vue3-theme": "npm run dev --workspace=examples/vue3-theme",
     "example:api-usage": "npm run dev --workspace=examples/api-usage",
     "example:vue3-core-api": "npm run dev --workspace=examples/vue3-core-api",
     "example:nuxt3": "npm run dev --workspace=examples/nuxt3",

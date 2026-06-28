@@ -12,7 +12,7 @@
 .bb-block {
   position: relative;
   transition: all var(--bb-transition-slow);
-  color: var(--bb-text-primary);
+  color: var(--bb-color-neutral-8);
 
   border: none;
   background: transparent;
@@ -48,7 +48,7 @@
   top: 10px;
   right: 10px;
   background: white;
-  border: 1px solid var(--bb-border-color-light);
+  border: 1px solid var(--bb-color-neutral-2);
   border-radius: var(--bb-radius-md);
   box-shadow: var(--bb-shadow-md);
   padding: 4px;
@@ -77,12 +77,14 @@
     align-items: flex-end;
     width: fit-content;
     margin-left: auto;
-    background-color: var(--bb-bg-primary);
+    background-color: var(--bb-color-surface);
     transition: all var(--bb-transition-base);
     padding: 8px;
-    border-radius: var(--bb-radius-md);
+    border-radius: var(--bb-radius-lg);
     opacity: 0.5;
     transform: translateX(200vw) translateY(200vh);
+    backdrop-filter: blur(28px);
+    border: 1px solid var(--bb-color-primary-alpha-10);
 
     &::after {
       content: '';
@@ -91,7 +93,7 @@
       top: 0;
       width: 100%;
       height: 100%;
-      box-shadow: 0 0 10px 0 var(--bb-bg-primary-revert);
+      box-shadow: 0 0 10px 0 rgba(255, 255, 255, 0.35);
       opacity: 0.3;
       pointer-events: none;
       touch-action: none;
@@ -109,7 +111,7 @@
   border: none;
   cursor: pointer;
   padding: 6px;
-  border-radius: var(--bb-radius-sm);
+  border-radius: 50%;
   font-size: 14px;
   transition: all var(--bb-transition-fast);
   color: var(--bb-color-primary-dark);
@@ -122,7 +124,7 @@
   min-height: 32px;
 
   &:hover {
-    background: var(--bb-bg-secondary);
+    background: var(--bb-color-neutral-1);
     color: var(--bb-color-primary);
     transform: scale(1.1);
   }
@@ -141,9 +143,9 @@
 .bb-vue-component-container {
   min-height: 50px;
   padding: 10px;
-  border: 1px solid var(--bb-border-color-light);
+  border: 1px solid var(--bb-color-neutral-2);
   border-radius: var(--bb-radius-sm);
-  background: var(--bb-bg-secondary);
+  background: var(--bb-color-neutral-1);
 }
 
 .vue-error {
@@ -157,8 +159,8 @@
 
 .bb-block-content-fallback {
   padding: var(--bb-spacing-xl);
-  background: var(--bb-bg-secondary);
-  border: 1px solid var(--bb-border-color-light);
+  background: var(--bb-color-neutral-1);
+  border: 1px solid var(--bb-color-neutral-2);
   border-radius: var(--bb-radius-sm);
   font-family: var(--bb-font-family);
   font-size: var(--bb-font-size-xs);
@@ -201,9 +203,9 @@
     align-items: center;
     gap: var(--bb-spacing-lg);
     padding: var(--bb-spacing-xl);
-    background: var(--bb-bg-secondary);
+    background: var(--bb-color-neutral-1);
     border-radius: var(--bb-radius-lg);
-    border: 1px solid var(--bb-border-color-light);
+    border: 1px solid var(--bb-color-neutral-2);
     box-shadow: var(--bb-shadow-md);
 
     @media (max-width: 767px) {
@@ -218,10 +220,10 @@
   margin-bottom: 0;
   margin-left: auto;
   padding: 8px 12px;
-  background: var(--bb-bg-tertiary);
+  background: var(--bb-color-neutral-2);
   border-radius: var(--bb-radius-md);
   font-size: var(--bb-font-size-sm);
-  color: var(--bb-text-secondary);
+  color: var(--bb-color-neutral-7);
 
   @media (max-width: 767px) {
     width: 100%;
@@ -268,7 +270,7 @@ body.bb-is-edit-mode {
     left: 0;
     right: 0;
     height: 2px;
-    background: linear-gradient(to right, transparent, var(--bb-border-color-light) 20%, var(--bb-border-color-light) 80%, transparent);
+    background: linear-gradient(to right, transparent, var(--bb-color-neutral-2) 20%, var(--bb-color-neutral-2) 80%, transparent);
     z-index: 0;
   }
 }
@@ -276,7 +278,7 @@ body.bb-is-edit-mode {
 .bb-add-block-btn {
   position: relative;
   z-index: 1;
-  background: var(--bb-bg-primary);
+  background: var(--bb-color-surface);
   border: 2px dashed var(--bb-color-primary);
   border-radius: var(--bb-radius-md);
   padding: 12px 24px;
@@ -331,9 +333,9 @@ body.bb-is-edit-mode {
   justify-content: center;
   gap: var(--bb-spacing-sm);
   padding: var(--bb-spacing-xl);
-  border: 2px solid var(--bb-border-color-light);
+  border: 2px solid var(--bb-color-neutral-2);
   border-radius: var(--bb-radius-md);
-  background: var(--bb-bg-primary);
+  background: var(--bb-color-surface);
   cursor: pointer;
   transition: all var(--bb-transition-base);
   min-height: 120px;
@@ -353,7 +355,7 @@ body.bb-is-edit-mode {
   &__title {
     font-size: var(--bb-font-size-sm);
     font-weight: 500;
-    color: var(--bb-text-primary);
+    color: var(--bb-color-neutral-8);
     font-family: var(--bb-font-family);
   }
 
@@ -383,7 +385,7 @@ body.bb-is-edit-mode {
 
   &.is-selected {
     border-color: var(--bb-color-primary);
-    box-shadow: 0 0 0 2px var(--bb-color-primary-shadow-light);
+    box-shadow: 0 0 0 2px var(--bb-color-primary-alpha-10);
   }
 
   &.is-dragging {
@@ -412,8 +414,8 @@ body.bb-is-edit-mode {
     right: 0;
     display: flex;
     gap: 4px;
-    background: var(--bb-bg-primary);
-    border: 1px solid var(--bb-border-color);
+    background: var(--bb-color-surface);
+    border: 1px solid var(--bb-color-neutral-3);
     border-radius: 4px;
     padding: 4px;
     box-shadow: var(--bb-shadow-sm);
@@ -434,7 +436,7 @@ body.bb-is-edit-mode {
   transition: background-color 0.2s;
 
   &:hover {
-    background: var(--bb-bg-secondary);
+    background: var(--bb-color-neutral-1);
   }
 
   &:disabled {

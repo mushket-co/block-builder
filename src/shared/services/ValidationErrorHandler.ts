@@ -113,33 +113,97 @@ export class ValidationErrorHandler {
   private async openRepeaterAccordionsForErrors(
     formErrors: Record<string, string[]>
   ): Promise<void> {
-    const errorKeys = Object.keys(formErrors);
-    const openedRepeaters = new Set<string>();
+    const openedPathKeys = new Set<string>();
 
-    for (const errorKey of errorKeys) {
+    for (const errorKey of Object.keys(formErrors)) {
       const repeaterPaths = this.parseRepeaterPaths(errorKey);
 
-      for (let i = 0; i < repeaterPaths.length; i++) {
-        const path = repeaterPaths[i];
-        const repeaterKey = `${path.fieldName}[${path.index}]`;
+      for (let depth = 0; depth < repeaterPaths.length; depth += 1) {
+        const partialPath = repeaterPaths.slice(0, depth + 1);
+        const pathKey = partialPath
+          .map(segment => `${segment.fieldName}[${segment.index}]`)
+          .join('.');
 
-        if (!openedRepeaters.has(repeaterKey)) {
-          openedRepeaters.add(repeaterKey);
-
-          if (i === 0) {
-            await this.openRepeaterAccordion(path.fieldName, path.index);
-          } else {
-            const parentPath = repeaterPaths[i - 1];
-            await this.openNestedRepeaterAccordion(
-              parentPath.fieldName,
-              parentPath.index,
-              path.fieldName,
-              path.index
-            );
-          }
+        if (openedPathKeys.has(pathKey)) {
+          continue;
         }
+
+        openedPathKeys.add(pathKey);
+        await this.expandRepeaterItemAtPath(partialPath);
       }
     }
+  }
+
+  private async waitForAccordionAnimation(): Promise<void> {
+    await afterPaint();
+    await new Promise(resolve =>
+      setTimeout(resolve, Math.min(REPEATER_ACCORDION_ANIMATION_DELAY_MS, 150))
+    );
+  }
+
+  private async expandRepeaterItemAtPath(
+    path: Array<{ fieldName: string; index: number }>
+  ): Promise<void> {
+    if (path.length === 0) {
+      return;
+    }
+
+    await afterPaint();
+
+    const modalBody = document.querySelector(`.${CSS_CLASSES.MODAL_BODY}`) as HTMLElement;
+    if (!modalBody) {
+      return;
+    }
+
+    let scope: HTMLElement = modalBody;
+
+    for (let depth = 0; depth < path.length; depth += 1) {
+      const { fieldName, index } = path[depth];
+
+      if (depth === 0) {
+        const repeaterComponent = this.repeaterRefs.get(fieldName);
+        const collapsedViaRef = repeaterComponent?.isItemCollapsed?.(index) ?? false;
+
+        if (collapsedViaRef && repeaterComponent?.expandItem) {
+          repeaterComponent.expandItem(index);
+          await this.waitForAccordionAnimation();
+        }
+      }
+
+      const repeaterContainer = scope.querySelector(
+        `.${CSS_CLASSES.REPEATER_CONTROL}[data-field-name="${fieldName}"]`
+      ) as HTMLElement | null;
+
+      if (!repeaterContainer) {
+        return;
+      }
+
+      const items = this.getDirectRepeaterItems(repeaterContainer);
+      if (index >= items.length) {
+        return;
+      }
+
+      const item = items[index];
+      const isCollapsed = item.classList.contains(CSS_CLASSES.REPEATER_CONTROL_ITEM_COLLAPSED);
+
+      if (depth > 0 && isCollapsed) {
+        this.clickRepeaterExpandButton(item);
+        await this.waitForAccordionAnimation();
+      } else if (depth === 0 && isCollapsed && !this.repeaterRefs.get(fieldName)?.expandItem) {
+        this.clickRepeaterExpandButton(item);
+        await this.waitForAccordionAnimation();
+      }
+
+      scope = item;
+    }
+  }
+
+  private clickRepeaterExpandButton(item: HTMLElement): void {
+    const collapseButton = item.querySelector(
+      `.${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_COLLAPSE}`
+    ) as HTMLElement | null;
+
+    collapseButton?.click();
   }
 
   private parseRepeaterPaths(errorKey: string): Array<{ fieldName: string; index: number }> {
@@ -165,99 +229,5 @@ export class ValidationErrorHandler {
     }
 
     return paths;
-  }
-
-  private async openRepeaterAccordion(repeaterFieldName: string, itemIndex: number): Promise<void> {
-    await afterPaint();
-
-    const repeaterComponent = this.repeaterRefs.get(repeaterFieldName);
-
-    if (repeaterComponent) {
-      const isCollapsed =
-        repeaterComponent.isItemCollapsed && repeaterComponent.isItemCollapsed(itemIndex);
-
-      if (isCollapsed && repeaterComponent.expandItem) {
-        repeaterComponent.expandItem(itemIndex);
-        await afterPaint();
-        await new Promise(resolve =>
-          setTimeout(resolve, Math.min(REPEATER_ACCORDION_ANIMATION_DELAY_MS, 150))
-        );
-      }
-    }
-  }
-
-  private async openNestedRepeaterAccordion(
-    parentFieldName: string,
-    parentIndex: number,
-    nestedFieldName: string,
-    nestedIndex: number
-  ): Promise<void> {
-    await afterPaint();
-
-    const parentRepeaterComponent = this.repeaterRefs.get(parentFieldName);
-
-    if (parentRepeaterComponent) {
-      const isParentCollapsed =
-        parentRepeaterComponent.isItemCollapsed &&
-        parentRepeaterComponent.isItemCollapsed(parentIndex);
-
-      if (isParentCollapsed && parentRepeaterComponent.expandItem) {
-        parentRepeaterComponent.expandItem(parentIndex);
-        await afterPaint();
-        await new Promise(resolve =>
-          setTimeout(resolve, Math.min(REPEATER_ACCORDION_ANIMATION_DELAY_MS, 150))
-        );
-      }
-
-      await afterPaint();
-
-      const modalBody = document.querySelector(`.${CSS_CLASSES.MODAL_BODY}`) as HTMLElement;
-      if (!modalBody) {
-        return;
-      }
-
-      const parentRepeaterContainer = modalBody.querySelector(
-        `[data-field-name="${parentFieldName}"]`
-      ) as HTMLElement;
-      if (!parentRepeaterContainer) {
-        return;
-      }
-
-      const parentItems = this.getDirectRepeaterItems(parentRepeaterContainer);
-      if (parentIndex >= parentItems.length) {
-        return;
-      }
-
-      const parentItem = parentItems[parentIndex];
-      const nestedRepeaterContainer = parentItem.querySelector(
-        `[data-field-name="${nestedFieldName}"]`
-      ) as HTMLElement;
-      if (!nestedRepeaterContainer) {
-        return;
-      }
-
-      const nestedItems = this.getDirectRepeaterItems(nestedRepeaterContainer);
-      if (nestedIndex >= nestedItems.length) {
-        return;
-      }
-
-      const nestedItem = nestedItems[nestedIndex];
-      const isNestedCollapsed = nestedItem.classList.contains(
-        CSS_CLASSES.REPEATER_CONTROL_ITEM_COLLAPSED
-      );
-
-      if (isNestedCollapsed) {
-        const collapseButton = nestedItem.querySelector(
-          `.${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_COLLAPSE}`
-        ) as HTMLElement;
-        if (collapseButton) {
-          collapseButton.click();
-          await afterPaint();
-          await new Promise(resolve =>
-            setTimeout(resolve, Math.min(REPEATER_ACCORDION_ANIMATION_DELAY_MS, 150))
-          );
-        }
-      }
-    }
   }
 }

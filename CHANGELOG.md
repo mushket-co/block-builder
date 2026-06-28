@@ -18,16 +18,44 @@
 - **Экспорт** из `@mushket-co/block-builder/vue` и `/react`: `IUiStrings`, `TUiLocale`, `UI_STRINGS_RU`, `UI_STRINGS_EN`, `resolveUiStrings`
 - **Тесты:** `src/utils/__tests__/uiStrings.test.ts`
 
+#### Темизация UI через CSS custom properties
+
+- **`src/shared/theme/uiTheme.ts`** — единая палитра `--bb-color-*` (`primary-dark/light`, `neutral-1…8`, `*-alpha-*`, status colors); пресеты `UI_THEME_COLORS_DEFAULT` / `UI_THEME_COLORS_DARK`, `resolveThemeVars()`
+- **`src/shared/theme/bbThemeContext.ts`** — `readBbThemeVarsFromClosestApp()` / `readBbThemeVars()` для копирования CSS-переменных с `.bb-app` на teleported UI (dropdown-панели в `body`)
+- **Токен `--bb-color-surface`** — отдельная поверхность UI (карточки, outline-кнопки, панель контролов блока); `--bb-color-white` остаётся чистым белым
+- **Vue/React `BlockBuilder`:** props `theme` и `themeVars` — переменные на `.bb-app`
+- **Пример `examples/vue3-theme`** — default / dark / brand / **Frosted glass** (`themeVars` + `glass-theme.css` с `backdrop-filter`); блок «Каталог с вложенными репитерами» со всеми типами полей
+- **Тесты:** `src/utils/__tests__/uiTheme.test.ts`
+- **`npm run example:vue3-theme`** — dev-сервер демо темизации (порт **3007**)
+
+#### Общий конфиг nested repeater для примеров
+
+- **`examples/shared/nestedRepeaterBlockConfig.js`** — все поля обязательны + расширенная валидация (`minLength`, `email`, `url` и др.); локаль `ru` / `en`
+- Подключён в **vue3**, **react19**, **nuxt4**, **next**; **nuxt3** переведён на shared-конфиг с `locale: 'en'` (удалён дубликат ~400 строк)
+
 ### Изменено
 
 - **Vue/React UI** (`BlockBuilder`, `RepeaterControl`, `SpacingControl`, `ImageUploadField`, `MatrixTableControl`, `ApiSelectField`, `CustomFieldRenderer` и др.) — встроенные подписи, сообщения и confirm-тексты берутся из контекста локали, а не из захардкоженного объекта
 - **`SpacingControl`:** подписи отступов и breakpoint-лейблы зависят от активной локали
 - **`examples/nuxt3`:** `locale="en"` на `BlockBuilderComponent`; демо-тексты, mock news API и конфиг блоков на английском; table/nested repeater встроены в `block-config.js`; Jodit/Typograf в `WysiwygEditor.vue` — `en` / `en-US`
+- **CSS-токены:** все цвета — только `--bb-color-*` (без `--bb-bg-*`, `--bb-text-*`, `--bb-border-*`); дефолты на `.bb-app`
+- **Формы:** явный `color` и `::placeholder` на инпутах; поверхности через `--bb-color-surface`, не `--bb-color-white`
+- **`bb-btn--outline`:** фон `--bb-color-surface` вместо белого
+- **`CustomDropdown` (Vue/React):** при открытии панели в `body` копируются theme vars с ближайшего `.bb-app`
+
+### Исправлено
+
+- **Dark / custom theme:** чёрный текст в инпутах и placeholder; невидимые крестики удаления в image upload (`--bb-color-white` ошибочно использовался как surface)
+- **Dark theme — ошибки file/image upload:** светло-розовый `--bb-color-danger-bg` заменён на тёмные rgba-override в `UI_THEME_COLORS_DARK`; читаемый цвет текста в error-состоянии
+- **Api-select / dropdown в `theme="dark"` и кастомных темах:** teleported-панель теряла CSS-переменные вне `.bb-app` — исправлено через `readBbThemeVarsFromClosestApp`
+- **`CustomDropdown.vue`:** восстановлен импорт `CSS_CLASSES` (runtime `Cannot read properties of undefined (reading 'BB_DROPDOWN')`)
+- **`ValidationErrorHandler`:** раскрытие accordion и scroll к ошибке для репитеров **произвольной глубины** (в т.ч. 3-й уровень `tags` в nested repeater); рекурсивный `expandRepeaterItemAtPath()`
 
 ### Удалено (BREAKING)
 
 - **`UI_STRINGS`** из `src/utils/constants.ts` — используйте `UI_STRINGS_RU`, `UI_STRINGS_EN` или `resolveUiStrings()` из entry `@mushket-co/block-builder/vue` / `/react`
 - **Мёртвые опции фасада** `theme` и `locale` в `BlockBuilderFacade` (Core API не локализует UI)
+- **Старые color-токены** `--bb-bg-*`, `--bb-text-*`, `--bb-border-*`, `--bb-color-primary-2/3`, `--bb-color-primary-hover` → единая шкала `--bb-color-*` с семантическими именами (`primary-dark`, `primary-light`, …)
 
 ### Миграция
 
@@ -41,6 +69,22 @@
 
 - Было `import { UI_STRINGS } from '.../constants'` → **`UI_STRINGS_RU`** / **`resolveUiStrings('en')`**
 - Подписи полей блоков (`label`, `placeholder` в `block-config`) по-прежнему задаёт приложение — пакет локализует только свой UI
+- Было переопределение `--bb-*` на `:root` → **`themeVars` prop** или CSS на `.bb-app`
+- Для surface/card UI используйте **`--bb-color-surface`**, не `--bb-color-white`
+
+```vue
+<BlockBuilderComponent
+  theme="dark"
+  :theme-vars="{
+    '--bb-color-primary': '#e11d48',
+    '--bb-color-primary-dark': '#be123c',
+    '--bb-color-surface': '#1e2228',
+    '--bb-form-control-height': '48px'
+  }"
+/>
+```
+
+**Frosted glass (glassmorphism):** `backdrop-filter` нельзя задать CSS-переменной — комбинируйте `themeVars` (полупрозрачные rgba-токены) с app-level CSS на контейнерах. См. `examples/vue3-theme/src/glass-theme.css`.
 
 ## [1.10.0] - 2026-06-27
 

@@ -100,6 +100,7 @@ export default function App() {
           controlsOffset={20}
           isEdit={isEdit}
           warnOnPageLeave
+          theme="dark"
         />
       </div>
     </div>

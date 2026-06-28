@@ -7,12 +7,9 @@ jest.mock('../../../utils/scheduling', () => ({
 }));
 
 async function flushValidationHandlerTimers(initialDelay = 350): Promise<void> {
-  jest.advanceTimersByTime(initialDelay);
-  await Promise.resolve();
-  jest.advanceTimersByTime(150);
-  await Promise.resolve();
-  jest.advanceTimersByTime(100);
-  await Promise.resolve();
+  await jest.advanceTimersByTimeAsync(initialDelay);
+  await jest.advanceTimersByTimeAsync(150);
+  await jest.advanceTimersByTimeAsync(100);
 }
 
 describe('ValidationErrorHandler', () => {
@@ -102,6 +99,57 @@ describe('ValidationErrorHandler', () => {
 
     await handler.handleValidationErrors({
       'categories[0].products[1].title': ['Title is required'],
+    });
+
+    await flushValidationHandlerTimers();
+
+    expect(clickSpy).toHaveBeenCalled();
+    clickSpy.mockRestore();
+  });
+
+  test('expands triple-nested tag repeater accordion for tag field errors', async () => {
+    document.body.innerHTML = `
+      <div class="${CSS_CLASSES.MODAL_CONTENT}">
+        <div class="${CSS_CLASSES.MODAL_BODY}">
+          <div class="${CSS_CLASSES.REPEATER_CONTROL}" data-field-name="categories">
+            <div class="${CSS_CLASSES.REPEATER_CONTROL_ITEMS}">
+              <div class="${CSS_CLASSES.REPEATER_CONTROL_ITEM}">
+                <div class="${CSS_CLASSES.REPEATER_CONTROL}" data-field-name="products">
+                  <div class="${CSS_CLASSES.REPEATER_CONTROL_ITEMS}">
+                    <div class="${CSS_CLASSES.REPEATER_CONTROL_ITEM}">
+                      <div class="${CSS_CLASSES.REPEATER_CONTROL}" data-field-name="tags">
+                        <div class="${CSS_CLASSES.REPEATER_CONTROL_ITEMS}">
+                          <div class="${CSS_CLASSES.REPEATER_CONTROL_ITEM}"></div>
+                          <div class="${CSS_CLASSES.REPEATER_CONTROL_ITEM} ${CSS_CLASSES.REPEATER_CONTROL_ITEM_COLLAPSED}">
+                            <button class="${CSS_CLASSES.REPEATER_CONTROL_ITEM_BTN_COLLAPSE}">${getIconHTML('chevronDown', 12)}</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const clickSpy = jest.spyOn(HTMLElement.prototype, 'click');
+    const handler = new ValidationErrorHandler(
+      new Map([
+        [
+          'categories',
+          {
+            isItemCollapsed: () => false,
+            expandItem: jest.fn(),
+          },
+        ],
+      ])
+    );
+
+    await handler.handleValidationErrors({
+      'categories[0].products[0].tags[1].name': ['Name is required'],
     });
 
     await flushValidationHandlerTimers();

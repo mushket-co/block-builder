@@ -170,6 +170,7 @@
 </template>
 
 <script setup lang="ts">
+import { readBbThemeVarsFromClosestApp } from '../../shared/theme/bbThemeContext';
 import { CSS_CLASSES } from '../../utils/constants';
 import Icon from '../../shared/icons/Icon.vue';
 import { useUiStrings } from '../composables/useUiStrings';
@@ -453,6 +454,7 @@ const updatePosition = () => {
   top = Math.max(minTop, Math.min(maxTop, top));
 
   panelStyle.value = {
+    ...readBbThemeVarsFromClosestApp(triggerRef.value),
     left: `${rect.left}px`,
     width: `${rect.width}px`,
     top: `${top}px`,

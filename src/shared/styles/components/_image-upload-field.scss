@@ -3,7 +3,7 @@
     display: block;
     margin-bottom: 8px;
     font-weight: 600;
-    color: var(--bb-text-primary);
+    color: var(--bb-color-neutral-8);
     font-size: 14px;
   }
 
@@ -17,8 +17,8 @@
     margin-bottom: 12px;
     border-radius: var(--bb-radius-md);
     overflow: hidden;
-    border: 1px solid var(--bb-border-color-light);
-    background: var(--bb-bg-tertiary);
+    border: 1px solid var(--bb-color-neutral-2);
+    background: var(--bb-color-neutral-2);
   }
 
   &__preview-img {
@@ -37,8 +37,8 @@
     border-radius: 50%;
     padding: 8px;
     border: none;
-    background: var(--bb-color-dark-overlay);
-    color: var(--bb-text-white);
+    background: var(--bb-color-overlay-medium);
+    color: var(--bb-color-white);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -46,7 +46,7 @@
     transition: background 0.2s;
 
     &:hover {
-      background: var(--bb-color-dark-overlay-hover);
+      background: var(--bb-color-overlay-dark);
     }
   }
 
@@ -58,8 +58,8 @@
     height: 28px;
     border-radius: 50%;
     border: none;
-    background: var(--bb-color-dark-overlay);
-    color: var(--bb-text-white);
+    background: var(--bb-color-overlay-medium);
+    color: var(--bb-color-white);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -67,7 +67,7 @@
     transition: background 0.2s;
 
     &:hover {
-      background: var(--bb-color-dark-overlay-hover);
+      background: var(--bb-color-overlay-dark);
     }
   }
 
@@ -84,11 +84,11 @@
   &__file-label {
     display: block;
     padding: 12px;
-    border: 2px dashed var(--bb-border-color);
+    border: 2px dashed var(--bb-color-neutral-3);
     border-radius: var(--bb-radius-md);
     text-align: center;
     cursor: pointer;
-    color: var(--bb-text-tertiary);
+    color: var(--bb-color-neutral-6);
     font-size: 14px;
     transition: all 0.2s;
 
@@ -121,9 +121,11 @@
   }
 
   &.bb-error {
-    .bb-image-upload-field__file-label {
+    .bb-image-upload-field__file-label,
+    .bb-image-upload-field__gallery-add {
       border-color: var(--bb-color-danger);
       background-color: var(--bb-color-danger-bg);
+      color: var(--bb-color-neutral-8);
     }
   }
 
@@ -146,8 +148,8 @@
     min-height: 120px;
     border-radius: var(--bb-radius-md);
     overflow: hidden;
-    border: 1px solid var(--bb-border-color-light);
-    background: var(--bb-bg-tertiary);
+    border: 1px solid var(--bb-color-neutral-2);
+    background: var(--bb-color-neutral-2);
 
     .bb-image-upload-field__preview-img {
       width: 100%;
@@ -170,11 +172,11 @@
     justify-content: center;
     width: 120px;
     min-height: 120px;
-    border: 2px dashed var(--bb-border-color);
+    border: 2px dashed var(--bb-color-neutral-3);
     border-radius: var(--bb-radius-md);
     text-align: center;
     cursor: pointer;
-    color: var(--bb-text-tertiary);
+    color: var(--bb-color-neutral-6);
     font-size: 14px;
     transition: all 0.2s;
 

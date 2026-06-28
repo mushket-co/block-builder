@@ -3,7 +3,7 @@
   flex-direction: column;
   gap: 8px;
   width: 100%;
-  color: var(--bb-text-primary);
+  color: var(--bb-color-neutral-8);
 
   &__dropdown-control {
     width: 100%;
@@ -38,19 +38,19 @@
     display: flex;
     align-items: center;
     width: 100%;
-    border: 1px solid var(--bb-border-color);
+    border: 1px solid var(--bb-color-neutral-3);
     border-radius: var(--bb-radius-md);
-    background-color: var(--bb-bg-primary);
+    background-color: var(--bb-color-surface);
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 
     &:focus-within {
       border-color: var(--bb-color-primary);
-      box-shadow: 0 0 0 2px var(--bb-color-primary-hover);
+      box-shadow: 0 0 0 2px var(--bb-color-primary-alpha-10);
     }
 
     &--open {
       border-color: var(--bb-color-primary);
-      box-shadow: 0 0 0 2px var(--bb-color-primary-hover);
+      box-shadow: 0 0 0 2px var(--bb-color-primary-alpha-10);
     }
   }
 
@@ -83,11 +83,11 @@
   }
 
   &__value {
-    color: var(--bb-text-primary);
+    color: var(--bb-color-neutral-8);
   }
 
   &__trigger-placeholder {
-    color: var(--bb-text-muted);
+    color: var(--bb-color-neutral-5);
   }
 
   &__input {
@@ -102,18 +102,18 @@
     border: unset !important;
     border-radius: var(--bb-radius-md);
     font-size: 14px;
-    color: var(--bb-text-primary);
-    background-color: var(--bb-bg-primary);
+    color: var(--bb-color-neutral-8);
+    background-color: var(--bb-color-surface);
     transition: all 0.2s;
 
     &:focus {
       outline: none;
       border-color: var(--bb-color-primary);
-      box-shadow: 0 0 0 2px var(--bb-color-primary-hover);
+      box-shadow: 0 0 0 2px var(--bb-color-primary-alpha-10);
     }
 
     &::placeholder {
-      color: var(--bb-text-muted);
+      color: var(--bb-color-neutral-5);
     }
   }
 
@@ -124,7 +124,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: var(--bb-text-muted);
+    color: var(--bb-color-neutral-5);
     cursor: pointer;
     user-select: none;
     transition: color 0.2s;
@@ -145,7 +145,7 @@
     background: none;
     border: none;
     padding: 4px 8px;
-    color: var(--bb-text-tertiary);
+    color: var(--bb-color-neutral-6);
     cursor: pointer;
     user-select: none;
     transition: all 0.2s;
@@ -173,9 +173,9 @@
 
   &__dropdown {
     position: fixed;
-    background: var(--bb-bg-primary);
-    border: 1px solid var(--bb-border-color);
-    color: var(--bb-text-primary);
+    background: var(--bb-color-surface);
+    border: 1px solid var(--bb-color-neutral-3);
+    color: var(--bb-color-neutral-8);
     border-radius: var(--bb-radius-md);
     max-height: 300px;
     min-width: 200px;
@@ -192,11 +192,11 @@
     }
 
     &::-webkit-scrollbar-thumb {
-      background-color: var(--bb-color-scrollbar);
+      background-color: var(--bb-color-neutral-alpha-30);
       border-radius: var(--bb-radius-md);
 
       &:hover {
-        background-color: var(--bb-color-scrollbar-hover);
+        background-color: var(--bb-color-neutral-alpha-50);
       }
     }
   }
@@ -204,7 +204,7 @@
   &__message {
     padding: 16px 12px;
     text-align: center;
-    color: var(--bb-text-muted);
+    color: var(--bb-color-neutral-5);
     font-size: 14px;
 
     &--error {
@@ -226,11 +226,11 @@
     font-size: 14px;
 
     &:hover {
-      background-color: var(--bb-bg-secondary);
+      background-color: var(--bb-color-neutral-1);
     }
 
     &--selected {
-      background-color: var(--bb-color-primary-hover);
+      background-color: var(--bb-color-primary-alpha-10);
       color: var(--bb-color-primary);
     }
   }
@@ -256,13 +256,13 @@
     text-align: center;
     color: var(--bb-color-primary);
     cursor: pointer;
-    border-top: 1px solid var(--bb-border-color);
+    border-top: 1px solid var(--bb-color-neutral-3);
     font-size: 14px;
     font-weight: 500;
     transition: background-color 0.2s;
 
     &:hover {
-      background-color: var(--bb-bg-secondary);
+      background-color: var(--bb-color-neutral-1);
     }
   }
 
@@ -278,14 +278,14 @@
     align-items: center;
     gap: 6px;
     padding: 4px 8px;
-    background-color: var(--bb-color-primary-hover);
+    background-color: var(--bb-color-primary-alpha-10);
     color: var(--bb-color-primary);
     border-radius: var(--bb-radius-md);
     font-size: 13px;
     transition: background-color 0.2s;
 
     &:hover {
-      background-color: var(--bb-color-primary-hover-dark);
+      background-color: var(--bb-color-primary-alpha-15);
     }
   }
 

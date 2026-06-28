@@ -8,7 +8,7 @@ $b: '.bb-matrix-table-control';
   &__tabs {
     display: flex;
     gap: 8px;
-    border-bottom: 1px solid var(--bb-border-color);
+    border-bottom: 1px solid var(--bb-color-neutral-3);
     padding-bottom: 8px;
   }
 
@@ -19,7 +19,7 @@ $b: '.bb-matrix-table-control';
     border-radius: var(--bb-radius-sm);
     cursor: pointer;
     font-size: 13px;
-    color: var(--bb-text-tertiary);
+    color: var(--bb-color-neutral-6);
 
     &--active {
       background: var(--bb-color-primary-light);

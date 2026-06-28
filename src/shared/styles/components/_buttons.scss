@@ -1,5 +1,5 @@
 @mixin btn-base {
-  padding: 10px 20px;
+  padding: var(--bb-btn-padding-y) var(--bb-btn-padding-x);
   border: none;
   border-radius: var(--bb-radius-md);
   cursor: pointer;
@@ -63,25 +63,25 @@
   }
 
   &--primary {
-    @include btn-variant(var(--bb-color-primary), var(--bb-text-white));
+    @include btn-variant(var(--bb-color-primary), var(--bb-color-white));
   }
 
   &--secondary {
-    @include btn-variant(var(--bb-color-secondary), var(--bb-text-white));
+    @include btn-variant(var(--bb-color-secondary), var(--bb-color-white));
   }
 
   &--success {
-    @include btn-variant(var(--bb-color-success), var(--bb-text-white));
+    @include btn-variant(var(--bb-color-success), var(--bb-color-white));
   }
 
   &--danger {
-    @include btn-variant(var(--bb-color-danger), var(--bb-text-white));
+    @include btn-variant(var(--bb-color-danger), var(--bb-color-white));
   }
 
   &--outline {
-    background: var(--bb-bg-secondary, #fff);
-    color: var(--bb-text-primary);
-    border-color: var(--bb-border-color);
+    background: var(--bb-color-surface);
+    color: var(--bb-color-neutral-8);
+    border-color: var(--bb-color-neutral-3);
 
     &:hover:not(:disabled):not(.bb-btn--loading) {
       border-color: var(--bb-color-primary);
@@ -92,7 +92,7 @@
 
   &--dashed {
     border-style: dashed;
-    border-color: var(--bb-border-color-dashed);
+    border-color: var(--bb-color-neutral-4);
   }
 
   &--block {
@@ -105,44 +105,6 @@
     pointer-events: none;
     transform: none !important;
     box-shadow: none !important;
-  }
-}
-
-.bb-control-btn {
-  background: none;
-  border: none;
-  padding: 5px 8px;
-  border-radius: var(--bb-radius-sm);
-  cursor: pointer;
-  font-size: var(--bb-font-size-xs);
-  transition: background var(--bb-transition-base);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  svg {
-    width: 16px;
-    height: 16px;
-    display: block;
-  }
-
-  svg.bb-icon--filled {
-    fill: currentColor;
-    stroke: none;
-  }
-
-  svg.bb-icon--stroke {
-    fill: none;
-    stroke: currentColor;
-  }
-
-  &:hover:not(:disabled) {
-    background: var(--bb-color-dark-overlay-light);
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
   }
 }
 

@@ -13,7 +13,7 @@
   &__label {
     font-weight: 600;
     font-size: 14px;
-    color: var(--bb-text-primary);
+    color: var(--bb-color-neutral-8);
     display: flex;
     align-items: center;
     gap: 4px;
@@ -26,8 +26,8 @@
 
   &__count {
     font-size: 12px;
-    color: var(--bb-text-tertiary);
-    background: var(--bb-bg-tertiary);
+    color: var(--bb-color-neutral-6);
+    background: var(--bb-color-neutral-2);
     padding: 2px 8px;
     border-radius: var(--bb-radius-md);
   }
@@ -40,14 +40,14 @@
   }
 
   &__item {
-    border: 1px solid var(--bb-border-color);
+    border: 1px solid var(--bb-color-neutral-3);
     border-radius: var(--bb-radius-md);
     overflow: hidden;
-    background: var(--bb-bg-primary);
+    background: var(--bb-color-surface);
     transition: all 0.2s ease;
 
     &:hover {
-      border-color: var(--bb-border-color);
+      border-color: var(--bb-color-neutral-3);
       box-shadow: var(--bb-shadow-sm-light);
     }
 
@@ -69,14 +69,14 @@
     justify-content: space-between;
     align-items: center;
     padding: 12px 16px;
-    background: var(--bb-bg-secondary);
-    border-bottom: 1px solid var(--bb-border-color-light);
+    background: var(--bb-color-neutral-1);
+    border-bottom: 1px solid var(--bb-color-neutral-2);
   }
 
   &__item-title {
     font-weight: 600;
     font-size: 14px;
-    color: var(--bb-text-secondary);
+    color: var(--bb-color-neutral-7);
   }
 
   &__item-actions {
@@ -89,7 +89,7 @@
     flex-shrink: 0;
     width: 1px;
     height: 24px;
-    background-color: color-mix(in srgb, var(--bb-text-primary) 15%, transparent);
+    background-color: color-mix(in srgb, var(--bb-color-neutral-8) 15%, transparent);
     margin: 0 10px;
   }
 
@@ -99,7 +99,7 @@
     align-items: center;
     justify-content: center;
     background: none;
-    border: 1px solid var(--bb-border-color-light);
+    border: 1px solid var(--bb-color-neutral-2);
     border-radius: var(--bb-radius-sm);
     padding: 6px;
     cursor: pointer;
@@ -111,9 +111,9 @@
     height: var(--size);
 
     &:hover {
-      background: var(--bb-bg-tertiary);
-      border-color: var(--bb-border-color);
-      color: var(--bb-text-secondary);
+      background: var(--bb-color-neutral-2);
+      border-color: var(--bb-color-neutral-3);
+      color: var(--bb-color-neutral-7);
     }
 
     &:active {
@@ -126,7 +126,7 @@
 
       &:hover {
         background: none;
-        border-color: var(--bb-border-color-light);
+        border-color: var(--bb-color-neutral-2);
         color: var(--bb-color-secondary);
       }
     }
@@ -180,7 +180,7 @@
     .bb-image-upload-field {
       .bb-form-label {
         font-size: 13px;
-        color: var(--bb-text-secondary);
+        color: var(--bb-color-neutral-7);
       }
 
       .bb-form-errors {
@@ -202,7 +202,7 @@
   &__image-label {
     display: block;
     padding: 10px;
-    border: 2px dashed var(--bb-border-color-dashed);
+    border: 2px dashed var(--bb-color-neutral-4);
     border-radius: var(--bb-radius-sm);
     text-align: center;
     cursor: pointer;
@@ -221,7 +221,7 @@
     max-width: 100%;
     max-height: 200px;
     border-radius: var(--bb-radius-sm);
-    border: 1px solid var(--bb-border-color-light);
+    border: 1px solid var(--bb-color-neutral-2);
     margin-top: 8px;
   }
 

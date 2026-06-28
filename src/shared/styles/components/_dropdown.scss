@@ -1,7 +1,7 @@
 .bb-dropdown {
   position: relative;
   width: 100%;
-  color: var(--bb-text-primary);
+  color: var(--bb-color-neutral-8);
   font-size: 14px;
 
   &__control {
@@ -11,16 +11,17 @@
     width: 100%;
     min-height: 40px;
     padding: 8px 12px;
-    border: 1px solid var(--bb-border-color);
+    border: 1px solid var(--bb-color-neutral-3);
     border-radius: var(--bb-radius-md);
-    background-color: var(--bb-bg-primary);
+    background-color: var(--bb-color-surface);
+    color: var(--bb-color-neutral-8);
     cursor: pointer;
     transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 
     &:focus-visible {
       outline: none;
       border-color: var(--bb-color-primary);
-      box-shadow: 0 0 0 2px var(--bb-color-primary-hover);
+      box-shadow: 0 0 0 2px var(--bb-color-primary-alpha-10);
     }
   }
 
@@ -33,7 +34,7 @@
   }
 
   &__placeholder {
-    color: var(--bb-text-muted);
+    color: var(--bb-color-neutral-5);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -57,14 +58,14 @@
     align-items: center;
     padding: 4px 8px;
     border-radius: var(--bb-radius-sm);
-    background-color: var(--bb-color-primary-hover);
+    background-color: var(--bb-color-primary-alpha-10);
     color: var(--bb-color-primary);
     font-size: 13px;
     line-height: 1;
 
     &--more {
-      background-color: var(--bb-bg-secondary);
-      color: var(--bb-text-secondary);
+      background-color: var(--bb-color-neutral-1);
+      color: var(--bb-color-neutral-7);
     }
   }
 
@@ -74,7 +75,7 @@
     justify-content: center;
     width: 20px;
     height: 20px;
-    color: var(--bb-text-muted);
+    color: var(--bb-color-neutral-5);
     border: none;
     background: none;
     cursor: pointer;
@@ -90,7 +91,7 @@
     flex-shrink: 0;
     align-items: center;
     justify-content: center;
-    color: var(--bb-text-tertiary);
+    color: var(--bb-color-neutral-6);
     transition: transform 0.2s ease;
 
     &--open {
@@ -101,9 +102,9 @@
   &__panel {
     position: fixed;
     z-index: 10000;
-    background-color: var(--bb-bg-primary);
-    color: var(--bb-text-primary);
-    border: 1px solid var(--bb-border-color);
+    background-color: var(--bb-color-surface);
+    color: var(--bb-color-neutral-8);
+    border: 1px solid var(--bb-color-neutral-3);
     border-radius: var(--bb-radius-md);
     box-shadow: var(--bb-shadow-md);
     overflow: hidden;
@@ -120,11 +121,11 @@
     }
 
     &::-webkit-scrollbar-thumb {
-      background-color: var(--bb-color-scrollbar);
+      background-color: var(--bb-color-neutral-alpha-30);
       border-radius: var(--bb-radius-sm);
 
       &:hover {
-        background-color: var(--bb-color-scrollbar-hover);
+        background-color: var(--bb-color-neutral-alpha-50);
       }
     }
   }
@@ -133,7 +134,7 @@
     padding: 16px 12px;
     text-align: center;
     font-size: 14px;
-    color: var(--bb-text-muted);
+    color: var(--bb-color-neutral-5);
 
     &--error {
       color: var(--bb-color-danger);
@@ -158,27 +159,27 @@
     transition: background-color 0.2s ease, color 0.2s ease;
 
     &:hover {
-      background-color: var(--bb-bg-secondary);
+      background-color: var(--bb-color-neutral-1);
     }
 
     &--selected {
-      background-color: var(--bb-color-primary-hover);
+      background-color: var(--bb-color-primary-alpha-10);
       color: var(--bb-color-primary);
     }
 
     &--active {
-      background-color: var(--bb-bg-secondary);
+      background-color: var(--bb-color-neutral-1);
     }
 
     &--highlighted {
-      background-color: var(--bb-bg-secondary);
+      background-color: var(--bb-color-neutral-1);
       outline: 2px solid var(--bb-color-primary);
       outline-offset: -2px;
     }
 
     &--disabled {
       cursor: not-allowed;
-      color: var(--bb-text-muted);
+      color: var(--bb-color-neutral-5);
 
       &:hover {
         background-color: transparent;
@@ -207,14 +208,14 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: var(--bb-text-muted);
+    color: var(--bb-color-neutral-5);
     user-select: none;
     pointer-events: none;
   }
 
   &--open &__control {
     border-color: var(--bb-color-primary);
-    box-shadow: 0 0 0 2px var(--bb-color-primary-hover);
+    box-shadow: 0 0 0 2px var(--bb-color-primary-alpha-10);
   }
 
   &--invalid &__control {
@@ -224,8 +225,8 @@
 
   &--disabled &__control {
     cursor: not-allowed;
-    background-color: var(--bb-bg-tertiary);
-    color: var(--bb-text-muted);
+    background-color: var(--bb-color-neutral-2);
+    color: var(--bb-color-neutral-5);
   }
 }
 

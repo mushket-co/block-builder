@@ -3,7 +3,7 @@
     display: block;
     margin-bottom: 8px;
     font-weight: 600;
-    color: var(--bb-text-primary);
+    color: var(--bb-color-neutral-8);
     font-size: 14px;
   }
 
@@ -25,9 +25,9 @@
     align-items: center;
     gap: 12px;
     padding: 10px 12px;
-    border: 1px solid var(--bb-border-color-light);
+    border: 1px solid var(--bb-color-neutral-2);
     border-radius: var(--bb-radius-md);
-    background: var(--bb-bg-secondary, #fff);
+    background: var(--bb-color-surface);
   }
 
   &__badge {
@@ -50,7 +50,7 @@
   &__name {
     flex: 1;
     min-width: 0;
-    color: var(--bb-text-primary);
+    color: var(--bb-color-neutral-8);
     text-decoration: none;
     font-size: 14px;
     word-break: break-all;
@@ -96,6 +96,13 @@
     .bb-file-upload-field__picker .bb-btn {
       border-color: var(--bb-color-danger);
       background-color: var(--bb-color-danger-bg);
+      color: var(--bb-color-neutral-8);
+
+      &:hover:not(:disabled):not(.bb-btn--loading) {
+        border-color: var(--bb-color-danger);
+        background-color: var(--bb-color-danger-light);
+        color: var(--bb-color-neutral-8);
+      }
     }
   }
 }

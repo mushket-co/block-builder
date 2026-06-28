@@ -1,5 +1,6 @@
 import { CSS_CLASSES } from '../../utils/constants';
 import { lazy, Suspense, useMemo } from 'react';
+import { resolveThemeVars } from '../../shared/theme/uiTheme';
 import { useBlockBuilder } from '../hooks/useBlockBuilder';
 import type { IBlockBuilderProps } from '../types/blockBuilder';
 import { BlockAnchorContext } from '../context/blockAnchorContext';
@@ -15,7 +16,9 @@ const BlockFormFields = lazy(() =>
   import('./BlockFormFields').then(module => ({ default: module.BlockFormFields }))
 );
 
-function BlockBuilderContent(props: IBlockBuilderProps) {
+function BlockBuilderContent(
+  props: IBlockBuilderProps & { themeStyle: Record<string, string> }
+) {
   const {
     apiSelectUseCase,
     customFieldRendererRegistry,
@@ -24,6 +27,7 @@ function BlockBuilderContent(props: IBlockBuilderProps) {
     controlsOffset,
     controlsOffsetVar,
     isEdit = true,
+    themeStyle,
   } = props;
 
   const uiStrings = useUiStrings();
@@ -53,7 +57,7 @@ function BlockBuilderContent(props: IBlockBuilderProps) {
     : '';
 
   return (
-    <div className={builder.appClassName}>
+    <div className={builder.appClassName} style={themeStyle} data-bb-theme={props.theme ?? 'default'}>
       <BlockControlsBar
         isEdit={isEdit}
         blocksCount={builder.blocks.length}
@@ -132,11 +136,12 @@ function BlockBuilderContent(props: IBlockBuilderProps) {
 }
 
 export function BlockBuilder(props: IBlockBuilderProps) {
-  const { locale, uiStrings, ...rest } = props;
+  const { locale, uiStrings, theme, themeVars, ...rest } = props;
+  const themeStyle = useMemo(() => resolveThemeVars(theme, themeVars), [theme, themeVars]);
 
   return (
     <UiStringsProvider locale={locale} uiStrings={uiStrings}>
-      <BlockBuilderContent {...rest} />
+      <BlockBuilderContent {...rest} theme={theme} themeStyle={themeStyle} />
     </UiStringsProvider>
   );
 }

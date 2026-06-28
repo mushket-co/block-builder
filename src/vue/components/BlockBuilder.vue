@@ -1,5 +1,5 @@
 <template>
-  <div :class="appClass">
+  <div :class="appClass" :style="appThemeStyle" :data-bb-theme="props.theme ?? 'default'">
     <div
       v-if="props.isEdit"
       :class="[CSS_CLASSES.CONTROLS, controlsFixedClass]"
@@ -529,6 +529,7 @@ import type { IBlockFormHooks, IBlockTypeConfig } from '../../core/types/formHoo
 import type { ApiSelectUseCase } from '../../core/use-cases/ApiSelectUseCase';
 import { BB_UI_STRINGS_KEY } from '../../shared/i18n/injectionKey';
 import { resolveUiStrings, type IUiStrings, type TUiLocale } from '../../shared/i18n/uiStrings';
+import { resolveThemeVars, type IUiThemeVars, type TUiTheme } from '../../shared/theme/uiTheme';
 import { BlockManagementUseCase } from '../../core/use-cases/BlockManagementUseCase';
 import {
   canRenderVueBlock,
@@ -608,6 +609,10 @@ interface IProps {
   warnOnPageLeave?: boolean;
   locale?: TUiLocale;
   uiStrings?: Partial<IUiStrings>;
+  /** UI theme preset (`default` when omitted) */
+  theme?: TUiTheme;
+  /** Override CSS custom properties on `.bb-app` root */
+  themeVars?: IUiThemeVars;
 }
 
 const props = withDefaults(defineProps<IProps>(), {
@@ -617,6 +622,8 @@ const props = withDefaults(defineProps<IProps>(), {
 
 const uiStrings = computed(() => resolveUiStrings(props.locale, props.uiStrings));
 provide(BB_UI_STRINGS_KEY, uiStrings);
+
+const appThemeStyle = computed(() => resolveThemeVars(props.theme, props.themeVars));
 
 const emit = defineEmits<{
   'block-added': [block: IBlock];

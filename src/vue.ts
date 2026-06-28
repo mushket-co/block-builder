@@ -33,3 +33,9 @@ export {
 } from './utils/ssr';
 export type { IUiStrings, TUiLocale } from './shared/i18n/uiStrings';
 export { UI_STRINGS_RU, UI_STRINGS_EN, resolveUiStrings } from './shared/i18n/uiStrings';
+export type { IUiThemeVars, IUiThemeColorKey, TUiTheme } from './shared/theme/uiTheme';
+export {
+  UI_THEME_COLORS_DEFAULT,
+  UI_THEME_COLORS_DARK,
+  resolveThemeVars,
+} from './shared/theme/uiTheme';

@@ -1,7 +1,7 @@
 .bb-app,
 .bb-modal {
   font-family: var(--bb-font-family);
-  color: var(--bb-text-primary);
+  color: var(--bb-color-neutral-8);
   box-sizing: border-box;
 
   *,
@@ -36,7 +36,7 @@
   &-center { text-align: center; }
   &-left { text-align: left; }
   &-right { text-align: right; }
-  &-muted { color: var(--bb-text-muted); }
+  &-muted { color: var(--bb-color-neutral-5); }
   &-primary { color: var(--bb-color-primary); }
   &-danger { color: var(--bb-color-danger); }
 }

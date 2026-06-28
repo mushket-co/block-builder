@@ -1,0 +1,113 @@
+/* Frosted glass — demo-only styles (backdrop-filter cannot be a CSS variable). */
+
+.builder-shell--glass {
+  position: relative;
+  border-radius: 28px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(168, 85, 247, 0.45), transparent 42%),
+    radial-gradient(circle at 88% 12%, rgba(236, 72, 153, 0.35), transparent 38%),
+    radial-gradient(circle at 72% 88%, rgba(59, 130, 246, 0.3), transparent 40%),
+    linear-gradient(145deg, #18181b 0%, #27272a 45%, #1e1b4b 100%);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.35);
+}
+
+.builder-shell--glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  opacity: 0.35;
+}
+
+.builder-shell--glass .app-content {
+  background: transparent;
+  box-shadow: none;
+  border-radius: 28px;
+}
+
+.builder-shell--glass .bb-app {
+  background: transparent;
+}
+
+.glass-surface {
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.builder-shell--glass .bb-app .bb-controls-inner,
+.builder-shell--glass .bb-app .bb-modal-content,
+.builder-shell--glass .bb-app .bb-modal-header,
+.builder-shell--glass .bb-app .bb-modal-footer,
+.builder-shell--glass .bb-app .bb-repeater-control__item,
+.builder-shell--glass .bb-app .bb-block,
+.builder-shell--glass .bb-app .bb-form-control,
+.builder-shell--glass .bb-app .bb-api-select__search,
+.builder-shell--glass .bb-app .bb-dropdown__control,
+.builder-shell--glass .bb-app .bb-file-upload-field__row,
+.builder-shell--glass .bb-app .bb-image-upload-field__file-label,
+.builder-shell--glass .bb-app .bb-image-upload-field__gallery-add,
+.builder-shell--glass .bb-app .bb-spacing-control,
+.builder-shell--glass .bb-app .bb-matrix-table-control__panel,
+.builder-shell--glass .bb-app .object-field {
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.builder-shell--glass .bb-app .bb-btn--outline {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.builder-shell--glass .bb-app .bb-btn--outline:hover:not(:disabled):not(.bb-btn--loading) {
+  background: rgba(168, 85, 247, 0.18);
+  border-color: rgba(192, 132, 252, 0.55);
+  color: #faf5ff;
+}
+
+.builder-shell--glass .bb-app .bb-repeater-control__item-header,
+.builder-shell--glass .bb-app .bb-modal-header {
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.builder-shell--glass .bb-app .bb-modal-footer {
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Block toolbar icons: purple on dark glass is unreadable — keep surface, use light icons */
+.builder-shell--glass .bb-app .bb-block-controls-inner {
+  opacity: 0.88;
+}
+
+.builder-shell--glass .bb-app .bb-block-controls-inner:hover {
+  opacity: 1;
+}
+
+.builder-shell--glass .bb-app .bb-control-btn {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.builder-shell--glass .bb-app .bb-control-btn:hover:not(:disabled) {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.builder-shell--glass .bb-app .bb-control-btn:disabled {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+body.glass-theme-active .bb-dropdown__panel {
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+}

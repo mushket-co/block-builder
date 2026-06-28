@@ -22,6 +22,7 @@
         :controls-offset="20"
         :is-edit="isEdit"
         :warn-on-page-leave="true"
+        theme="dark"
       />
     </div>
   </div>
